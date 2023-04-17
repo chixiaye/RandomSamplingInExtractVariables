@@ -41,6 +41,9 @@ public abstract class AbstractNodeData {
         this.validFlag =true;
     }
 
+    public AbstractNodeData() {
+    }
+
     public void countASTNodeComplexity(ASTNode node) {
         //calculate the numbers of ASTNode of the Given ASTNode
         node.accept(new ASTVisitor() {

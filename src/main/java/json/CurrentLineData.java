@@ -4,7 +4,6 @@ import json.utils.NodePosition;
 import json.utils.TokenComputable;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.log4j.Log4j;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -17,6 +16,8 @@ public class CurrentLineData extends ParentData implements TokenComputable {
         super(node, nodeType, locationInParent, nodePosition);
     }
 
+    public CurrentLineData() {
+    }
 
     public void setTokenLength() {
         this.tokenLength = computeToken(this.nodeContext);

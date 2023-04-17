@@ -16,5 +16,6 @@ public class ParentData extends AbstractNodeData {
         this.locationInParent=locationInParent;
     }
 
-
+    public ParentData() {
+    }
 }

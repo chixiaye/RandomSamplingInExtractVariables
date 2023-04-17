@@ -4,7 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.Random;
+import java.util.Set;
 
 @Slf4j
 // for each file, we randomly select 1 record
@@ -29,8 +31,9 @@ public class RandomSelection {
     }
 
     public <E> E generateRandomObjectFromSet(Set<E> set) {
-        if (set == null || set.size() == 0)
+        if (set == null || set.size() == 0){
             return null;
+        }
         int size = set.size();
         int v = randomThreadLocal.get().nextInt(0, size);
 

@@ -3,8 +3,6 @@ package utils;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.Repository;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -12,16 +10,6 @@ import java.util.Map;
 
 public class Utils {
 
-    public static String getCurrentSHA(String gitPath){ //获取当前commit的sha
-        String sha = null;
-        try (Git git = Git.open(new File(gitPath))){
-            Repository repository = git.getRepository();
-            sha = repository.resolve("HEAD").getName();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return sha;
-    }
     public static char[] readJavaFile(File file){
         if(!file.exists()||!file.isFile() )
             return null;
@@ -38,18 +26,20 @@ public class Utils {
         return sb.toString().toCharArray();
     }
 
-    public static void getFileList(ArrayList<File> arrayList, String strPath) {
+    public static void getFileList(ArrayList<File> arrayList, String strPath,String extension) {
         File fileDir = new File(strPath);
+        if(!extension.startsWith("."))
+            extension="."+extension;
         if (null != fileDir && fileDir.isDirectory()) {
             File[] files = fileDir.listFiles();
             if (null != files) {
                 for (int i = 0; i < files.length; i++) {
                     // 如果是文件夹 继续读取
                     if (files[i].isDirectory()) {
-                        getFileList(arrayList, files[i].getPath());
+                        getFileList(arrayList, files[i].getPath(), extension);
                     } else {
                         String strFileName = files[i].getPath();
-                        if (files[i].exists() && (strFileName.endsWith(".java") )) {
+                        if (files[i].exists() && (strFileName.endsWith( extension) )) {
                             arrayList.add(files[i]);
                         }
                     }
@@ -57,7 +47,7 @@ public class Utils {
             } else {
                 if (null != fileDir) {
                     String strFileName = fileDir.getPath();
-                    if (fileDir.exists() && (strFileName.endsWith(".java"))) {
+                    if (fileDir.exists() && (strFileName.endsWith( extension))) {
                         arrayList.add(fileDir);
                     }
                 }
@@ -80,6 +70,7 @@ public class Utils {
 //        astParser.setEnvironment(null, sourcepathEntries, null,true);
         astParser.setEnvironment(null, sourcepathEntries, encodings, true);
         astParser.setResolveBindings(true);
+        astParser.setStatementsRecovery(true);
         astParser.setBindingsRecovery(true);
         astParser.setUnitName("");
         Map options = JavaCore.getOptions();
@@ -94,4 +85,5 @@ public class Utils {
         bufferedInputStream.close();
         return new String(input);
     }
+
 }

@@ -2,11 +2,13 @@ package ast;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import utils.Utils;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -17,8 +19,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import utils.Utils;
-
+@Slf4j
 public class ProjectsParser {
     @Getter
     @Setter
@@ -32,7 +33,7 @@ public class ProjectsParser {
     private ArrayList<String> classpathEntriesList;
     private Path repoPath;
 
-    public ProjectsParser(Path[] targetPaths, Path projectPath, Path repoPath) throws IOException {
+    public ProjectsParser(Path[] targetPaths, Path projectPath, Path repoPath) throws Exception {
         this.targetPaths = targetPaths;
         this.repoPath = repoPath;
         targetJavaFiles = new HashSet<>();
@@ -46,6 +47,7 @@ public class ProjectsParser {
     private void traverseFile(File root) {
         if (root.isFile()) {
             if (root.getName().endsWith(".java")) {
+//                log.info("Parsing file: " + root.getAbsolutePath());
                 allJavaFiles.add(root.getAbsolutePath());
                 for (Path targetPath : targetPaths)
                     if (root.getAbsolutePath().startsWith(targetPath.toString())) {
@@ -64,21 +66,28 @@ public class ProjectsParser {
     }
 
 
-    private void parseSourceEntries() throws IOException {
+    private void parseSourceEntries() throws Exception {
         HashSet<String> sourceRootSet = new HashSet<String>();
         for (String javaFile : allJavaFiles) {
             ASTParser astParser = Utils.getNewASTParser();
             String code = Utils.getCodeFromFile(new File(javaFile));
             astParser.setSource(code.toCharArray());
-            CompilationUnit compilationUnit = (CompilationUnit) astParser.createAST(null);
-            if (compilationUnit.getPackage() == null)
-                continue;
-            try {
+            try{
+                CompilationUnit compilationUnit = (CompilationUnit) astParser.createAST(null);
+                if (compilationUnit.getPackage() == null)
+                    continue;
                 String rootPath = parseRootPath(javaFile, compilationUnit.getPackage().getName().toString());
                 if (!rootPath.equals("")) sourceRootSet.add(rootPath);
-            } catch (Exception e) {
-                e.printStackTrace();
+            }catch (Exception e){
+//                log.error("Error in parsing file: " + javaFile);
+                LightASTParser lightASTParser =new LightASTParser(code.toCharArray());
+                CompilationUnit cu = lightASTParser.getCompilationUnit();
+                if (cu==null || cu.getPackage() == null)
+                    continue;
+                String rootPath = parseRootPath(javaFile,cu.getPackage().getName().toString());
+                if (!rootPath.equals("")) sourceRootSet.add(rootPath);
             }
+
         }
         sourcetreeEntries = new String[sourceRootSet.size()];
         encodings = new String[sourceRootSet.size()];
@@ -136,12 +145,18 @@ public class ProjectsParser {
         return absolutePath.toString().substring(0, end);
     }
 
-    public CompilationUnit parse(String path) throws IOException{
+    public CompilationUnit parse(String path) throws IOException {
         ASTParser astParser = Utils.getNewASTParser(sourcetreeEntries, encodings);
         String code = Utils.getCodeFromFile(new File(path));
         astParser.setSource(code.toCharArray());
-        CompilationUnit cu = (CompilationUnit) astParser.createAST(null);
-        return cu;
+        try {
+            CompilationUnit cu = (CompilationUnit) astParser.createAST(null);
+            return cu;
+        }catch (Exception e){
+            LightASTParser lightASTParser =new LightASTParser(code.toCharArray());
+            CompilationUnit cu = lightASTParser.getCompilationUnit();
+            return cu;
+        }
     }
 
     public String[] getSourcetreeEntries() {

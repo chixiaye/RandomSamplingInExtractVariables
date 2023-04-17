@@ -1,13 +1,6 @@
 package utils;
 
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.knuddels.jtokkit.Encodings;
 import com.knuddels.jtokkit.api.Encoding;
 import com.knuddels.jtokkit.api.EncodingRegistry;
@@ -15,6 +8,9 @@ import com.knuddels.jtokkit.api.EncodingType;
 import com.knuddels.jtokkit.api.ModelType;
 import junit.framework.TestCase;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.util.List;
 
 
 public class TokenCounterTest extends TestCase {

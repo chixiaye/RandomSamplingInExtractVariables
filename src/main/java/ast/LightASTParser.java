@@ -1,12 +1,9 @@
 package ast;
 
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-
-import java.util.Map;
 @Slf4j
 public class LightASTParser {
     private CompilationUnit compilationUnit;
@@ -16,6 +13,7 @@ public class LightASTParser {
         astParser.setKind(ASTParser.K_COMPILATION_UNIT);
         astParser.setSource(source);
         astParser.setStatementsRecovery(true);
+        astParser.setResolveBindings(true);
         astParser.setResolveBindings(true);
 
 //        Map<String, String> compilerOptions = JavaCore.getOptions();

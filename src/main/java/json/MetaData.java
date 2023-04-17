@@ -22,9 +22,18 @@ public class MetaData extends AbstractNodeData implements TokenComputable {
     @Setter
     int tokenLength;
 
+    @Getter
+    @Setter
+    String type;
 
-    public MetaData(NodePosition nodePosition, String node) {
+
+    public MetaData(NodePosition nodePosition, String node,String type) {
         super(node, "MetaData", nodePosition);
+        this.type=type;
+    }
+
+    public MetaData() {
+//        super(null, "MetaData", null);
     }
 
     public void setTokenLength() {
