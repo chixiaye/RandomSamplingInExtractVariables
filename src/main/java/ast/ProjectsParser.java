@@ -146,7 +146,9 @@ public class ProjectsParser {
     }
 
     public CompilationUnit parse(String path) throws IOException {
+
         ASTParser astParser = Utils.getNewASTParser(sourcetreeEntries, encodings);
+
         String code = Utils.getCodeFromFile(new File(path));
         astParser.setSource(code.toCharArray());
         try {

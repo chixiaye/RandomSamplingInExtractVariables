@@ -79,6 +79,9 @@ public class Utils {
     }
 
     static public String getCodeFromFile(File javaFile) throws IOException {
+        if (!javaFile.exists()) {
+            return "";
+        }
         BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(javaFile));
         byte[] input = new byte[bufferedInputStream.available()];
         bufferedInputStream.read(input);

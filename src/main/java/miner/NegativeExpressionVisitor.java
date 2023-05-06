@@ -14,9 +14,6 @@ public class NegativeExpressionVisitor extends AbstractExpressionVisitor  {
     HashMap<String,ArrayList<MetaData>> recordMap;
     HashMap<MetaData,ASTNode > metaDataASTNodeHashMap;
     //    HashMap<String,ArrayList<MetaData>> nodeMap ;
-    private CompilationUnit fCU;
-
-
     public NegativeExpressionVisitor(CompilationUnit cu) {
         super(cu);
         this.recordMap = new HashMap<>();
@@ -56,21 +53,16 @@ public class NegativeExpressionVisitor extends AbstractExpressionVisitor  {
 
     @Override
     public boolean preVisit2(ASTNode node) {
-        if (node instanceof SimpleName || node instanceof NumberLiteral || node instanceof NullLiteral
-                || node instanceof TypeLiteral || node instanceof BooleanLiteral || node instanceof StringLiteral
-                || node instanceof CharacterLiteral || node instanceof  ArrayInitializer || node instanceof  ThisExpression){
-            return false;
-        }
-        else if (node instanceof Expression || node instanceof Name) {
-            if (canReplace(node)  ) {
+        if (node instanceof Expression || node instanceof Name) {
+            if (canReplace(node, true)) {
                 MetaData metaData;
                 int offset = node.getStartPosition();
                 int length = node.getLength();
                 NodePosition pos = new NodePosition(fCU.getLineNumber(offset), fCU.getColumnNumber(offset)
                         , fCU.getLineNumber(offset + length), fCU.getColumnNumber(offset + length), length);
-                metaData = new MetaData(pos, node.toString(),getExpressionType(node));//ASTNode.nodeClassForType(node.getNodeType()).getName()
-                metaDataASTNodeHashMap.put(metaData,node);
-                if(recordMap.get(node.toString())!=null){
+                metaData = new MetaData(pos, node.toString(), getExpressionType(node));//ASTNode.nodeClassForType(node.getNodeType()).getName()
+                metaDataASTNodeHashMap.put(metaData, node);
+                if (recordMap.get(node.toString()) != null) {
                     recordMap.get(node.toString()).add(metaData);
                 }
                 else{

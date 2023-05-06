@@ -5,6 +5,7 @@ import json.utils.NodePosition;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import sample.Constants;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,14 +24,13 @@ public class RMDataReader extends AbstractIOer{
     }
 
     public static String convertPath(String path) {
-        String separator = System.getProperty("file.separator");
         Path pathObj = Paths.get(path);
         int count = pathObj.getNameCount();
         if (count < 2) {
             return path;
         } else {
             Path subPath = pathObj.subpath(1, count);
-            return subPath.toString().replace(separator, "/");
+            return subPath.toString().replace(Constants.FILE_SEPARATOR_PROPERTY, "/");
         }
     }
 

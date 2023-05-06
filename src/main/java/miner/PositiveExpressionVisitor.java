@@ -61,14 +61,21 @@ public class PositiveExpressionVisitor extends AbstractExpressionVisitor  {
 
     @Override
     public boolean preVisit2(ASTNode node) {
-        if ( node instanceof SimpleName && isSearchNode(node)) {
-            MetaData metaData;
+        ASTNode parent = node.getParent();
+        boolean flag = false;
+        if (parent instanceof VariableDeclarationFragment) {
+            VariableDeclarationFragment vdf = (VariableDeclarationFragment) parent;
+            if (node.equals(vdf.getName()))
+                flag = true;
+        } else if (canReplace(node, false))
+            flag = true;
+        if (flag && isSearchNode(node)) {
             int offset = node.getStartPosition();
             int length = node.getLength();
             NodePosition pos = new NodePosition(fCU.getLineNumber(offset), fCU.getColumnNumber(offset)
                     , fCU.getLineNumber(offset + length), fCU.getColumnNumber(offset + length), length);
-            metaData = new MetaData(pos, node.toString(),getExpressionType(node));//ASTNode.nodeClassForType(node.getNodeType()).getName()
-            metaDataASTNodeHashMap.put(metaData,node);
+            MetaData metaData = new MetaData(pos, node.toString(), getExpressionType(node));//ASTNode.nodeClassForType(node.getNodeType()).getName()
+            metaDataASTNodeHashMap.put(metaData, node);
             metaDataList.add(metaData);
         }
         return super.preVisit2(node);
@@ -90,15 +97,18 @@ public class PositiveExpressionVisitor extends AbstractExpressionVisitor  {
             int length = parent.getLength();
             NodePosition pos = new NodePosition(fCU.getLineNumber(offset), fCU.getColumnNumber(offset)
                     , fCU.getLineNumber(offset + length), fCU.getColumnNumber(offset + length), length);
-            if(pos.getStartLineNumber()<= fNodePosition.getStartLineNumber()
-                    && pos.getEndLineNumber()>=fNodePosition.getEndLineNumber()){
+            if (pos.getStartLineNumber() <= fNodePosition.getStartLineNumber()
+                    && pos.getEndLineNumber() >= fNodePosition.getEndLineNumber()) {
                 return true;
             }
+            System.out.println("parent:" + parent.toString() + ", " + this.fSearchedNode);
         }
         return false;
     }
 
-    public void reLoadMetaData(MetaData metaData, Expression initializer) {
+    public boolean reLoadMetaData(MetaData metaData, Expression initializer) {
+        if (!canReplace(initializer, false))
+            return false;
         metaData.setNodeContext(initializer.toString());
         int offset = initializer.getStartPosition();
         int length = initializer.getLength();
@@ -108,5 +118,6 @@ public class PositiveExpressionVisitor extends AbstractExpressionVisitor  {
         metaData.setNodeType(ASTNode.nodeClassForType(initializer.getNodeType()).getSimpleName());
         metaData.countASTNodeComplexity(initializer);
         metaData.setTokenLength();
+        return true;
     }
 }

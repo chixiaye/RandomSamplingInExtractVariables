@@ -24,7 +24,7 @@ public class LightASTParser {
         try{
             this.compilationUnit =  (CompilationUnit) (astParser.createAST(null));
         }catch (Exception e){
-            log.error("Error in parsing file: " + e.getCause());
+            log.error("Error in parsing file: " + e.getLocalizedMessage());
         }
     }
 

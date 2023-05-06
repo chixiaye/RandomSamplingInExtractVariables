@@ -63,15 +63,29 @@ public abstract class AbstractExpressionVisitor extends ASTVisitor {
             }
             return n.resolveTypeBinding().getQualifiedName();
         }
-        return  null;
+        return null;
     }
 
-    protected boolean canReplace(ASTNode node) {
-        if(node instanceof  MethodInvocation){
-            MethodInvocation mi=(MethodInvocation)node;
+    protected boolean canReplace(ASTNode node, boolean flag) {
+//        if (node instanceof SimpleName || node instanceof NumberLiteral || node instanceof NullLiteral
+//                || node instanceof TypeLiteral || node instanceof BooleanLiteral || node instanceof StringLiteral
+//                || node instanceof CharacterLiteral || node instanceof  ArrayInitializer || node instanceof  ThisExpression
+//                || node instanceof  VariableDeclarationExpression || node instanceof SwitchExpression || node instanceof  TextBlock
+//                || node instanceof  MarkerAnnotation || node instanceof  Assignment || node instanceof  Annotation){
+//            return false;
+//        }
+
+        if (node instanceof ArrayInitializer || node instanceof VariableDeclarationExpression || node instanceof SwitchExpression || node instanceof TextBlock
+                || node instanceof MarkerAnnotation || node instanceof Assignment || node instanceof Annotation) {
+            return false;
+        }
+
+        if (flag
+                && node instanceof MethodInvocation) {
+            MethodInvocation mi = (MethodInvocation) node;
             // if binding is null, it means that the method is not resolved
-            if(mi.resolveMethodBinding()==null || mi.resolveMethodBinding().getReturnType().getName().equals("void") ){
-                return  false;
+            if (mi.resolveMethodBinding() == null || mi.resolveMethodBinding().getReturnType().getName().equals("void")) {
+                return false;
             }
         }
 
@@ -95,9 +109,9 @@ public abstract class AbstractExpressionVisitor extends ASTVisitor {
             return false;
         if (isLeftValue(node))
             return false;
-        if (isReferringToLocalVariableFromFor((Expression) node))
+        if (node instanceof Expression && isReferringToLocalVariableFromFor((Expression) node))
             return false;
-        if (isUsedInForInitializerOrUpdater((Expression) node))
+        if (node instanceof Expression && isUsedInForInitializerOrUpdater((Expression) node))
             return false;
         if (parent instanceof SwitchCase)
             return true;
@@ -105,7 +119,8 @@ public abstract class AbstractExpressionVisitor extends ASTVisitor {
             return !"name".equals(node.getLocationInParent().getId()); //$NON-NLS-1$
         }
 
-        if(getExpressionType(node)==null){
+        if (flag
+                && getExpressionType(node) == null) {
             return false;
         }
         return true;

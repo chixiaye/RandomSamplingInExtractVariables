@@ -31,11 +31,12 @@ public class RandomSelection {
     }
 
     public <E> E generateRandomObjectFromSet(Set<E> set) {
-        if (set == null || set.size() == 0){
+        if (set == null || set.size() == 0) {
             return null;
         }
         int size = set.size();
-        int v = randomThreadLocal.get().nextInt(0, size);
+        //the next pseudorandom, uniformly distributed int value between zero (inclusive) and bound (exclusive) from this random number generator's sequence
+        int v = randomThreadLocal.get().nextInt(size);
 
         Iterator<E> it = set.iterator();
         E e = null;
