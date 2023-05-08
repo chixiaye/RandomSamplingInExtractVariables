@@ -87,19 +87,31 @@ public class Main {
     }
 
     public static void doRefactoringMiner(ThreadPoolExecutor executor) throws Exception {
-        ExcelReader excelReader = new ExcelReader(Constants.EXCEL_PATH);
-        excelReader.read();
-        excelReader.getExcelDataList().sort(Comparator.comparing(ExcelData::getAccount));
-        for (int i = 0; i < excelReader.getExcelDataList().size(); ++i) {
-            ExcelData v = excelReader.getExcelDataList().get(i);
-            String localName = v.getAccount() + "@" + v.getRepository();
-            if (new File(Constants.PREFIX_RM_DATA_PATH + localName + ".json").exists()) {
+//        ExcelReader excelReader = new ExcelReader(Constants.EXCEL_PATH);
+//        excelReader.read();
+//        excelReader.getExcelDataList().sort(Comparator.comparing(ExcelData::getAccount));
+//        for (int i =  excelReader.getExcelDataList().size()-1; i>=0; --i) {
+//            ExcelData v = excelReader.getExcelDataList().get(i);
+//            String localName = v.getAccount() + "@" + v.getRepository();
+//            if (new File(Constants.PREFIX_RM_DATA_PATH + localName + ".json").exists()) {
+//                continue;
+//            }
+//            executor.execute(new RefactoringMinerThread(localName));
+//        }
+         File[] list=new File(Constants.PREFIX_PATH).listFiles();
+         int i=0;
+        for (File f:list) {
+            String localName =f.getName();
+            if (new File(Constants.PREFIX_RM_DATA_PATH + localName + ".json").exists()
+            || !f.isDirectory()) {
                 continue;
             }
+            i++;
+//            System.out.println(localName);
             executor.execute(new RefactoringMinerThread(localName));
         }
         executor.shutdown();
-
+        System.out.println(i);
     }
 }
 
