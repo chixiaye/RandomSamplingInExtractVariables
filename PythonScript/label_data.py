@@ -84,6 +84,9 @@ if __name__ == '__main__':
 
     for index in range(0, len(projects_info)):
         project_info = projects_info[index]
+        if project_info == 'ben-manes@caffeine':
+            continue
+
         local_path = "C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\refactoring\\" + project_info + ".json"
         if not os.path.exists(local_path):
             continue
