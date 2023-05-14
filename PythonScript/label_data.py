@@ -82,9 +82,12 @@ if __name__ == '__main__':
     # print(len(projects_info))
     # exit(projects_info)
 
-    for index in range(0, len(projects_info)):
+    for index in range(0, len(projects_info)):  # 84
         project_info = projects_info[index]
-        if project_info == 'ben-manes@caffeine':
+        if project_info == 'ben-manes@caffeine' or project_info == 'medcl@elasticsearch-analysis-ik' or project_info == 'iBotPeaches@Apktool' \
+                or project_info == 'Tencent@VasSonic' or project_info == 'Yalantis@uCrop' or project_info == 'jfeinstein10@SlidingMenu' \
+                or project_info == 'Konloch@bytecode-viewer' or project_info == 'LMAX-Exchange/disruptor' or project_info == 'permissions-dispatcher@PermissionsDispatcher' \
+                or project_info == 'LMAX-Exchange@disruptor' or project_info == 'facebookarchive@stetho':
             continue
 
         local_path = "C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\refactoring\\" + project_info + ".json"
