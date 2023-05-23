@@ -4,7 +4,10 @@ import json.CurrentLineData;
 import json.MetaData;
 import json.ParentData;
 import json.utils.NodePosition;
-import org.eclipse.jdt.core.dom.*;
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.Name;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,7 +16,7 @@ import java.util.HashMap;
 public class NegativeExpressionVisitor extends AbstractExpressionVisitor  {
     HashMap<String,ArrayList<MetaData>> recordMap;
     HashMap<MetaData,ASTNode > metaDataASTNodeHashMap;
-    //    HashMap<String,ArrayList<MetaData>> nodeMap ;
+
     public NegativeExpressionVisitor(CompilationUnit cu) {
         super(cu);
         this.recordMap = new HashMap<>();
@@ -21,11 +24,16 @@ public class NegativeExpressionVisitor extends AbstractExpressionVisitor  {
     }
 
 
-    public void loadMetaData(MetaData metaData){
+    public void loadMetaData(MetaData metaData) {
         ASTNode node = this.metaDataASTNodeHashMap.get(metaData);
         metaData.setNodeType(ASTNode.nodeClassForType(node.getNodeType()).getSimpleName());
         metaData.countASTNodeComplexity(node);
         metaData.setTokenLength();
+        if (isArithmetic(node))
+            this.setArithmeticExpressionState(1);
+
+        if (isStartWithGet(node))
+            this.setTypeMethodState(1);
 
         ArrayList<ASTNode> parentNodes = getAllSuperNodes(node);
         ArrayList<ParentData> parentDataList = new ArrayList<>();

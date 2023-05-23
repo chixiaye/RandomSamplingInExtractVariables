@@ -146,17 +146,23 @@ public class ProjectsParser {
     }
 
     public CompilationUnit parse(String path) throws IOException {
-
-        ASTParser astParser = Utils.getNewASTParser(sourcetreeEntries, encodings);
-
         String code = Utils.getCodeFromFile(new File(path));
+//        System.out.println(code);
+        ASTParser astParser = Utils.getNewASTParser(sourcetreeEntries, encodings);
         astParser.setSource(code.toCharArray());
+
         try {
             CompilationUnit cu = (CompilationUnit) astParser.createAST(null);
+            // 设置preserveWhiteSpace属性为true，保留空白和空行
+//            cu.setProperty(DefaultCommentMapper.USE_INTERNAL_JAVADOC_PARSER_PROPERTY, Boolean.TRUE);
+
+//            cu.recordModifications();
+//            System.out.println(cu.getLineNumber(cu.getLength()-1)+ ", " +code.split("\\r?\\n|\\r").length)  ;
             return cu;
         }catch (Exception e){
             LightASTParser lightASTParser =new LightASTParser(code.toCharArray());
             CompilationUnit cu = lightASTParser.getCompilationUnit();
+            cu.recordModifications();
             return cu;
         }
     }

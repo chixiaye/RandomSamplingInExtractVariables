@@ -1,30 +1,49 @@
 package utils;
 
-import com.knuddels.jtokkit.Encodings;
-import com.knuddels.jtokkit.api.Encoding;
-import com.knuddels.jtokkit.api.EncodingRegistry;
-import com.knuddels.jtokkit.api.EncodingType;
-
-import java.util.List;
+import java.util.StringTokenizer;
 
 public class TokenParser {
-    private  static String preHandleContext(String s){
-        String s1 = s.replaceAll("[\\p{Punct}\\p{Cntrl}]", " ");
-        return s1;
+    static String[] keywords = {"abstract", "assert", "boolean", "break", "byte", "case", "catch", "char", "class", "const", "continue", "default", "do", "double", "else", "enum", "extends", "final", "finally", "float", "for", "goto", "if", "implements", "import", "instanceof", "int", "interface", "long", "native", "new", "package", "private", "protected", "public", "return", "short", "static", "strictfp", "super", "switch", "synchronized", "this", "throw", "throws", "transient", "try", "void", "volatile", "while"};
+
+
+    private static String preHandleContext(String s) {
+        return s.replaceAll("[\\p{Punct}&&[^+\\-*/%<>!=~|&^!]]", " ");
     }
 
-
-    public static int evaluateTokenLength(String context){
-        context=preHandleContext(context);
-        EncodingRegistry registry = Encodings.newDefaultEncodingRegistry();
-        Encoding enc = registry.getEncoding(EncodingType.CL100K_BASE);
-        List<Integer> encoded = enc.encode(context);
-        return encoded.size();
+    public static int evaluateTokenLength(String context) {
+//        EncodingRegistry registry = Encodings.newDefaultEncodingRegistry();
+//        Encoding enc = registry.getEncoding(EncodingType.CL100K_BASE);
+//        List<Integer> encoded = enc.encode(context);
+//        return encoded.size();
         // encoded = [2028, 374, 264, 6205, 11914, 13]
 //        String decoded = enc.decode(encoded);
         // decoded = "This is a sample sentence."
         // Or get the tokenizer based on the model type
 //        Encoding secondEnc = registry.getEncodingForModel(ModelType.TEXT_EMBEDDING_ADA_002);
         // enc == secondEnc
+        // 使用 StringTokenizer 分割文本
+        StringTokenizer st = new StringTokenizer(preHandleContext(context));
+        StringBuilder sb = new StringBuilder();
+
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+
+            // 判断分割出来的单词是否是关键字
+            boolean isKeyword = false;
+            for (String keyword : keywords) {
+                if (token.equals(keyword)) {
+                    isKeyword = true;
+                    break;
+                }
+            }
+
+            // 如果不是关键字，则将其添加到 StringBuilder 中
+            if (!isKeyword) {
+                sb.append(token).append(" ");
+            }
+        }
+
+        String result = sb.toString().trim();
+        return result.split(" ").length;
     }
 }

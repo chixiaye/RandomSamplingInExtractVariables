@@ -74,7 +74,19 @@ public class Utils {
         astParser.setBindingsRecovery(true);
         astParser.setUnitName("");
         Map options = JavaCore.getOptions();
+        options.put(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, JavaCore.latestSupportedJavaVersion());
+        options.put(JavaCore.COMPILER_SOURCE, JavaCore.latestSupportedJavaVersion());
+        options.put(JavaCore.COMPILER_COMPLIANCE, JavaCore.latestSupportedJavaVersion());
+//        options.put(JavaCore.COMPILER_SOURCE, JavaCore.latestSupportedJavaVersion());
+//        options.put(JavaCore.COMPILER_DOC_COMMENT_SUPPORT, JavaCore.ENABLED);
+//        options.put(JavaCore.COMPILER_COMPLIANCE, JavaCore.latestSupportedJavaVersion());
+//        options.put(JavaCore.COMPILER_PB_ENABLE_PREVIEW_FEATURES, JavaCore.ENABLED);
+//        options.put(JavaCore.COMPILER_SOURCE, JavaCore.latestSupportedJavaVersion());
+//        options.put(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, JavaCore.latestSupportedJavaVersion());
+//        options.put(JavaCore.COMPILER_SOURCE, JavaCore.latestSupportedJavaVersion());
+
         astParser.setCompilerOptions(options);
+
         return astParser;
     }
 

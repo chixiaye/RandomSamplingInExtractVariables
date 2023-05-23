@@ -36,7 +36,6 @@ public class NegativeMinerThread extends AbstractMinerThread {
             if (fCommitID != null)
                 set.add(fCommitID);
             try {
-//                log.info(gitPath );
                 fCommitID = GitUtils.getLatestCommitSHA(gitPath, set);
                 if(fCommitID==null){
                     break;
@@ -69,30 +68,25 @@ public class NegativeMinerThread extends AbstractMinerThread {
 
     public void analyzeProject() throws IOException {
         ArrayList<EVRecord> evRecords = new ArrayList<>();
+
         if (this.fCommitID == null) {
             return;
         }
+
         int id = 1;
         HashSet<String> targetJavaFiles = fProjectsParser.getTargetJavaFiles();
         int size = targetJavaFiles.size();
 
         log.info("start analyzing {} ... total {} files, will sample {} refactorings", fProjectName, size, fTotalRecords);
         int currentProcessed = -1;
-//        if(size>=0){
-//            for(String path:targetJavaFiles){
-//                System.out.println(path);
-//                return;
-//            }
-//        }
-        while (fRandomSelection.getCurrentRecords() < this.fTotalRecords){
+        while (fRandomSelection.getCurrentRecords() < fTotalRecords) {
             String path = fRandomSelection.generateRandomObjectFromSet(targetJavaFiles);
-            if(path==null){
-                log.error("no more files to process in project {}",this.fProjectName);
+            if (path == null) {
+                log.error("no more files to process in project {}", fProjectName);
                 break;
             }
             CompilationUnit cu = fProjectsParser.parse(path);
             if (cu == null) {
-//                log.error(path + " error in parsing.");
                 targetJavaFiles.remove(path);
                 continue;
             }
@@ -111,6 +105,7 @@ public class NegativeMinerThread extends AbstractMinerThread {
             }
             Iterator<MetaData> iterator = metaDataList.iterator();
             String nodeContext = metaDataList.get(0).getParentDataList().get(metaDataList.get(0).getParentDataList().size() - 1).getNodeContext();
+            //删除不同parent
             while (iterator.hasNext()) {
                 MetaData m = iterator.next();
                 if (!m.getParentDataList().get(m.getParentDataList().size() - 1).getNodeContext().equals(
@@ -129,14 +124,9 @@ public class NegativeMinerThread extends AbstractMinerThread {
             r.setExpressionList(metaDataList);
             r.generatePositionList(metaDataList);
             r.setLayoutRelationDataList();
-            evRecords.add(r);
-            if (evRecords.size() >= JsonFileSplitter.OBJECTS_PER_FILE) {
-                fJsonFileSplitter.writeJsonArray(evRecords, fProjectName,false);
-                evRecords.clear();
-            }
+            fJsonFileSplitter.writeJsonArrayInSampled(r, false);
 
             fRandomSelection.incCurrentRecords();
-//            entrySet.remove(entry);
             targetJavaFiles.remove(path);
             int currentRecords = fRandomSelection.getCurrentRecords();
             int process = (100 * (currentRecords)) / fTotalRecords;
@@ -144,10 +134,6 @@ public class NegativeMinerThread extends AbstractMinerThread {
                 currentProcessed = (100 * (currentRecords)) / this.fTotalRecords;
                 log.info("analyzing {} ... {}%, total {} refactorings", fProjectName, currentProcessed, fTotalRecords);
             }
-        }
-        if (!evRecords.isEmpty()) {
-            fJsonFileSplitter.writeJsonArray(evRecords, fProjectName,false);
-            evRecords.clear();
         }
 
     }

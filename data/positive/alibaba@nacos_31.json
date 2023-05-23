@@ -1,0 +1,300 @@
+{
+  "id" : 31,
+  "expression" : "\"CONFIG_DUMP_TO_FILE\"",
+  "projectName" : "alibaba@nacos",
+  "commitID" : "6eeeb764736f3aedcf1857f2ce9f53f923795a5b",
+  "filePath" : "config/src/main/java/com/alibaba/nacos/config/server/service/dump/DumpService.java",
+  "occurrences" : 3,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "\"CONFIG_DUMP_TO_FILE\"",
+    "nodeType" : "StringLiteral",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 136,
+      "startColumnNumber" : 15,
+      "endLineNumber" : 136,
+      "endColumnNumber" : 30
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 39,
+        "startLineNumber" : 136,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 136,
+        "endColumnNumber" : 54
+      },
+      "nodeContext" : "dumpFileContext=\"CONFIG_DUMP_TO_FILE\"",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 47,
+        "startLineNumber" : 136,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 136,
+        "endColumnNumber" : 55
+      },
+      "nodeContext" : "String dumpFileContext=\"CONFIG_DUMP_TO_FILE\";\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5186,
+        "startLineNumber" : 135,
+        "startColumnNumber" : 118,
+        "endLineNumber" : 236,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  String dumpFileContext=\"CONFIG_DUMP_TO_FILE\";\n  TimerContext.start(dumpFileContext);\n  try {\n    LogUtil.DEFAULT_LOG.warn(\"DumpService start\");\n    Runnable dumpAll=() -> dumpAllTaskMgr.addTask(DumpAllTask.TASK_ID,new DumpAllTask());\n    Runnable dumpAllBeta=() -> dumpAllTaskMgr.addTask(DumpAllBetaTask.TASK_ID,new DumpAllBetaTask());\n    Runnable dumpAllTag=() -> dumpAllTaskMgr.addTask(DumpAllTagTask.TASK_ID,new DumpAllTagTask());\n    Runnable clearConfigHistory=() -> {\n      LOGGER.warn(\"clearConfigHistory start\");\n      if (canExecute()) {\n        try {\n          Timestamp startTime=getBeforeStamp(TimeUtils.getCurrentTime(),24 * getRetentionDays());\n          int totalCount=persistService.findConfigHistoryCountByTime(startTime);\n          if (totalCount > 0) {\n            int pageSize=1000;\n            int removeTime=(totalCount + pageSize - 1) / pageSize;\n            LOGGER.warn(\"clearConfigHistory, getBeforeStamp:{}, totalCount:{}, pageSize:{}, removeTime:{}\",startTime,totalCount,pageSize,removeTime);\n            while (removeTime > 0) {\n              persistService.removeConfigHistory(startTime,pageSize);\n              removeTime--;\n            }\n          }\n        }\n catch (        Throwable e) {\n          LOGGER.error(\"clearConfigHistory error : {}\",e.toString());\n        }\n      }\n    }\n;\n    try {\n      dumpConfigInfo(dumpAllProcessor);\n      LogUtil.DEFAULT_LOG.info(\"start clear all config-info-beta.\");\n      DiskUtil.clearAllBeta();\n      if (persistService.isExistTable(BETA_TABLE_NAME)) {\n        dumpAllBetaProcessor.process(new DumpAllBetaTask());\n      }\n      LogUtil.DEFAULT_LOG.info(\"start clear all config-info-tag.\");\n      DiskUtil.clearAllTag();\n      if (persistService.isExistTable(TAG_TABLE_NAME)) {\n        dumpAllTagProcessor.process(new DumpAllTagTask());\n      }\n      List<ConfigInfoChanged> configList=persistService.findAllAggrGroup();\n      if (configList != null && !configList.isEmpty()) {\n        total=configList.size();\n        List<List<ConfigInfoChanged>> splitList=splitList(configList,INIT_THREAD_COUNT);\n        for (        List<ConfigInfoChanged> list : splitList) {\n          MergeAllDataWorker work=new MergeAllDataWorker(list);\n          work.start();\n        }\n        LOGGER.info(\"server start, schedule merge end.\");\n      }\n    }\n catch (    Exception e) {\n      LogUtil.FATAL_LOG.error(\"Nacos Server did not start because dumpservice bean construction failure :\\n\" + e.toString());\n      throw new NacosException(NacosException.SERVER_ERROR,\"Nacos Server did not start because dumpservice bean construction failure :\\n\" + e.getMessage(),e);\n    }\n    if (!ApplicationUtils.getStandaloneMode()) {\n      Runnable heartbeat=() -> {\n        String heartBeatTime=TimeUtils.getCurrentTime().toString();\n        try {\n          DiskUtil.saveHeartBeatToDisk(heartBeatTime);\n        }\n catch (        IOException e) {\n          LogUtil.FATAL_LOG.error(\"save heartbeat fail\" + e.getMessage());\n        }\n      }\n;\n      ConfigExecutor.scheduleConfigTask(heartbeat,0,10,TimeUnit.SECONDS);\n      long initialDelay=new Random().nextInt(INITIAL_DELAY_IN_MINUTE) + 10;\n      LogUtil.DEFAULT_LOG.warn(\"initialDelay:{}\",initialDelay);\n      ConfigExecutor.scheduleConfigTask(dumpAll,initialDelay,DUMP_ALL_INTERVAL_IN_MINUTE,TimeUnit.MINUTES);\n      ConfigExecutor.scheduleConfigTask(dumpAllBeta,initialDelay,DUMP_ALL_INTERVAL_IN_MINUTE,TimeUnit.MINUTES);\n      ConfigExecutor.scheduleConfigTask(dumpAllTag,initialDelay,DUMP_ALL_INTERVAL_IN_MINUTE,TimeUnit.MINUTES);\n    }\n    ConfigExecutor.scheduleConfigTask(clearConfigHistory,10,10,TimeUnit.MINUTES);\n  }\n  finally {\n    TimerContext.end(dumpFileContext,LogUtil.DUMP_LOG);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 445,
+      "astHeight" : 20
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 5391,
+        "startLineNumber" : 134,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 236,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "protected void dumpOperate(DumpProcessor processor,DumpAllProcessor dumpAllProcessor,DumpAllBetaProcessor dumpAllBetaProcessor,DumpAllTagProcessor dumpAllTagProcessor) throws NacosException {\n  String dumpFileContext=\"CONFIG_DUMP_TO_FILE\";\n  TimerContext.start(dumpFileContext);\n  try {\n    LogUtil.DEFAULT_LOG.warn(\"DumpService start\");\n    Runnable dumpAll=() -> dumpAllTaskMgr.addTask(DumpAllTask.TASK_ID,new DumpAllTask());\n    Runnable dumpAllBeta=() -> dumpAllTaskMgr.addTask(DumpAllBetaTask.TASK_ID,new DumpAllBetaTask());\n    Runnable dumpAllTag=() -> dumpAllTaskMgr.addTask(DumpAllTagTask.TASK_ID,new DumpAllTagTask());\n    Runnable clearConfigHistory=() -> {\n      LOGGER.warn(\"clearConfigHistory start\");\n      if (canExecute()) {\n        try {\n          Timestamp startTime=getBeforeStamp(TimeUtils.getCurrentTime(),24 * getRetentionDays());\n          int totalCount=persistService.findConfigHistoryCountByTime(startTime);\n          if (totalCount > 0) {\n            int pageSize=1000;\n            int removeTime=(totalCount + pageSize - 1) / pageSize;\n            LOGGER.warn(\"clearConfigHistory, getBeforeStamp:{}, totalCount:{}, pageSize:{}, removeTime:{}\",startTime,totalCount,pageSize,removeTime);\n            while (removeTime > 0) {\n              persistService.removeConfigHistory(startTime,pageSize);\n              removeTime--;\n            }\n          }\n        }\n catch (        Throwable e) {\n          LOGGER.error(\"clearConfigHistory error : {}\",e.toString());\n        }\n      }\n    }\n;\n    try {\n      dumpConfigInfo(dumpAllProcessor);\n      LogUtil.DEFAULT_LOG.info(\"start clear all config-info-beta.\");\n      DiskUtil.clearAllBeta();\n      if (persistService.isExistTable(BETA_TABLE_NAME)) {\n        dumpAllBetaProcessor.process(new DumpAllBetaTask());\n      }\n      LogUtil.DEFAULT_LOG.info(\"start clear all config-info-tag.\");\n      DiskUtil.clearAllTag();\n      if (persistService.isExistTable(TAG_TABLE_NAME)) {\n        dumpAllTagProcessor.process(new DumpAllTagTask());\n      }\n      List<ConfigInfoChanged> configList=persistService.findAllAggrGroup();\n      if (configList != null && !configList.isEmpty()) {\n        total=configList.size();\n        List<List<ConfigInfoChanged>> splitList=splitList(configList,INIT_THREAD_COUNT);\n        for (        List<ConfigInfoChanged> list : splitList) {\n          MergeAllDataWorker work=new MergeAllDataWorker(list);\n          work.start();\n        }\n        LOGGER.info(\"server start, schedule merge end.\");\n      }\n    }\n catch (    Exception e) {\n      LogUtil.FATAL_LOG.error(\"Nacos Server did not start because dumpservice bean construction failure :\\n\" + e.toString());\n      throw new NacosException(NacosException.SERVER_ERROR,\"Nacos Server did not start because dumpservice bean construction failure :\\n\" + e.getMessage(),e);\n    }\n    if (!ApplicationUtils.getStandaloneMode()) {\n      Runnable heartbeat=() -> {\n        String heartBeatTime=TimeUtils.getCurrentTime().toString();\n        try {\n          DiskUtil.saveHeartBeatToDisk(heartBeatTime);\n        }\n catch (        IOException e) {\n          LogUtil.FATAL_LOG.error(\"save heartbeat fail\" + e.getMessage());\n        }\n      }\n;\n      ConfigExecutor.scheduleConfigTask(heartbeat,0,10,TimeUnit.SECONDS);\n      long initialDelay=new Random().nextInt(INITIAL_DELAY_IN_MINUTE) + 10;\n      LogUtil.DEFAULT_LOG.warn(\"initialDelay:{}\",initialDelay);\n      ConfigExecutor.scheduleConfigTask(dumpAll,initialDelay,DUMP_ALL_INTERVAL_IN_MINUTE,TimeUnit.MINUTES);\n      ConfigExecutor.scheduleConfigTask(dumpAllBeta,initialDelay,DUMP_ALL_INTERVAL_IN_MINUTE,TimeUnit.MINUTES);\n      ConfigExecutor.scheduleConfigTask(dumpAllTag,initialDelay,DUMP_ALL_INTERVAL_IN_MINUTE,TimeUnit.MINUTES);\n    }\n    ConfigExecutor.scheduleConfigTask(clearConfigHistory,10,10,TimeUnit.MINUTES);\n  }\n  finally {\n    TimerContext.end(dumpFileContext,LogUtil.DUMP_LOG);\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 467,
+      "astHeight" : 21
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 47,
+        "startLineNumber" : 136,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 136,
+        "endColumnNumber" : 55
+      },
+      "nodeContext" : "String dumpFileContext=\"CONFIG_DUMP_TO_FILE\";\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    },
+    "tokenLength" : 4,
+    "type" : "java.lang.String"
+  }, {
+    "nodeContext" : "dumpFileContext",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 137,
+      "startColumnNumber" : 27,
+      "endLineNumber" : 137,
+      "endColumnNumber" : 42
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 35,
+        "startLineNumber" : 137,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 137,
+        "endColumnNumber" : 43
+      },
+      "nodeContext" : "TimerContext.start(dumpFileContext)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 36,
+        "startLineNumber" : 137,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 137,
+        "endColumnNumber" : 44
+      },
+      "nodeContext" : "TimerContext.start(dumpFileContext);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5186,
+        "startLineNumber" : 135,
+        "startColumnNumber" : 118,
+        "endLineNumber" : 236,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  String dumpFileContext=\"CONFIG_DUMP_TO_FILE\";\n  TimerContext.start(dumpFileContext);\n  try {\n    LogUtil.DEFAULT_LOG.warn(\"DumpService start\");\n    Runnable dumpAll=() -> dumpAllTaskMgr.addTask(DumpAllTask.TASK_ID,new DumpAllTask());\n    Runnable dumpAllBeta=() -> dumpAllTaskMgr.addTask(DumpAllBetaTask.TASK_ID,new DumpAllBetaTask());\n    Runnable dumpAllTag=() -> dumpAllTaskMgr.addTask(DumpAllTagTask.TASK_ID,new DumpAllTagTask());\n    Runnable clearConfigHistory=() -> {\n      LOGGER.warn(\"clearConfigHistory start\");\n      if (canExecute()) {\n        try {\n          Timestamp startTime=getBeforeStamp(TimeUtils.getCurrentTime(),24 * getRetentionDays());\n          int totalCount=persistService.findConfigHistoryCountByTime(startTime);\n          if (totalCount > 0) {\n            int pageSize=1000;\n            int removeTime=(totalCount + pageSize - 1) / pageSize;\n            LOGGER.warn(\"clearConfigHistory, getBeforeStamp:{}, totalCount:{}, pageSize:{}, removeTime:{}\",startTime,totalCount,pageSize,removeTime);\n            while (removeTime > 0) {\n              persistService.removeConfigHistory(startTime,pageSize);\n              removeTime--;\n            }\n          }\n        }\n catch (        Throwable e) {\n          LOGGER.error(\"clearConfigHistory error : {}\",e.toString());\n        }\n      }\n    }\n;\n    try {\n      dumpConfigInfo(dumpAllProcessor);\n      LogUtil.DEFAULT_LOG.info(\"start clear all config-info-beta.\");\n      DiskUtil.clearAllBeta();\n      if (persistService.isExistTable(BETA_TABLE_NAME)) {\n        dumpAllBetaProcessor.process(new DumpAllBetaTask());\n      }\n      LogUtil.DEFAULT_LOG.info(\"start clear all config-info-tag.\");\n      DiskUtil.clearAllTag();\n      if (persistService.isExistTable(TAG_TABLE_NAME)) {\n        dumpAllTagProcessor.process(new DumpAllTagTask());\n      }\n      List<ConfigInfoChanged> configList=persistService.findAllAggrGroup();\n      if (configList != null && !configList.isEmpty()) {\n        total=configList.size();\n        List<List<ConfigInfoChanged>> splitList=splitList(configList,INIT_THREAD_COUNT);\n        for (        List<ConfigInfoChanged> list : splitList) {\n          MergeAllDataWorker work=new MergeAllDataWorker(list);\n          work.start();\n        }\n        LOGGER.info(\"server start, schedule merge end.\");\n      }\n    }\n catch (    Exception e) {\n      LogUtil.FATAL_LOG.error(\"Nacos Server did not start because dumpservice bean construction failure :\\n\" + e.toString());\n      throw new NacosException(NacosException.SERVER_ERROR,\"Nacos Server did not start because dumpservice bean construction failure :\\n\" + e.getMessage(),e);\n    }\n    if (!ApplicationUtils.getStandaloneMode()) {\n      Runnable heartbeat=() -> {\n        String heartBeatTime=TimeUtils.getCurrentTime().toString();\n        try {\n          DiskUtil.saveHeartBeatToDisk(heartBeatTime);\n        }\n catch (        IOException e) {\n          LogUtil.FATAL_LOG.error(\"save heartbeat fail\" + e.getMessage());\n        }\n      }\n;\n      ConfigExecutor.scheduleConfigTask(heartbeat,0,10,TimeUnit.SECONDS);\n      long initialDelay=new Random().nextInt(INITIAL_DELAY_IN_MINUTE) + 10;\n      LogUtil.DEFAULT_LOG.warn(\"initialDelay:{}\",initialDelay);\n      ConfigExecutor.scheduleConfigTask(dumpAll,initialDelay,DUMP_ALL_INTERVAL_IN_MINUTE,TimeUnit.MINUTES);\n      ConfigExecutor.scheduleConfigTask(dumpAllBeta,initialDelay,DUMP_ALL_INTERVAL_IN_MINUTE,TimeUnit.MINUTES);\n      ConfigExecutor.scheduleConfigTask(dumpAllTag,initialDelay,DUMP_ALL_INTERVAL_IN_MINUTE,TimeUnit.MINUTES);\n    }\n    ConfigExecutor.scheduleConfigTask(clearConfigHistory,10,10,TimeUnit.MINUTES);\n  }\n  finally {\n    TimerContext.end(dumpFileContext,LogUtil.DUMP_LOG);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 445,
+      "astHeight" : 20
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 5391,
+        "startLineNumber" : 134,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 236,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "protected void dumpOperate(DumpProcessor processor,DumpAllProcessor dumpAllProcessor,DumpAllBetaProcessor dumpAllBetaProcessor,DumpAllTagProcessor dumpAllTagProcessor) throws NacosException {\n  String dumpFileContext=\"CONFIG_DUMP_TO_FILE\";\n  TimerContext.start(dumpFileContext);\n  try {\n    LogUtil.DEFAULT_LOG.warn(\"DumpService start\");\n    Runnable dumpAll=() -> dumpAllTaskMgr.addTask(DumpAllTask.TASK_ID,new DumpAllTask());\n    Runnable dumpAllBeta=() -> dumpAllTaskMgr.addTask(DumpAllBetaTask.TASK_ID,new DumpAllBetaTask());\n    Runnable dumpAllTag=() -> dumpAllTaskMgr.addTask(DumpAllTagTask.TASK_ID,new DumpAllTagTask());\n    Runnable clearConfigHistory=() -> {\n      LOGGER.warn(\"clearConfigHistory start\");\n      if (canExecute()) {\n        try {\n          Timestamp startTime=getBeforeStamp(TimeUtils.getCurrentTime(),24 * getRetentionDays());\n          int totalCount=persistService.findConfigHistoryCountByTime(startTime);\n          if (totalCount > 0) {\n            int pageSize=1000;\n            int removeTime=(totalCount + pageSize - 1) / pageSize;\n            LOGGER.warn(\"clearConfigHistory, getBeforeStamp:{}, totalCount:{}, pageSize:{}, removeTime:{}\",startTime,totalCount,pageSize,removeTime);\n            while (removeTime > 0) {\n              persistService.removeConfigHistory(startTime,pageSize);\n              removeTime--;\n            }\n          }\n        }\n catch (        Throwable e) {\n          LOGGER.error(\"clearConfigHistory error : {}\",e.toString());\n        }\n      }\n    }\n;\n    try {\n      dumpConfigInfo(dumpAllProcessor);\n      LogUtil.DEFAULT_LOG.info(\"start clear all config-info-beta.\");\n      DiskUtil.clearAllBeta();\n      if (persistService.isExistTable(BETA_TABLE_NAME)) {\n        dumpAllBetaProcessor.process(new DumpAllBetaTask());\n      }\n      LogUtil.DEFAULT_LOG.info(\"start clear all config-info-tag.\");\n      DiskUtil.clearAllTag();\n      if (persistService.isExistTable(TAG_TABLE_NAME)) {\n        dumpAllTagProcessor.process(new DumpAllTagTask());\n      }\n      List<ConfigInfoChanged> configList=persistService.findAllAggrGroup();\n      if (configList != null && !configList.isEmpty()) {\n        total=configList.size();\n        List<List<ConfigInfoChanged>> splitList=splitList(configList,INIT_THREAD_COUNT);\n        for (        List<ConfigInfoChanged> list : splitList) {\n          MergeAllDataWorker work=new MergeAllDataWorker(list);\n          work.start();\n        }\n        LOGGER.info(\"server start, schedule merge end.\");\n      }\n    }\n catch (    Exception e) {\n      LogUtil.FATAL_LOG.error(\"Nacos Server did not start because dumpservice bean construction failure :\\n\" + e.toString());\n      throw new NacosException(NacosException.SERVER_ERROR,\"Nacos Server did not start because dumpservice bean construction failure :\\n\" + e.getMessage(),e);\n    }\n    if (!ApplicationUtils.getStandaloneMode()) {\n      Runnable heartbeat=() -> {\n        String heartBeatTime=TimeUtils.getCurrentTime().toString();\n        try {\n          DiskUtil.saveHeartBeatToDisk(heartBeatTime);\n        }\n catch (        IOException e) {\n          LogUtil.FATAL_LOG.error(\"save heartbeat fail\" + e.getMessage());\n        }\n      }\n;\n      ConfigExecutor.scheduleConfigTask(heartbeat,0,10,TimeUnit.SECONDS);\n      long initialDelay=new Random().nextInt(INITIAL_DELAY_IN_MINUTE) + 10;\n      LogUtil.DEFAULT_LOG.warn(\"initialDelay:{}\",initialDelay);\n      ConfigExecutor.scheduleConfigTask(dumpAll,initialDelay,DUMP_ALL_INTERVAL_IN_MINUTE,TimeUnit.MINUTES);\n      ConfigExecutor.scheduleConfigTask(dumpAllBeta,initialDelay,DUMP_ALL_INTERVAL_IN_MINUTE,TimeUnit.MINUTES);\n      ConfigExecutor.scheduleConfigTask(dumpAllTag,initialDelay,DUMP_ALL_INTERVAL_IN_MINUTE,TimeUnit.MINUTES);\n    }\n    ConfigExecutor.scheduleConfigTask(clearConfigHistory,10,10,TimeUnit.MINUTES);\n  }\n  finally {\n    TimerContext.end(dumpFileContext,LogUtil.DUMP_LOG);\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 467,
+      "astHeight" : 21
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 36,
+        "startLineNumber" : 137,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 137,
+        "endColumnNumber" : 44
+      },
+      "nodeContext" : "TimerContext.start(dumpFileContext);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "java.lang.String"
+  }, {
+    "nodeContext" : "dumpFileContext",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 233,
+      "startColumnNumber" : 29,
+      "endLineNumber" : 233,
+      "endColumnNumber" : 44
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 51,
+        "startLineNumber" : 233,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 233,
+        "endColumnNumber" : 63
+      },
+      "nodeContext" : "TimerContext.end(dumpFileContext,LogUtil.DUMP_LOG)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 52,
+        "startLineNumber" : 233,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 233,
+        "endColumnNumber" : 64
+      },
+      "nodeContext" : "TimerContext.end(dumpFileContext,LogUtil.DUMP_LOG);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,finally]",
+      "nodePosition" : {
+        "charLength" : 76,
+        "startLineNumber" : 232,
+        "startColumnNumber" : 18,
+        "endLineNumber" : 234,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  TimerContext.end(dumpFileContext,LogUtil.DUMP_LOG);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 5060,
+        "startLineNumber" : 138,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 234,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "try {\n  LogUtil.DEFAULT_LOG.warn(\"DumpService start\");\n  Runnable dumpAll=() -> dumpAllTaskMgr.addTask(DumpAllTask.TASK_ID,new DumpAllTask());\n  Runnable dumpAllBeta=() -> dumpAllTaskMgr.addTask(DumpAllBetaTask.TASK_ID,new DumpAllBetaTask());\n  Runnable dumpAllTag=() -> dumpAllTaskMgr.addTask(DumpAllTagTask.TASK_ID,new DumpAllTagTask());\n  Runnable clearConfigHistory=() -> {\n    LOGGER.warn(\"clearConfigHistory start\");\n    if (canExecute()) {\n      try {\n        Timestamp startTime=getBeforeStamp(TimeUtils.getCurrentTime(),24 * getRetentionDays());\n        int totalCount=persistService.findConfigHistoryCountByTime(startTime);\n        if (totalCount > 0) {\n          int pageSize=1000;\n          int removeTime=(totalCount + pageSize - 1) / pageSize;\n          LOGGER.warn(\"clearConfigHistory, getBeforeStamp:{}, totalCount:{}, pageSize:{}, removeTime:{}\",startTime,totalCount,pageSize,removeTime);\n          while (removeTime > 0) {\n            persistService.removeConfigHistory(startTime,pageSize);\n            removeTime--;\n          }\n        }\n      }\n catch (      Throwable e) {\n        LOGGER.error(\"clearConfigHistory error : {}\",e.toString());\n      }\n    }\n  }\n;\n  try {\n    dumpConfigInfo(dumpAllProcessor);\n    LogUtil.DEFAULT_LOG.info(\"start clear all config-info-beta.\");\n    DiskUtil.clearAllBeta();\n    if (persistService.isExistTable(BETA_TABLE_NAME)) {\n      dumpAllBetaProcessor.process(new DumpAllBetaTask());\n    }\n    LogUtil.DEFAULT_LOG.info(\"start clear all config-info-tag.\");\n    DiskUtil.clearAllTag();\n    if (persistService.isExistTable(TAG_TABLE_NAME)) {\n      dumpAllTagProcessor.process(new DumpAllTagTask());\n    }\n    List<ConfigInfoChanged> configList=persistService.findAllAggrGroup();\n    if (configList != null && !configList.isEmpty()) {\n      total=configList.size();\n      List<List<ConfigInfoChanged>> splitList=splitList(configList,INIT_THREAD_COUNT);\n      for (      List<ConfigInfoChanged> list : splitList) {\n        MergeAllDataWorker work=new MergeAllDataWorker(list);\n        work.start();\n      }\n      LOGGER.info(\"server start, schedule merge end.\");\n    }\n  }\n catch (  Exception e) {\n    LogUtil.FATAL_LOG.error(\"Nacos Server did not start because dumpservice bean construction failure :\\n\" + e.toString());\n    throw new NacosException(NacosException.SERVER_ERROR,\"Nacos Server did not start because dumpservice bean construction failure :\\n\" + e.getMessage(),e);\n  }\n  if (!ApplicationUtils.getStandaloneMode()) {\n    Runnable heartbeat=() -> {\n      String heartBeatTime=TimeUtils.getCurrentTime().toString();\n      try {\n        DiskUtil.saveHeartBeatToDisk(heartBeatTime);\n      }\n catch (      IOException e) {\n        LogUtil.FATAL_LOG.error(\"save heartbeat fail\" + e.getMessage());\n      }\n    }\n;\n    ConfigExecutor.scheduleConfigTask(heartbeat,0,10,TimeUnit.SECONDS);\n    long initialDelay=new Random().nextInt(INITIAL_DELAY_IN_MINUTE) + 10;\n    LogUtil.DEFAULT_LOG.warn(\"initialDelay:{}\",initialDelay);\n    ConfigExecutor.scheduleConfigTask(dumpAll,initialDelay,DUMP_ALL_INTERVAL_IN_MINUTE,TimeUnit.MINUTES);\n    ConfigExecutor.scheduleConfigTask(dumpAllBeta,initialDelay,DUMP_ALL_INTERVAL_IN_MINUTE,TimeUnit.MINUTES);\n    ConfigExecutor.scheduleConfigTask(dumpAllTag,initialDelay,DUMP_ALL_INTERVAL_IN_MINUTE,TimeUnit.MINUTES);\n  }\n  ConfigExecutor.scheduleConfigTask(clearConfigHistory,10,10,TimeUnit.MINUTES);\n}\n  finally {\n  TimerContext.end(dumpFileContext,LogUtil.DUMP_LOG);\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 433,
+      "astHeight" : 19
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5186,
+        "startLineNumber" : 135,
+        "startColumnNumber" : 118,
+        "endLineNumber" : 236,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  String dumpFileContext=\"CONFIG_DUMP_TO_FILE\";\n  TimerContext.start(dumpFileContext);\n  try {\n    LogUtil.DEFAULT_LOG.warn(\"DumpService start\");\n    Runnable dumpAll=() -> dumpAllTaskMgr.addTask(DumpAllTask.TASK_ID,new DumpAllTask());\n    Runnable dumpAllBeta=() -> dumpAllTaskMgr.addTask(DumpAllBetaTask.TASK_ID,new DumpAllBetaTask());\n    Runnable dumpAllTag=() -> dumpAllTaskMgr.addTask(DumpAllTagTask.TASK_ID,new DumpAllTagTask());\n    Runnable clearConfigHistory=() -> {\n      LOGGER.warn(\"clearConfigHistory start\");\n      if (canExecute()) {\n        try {\n          Timestamp startTime=getBeforeStamp(TimeUtils.getCurrentTime(),24 * getRetentionDays());\n          int totalCount=persistService.findConfigHistoryCountByTime(startTime);\n          if (totalCount > 0) {\n            int pageSize=1000;\n            int removeTime=(totalCount + pageSize - 1) / pageSize;\n            LOGGER.warn(\"clearConfigHistory, getBeforeStamp:{}, totalCount:{}, pageSize:{}, removeTime:{}\",startTime,totalCount,pageSize,removeTime);\n            while (removeTime > 0) {\n              persistService.removeConfigHistory(startTime,pageSize);\n              removeTime--;\n            }\n          }\n        }\n catch (        Throwable e) {\n          LOGGER.error(\"clearConfigHistory error : {}\",e.toString());\n        }\n      }\n    }\n;\n    try {\n      dumpConfigInfo(dumpAllProcessor);\n      LogUtil.DEFAULT_LOG.info(\"start clear all config-info-beta.\");\n      DiskUtil.clearAllBeta();\n      if (persistService.isExistTable(BETA_TABLE_NAME)) {\n        dumpAllBetaProcessor.process(new DumpAllBetaTask());\n      }\n      LogUtil.DEFAULT_LOG.info(\"start clear all config-info-tag.\");\n      DiskUtil.clearAllTag();\n      if (persistService.isExistTable(TAG_TABLE_NAME)) {\n        dumpAllTagProcessor.process(new DumpAllTagTask());\n      }\n      List<ConfigInfoChanged> configList=persistService.findAllAggrGroup();\n      if (configList != null && !configList.isEmpty()) {\n        total=configList.size();\n        List<List<ConfigInfoChanged>> splitList=splitList(configList,INIT_THREAD_COUNT);\n        for (        List<ConfigInfoChanged> list : splitList) {\n          MergeAllDataWorker work=new MergeAllDataWorker(list);\n          work.start();\n        }\n        LOGGER.info(\"server start, schedule merge end.\");\n      }\n    }\n catch (    Exception e) {\n      LogUtil.FATAL_LOG.error(\"Nacos Server did not start because dumpservice bean construction failure :\\n\" + e.toString());\n      throw new NacosException(NacosException.SERVER_ERROR,\"Nacos Server did not start because dumpservice bean construction failure :\\n\" + e.getMessage(),e);\n    }\n    if (!ApplicationUtils.getStandaloneMode()) {\n      Runnable heartbeat=() -> {\n        String heartBeatTime=TimeUtils.getCurrentTime().toString();\n        try {\n          DiskUtil.saveHeartBeatToDisk(heartBeatTime);\n        }\n catch (        IOException e) {\n          LogUtil.FATAL_LOG.error(\"save heartbeat fail\" + e.getMessage());\n        }\n      }\n;\n      ConfigExecutor.scheduleConfigTask(heartbeat,0,10,TimeUnit.SECONDS);\n      long initialDelay=new Random().nextInt(INITIAL_DELAY_IN_MINUTE) + 10;\n      LogUtil.DEFAULT_LOG.warn(\"initialDelay:{}\",initialDelay);\n      ConfigExecutor.scheduleConfigTask(dumpAll,initialDelay,DUMP_ALL_INTERVAL_IN_MINUTE,TimeUnit.MINUTES);\n      ConfigExecutor.scheduleConfigTask(dumpAllBeta,initialDelay,DUMP_ALL_INTERVAL_IN_MINUTE,TimeUnit.MINUTES);\n      ConfigExecutor.scheduleConfigTask(dumpAllTag,initialDelay,DUMP_ALL_INTERVAL_IN_MINUTE,TimeUnit.MINUTES);\n    }\n    ConfigExecutor.scheduleConfigTask(clearConfigHistory,10,10,TimeUnit.MINUTES);\n  }\n  finally {\n    TimerContext.end(dumpFileContext,LogUtil.DUMP_LOG);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 445,
+      "astHeight" : 20
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 5391,
+        "startLineNumber" : 134,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 236,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "protected void dumpOperate(DumpProcessor processor,DumpAllProcessor dumpAllProcessor,DumpAllBetaProcessor dumpAllBetaProcessor,DumpAllTagProcessor dumpAllTagProcessor) throws NacosException {\n  String dumpFileContext=\"CONFIG_DUMP_TO_FILE\";\n  TimerContext.start(dumpFileContext);\n  try {\n    LogUtil.DEFAULT_LOG.warn(\"DumpService start\");\n    Runnable dumpAll=() -> dumpAllTaskMgr.addTask(DumpAllTask.TASK_ID,new DumpAllTask());\n    Runnable dumpAllBeta=() -> dumpAllTaskMgr.addTask(DumpAllBetaTask.TASK_ID,new DumpAllBetaTask());\n    Runnable dumpAllTag=() -> dumpAllTaskMgr.addTask(DumpAllTagTask.TASK_ID,new DumpAllTagTask());\n    Runnable clearConfigHistory=() -> {\n      LOGGER.warn(\"clearConfigHistory start\");\n      if (canExecute()) {\n        try {\n          Timestamp startTime=getBeforeStamp(TimeUtils.getCurrentTime(),24 * getRetentionDays());\n          int totalCount=persistService.findConfigHistoryCountByTime(startTime);\n          if (totalCount > 0) {\n            int pageSize=1000;\n            int removeTime=(totalCount + pageSize - 1) / pageSize;\n            LOGGER.warn(\"clearConfigHistory, getBeforeStamp:{}, totalCount:{}, pageSize:{}, removeTime:{}\",startTime,totalCount,pageSize,removeTime);\n            while (removeTime > 0) {\n              persistService.removeConfigHistory(startTime,pageSize);\n              removeTime--;\n            }\n          }\n        }\n catch (        Throwable e) {\n          LOGGER.error(\"clearConfigHistory error : {}\",e.toString());\n        }\n      }\n    }\n;\n    try {\n      dumpConfigInfo(dumpAllProcessor);\n      LogUtil.DEFAULT_LOG.info(\"start clear all config-info-beta.\");\n      DiskUtil.clearAllBeta();\n      if (persistService.isExistTable(BETA_TABLE_NAME)) {\n        dumpAllBetaProcessor.process(new DumpAllBetaTask());\n      }\n      LogUtil.DEFAULT_LOG.info(\"start clear all config-info-tag.\");\n      DiskUtil.clearAllTag();\n      if (persistService.isExistTable(TAG_TABLE_NAME)) {\n        dumpAllTagProcessor.process(new DumpAllTagTask());\n      }\n      List<ConfigInfoChanged> configList=persistService.findAllAggrGroup();\n      if (configList != null && !configList.isEmpty()) {\n        total=configList.size();\n        List<List<ConfigInfoChanged>> splitList=splitList(configList,INIT_THREAD_COUNT);\n        for (        List<ConfigInfoChanged> list : splitList) {\n          MergeAllDataWorker work=new MergeAllDataWorker(list);\n          work.start();\n        }\n        LOGGER.info(\"server start, schedule merge end.\");\n      }\n    }\n catch (    Exception e) {\n      LogUtil.FATAL_LOG.error(\"Nacos Server did not start because dumpservice bean construction failure :\\n\" + e.toString());\n      throw new NacosException(NacosException.SERVER_ERROR,\"Nacos Server did not start because dumpservice bean construction failure :\\n\" + e.getMessage(),e);\n    }\n    if (!ApplicationUtils.getStandaloneMode()) {\n      Runnable heartbeat=() -> {\n        String heartBeatTime=TimeUtils.getCurrentTime().toString();\n        try {\n          DiskUtil.saveHeartBeatToDisk(heartBeatTime);\n        }\n catch (        IOException e) {\n          LogUtil.FATAL_LOG.error(\"save heartbeat fail\" + e.getMessage());\n        }\n      }\n;\n      ConfigExecutor.scheduleConfigTask(heartbeat,0,10,TimeUnit.SECONDS);\n      long initialDelay=new Random().nextInt(INITIAL_DELAY_IN_MINUTE) + 10;\n      LogUtil.DEFAULT_LOG.warn(\"initialDelay:{}\",initialDelay);\n      ConfigExecutor.scheduleConfigTask(dumpAll,initialDelay,DUMP_ALL_INTERVAL_IN_MINUTE,TimeUnit.MINUTES);\n      ConfigExecutor.scheduleConfigTask(dumpAllBeta,initialDelay,DUMP_ALL_INTERVAL_IN_MINUTE,TimeUnit.MINUTES);\n      ConfigExecutor.scheduleConfigTask(dumpAllTag,initialDelay,DUMP_ALL_INTERVAL_IN_MINUTE,TimeUnit.MINUTES);\n    }\n    ConfigExecutor.scheduleConfigTask(clearConfigHistory,10,10,TimeUnit.MINUTES);\n  }\n  finally {\n    TimerContext.end(dumpFileContext,LogUtil.DUMP_LOG);\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 467,
+      "astHeight" : 21
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 52,
+        "startLineNumber" : 233,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 233,
+        "endColumnNumber" : 64
+      },
+      "nodeContext" : "TimerContext.end(dumpFileContext,LogUtil.DUMP_LOG);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "java.lang.String"
+  } ],
+  "positionList" : [ {
+    "charLength" : 15,
+    "startLineNumber" : 136,
+    "startColumnNumber" : 15,
+    "endLineNumber" : 136,
+    "endColumnNumber" : 30
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 137,
+    "startColumnNumber" : 27,
+    "endLineNumber" : 137,
+    "endColumnNumber" : 42
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 233,
+    "startColumnNumber" : 29,
+    "endLineNumber" : 233,
+    "endColumnNumber" : 44
+  } ],
+  "layoutRelationDataList" : [ ]
+}

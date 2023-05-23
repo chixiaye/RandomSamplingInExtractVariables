@@ -10,7 +10,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import java.util.ArrayList;
 
 //@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonPropertyOrder({"id", "expression","projectName", "commitID", "filePath", "occurrences","expressionList","positionList"})
+@JsonPropertyOrder({"id", "expression", "projectName", "commitID", "filePath", "occurrences", "isArithmeticExpression",
+        "isGetTypeMethod", "expressionList", "positionList"})
 public class EVRecord  {
     @Getter
     @Setter
@@ -48,6 +49,14 @@ public class EVRecord  {
     @Setter
     ArrayList<NodePosition> positionList;
 
+    @Getter
+    @Setter
+    int isArithmeticExpression;
+
+    @Getter
+    @Setter
+    int isGetTypeMethod;
+
     @JsonIgnore
     @Getter
     @Setter
@@ -72,17 +81,23 @@ public class EVRecord  {
 
     public void setLayoutRelationDataList() {
         this.layoutRelationDataList = new ArrayList<>();
-        for(int i=0;i<expressionList.size();i++){
-            for(int j=0;j<expressionList.size();j++){
-                if(i==j){
+
+        for (int i = 0; i < expressionList.size(); i++) {
+            for (int j = 0; j < expressionList.size(); j++) {
+                if (i == j) {
                     continue;
                 }
                 MetaData metaData1 = expressionList.get(i);
                 MetaData metaData2 = expressionList.get(j);
-                LayoutRelationData layoutRelationData = new LayoutRelationData(i,j);
-                layoutRelationData.setRelationship(metaData1,metaData2);
+                LayoutRelationData layoutRelationData = new LayoutRelationData(i, j);
+                layoutRelationData.setRelationship(metaData1, metaData2);
                 this.layoutRelationDataList.add(layoutRelationData);
             }
         }
+    }
+
+    public void initLayoutRelationDataListInit() {
+        this.layoutRelationDataList = new ArrayList<>();
+
     }
 }

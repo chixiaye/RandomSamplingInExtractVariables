@@ -1,24 +1,23 @@
 package sample;
 
 
-import io.excel.ExcelData;
-import io.excel.ExcelReader;
+import io.json.JSONReader;
+import json.LabelData;
 import lombok.extern.slf4j.Slf4j;
 import miner.NegativeMinerThread;
 import miner.PositiveMinerThread;
+import miner.RatioMinerThread;
 import refactoringminer.handler.RefactoringMinerThread;
 import utils.Utils;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import static io.json.JsonFileSplitter.OBJECTS_PER_FILE;
 
 @Slf4j
 public class Main {
@@ -32,72 +31,70 @@ public class Main {
                 Executors.defaultThreadFactory(),
                 new ThreadPoolExecutor.CallerRunsPolicy());
         log.info("core pool size: {}, max pool size: {}", CORE_POOL_SIZE, MAX_POOL_SIZE);
+        getRatio(executor);
 //        minePositive(executor);
 //        mineNegative(executor);
-        doRefactoringMiner(executor);
+//        doRefactoringMiner(executor);
     }
 
-    public static void minePositive(ThreadPoolExecutor executor){
-        ExcelReader excelReader = new ExcelReader(Constants.EXCEL_PATH);
-        excelReader.read();
-        excelReader.getExcelDataList().sort(Comparator.comparing(ExcelData::getAccount));
-        for (int i = excelReader.getExcelDataList().size() - 1; i >= 0; --i) {
-            ExcelData v = excelReader.getExcelDataList().get(i);
-            String localName = v.getAccount() + "@" + v.getRepository();
-            int sampleNumber = v.getNumber();
-            int lastFileIndex = OBJECTS_PER_FILE * (sampleNumber / OBJECTS_PER_FILE) + 1;
-            if (!localName.equals("Activiti@Activiti")) {
-                continue;
-            }
-//            ArrayList<File> tmp = new ArrayList<>();
-//            Utils.getFileList(tmp, Constants.POSITIVE_OUTPUT_PATH + localName+Constants.FILE_SEPARATOR_PROPERTY
-//                    , "json");
-//            if(tmp.size()!=0){
-//                new File(Constants.POSITIVE_OUTPUT_PATH + localName).delete();
-//                System.out.println("delete "+localName);
-//                continue;
-//            }
-//            if(new File( Constants.POSITIVE_OUTPUT_PATH + localName+File.separator +localName + "_" +  lastFileIndex   + ".json").exists()){
-//                continue;
-//            }
-            executor.execute(new PositiveMinerThread(localName, sampleNumber));
 
+    // 根据正样本的表达式信息定位到方法， 查找方法内有多少个表达式可以被提取
+    public static void getRatio(ThreadPoolExecutor executor) throws IOException {
+        ArrayList<File> list = new ArrayList<>();
+        Utils.getFileList(list, Constants.LABELED_DATA_PATH, "json");
+        for (int i = list.size() - 1; i >= 0; --i) {
+            File file = list.get(i);
+            String fileName = file.getName();
+            String localName = fileName.substring(0, fileName.lastIndexOf("_"));
+            int sampleNumber = Integer.parseInt(fileName.substring(fileName.lastIndexOf("_") + 1, fileName.lastIndexOf(".")));
+            LabelData labelData = JSONReader.deserializeAsLabelData(file.getAbsolutePath());
+//            executor.execute( );
+            //单线程
+            new RatioMinerThread(localName, 1, labelData).run();
+            break;
+        }
+        executor.shutdown();
+    }
+
+
+    public static void minePositive(ThreadPoolExecutor executor) throws IOException {
+        ArrayList<File> list = new ArrayList<>();
+        Utils.getFileList(list, Constants.LABELED_DATA_PATH, "json");
+        for (int i = list.size() - 1; i >= 0; --i) {
+            File file = list.get(i);
+            String fileName = file.getName();
+            String localName = fileName.substring(0, fileName.lastIndexOf("_"));
+            int sampleNumber = Integer.parseInt(fileName.substring(fileName.lastIndexOf("_") + 1, fileName.lastIndexOf(".")));
+            LabelData labelData = JSONReader.deserializeAsLabelData(file.getAbsolutePath());
+//            executor.execute( );
+            //单线程
+            new PositiveMinerThread(localName, 1, labelData).run();
+//            break;
         }
         executor.shutdown();
     }
 
     public static void mineNegative(ThreadPoolExecutor executor) throws IOException {
+        HashMap<String, Integer> map = new HashMap<>();
+        ArrayList<File> list = new ArrayList<>();
+        Utils.getFileList(list, Constants.LABELED_DATA_PATH, "json");
+        for (int i = list.size() - 1; i >= 0; --i) {
+            File file = list.get(i);
+            String fileName = file.getName();
+            String localName = fileName.substring(0, fileName.lastIndexOf("_"));
+            map.put(localName, 1 + map.getOrDefault(localName, 0));
+        }
+        for (String key : map.keySet()) {
+//            System.out.println(key+", " + map.get(key)  );
+            Integer sampleNumber = map.get(key);
 
-        ExcelReader excelReader = new ExcelReader(Constants.EXCEL_PATH);
-        excelReader.read();
-        excelReader.getExcelDataList().sort(Comparator.comparing(ExcelData::getNumber));
-        for (int i = 0; i < excelReader.getExcelDataList().size(); ++i) {
-            ExcelData v = excelReader.getExcelDataList().get(i);
-            String localName = v.getAccount() + "@" + v.getRepository();
-            int sampleNumber = v.getNumber();
-            int lastFileIndex = OBJECTS_PER_FILE * (sampleNumber / OBJECTS_PER_FILE) + 1;
-            if (new File(Constants.NEGATIVE_OUTPUT_PATH + localName + File.separator + localName + "_" + lastFileIndex + ".json").exists()) {
-                continue;
-            }
-//            log.info("project {} has not been mined.",localName);
-
-            executor.execute(new NegativeMinerThread(localName, sampleNumber));
+            executor.execute(new NegativeMinerThread(key, sampleNumber));
+//            break;
         }
         executor.shutdown();
     }
 
     public static void doRefactoringMiner(ThreadPoolExecutor executor) throws Exception {
-//        ExcelReader excelReader = new ExcelReader(Constants.EXCEL_PATH);
-//        excelReader.read();
-//        excelReader.getExcelDataList().sort(Comparator.comparing(ExcelData::getAccount));
-//        for (int i =  excelReader.getExcelDataList().size()-1; i>=0; --i) {
-//            ExcelData v = excelReader.getExcelDataList().get(i);
-//            String localName = v.getAccount() + "@" + v.getRepository();
-//            if (new File(Constants.PREFIX_RM_DATA_PATH + localName + ".json").exists()) {
-//                continue;
-//            }
-//            executor.execute(new RefactoringMinerThread(localName));
-//        }
          File[] list=new File(Constants.PREFIX_PATH).listFiles();
          int i=0;
         for (File f:list) {

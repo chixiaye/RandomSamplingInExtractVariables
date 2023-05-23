@@ -2,7 +2,7 @@ package calculate;
 
 import io.excel.ExcelData;
 import io.excel.ExcelReader;
-import io.json.EVRecordReader;
+import io.json.JSONReader;
 import json.EVRecord;
 import json.LayoutRelationData;
 import json.MetaData;
@@ -51,7 +51,7 @@ public class Correlation {
             Utils.getFileList(negtiveArrayList, negativeOutputPath
                     + localName, "json");
             for (File f : positiveArrayList) {
-                List<EVRecord> evRecordList = EVRecordReader.deserializeAsEVRecordList(f.getAbsolutePath());
+                List<EVRecord> evRecordList = JSONReader.deserializeAsEVRecordList(f.getAbsolutePath());
                 Iterator<EVRecord> it = evRecordList.iterator();
                 while (it.hasNext()) {
                     EVRecord evRecord = it.next();
@@ -60,7 +60,7 @@ public class Correlation {
                 posRecords.addAll(evRecordList);
             }
             for (File f : negtiveArrayList) {
-                List<EVRecord> evRecordList = EVRecordReader.deserializeAsEVRecordList(f.getAbsolutePath());
+                List<EVRecord> evRecordList = JSONReader.deserializeAsEVRecordList(f.getAbsolutePath());
                 negRecords.addAll(evRecordList);
             }
         }

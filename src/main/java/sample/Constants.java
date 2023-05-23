@@ -13,5 +13,6 @@ public class Constants {
     public static String PREFIX_RM_PATH = "C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\src\\main\\resources\\records4Context\\";
     public static String PREFIX_RM_DATA_PATH = "C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\refactoring\\";
 
+    public static String LABELED_DATA_PATH = "C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\PythonScript\\labeledData\\";
     public static int LIMIT_MILLISECOND = 1000 * 10;
 }

@@ -1,6 +1,8 @@
 package miner;
 
 import json.utils.NodePosition;
+import lombok.Getter;
+import lombok.Setter;
 import org.eclipse.jdt.core.dom.*;
 
 import java.util.ArrayList;
@@ -11,30 +13,50 @@ import java.util.List;
 public abstract class AbstractExpressionVisitor extends ASTVisitor {
     //    HashMap<String,ArrayList<MetaData>> nodeMap ;
     protected CompilationUnit fCU;
+    @Getter
+    @Setter
+    protected int arithmeticExpressionState;
+    @Getter
+    @Setter
+    protected int typeMethodState;
 
     public AbstractExpressionVisitor(CompilationUnit cu) {
-        this.fCU =cu;
+        this.fCU = cu;
+        this.arithmeticExpressionState = 0;
+        this.typeMethodState = 0;
     }
 
-    protected int findCurrentLineContextIndex(ASTNode node){
+    protected static boolean isArithmetic(ASTNode node) {
+        return node instanceof InfixExpression ||
+                node instanceof ConditionalExpression ||
+                node instanceof PrefixExpression ||
+                node instanceof PostfixExpression;
+    }
+
+    protected static boolean isStartWithGet(ASTNode node) {
+        return node instanceof MethodInvocation mi
+                && mi.getName().toString().startsWith("get");
+    }
+
+    protected int findCurrentLineContextIndex(ASTNode node) {
         final int offset = node.getStartPosition();
         final int length = node.getLength();
         final NodePosition pos = new NodePosition(fCU.getLineNumber(offset), fCU.getColumnNumber(offset)
                 , fCU.getLineNumber(offset + length), fCU.getColumnNumber(offset + length), length);
-        int index=0;
-        int res=0;
+        int index = 0;
+        int res = 0;
         ASTNode parent = node.getParent();
-        while(parent!=null){
+        while (parent != null) {
             int parentOffset = parent.getStartPosition();
             int parentLength = parent.getLength();
             NodePosition parentPos = new NodePosition(fCU.getLineNumber(parentOffset), fCU.getColumnNumber(parentOffset)
                     , fCU.getLineNumber(parentOffset + parentLength), fCU.getColumnNumber(parentOffset + parentLength), parentLength);
-            if( parentPos.getStartLineNumber()==pos.getStartLineNumber()
-                    && parentPos.getEndLineNumber()==pos.getEndLineNumber()){
-                res=index;
+            if (parentPos.getStartLineNumber() == pos.getStartLineNumber()
+                    && parentPos.getEndLineNumber() == pos.getEndLineNumber()) {
+                res = index;
             }
             index++;
-            parent=parent.getParent();
+            parent = parent.getParent();
         }
         return res;
     }

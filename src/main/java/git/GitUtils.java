@@ -1,19 +1,25 @@
 package git;
 
+import io.json.JSONReader;
+import json.LabelData;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import sample.Constants;
+import utils.Utils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 
 @Slf4j
 public class GitUtils {
@@ -63,33 +69,45 @@ public class GitUtils {
     }
 
     public static String getLatestCommitSHA(String pathname,HashSet<String> invalidCommitIDHashSet) throws IOException, GitAPIException {
+
+        ArrayList<File> list = new ArrayList<>();
+        Utils.getFileList(list, Constants.LABELED_DATA_PATH, "json");
+        HashSet<String> labeledCommitIDHashSet = new HashSet<>();
+        for (int i = list.size() - 1; i >= 0; --i) {
+            File file = list.get(i);
+            String fileName = file.getName();
+            String localName = fileName.substring(0, fileName.lastIndexOf("_"));
+            if (pathname.equals(Constants.PREFIX_PATH + localName + System.getProperty("file.separator"))) {
+                LabelData labelData = JSONReader.deserializeAsLabelData(file.getAbsolutePath());
+                if (!invalidCommitIDHashSet.contains(labelData.getRefactoredCommitID()))
+                    labeledCommitIDHashSet.add(labelData.getRefactoredCommitID());
+            }
+        }
+
         // 打开本地Git仓库
-        try (Repository repository = new FileRepositoryBuilder().setGitDir(new File(pathname+".git")).build()) {
-            Git git = new Git(repository);
-            // 获取所有分支的引用
-            Map<String, Ref> refs = repository.getAllRefs();
+        try (Repository repository = new FileRepositoryBuilder().setGitDir(new File(pathname + ".git")).build()) {
+
 
             // 初始化最新提交的SHA值和时间
             String latestCommitSha = null;
             long latestCommitTime = -1;
-            for (Map.Entry<String, Ref> entry : refs.entrySet()) {
-                Ref ref = entry.getValue();
-                ObjectId objectId = ref.getObjectId();
-                //检查objctId是否为提交
-                if (!(repository.resolve(objectId.getName()) instanceof RevCommit)) {
-                    continue;
-                }
-                // 获取提交对象
-                RevCommit commit = git.log().add(objectId).setMaxCount(1).call().iterator().next();
+            RevWalk revWalk = new RevWalk(repository);
+            for (String s : labeledCommitIDHashSet) {
                 // 检查提交时间是否比当前最新时间更新
-                if (!invalidCommitIDHashSet.contains(commit.getName()) && commit.getCommitTime() > latestCommitTime) {
+                // 获取指定 commit 的 RevCommit 对象
+                RevCommit commit = revWalk.parseCommit(repository.resolve(s));
+
+                // 获取提交时间
+                PersonIdent committerIdent = commit.getCommitterIdent();
+//                String commitTime = committerIdent.getWhen().toString();
+                if (commit.getCommitTime() > latestCommitTime) {
                     latestCommitTime = commit.getCommitTime();
                     latestCommitSha = commit.getName();
                 }
             }
-//            if(latestCommitSha==null){
-//                log.error("latestCommitSha is null");
-//            }
+            if (latestCommitSha == null) {
+                log.error("latestCommitSha is null");
+            }
             return latestCommitSha;
         }
     }
@@ -105,7 +123,7 @@ public class GitUtils {
                 throw new IllegalArgumentException("Invalid commitSHA: " + commitSHA);
             }
             ResetCommand resetCommand = git.reset();
-            resetCommand.setMode(ResetCommand.ResetType.SOFT);
+            resetCommand.setMode(ResetCommand.ResetType.HARD);
             resetCommand.setRef(commitId.getName());
             resetCommand.call();
 //            System.out.println("Rollback to commit " + commitSHA + " is successful.");
