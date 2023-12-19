@@ -1,0 +1,126 @@
+{
+  "id" : 493,
+  "expression" : "\"Unable to create lib dir.\"",
+  "projectName" : "android-hacker@VirtualXposed",
+  "commitID" : "8e98dd20e6a751089d4eb2642fa6bf088a3e7a79",
+  "filePath" : "/VirtualApp/lib/src/main/java/com/lody/virtual/server/pm/VAppManagerService.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "\"Unable to create lib dir.\"",
+    "nodeType" : "StringLiteral",
+    "nodePosition" : {
+      "charLength" : 27,
+      "startLineNumber" : 183,
+      "startColumnNumber" : 45,
+      "endLineNumber" : 183,
+      "endColumnNumber" : 72
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ReturnStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 54,
+        "startLineNumber" : 183,
+        "startColumnNumber" : 19,
+        "endLineNumber" : 183,
+        "endColumnNumber" : 73
+      },
+      "nodeContext" : "InstallResult.makeFailure(\"Unable to create lib dir.\")",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 62,
+        "startLineNumber" : 183,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 183,
+        "endColumnNumber" : 74
+      },
+      "nodeContext" : "return InstallResult.makeFailure(\"Unable to create lib dir.\");\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 86,
+        "startLineNumber" : 182,
+        "startColumnNumber" : 50,
+        "endLineNumber" : 184,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  return InstallResult.makeFailure(\"Unable to create lib dir.\");\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 128,
+        "startLineNumber" : 182,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 184,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (!libDir.exists() && !libDir.mkdirs()) {\n  return InstallResult.makeFailure(\"Unable to create lib dir.\");\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 16,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4452,
+        "startLineNumber" : 141,
+        "startColumnNumber" : 93,
+        "endLineNumber" : 244,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  long installTime=System.currentTimeMillis();\n  if (path == null) {\n    return InstallResult.makeFailure(\"path = NULL\");\n  }\n  boolean skipDexOpt=(flags & InstallStrategy.SKIP_DEX_OPT) != 0;\n  File packageFile=new File(path);\n  if (!packageFile.exists() || !packageFile.isFile()) {\n    return InstallResult.makeFailure(\"Package File is not exist.\");\n  }\n  VPackage pkg=null;\n  try {\n    pkg=PackageParserEx.parsePackage(packageFile);\n  }\n catch (  Throwable e) {\n    e.printStackTrace();\n  }\n  if (pkg == null || pkg.packageName == null) {\n    return InstallResult.makeFailure(\"Unable to parse the package.\");\n  }\n  InstallResult res=new InstallResult();\n  res.packageName=pkg.packageName;\n  VPackage existOne=PackageCacheManager.get(pkg.packageName);\n  PackageSetting existSetting=existOne != null ? (PackageSetting)existOne.mExtras : null;\n  if (existOne != null) {\n    if ((flags & InstallStrategy.IGNORE_NEW_VERSION) != 0) {\n      res.isUpdate=true;\n      return res;\n    }\n    if (!canUpdate(existOne,pkg,flags)) {\n      return InstallResult.makeFailure(\"Not allowed to update the package.\");\n    }\n    res.isUpdate=true;\n  }\n  File appDir=VEnvironment.getDataAppPackageDirectory(pkg.packageName);\n  File libDir=new File(appDir,\"lib\");\n  if (res.isUpdate) {\n    FileUtils.deleteDir(libDir);\n    VEnvironment.getOdexFile(pkg.packageName).delete();\n    VActivityManagerService.get().killAppByPkg(pkg.packageName,VUserHandle.USER_ALL);\n  }\n  if (!libDir.exists() && !libDir.mkdirs()) {\n    return InstallResult.makeFailure(\"Unable to create lib dir.\");\n  }\n  boolean dependSystem=(flags & InstallStrategy.DEPEND_SYSTEM_IF_EXIST) != 0 && VirtualCore.get().isOutsideInstalled(pkg.packageName);\n  if (existSetting != null && existSetting.dependSystem) {\n    dependSystem=false;\n  }\n  NativeLibraryHelperCompat.copyNativeBinaries(new File(path),libDir);\n  if (!dependSystem) {\n    File privatePackageFile=new File(appDir,\"base.apk\");\n    File parentFolder=privatePackageFile.getParentFile();\n    if (!parentFolder.exists() && !parentFolder.mkdirs()) {\n      VLog.w(TAG,\"Warning: unable to create folder : \" + privatePackageFile.getPath());\n    }\n else     if (privatePackageFile.exists() && !privatePackageFile.delete()) {\n      VLog.w(TAG,\"Warning: unable to delete file : \" + privatePackageFile.getPath());\n    }\n    try {\n      FileUtils.copyFile(packageFile,privatePackageFile);\n    }\n catch (    IOException e) {\n      privatePackageFile.delete();\n      return InstallResult.makeFailure(\"Unable to copy the package file.\");\n    }\n    packageFile=privatePackageFile;\n  }\n  if (existOne != null) {\n    PackageCacheManager.remove(pkg.packageName);\n  }\n  chmodPackageDictionary(packageFile);\n  PackageSetting ps;\n  if (existSetting != null) {\n    ps=existSetting;\n  }\n else {\n    ps=new PackageSetting();\n  }\n  ps.skipDexOpt=skipDexOpt;\n  ps.dependSystem=dependSystem;\n  ps.apkPath=packageFile.getPath();\n  ps.libPath=libDir.getPath();\n  ps.packageName=pkg.packageName;\n  ps.appId=VUserHandle.getAppId(mUidSystem.getOrCreateUid(pkg));\n  if (res.isUpdate) {\n    ps.lastUpdateTime=installTime;\n  }\n else {\n    ps.firstInstallTime=installTime;\n    ps.lastUpdateTime=installTime;\n    for (    int userId : VUserManagerService.get().getUserIds()) {\n      boolean installed=userId == 0;\n      ps.setUserState(userId,false,false,installed);\n    }\n  }\n  PackageParserEx.savePackageCache(pkg);\n  PackageCacheManager.put(pkg,ps);\n  mPersistenceLayer.save();\n  BroadcastSystem.get().startApp(pkg);\n  if (notify) {\n    notifyAppInstalled(ps,-1);\n  }\n  res.isSuccess=true;\n  return res;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 555,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4541,
+        "startLineNumber" : 141,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 244,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "public synchronized InstallResult installPackage(String path,int flags,boolean notify){\n  long installTime=System.currentTimeMillis();\n  if (path == null) {\n    return InstallResult.makeFailure(\"path = NULL\");\n  }\n  boolean skipDexOpt=(flags & InstallStrategy.SKIP_DEX_OPT) != 0;\n  File packageFile=new File(path);\n  if (!packageFile.exists() || !packageFile.isFile()) {\n    return InstallResult.makeFailure(\"Package File is not exist.\");\n  }\n  VPackage pkg=null;\n  try {\n    pkg=PackageParserEx.parsePackage(packageFile);\n  }\n catch (  Throwable e) {\n    e.printStackTrace();\n  }\n  if (pkg == null || pkg.packageName == null) {\n    return InstallResult.makeFailure(\"Unable to parse the package.\");\n  }\n  InstallResult res=new InstallResult();\n  res.packageName=pkg.packageName;\n  VPackage existOne=PackageCacheManager.get(pkg.packageName);\n  PackageSetting existSetting=existOne != null ? (PackageSetting)existOne.mExtras : null;\n  if (existOne != null) {\n    if ((flags & InstallStrategy.IGNORE_NEW_VERSION) != 0) {\n      res.isUpdate=true;\n      return res;\n    }\n    if (!canUpdate(existOne,pkg,flags)) {\n      return InstallResult.makeFailure(\"Not allowed to update the package.\");\n    }\n    res.isUpdate=true;\n  }\n  File appDir=VEnvironment.getDataAppPackageDirectory(pkg.packageName);\n  File libDir=new File(appDir,\"lib\");\n  if (res.isUpdate) {\n    FileUtils.deleteDir(libDir);\n    VEnvironment.getOdexFile(pkg.packageName).delete();\n    VActivityManagerService.get().killAppByPkg(pkg.packageName,VUserHandle.USER_ALL);\n  }\n  if (!libDir.exists() && !libDir.mkdirs()) {\n    return InstallResult.makeFailure(\"Unable to create lib dir.\");\n  }\n  boolean dependSystem=(flags & InstallStrategy.DEPEND_SYSTEM_IF_EXIST) != 0 && VirtualCore.get().isOutsideInstalled(pkg.packageName);\n  if (existSetting != null && existSetting.dependSystem) {\n    dependSystem=false;\n  }\n  NativeLibraryHelperCompat.copyNativeBinaries(new File(path),libDir);\n  if (!dependSystem) {\n    File privatePackageFile=new File(appDir,\"base.apk\");\n    File parentFolder=privatePackageFile.getParentFile();\n    if (!parentFolder.exists() && !parentFolder.mkdirs()) {\n      VLog.w(TAG,\"Warning: unable to create folder : \" + privatePackageFile.getPath());\n    }\n else     if (privatePackageFile.exists() && !privatePackageFile.delete()) {\n      VLog.w(TAG,\"Warning: unable to delete file : \" + privatePackageFile.getPath());\n    }\n    try {\n      FileUtils.copyFile(packageFile,privatePackageFile);\n    }\n catch (    IOException e) {\n      privatePackageFile.delete();\n      return InstallResult.makeFailure(\"Unable to copy the package file.\");\n    }\n    packageFile=privatePackageFile;\n  }\n  if (existOne != null) {\n    PackageCacheManager.remove(pkg.packageName);\n  }\n  chmodPackageDictionary(packageFile);\n  PackageSetting ps;\n  if (existSetting != null) {\n    ps=existSetting;\n  }\n else {\n    ps=new PackageSetting();\n  }\n  ps.skipDexOpt=skipDexOpt;\n  ps.dependSystem=dependSystem;\n  ps.apkPath=packageFile.getPath();\n  ps.libPath=libDir.getPath();\n  ps.packageName=pkg.packageName;\n  ps.appId=VUserHandle.getAppId(mUidSystem.getOrCreateUid(pkg));\n  if (res.isUpdate) {\n    ps.lastUpdateTime=installTime;\n  }\n else {\n    ps.firstInstallTime=installTime;\n    ps.lastUpdateTime=installTime;\n    for (    int userId : VUserManagerService.get().getUserIds()) {\n      boolean installed=userId == 0;\n      ps.setUserState(userId,false,false,installed);\n    }\n  }\n  PackageParserEx.savePackageCache(pkg);\n  PackageCacheManager.put(pkg,ps);\n  mPersistenceLayer.save();\n  BroadcastSystem.get().startApp(pkg);\n  if (notify) {\n    notifyAppInstalled(ps,-1);\n  }\n  res.isSuccess=true;\n  return res;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 571,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 62,
+        "startLineNumber" : 183,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 183,
+        "endColumnNumber" : 74
+      },
+      "nodeContext" : "return InstallResult.makeFailure(\"Unable to create lib dir.\");\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    },
+    "tokenLength" : 5,
+    "type" : "java.lang.String"
+  } ],
+  "positionList" : [ {
+    "charLength" : 27,
+    "startLineNumber" : 183,
+    "startColumnNumber" : 45,
+    "endLineNumber" : 183,
+    "endColumnNumber" : 72
+  } ],
+  "layoutRelationDataList" : [ ]
+}

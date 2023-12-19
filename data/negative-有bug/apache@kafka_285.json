@@ -1,0 +1,113 @@
+{
+  "id" : 285,
+  "expression" : "\"2+G\"",
+  "projectName" : "apache@kafka",
+  "commitID" : "539f006e65d9060cd46a4052d1b70f2312d8ca34",
+  "filePath" : "/streams/src/test/java/org/apache/kafka/streams/integration/GlobalKTableIntegrationTest.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "\"2+G\"",
+    "nodeType" : "StringLiteral",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 198,
+      "startColumnNumber" : 49,
+      "endLineNumber" : 198,
+      "endColumnNumber" : 54
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 50,
+        "startLineNumber" : 198,
+        "startColumnNumber" : 26,
+        "endLineNumber" : 198,
+        "endColumnNumber" : 76
+      },
+      "nodeContext" : "ValueAndTimestamp.make(\"2+G\",firstTimestamp + 1L)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 69,
+        "startLineNumber" : 198,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 198,
+        "endColumnNumber" : 77
+      },
+      "nodeContext" : "expected.put(\"b\",ValueAndTimestamp.make(\"2+G\",firstTimestamp + 1L))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 11,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 70,
+        "startLineNumber" : 198,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 198,
+        "endColumnNumber" : 78
+      },
+      "nodeContext" : "expected.put(\"b\",ValueAndTimestamp.make(\"2+G\",firstTimestamp + 1L));\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 12,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3984,
+        "startLineNumber" : 133,
+        "startColumnNumber" : 69,
+        "endLineNumber" : 215,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final KStream<String,String> streamTableJoin=stream.leftJoin(globalTable,keyMapper,joiner);\n  streamTableJoin.process(supplier);\n  produceInitialGlobalTableValues();\n  startStreams();\n  long firstTimestamp=mockTime.milliseconds();\n  produceTopicValues(streamTopic);\n  final Map<String,ValueAndTimestamp<String>> expected=new HashMap<>();\n  expected.put(\"a\",ValueAndTimestamp.make(\"1+A\",firstTimestamp));\n  expected.put(\"b\",ValueAndTimestamp.make(\"2+B\",firstTimestamp + 1L));\n  expected.put(\"c\",ValueAndTimestamp.make(\"3+C\",firstTimestamp + 2L));\n  expected.put(\"d\",ValueAndTimestamp.make(\"4+D\",firstTimestamp + 3L));\n  expected.put(\"e\",ValueAndTimestamp.make(\"5+null\",firstTimestamp + 4L));\n  TestUtils.waitForCondition(() -> {\n    if (supplier.capturedProcessorsCount() < 2) {\n      return false;\n    }\n    final Map<String,ValueAndTimestamp<String>> result=new HashMap<>();\n    result.putAll(supplier.capturedProcessors(2).get(0).lastValueAndTimestampPerKey());\n    result.putAll(supplier.capturedProcessors(2).get(1).lastValueAndTimestampPerKey());\n    return result.equals(expected);\n  }\n,30000L,\"waiting for initial values\");\n  firstTimestamp=mockTime.milliseconds();\n  produceGlobalTableValues();\n  final ReadOnlyKeyValueStore<Long,String> replicatedStore=IntegrationTestUtils.getStore(globalStore,kafkaStreams,QueryableStoreTypes.keyValueStore());\n  assertNotNull(replicatedStore);\n  final Map<Long,String> expectedState=new HashMap<>();\n  expectedState.put(1L,\"F\");\n  expectedState.put(2L,\"G\");\n  expectedState.put(3L,\"H\");\n  expectedState.put(4L,\"I\");\n  expectedState.put(5L,\"J\");\n  final Map<Long,String> globalState=new HashMap<>();\n  TestUtils.waitForCondition(() -> {\n    globalState.clear();\n    try (final KeyValueIterator<Long,String> it=replicatedStore.all()){\n      it.forEachRemaining(pair -> globalState.put(pair.key,pair.value));\n    }\n     return globalState.equals(expectedState);\n  }\n,30000,() -> \"waiting for data in replicated store\" + \"\\n  expected: \" + expectedState + \"\\n  received: \"+ globalState);\n  final ReadOnlyKeyValueStore<Long,ValueAndTimestamp<String>> replicatedStoreWithTimestamp=IntegrationTestUtils.getStore(globalStore,kafkaStreams,QueryableStoreTypes.timestampedKeyValueStore());\n  assertNotNull(replicatedStoreWithTimestamp);\n  assertThat(replicatedStoreWithTimestamp.get(5L),equalTo(ValueAndTimestamp.make(\"J\",firstTimestamp + 4L)));\n  firstTimestamp=mockTime.milliseconds();\n  produceTopicValues(streamTopic);\n  expected.put(\"a\",ValueAndTimestamp.make(\"1+F\",firstTimestamp));\n  expected.put(\"b\",ValueAndTimestamp.make(\"2+G\",firstTimestamp + 1L));\n  expected.put(\"c\",ValueAndTimestamp.make(\"3+H\",firstTimestamp + 2L));\n  expected.put(\"d\",ValueAndTimestamp.make(\"4+I\",firstTimestamp + 3L));\n  expected.put(\"e\",ValueAndTimestamp.make(\"5+J\",firstTimestamp + 4L));\n  TestUtils.waitForCondition(() -> {\n    if (supplier.capturedProcessorsCount() < 2) {\n      return false;\n    }\n    final Map<String,ValueAndTimestamp<String>> result=new HashMap<>();\n    result.putAll(supplier.capturedProcessors(2).get(0).lastValueAndTimestampPerKey());\n    result.putAll(supplier.capturedProcessors(2).get(1).lastValueAndTimestampPerKey());\n    return result.equals(expected);\n  }\n,30000L,\"waiting for final values\");\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 506,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4059,
+        "startLineNumber" : 132,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 215,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test public void shouldKStreamGlobalKTableLeftJoin() throws Exception {\n  final KStream<String,String> streamTableJoin=stream.leftJoin(globalTable,keyMapper,joiner);\n  streamTableJoin.process(supplier);\n  produceInitialGlobalTableValues();\n  startStreams();\n  long firstTimestamp=mockTime.milliseconds();\n  produceTopicValues(streamTopic);\n  final Map<String,ValueAndTimestamp<String>> expected=new HashMap<>();\n  expected.put(\"a\",ValueAndTimestamp.make(\"1+A\",firstTimestamp));\n  expected.put(\"b\",ValueAndTimestamp.make(\"2+B\",firstTimestamp + 1L));\n  expected.put(\"c\",ValueAndTimestamp.make(\"3+C\",firstTimestamp + 2L));\n  expected.put(\"d\",ValueAndTimestamp.make(\"4+D\",firstTimestamp + 3L));\n  expected.put(\"e\",ValueAndTimestamp.make(\"5+null\",firstTimestamp + 4L));\n  TestUtils.waitForCondition(() -> {\n    if (supplier.capturedProcessorsCount() < 2) {\n      return false;\n    }\n    final Map<String,ValueAndTimestamp<String>> result=new HashMap<>();\n    result.putAll(supplier.capturedProcessors(2).get(0).lastValueAndTimestampPerKey());\n    result.putAll(supplier.capturedProcessors(2).get(1).lastValueAndTimestampPerKey());\n    return result.equals(expected);\n  }\n,30000L,\"waiting for initial values\");\n  firstTimestamp=mockTime.milliseconds();\n  produceGlobalTableValues();\n  final ReadOnlyKeyValueStore<Long,String> replicatedStore=IntegrationTestUtils.getStore(globalStore,kafkaStreams,QueryableStoreTypes.keyValueStore());\n  assertNotNull(replicatedStore);\n  final Map<Long,String> expectedState=new HashMap<>();\n  expectedState.put(1L,\"F\");\n  expectedState.put(2L,\"G\");\n  expectedState.put(3L,\"H\");\n  expectedState.put(4L,\"I\");\n  expectedState.put(5L,\"J\");\n  final Map<Long,String> globalState=new HashMap<>();\n  TestUtils.waitForCondition(() -> {\n    globalState.clear();\n    try (final KeyValueIterator<Long,String> it=replicatedStore.all()){\n      it.forEachRemaining(pair -> globalState.put(pair.key,pair.value));\n    }\n     return globalState.equals(expectedState);\n  }\n,30000,() -> \"waiting for data in replicated store\" + \"\\n  expected: \" + expectedState + \"\\n  received: \"+ globalState);\n  final ReadOnlyKeyValueStore<Long,ValueAndTimestamp<String>> replicatedStoreWithTimestamp=IntegrationTestUtils.getStore(globalStore,kafkaStreams,QueryableStoreTypes.timestampedKeyValueStore());\n  assertNotNull(replicatedStoreWithTimestamp);\n  assertThat(replicatedStoreWithTimestamp.get(5L),equalTo(ValueAndTimestamp.make(\"J\",firstTimestamp + 4L)));\n  firstTimestamp=mockTime.milliseconds();\n  produceTopicValues(streamTopic);\n  expected.put(\"a\",ValueAndTimestamp.make(\"1+F\",firstTimestamp));\n  expected.put(\"b\",ValueAndTimestamp.make(\"2+G\",firstTimestamp + 1L));\n  expected.put(\"c\",ValueAndTimestamp.make(\"3+H\",firstTimestamp + 2L));\n  expected.put(\"d\",ValueAndTimestamp.make(\"4+I\",firstTimestamp + 3L));\n  expected.put(\"e\",ValueAndTimestamp.make(\"5+J\",firstTimestamp + 4L));\n  TestUtils.waitForCondition(() -> {\n    if (supplier.capturedProcessorsCount() < 2) {\n      return false;\n    }\n    final Map<String,ValueAndTimestamp<String>> result=new HashMap<>();\n    result.putAll(supplier.capturedProcessors(2).get(0).lastValueAndTimestampPerKey());\n    result.putAll(supplier.capturedProcessors(2).get(1).lastValueAndTimestampPerKey());\n    return result.equals(expected);\n  }\n,30000L,\"waiting for final values\");\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 514,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 70,
+        "startLineNumber" : 198,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 198,
+        "endColumnNumber" : 78
+      },
+      "nodeContext" : "expected.put(\"b\",ValueAndTimestamp.make(\"2+G\",firstTimestamp + 1L));\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 12,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "java.lang.String"
+  } ],
+  "positionList" : [ {
+    "charLength" : 5,
+    "startLineNumber" : 198,
+    "startColumnNumber" : 49,
+    "endLineNumber" : 198,
+    "endColumnNumber" : 54
+  } ],
+  "layoutRelationDataList" : [ ]
+}

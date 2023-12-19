@@ -3,6 +3,7 @@ package git;
 import io.json.JSONReader;
 import json.LabelData;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jgit.api.CleanCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -79,15 +80,14 @@ public class GitUtils {
             String localName = fileName.substring(0, fileName.lastIndexOf("_"));
             if (pathname.equals(Constants.PREFIX_PATH + localName + System.getProperty("file.separator"))) {
                 LabelData labelData = JSONReader.deserializeAsLabelData(file.getAbsolutePath());
-                if (!invalidCommitIDHashSet.contains(labelData.getRefactoredCommitID()))
+                if (!invalidCommitIDHashSet.contains(labelData.getRefactoredCommitID())){
                     labeledCommitIDHashSet.add(labelData.getRefactoredCommitID());
+                }
             }
         }
 
         // 打开本地Git仓库
         try (Repository repository = new FileRepositoryBuilder().setGitDir(new File(pathname + ".git")).build()) {
-
-
             // 初始化最新提交的SHA值和时间
             String latestCommitSha = null;
             long latestCommitTime = -1;
@@ -105,8 +105,9 @@ public class GitUtils {
                     latestCommitSha = commit.getName();
                 }
             }
+//            System.out.println(invalidCommitIDHashSet.size()+ " " +  latestCommitTime + " " + latestCommitSha);
             if (latestCommitSha == null) {
-                log.error("latestCommitSha is null");
+                log.error(pathname+" latestCommitSha is null");
             }
             return latestCommitSha;
         }
@@ -122,10 +123,19 @@ public class GitUtils {
             if (commitId == null) {
                 throw new IllegalArgumentException("Invalid commitSHA: " + commitSHA);
             }
+
+            // for untracked
+            CleanCommand cleanCommand = git.clean();
+            cleanCommand.setForce(true);
+            cleanCommand.setCleanDirectories(true);
+            cleanCommand.call();
+
+            // for tracked
             ResetCommand resetCommand = git.reset();
             resetCommand.setMode(ResetCommand.ResetType.HARD);
             resetCommand.setRef(commitId.getName());
             resetCommand.call();
+
 //            System.out.println("Rollback to commit " + commitSHA + " is successful.");
         }
     }

@@ -1,0 +1,415 @@
+{
+  "id" : 124,
+  "expression" : "PUBLISH_TERM_INCREASE_COUNT",
+  "projectName" : "alibaba@nacos",
+  "commitID" : "4e7346db1d6657ffe07c96bebd2d348229c2812f",
+  "filePath" : "/naming/src/main/java/com/alibaba/nacos/naming/consistency/persistent/raft/RaftCore.java",
+  "occurrences" : 3,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "PUBLISH_TERM_INCREASE_COUNT",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 27,
+      "startLineNumber" : 390,
+      "startColumnNumber" : 33,
+      "endLineNumber" : 390,
+      "endColumnNumber" : 60
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 49,
+        "startLineNumber" : 390,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 390,
+        "endColumnNumber" : 61
+      },
+      "nodeContext" : "local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 50,
+        "startLineNumber" : 390,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 390,
+        "endColumnNumber" : 62
+      },
+      "nodeContext" : "local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 74,
+        "startLineNumber" : 389,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 391,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 8,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 443,
+        "startLineNumber" : 389,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 399,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (isLeader()) {\n  local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n}\n else {\n  if (local.term.get() + PUBLISH_TERM_INCREASE_COUNT > source.term.get()) {\n    getLeader().term.set(source.term.get());\n    local.term.set(getLeader().term.get());\n  }\n else {\n    local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 59,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2078,
+        "startLineNumber" : 356,
+        "startColumnNumber" : 73,
+        "endLineNumber" : 403,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (stopWork) {\n    throw new IllegalStateException(\"old raft protocol already stop work\");\n  }\n  RaftPeer local=peers.local();\n  if (datum.value == null) {\n    Loggers.RAFT.warn(\"received empty datum\");\n    throw new IllegalStateException(\"received empty datum\");\n  }\n  if (!peers.isLeader(source.ip)) {\n    Loggers.RAFT.warn(\"peer {} tried to publish data but wasn't leader, leader: {}\",JacksonUtils.toJson(source),JacksonUtils.toJson(getLeader()));\n    throw new IllegalStateException(\"peer(\" + source.ip + \") tried to publish \"+ \"data but wasn't leader\");\n  }\n  if (source.term.get() < local.term.get()) {\n    Loggers.RAFT.warn(\"out of date publish, pub-term: {}, cur-term: {}\",JacksonUtils.toJson(source),JacksonUtils.toJson(local));\n    throw new IllegalStateException(\"out of date publish, pub-term:\" + source.term.get() + \", cur-term: \"+ local.term.get());\n  }\n  local.resetLeaderDue();\n  if (KeyBuilder.matchPersistentKey(datum.key)) {\n    raftStore.write(datum);\n  }\n  datums.put(datum.key,datum);\n  if (isLeader()) {\n    local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n  }\n else {\n    if (local.term.get() + PUBLISH_TERM_INCREASE_COUNT > source.term.get()) {\n      getLeader().term.set(source.term.get());\n      local.term.set(getLeader().term.get());\n    }\n else {\n      local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n    }\n  }\n  raftStore.updateTerm(local.term.get());\n  NotifyCenter.publishEvent(ValueChangeEvent.builder().key(datum.key).action(DataOperation.CHANGE).build());\n  Loggers.RAFT.info(\"data added/updated, key={}, term={}\",datum.key,local.term);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 242,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 2405,
+        "startLineNumber" : 349,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 403,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Do publish. If leader, commit publish to store. If not leader, stop publish because should signal to leader.\n * @param datum  datum\n * @param source source raft peer\n * @throws Exception any exception during publish\n */\npublic void onPublish(Datum datum,RaftPeer source) throws Exception {\n  if (stopWork) {\n    throw new IllegalStateException(\"old raft protocol already stop work\");\n  }\n  RaftPeer local=peers.local();\n  if (datum.value == null) {\n    Loggers.RAFT.warn(\"received empty datum\");\n    throw new IllegalStateException(\"received empty datum\");\n  }\n  if (!peers.isLeader(source.ip)) {\n    Loggers.RAFT.warn(\"peer {} tried to publish data but wasn't leader, leader: {}\",JacksonUtils.toJson(source),JacksonUtils.toJson(getLeader()));\n    throw new IllegalStateException(\"peer(\" + source.ip + \") tried to publish \"+ \"data but wasn't leader\");\n  }\n  if (source.term.get() < local.term.get()) {\n    Loggers.RAFT.warn(\"out of date publish, pub-term: {}, cur-term: {}\",JacksonUtils.toJson(source),JacksonUtils.toJson(local));\n    throw new IllegalStateException(\"out of date publish, pub-term:\" + source.term.get() + \", cur-term: \"+ local.term.get());\n  }\n  local.resetLeaderDue();\n  if (KeyBuilder.matchPersistentKey(datum.key)) {\n    raftStore.write(datum);\n  }\n  datums.put(datum.key,datum);\n  if (isLeader()) {\n    local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n  }\n else {\n    if (local.term.get() + PUBLISH_TERM_INCREASE_COUNT > source.term.get()) {\n      getLeader().term.set(source.term.get());\n      local.term.set(getLeader().term.get());\n    }\n else {\n      local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n    }\n  }\n  raftStore.updateTerm(local.term.get());\n  NotifyCenter.publishEvent(ValueChangeEvent.builder().key(datum.key).action(DataOperation.CHANGE).build());\n  Loggers.RAFT.info(\"data added/updated, key={}, term={}\",datum.key,local.term);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 257,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 50,
+        "startLineNumber" : 390,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 390,
+        "endColumnNumber" : 62
+      },
+      "nodeContext" : "local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    },
+    "tokenLength" : 4,
+    "type" : "int"
+  }, {
+    "nodeContext" : "PUBLISH_TERM_INCREASE_COUNT",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 27,
+      "startLineNumber" : 392,
+      "startColumnNumber" : 35,
+      "endLineNumber" : 392,
+      "endColumnNumber" : 62
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 46,
+        "startLineNumber" : 392,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 392,
+        "endColumnNumber" : 62
+      },
+      "nodeContext" : "local.term.get() + PUBLISH_TERM_INCREASE_COUNT",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 66,
+        "startLineNumber" : 392,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 392,
+        "endColumnNumber" : 82
+      },
+      "nodeContext" : "local.term.get() + PUBLISH_TERM_INCREASE_COUNT > source.term.get()",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 13,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 323,
+        "startLineNumber" : 392,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 398,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "if (local.term.get() + PUBLISH_TERM_INCREASE_COUNT > source.term.get()) {\n  getLeader().term.set(source.term.get());\n  local.term.set(getLeader().term.get());\n}\n else {\n  local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 47,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 347,
+        "startLineNumber" : 391,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 399,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  if (local.term.get() + PUBLISH_TERM_INCREASE_COUNT > source.term.get()) {\n    getLeader().term.set(source.term.get());\n    local.term.set(getLeader().term.get());\n  }\n else {\n    local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 48,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 443,
+        "startLineNumber" : 389,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 399,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (isLeader()) {\n  local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n}\n else {\n  if (local.term.get() + PUBLISH_TERM_INCREASE_COUNT > source.term.get()) {\n    getLeader().term.set(source.term.get());\n    local.term.set(getLeader().term.get());\n  }\n else {\n    local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 59,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2078,
+        "startLineNumber" : 356,
+        "startColumnNumber" : 73,
+        "endLineNumber" : 403,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (stopWork) {\n    throw new IllegalStateException(\"old raft protocol already stop work\");\n  }\n  RaftPeer local=peers.local();\n  if (datum.value == null) {\n    Loggers.RAFT.warn(\"received empty datum\");\n    throw new IllegalStateException(\"received empty datum\");\n  }\n  if (!peers.isLeader(source.ip)) {\n    Loggers.RAFT.warn(\"peer {} tried to publish data but wasn't leader, leader: {}\",JacksonUtils.toJson(source),JacksonUtils.toJson(getLeader()));\n    throw new IllegalStateException(\"peer(\" + source.ip + \") tried to publish \"+ \"data but wasn't leader\");\n  }\n  if (source.term.get() < local.term.get()) {\n    Loggers.RAFT.warn(\"out of date publish, pub-term: {}, cur-term: {}\",JacksonUtils.toJson(source),JacksonUtils.toJson(local));\n    throw new IllegalStateException(\"out of date publish, pub-term:\" + source.term.get() + \", cur-term: \"+ local.term.get());\n  }\n  local.resetLeaderDue();\n  if (KeyBuilder.matchPersistentKey(datum.key)) {\n    raftStore.write(datum);\n  }\n  datums.put(datum.key,datum);\n  if (isLeader()) {\n    local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n  }\n else {\n    if (local.term.get() + PUBLISH_TERM_INCREASE_COUNT > source.term.get()) {\n      getLeader().term.set(source.term.get());\n      local.term.set(getLeader().term.get());\n    }\n else {\n      local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n    }\n  }\n  raftStore.updateTerm(local.term.get());\n  NotifyCenter.publishEvent(ValueChangeEvent.builder().key(datum.key).action(DataOperation.CHANGE).build());\n  Loggers.RAFT.info(\"data added/updated, key={}, term={}\",datum.key,local.term);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 242,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 2405,
+        "startLineNumber" : 349,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 403,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Do publish. If leader, commit publish to store. If not leader, stop publish because should signal to leader.\n * @param datum  datum\n * @param source source raft peer\n * @throws Exception any exception during publish\n */\npublic void onPublish(Datum datum,RaftPeer source) throws Exception {\n  if (stopWork) {\n    throw new IllegalStateException(\"old raft protocol already stop work\");\n  }\n  RaftPeer local=peers.local();\n  if (datum.value == null) {\n    Loggers.RAFT.warn(\"received empty datum\");\n    throw new IllegalStateException(\"received empty datum\");\n  }\n  if (!peers.isLeader(source.ip)) {\n    Loggers.RAFT.warn(\"peer {} tried to publish data but wasn't leader, leader: {}\",JacksonUtils.toJson(source),JacksonUtils.toJson(getLeader()));\n    throw new IllegalStateException(\"peer(\" + source.ip + \") tried to publish \"+ \"data but wasn't leader\");\n  }\n  if (source.term.get() < local.term.get()) {\n    Loggers.RAFT.warn(\"out of date publish, pub-term: {}, cur-term: {}\",JacksonUtils.toJson(source),JacksonUtils.toJson(local));\n    throw new IllegalStateException(\"out of date publish, pub-term:\" + source.term.get() + \", cur-term: \"+ local.term.get());\n  }\n  local.resetLeaderDue();\n  if (KeyBuilder.matchPersistentKey(datum.key)) {\n    raftStore.write(datum);\n  }\n  datums.put(datum.key,datum);\n  if (isLeader()) {\n    local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n  }\n else {\n    if (local.term.get() + PUBLISH_TERM_INCREASE_COUNT > source.term.get()) {\n      getLeader().term.set(source.term.get());\n      local.term.set(getLeader().term.get());\n    }\n else {\n      local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n    }\n  }\n  raftStore.updateTerm(local.term.get());\n  NotifyCenter.publishEvent(ValueChangeEvent.builder().key(datum.key).action(DataOperation.CHANGE).build());\n  Loggers.RAFT.info(\"data added/updated, key={}, term={}\",datum.key,local.term);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 257,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 66,
+        "startLineNumber" : 392,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 392,
+        "endColumnNumber" : 82
+      },
+      "nodeContext" : "local.term.get() + PUBLISH_TERM_INCREASE_COUNT > source.term.get()",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 13,
+      "astHeight" : 5
+    },
+    "tokenLength" : 4,
+    "type" : "int"
+  }, {
+    "nodeContext" : "PUBLISH_TERM_INCREASE_COUNT",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 27,
+      "startLineNumber" : 397,
+      "startColumnNumber" : 37,
+      "endLineNumber" : 397,
+      "endColumnNumber" : 64
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 49,
+        "startLineNumber" : 397,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 397,
+        "endColumnNumber" : 65
+      },
+      "nodeContext" : "local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 50,
+        "startLineNumber" : 397,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 397,
+        "endColumnNumber" : 66
+      },
+      "nodeContext" : "local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 82,
+        "startLineNumber" : 396,
+        "startColumnNumber" : 19,
+        "endLineNumber" : 398,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 8,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 323,
+        "startLineNumber" : 392,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 398,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "if (local.term.get() + PUBLISH_TERM_INCREASE_COUNT > source.term.get()) {\n  getLeader().term.set(source.term.get());\n  local.term.set(getLeader().term.get());\n}\n else {\n  local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 47,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 347,
+        "startLineNumber" : 391,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 399,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  if (local.term.get() + PUBLISH_TERM_INCREASE_COUNT > source.term.get()) {\n    getLeader().term.set(source.term.get());\n    local.term.set(getLeader().term.get());\n  }\n else {\n    local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 48,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 443,
+        "startLineNumber" : 389,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 399,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (isLeader()) {\n  local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n}\n else {\n  if (local.term.get() + PUBLISH_TERM_INCREASE_COUNT > source.term.get()) {\n    getLeader().term.set(source.term.get());\n    local.term.set(getLeader().term.get());\n  }\n else {\n    local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 59,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2078,
+        "startLineNumber" : 356,
+        "startColumnNumber" : 73,
+        "endLineNumber" : 403,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (stopWork) {\n    throw new IllegalStateException(\"old raft protocol already stop work\");\n  }\n  RaftPeer local=peers.local();\n  if (datum.value == null) {\n    Loggers.RAFT.warn(\"received empty datum\");\n    throw new IllegalStateException(\"received empty datum\");\n  }\n  if (!peers.isLeader(source.ip)) {\n    Loggers.RAFT.warn(\"peer {} tried to publish data but wasn't leader, leader: {}\",JacksonUtils.toJson(source),JacksonUtils.toJson(getLeader()));\n    throw new IllegalStateException(\"peer(\" + source.ip + \") tried to publish \"+ \"data but wasn't leader\");\n  }\n  if (source.term.get() < local.term.get()) {\n    Loggers.RAFT.warn(\"out of date publish, pub-term: {}, cur-term: {}\",JacksonUtils.toJson(source),JacksonUtils.toJson(local));\n    throw new IllegalStateException(\"out of date publish, pub-term:\" + source.term.get() + \", cur-term: \"+ local.term.get());\n  }\n  local.resetLeaderDue();\n  if (KeyBuilder.matchPersistentKey(datum.key)) {\n    raftStore.write(datum);\n  }\n  datums.put(datum.key,datum);\n  if (isLeader()) {\n    local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n  }\n else {\n    if (local.term.get() + PUBLISH_TERM_INCREASE_COUNT > source.term.get()) {\n      getLeader().term.set(source.term.get());\n      local.term.set(getLeader().term.get());\n    }\n else {\n      local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n    }\n  }\n  raftStore.updateTerm(local.term.get());\n  NotifyCenter.publishEvent(ValueChangeEvent.builder().key(datum.key).action(DataOperation.CHANGE).build());\n  Loggers.RAFT.info(\"data added/updated, key={}, term={}\",datum.key,local.term);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 242,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 2405,
+        "startLineNumber" : 349,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 403,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Do publish. If leader, commit publish to store. If not leader, stop publish because should signal to leader.\n * @param datum  datum\n * @param source source raft peer\n * @throws Exception any exception during publish\n */\npublic void onPublish(Datum datum,RaftPeer source) throws Exception {\n  if (stopWork) {\n    throw new IllegalStateException(\"old raft protocol already stop work\");\n  }\n  RaftPeer local=peers.local();\n  if (datum.value == null) {\n    Loggers.RAFT.warn(\"received empty datum\");\n    throw new IllegalStateException(\"received empty datum\");\n  }\n  if (!peers.isLeader(source.ip)) {\n    Loggers.RAFT.warn(\"peer {} tried to publish data but wasn't leader, leader: {}\",JacksonUtils.toJson(source),JacksonUtils.toJson(getLeader()));\n    throw new IllegalStateException(\"peer(\" + source.ip + \") tried to publish \"+ \"data but wasn't leader\");\n  }\n  if (source.term.get() < local.term.get()) {\n    Loggers.RAFT.warn(\"out of date publish, pub-term: {}, cur-term: {}\",JacksonUtils.toJson(source),JacksonUtils.toJson(local));\n    throw new IllegalStateException(\"out of date publish, pub-term:\" + source.term.get() + \", cur-term: \"+ local.term.get());\n  }\n  local.resetLeaderDue();\n  if (KeyBuilder.matchPersistentKey(datum.key)) {\n    raftStore.write(datum);\n  }\n  datums.put(datum.key,datum);\n  if (isLeader()) {\n    local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n  }\n else {\n    if (local.term.get() + PUBLISH_TERM_INCREASE_COUNT > source.term.get()) {\n      getLeader().term.set(source.term.get());\n      local.term.set(getLeader().term.get());\n    }\n else {\n      local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n    }\n  }\n  raftStore.updateTerm(local.term.get());\n  NotifyCenter.publishEvent(ValueChangeEvent.builder().key(datum.key).action(DataOperation.CHANGE).build());\n  Loggers.RAFT.info(\"data added/updated, key={}, term={}\",datum.key,local.term);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 257,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 50,
+        "startLineNumber" : 397,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 397,
+        "endColumnNumber" : 66
+      },
+      "nodeContext" : "local.term.addAndGet(PUBLISH_TERM_INCREASE_COUNT);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    },
+    "tokenLength" : 4,
+    "type" : "int"
+  } ],
+  "positionList" : [ {
+    "charLength" : 27,
+    "startLineNumber" : 390,
+    "startColumnNumber" : 33,
+    "endLineNumber" : 390,
+    "endColumnNumber" : 60
+  }, {
+    "charLength" : 27,
+    "startLineNumber" : 392,
+    "startColumnNumber" : 35,
+    "endLineNumber" : 392,
+    "endColumnNumber" : 62
+  }, {
+    "charLength" : 27,
+    "startLineNumber" : 397,
+    "startColumnNumber" : 37,
+    "endLineNumber" : 397,
+    "endColumnNumber" : 64
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 3
+  } ]
+}

@@ -1,0 +1,100 @@
+{
+  "id" : 110,
+  "expression" : "new HashMap<>()",
+  "projectName" : "thingsboard@thingsboard",
+  "commitID" : "7c2b3a9fbf84cc58aa7546029c5c7c10a662c55a",
+  "filePath" : "/common/queue/src/main/java/org/thingsboard/server/queue/discovery/HashPartitionService.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "new HashMap<>()",
+    "nodeType" : "ClassInstanceCreation",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 140,
+      "startColumnNumber" : 67,
+      "endLineNumber" : 140,
+      "endColumnNumber" : 82
+    },
+    "astNodeNumber" : 4,
+    "astHeight" : 4,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 34,
+        "startLineNumber" : 140,
+        "startColumnNumber" : 48,
+        "endLineNumber" : 140,
+        "endColumnNumber" : 82
+      },
+      "nodeContext" : "queueServicesMap=new HashMap<>()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 6,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 75,
+        "startLineNumber" : 140,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 140,
+        "endColumnNumber" : 83
+      },
+      "nodeContext" : "Map<ServiceQueueKey,List<ServiceInfo>> queueServicesMap=new HashMap<>();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 17,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3346,
+        "startLineNumber" : 136,
+        "startColumnNumber" : 112,
+        "endLineNumber" : 199,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  tbTransportServicesByType.clear();\n  logServiceInfo(currentService);\n  otherServices.forEach(this::logServiceInfo);\n  Map<ServiceQueueKey,List<ServiceInfo>> queueServicesMap=new HashMap<>();\n  addNode(queueServicesMap,currentService);\n  for (  ServiceInfo other : otherServices) {\n    addNode(queueServicesMap,other);\n  }\n  queueServicesMap.values().forEach(list -> list.sort(Comparator.comparing(ServiceInfo::getServiceId)));\n  ConcurrentMap<ServiceQueueKey,List<Integer>> oldPartitions=myPartitions;\n  TenantId myIsolatedOrSystemTenantId=getSystemOrIsolatedTenantId(currentService);\n  myPartitions=new ConcurrentHashMap<>();\n  partitionSizes.forEach((serviceQueue,size) -> {\n    ServiceQueueKey myServiceQueueKey=new ServiceQueueKey(serviceQueue,myIsolatedOrSystemTenantId);\n    for (int i=0; i < size; i++) {\n      ServiceInfo serviceInfo=resolveByPartitionIdx(queueServicesMap.get(myServiceQueueKey),i);\n      if (currentService.equals(serviceInfo)) {\n        ServiceQueueKey serviceQueueKey=new ServiceQueueKey(serviceQueue,getSystemOrIsolatedTenantId(serviceInfo));\n        myPartitions.computeIfAbsent(serviceQueueKey,key -> new ArrayList<>()).add(i);\n      }\n    }\n  }\n);\n  oldPartitions.forEach((serviceQueueKey,partitions) -> {\n    if (!myPartitions.containsKey(serviceQueueKey)) {\n      log.info(\"[{}] NO MORE PARTITIONS FOR CURRENT KEY\",serviceQueueKey);\n      applicationEventPublisher.publishEvent(new PartitionChangeEvent(this,serviceQueueKey,Collections.emptySet()));\n    }\n  }\n);\n  myPartitions.forEach((serviceQueueKey,partitions) -> {\n    if (!partitions.equals(oldPartitions.get(serviceQueueKey))) {\n      log.info(\"[{}] NEW PARTITIONS: {}\",serviceQueueKey,partitions);\n      Set<TopicPartitionInfo> tpiList=partitions.stream().map(partition -> buildTopicPartitionInfo(serviceQueueKey,partition)).collect(Collectors.toSet());\n      applicationEventPublisher.publishEvent(new PartitionChangeEvent(this,serviceQueueKey,tpiList));\n    }\n  }\n);\n  tpiCache.clear();\n  if (currentOtherServices == null) {\n    currentOtherServices=new ArrayList<>(otherServices);\n  }\n else {\n    Set<ServiceQueueKey> changes=new HashSet<>();\n    Map<ServiceQueueKey,List<ServiceInfo>> currentMap=getServiceKeyListMap(currentOtherServices);\n    Map<ServiceQueueKey,List<ServiceInfo>> newMap=getServiceKeyListMap(otherServices);\n    currentOtherServices=otherServices;\n    currentMap.forEach((key,list) -> {\n      if (!list.equals(newMap.get(key))) {\n        changes.add(key);\n      }\n    }\n);\n    currentMap.keySet().forEach(newMap::remove);\n    changes.addAll(newMap.keySet());\n    if (!changes.isEmpty()) {\n      applicationEventPublisher.publishEvent(new ClusterTopologyChangeEvent(this,changes));\n    }\n  }\n  applicationEventPublisher.publishEvent(new ServiceListChangedEvent(otherServices,currentService));\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 402,
+      "astHeight" : 17
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3468,
+        "startLineNumber" : 135,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 199,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public synchronized void recalculatePartitions(ServiceInfo currentService,List<ServiceInfo> otherServices){\n  tbTransportServicesByType.clear();\n  logServiceInfo(currentService);\n  otherServices.forEach(this::logServiceInfo);\n  Map<ServiceQueueKey,List<ServiceInfo>> queueServicesMap=new HashMap<>();\n  addNode(queueServicesMap,currentService);\n  for (  ServiceInfo other : otherServices) {\n    addNode(queueServicesMap,other);\n  }\n  queueServicesMap.values().forEach(list -> list.sort(Comparator.comparing(ServiceInfo::getServiceId)));\n  ConcurrentMap<ServiceQueueKey,List<Integer>> oldPartitions=myPartitions;\n  TenantId myIsolatedOrSystemTenantId=getSystemOrIsolatedTenantId(currentService);\n  myPartitions=new ConcurrentHashMap<>();\n  partitionSizes.forEach((serviceQueue,size) -> {\n    ServiceQueueKey myServiceQueueKey=new ServiceQueueKey(serviceQueue,myIsolatedOrSystemTenantId);\n    for (int i=0; i < size; i++) {\n      ServiceInfo serviceInfo=resolveByPartitionIdx(queueServicesMap.get(myServiceQueueKey),i);\n      if (currentService.equals(serviceInfo)) {\n        ServiceQueueKey serviceQueueKey=new ServiceQueueKey(serviceQueue,getSystemOrIsolatedTenantId(serviceInfo));\n        myPartitions.computeIfAbsent(serviceQueueKey,key -> new ArrayList<>()).add(i);\n      }\n    }\n  }\n);\n  oldPartitions.forEach((serviceQueueKey,partitions) -> {\n    if (!myPartitions.containsKey(serviceQueueKey)) {\n      log.info(\"[{}] NO MORE PARTITIONS FOR CURRENT KEY\",serviceQueueKey);\n      applicationEventPublisher.publishEvent(new PartitionChangeEvent(this,serviceQueueKey,Collections.emptySet()));\n    }\n  }\n);\n  myPartitions.forEach((serviceQueueKey,partitions) -> {\n    if (!partitions.equals(oldPartitions.get(serviceQueueKey))) {\n      log.info(\"[{}] NEW PARTITIONS: {}\",serviceQueueKey,partitions);\n      Set<TopicPartitionInfo> tpiList=partitions.stream().map(partition -> buildTopicPartitionInfo(serviceQueueKey,partition)).collect(Collectors.toSet());\n      applicationEventPublisher.publishEvent(new PartitionChangeEvent(this,serviceQueueKey,tpiList));\n    }\n  }\n);\n  tpiCache.clear();\n  if (currentOtherServices == null) {\n    currentOtherServices=new ArrayList<>(otherServices);\n  }\n else {\n    Set<ServiceQueueKey> changes=new HashSet<>();\n    Map<ServiceQueueKey,List<ServiceInfo>> currentMap=getServiceKeyListMap(currentOtherServices);\n    Map<ServiceQueueKey,List<ServiceInfo>> newMap=getServiceKeyListMap(otherServices);\n    currentOtherServices=otherServices;\n    currentMap.forEach((key,list) -> {\n      if (!list.equals(newMap.get(key))) {\n        changes.add(key);\n      }\n    }\n);\n    currentMap.keySet().forEach(newMap::remove);\n    changes.addAll(newMap.keySet());\n    if (!changes.isEmpty()) {\n      applicationEventPublisher.publishEvent(new ClusterTopologyChangeEvent(this,changes));\n    }\n  }\n  applicationEventPublisher.publishEvent(new ServiceListChangedEvent(otherServices,currentService));\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 420,
+      "astHeight" : 18
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 75,
+        "startLineNumber" : 140,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 140,
+        "endColumnNumber" : 83
+      },
+      "nodeContext" : "Map<ServiceQueueKey,List<ServiceInfo>> queueServicesMap=new HashMap<>();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 17,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "java.util.HashMap<org.thingsboard.server.common.msg.queue.ServiceQueueKey,java.util.List<org.thingsboard.server.queue.discovery.ServiceInfo>>"
+  } ],
+  "positionList" : [ {
+    "charLength" : 15,
+    "startLineNumber" : 140,
+    "startColumnNumber" : 67,
+    "endLineNumber" : 140,
+    "endColumnNumber" : 82
+  } ],
+  "layoutRelationDataList" : [ ]
+}

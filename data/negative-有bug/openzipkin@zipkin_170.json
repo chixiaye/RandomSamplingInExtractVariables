@@ -1,0 +1,87 @@
+{
+  "id" : 170,
+  "expression" : "request.annotations",
+  "projectName" : "openzipkin@zipkin",
+  "commitID" : "f02a993656f506277ca83737ddf494ed45fde4b3",
+  "filePath" : "/zipkin-storage/elasticsearch/src/main/java/zipkin/elasticsearch/ElasticsearchSpanStore.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "request.annotations",
+    "nodeType" : "QualifiedName",
+    "nodePosition" : {
+      "charLength" : 19,
+      "startLineNumber" : 115,
+      "startColumnNumber" : 29,
+      "endLineNumber" : 115,
+      "endColumnNumber" : 48
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 116,
+        "startLineNumber" : 115,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 117,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "for (String annotation : request.annotations) {\n  filter.must(termQuery(\"annotations.value\",annotation));\n}\n",
+      "nodeType" : "EnhancedForStatement",
+      "astNodeNumber" : 17,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3955,
+        "startLineNumber" : 96,
+        "startColumnNumber" : 86,
+        "endLineNumber" : 176,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  long endMillis=request.endTs;\n  long beginMillis=endMillis - request.lookback;\n  BoolQueryBuilder filter=boolQuery().must(rangeQuery(\"timestamp\").gte(TimeUnit.MILLISECONDS.toMicros(beginMillis)).lte(TimeUnit.MILLISECONDS.toMicros(endMillis)));\n  if (request.serviceName != null) {\n    filter.must(boolQuery().should(termQuery(\"annotations.endpoint.serviceName\",request.serviceName)).should(nestedQuery(\"binaryAnnotations\",termQuery(\"binaryAnnotations.endpoint.serviceName\",request.serviceName))));\n  }\n  if (request.spanName != null) {\n    filter.must(termQuery(\"name\",request.spanName));\n  }\n  for (  String annotation : request.annotations) {\n    filter.must(termQuery(\"annotations.value\",annotation));\n  }\n  for (  Map.Entry<String,String> annotation : request.binaryAnnotations.entrySet()) {\n    filter.must(nestedQuery(\"binaryAnnotations\",boolQuery().must(termQuery(\"binaryAnnotations.key\",annotation.getKey())).must(termQuery(\"binaryAnnotations.value\",annotation.getValue()))));\n  }\n  if (request.minDuration != null) {\n    RangeQueryBuilder durationQuery=rangeQuery(\"duration\").gte(request.minDuration);\n    if (request.maxDuration != null) {\n      durationQuery.lte(request.maxDuration);\n    }\n    filter.must(durationQuery);\n  }\n  List<String> strings=computeIndices(beginMillis,endMillis);\n  final String[] indices=strings.toArray(new String[strings.size()]);\n  SearchRequestBuilder elasticRequest=client.prepareSearch(indices).setIndicesOptions(IndicesOptions.lenientExpandOpen()).setTypes(ElasticsearchConstants.SPAN).setQuery(boolQuery().must(matchAllQuery()).filter(filter)).setSize(0).addAggregation(AggregationBuilders.terms(\"traceId_agg\").field(\"traceId\").subAggregation(AggregationBuilders.min(\"timestamps_agg\").field(\"timestamp\")).order(Order.aggregation(\"timestamps_agg\",false)).size(request.limit));\n  ListenableFuture<SearchResponse> traceIds=toGuava(elasticRequest.execute());\n  return transform(traceIds,new AsyncFunction<SearchResponse,List<List<Span>>>(){\n    @Override public ListenableFuture<List<List<Span>>> apply(    SearchResponse input){\n      if (input.getAggregations() == null || input.getAggregations().get(\"traceId_agg\") == null) {\n        return Futures.immediateFuture(Collections.<List<Span>>emptyList());\n      }\n      Terms traceIdsAgg=input.getAggregations().get(\"traceId_agg\");\n      List<Long> traceIds=new ArrayList<>();\n      for (      Terms.Bucket bucket : traceIdsAgg.getBuckets()) {\n        traceIds.add(Util.lowerHexToUnsignedLong(bucket.getKeyAsString()));\n      }\n      return getTracesByIds(traceIds,indices);\n    }\n  }\n);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 417,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4039,
+        "startLineNumber" : 96,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 176,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "@Override public ListenableFuture<List<List<Span>>> getTraces(QueryRequest request){\n  long endMillis=request.endTs;\n  long beginMillis=endMillis - request.lookback;\n  BoolQueryBuilder filter=boolQuery().must(rangeQuery(\"timestamp\").gte(TimeUnit.MILLISECONDS.toMicros(beginMillis)).lte(TimeUnit.MILLISECONDS.toMicros(endMillis)));\n  if (request.serviceName != null) {\n    filter.must(boolQuery().should(termQuery(\"annotations.endpoint.serviceName\",request.serviceName)).should(nestedQuery(\"binaryAnnotations\",termQuery(\"binaryAnnotations.endpoint.serviceName\",request.serviceName))));\n  }\n  if (request.spanName != null) {\n    filter.must(termQuery(\"name\",request.spanName));\n  }\n  for (  String annotation : request.annotations) {\n    filter.must(termQuery(\"annotations.value\",annotation));\n  }\n  for (  Map.Entry<String,String> annotation : request.binaryAnnotations.entrySet()) {\n    filter.must(nestedQuery(\"binaryAnnotations\",boolQuery().must(termQuery(\"binaryAnnotations.key\",annotation.getKey())).must(termQuery(\"binaryAnnotations.value\",annotation.getValue()))));\n  }\n  if (request.minDuration != null) {\n    RangeQueryBuilder durationQuery=rangeQuery(\"duration\").gte(request.minDuration);\n    if (request.maxDuration != null) {\n      durationQuery.lte(request.maxDuration);\n    }\n    filter.must(durationQuery);\n  }\n  List<String> strings=computeIndices(beginMillis,endMillis);\n  final String[] indices=strings.toArray(new String[strings.size()]);\n  SearchRequestBuilder elasticRequest=client.prepareSearch(indices).setIndicesOptions(IndicesOptions.lenientExpandOpen()).setTypes(ElasticsearchConstants.SPAN).setQuery(boolQuery().must(matchAllQuery()).filter(filter)).setSize(0).addAggregation(AggregationBuilders.terms(\"traceId_agg\").field(\"traceId\").subAggregation(AggregationBuilders.min(\"timestamps_agg\").field(\"timestamp\")).order(Order.aggregation(\"timestamps_agg\",false)).size(request.limit));\n  ListenableFuture<SearchResponse> traceIds=toGuava(elasticRequest.execute());\n  return transform(traceIds,new AsyncFunction<SearchResponse,List<List<Span>>>(){\n    @Override public ListenableFuture<List<List<Span>>> apply(    SearchResponse input){\n      if (input.getAggregations() == null || input.getAggregations().get(\"traceId_agg\") == null) {\n        return Futures.immediateFuture(Collections.<List<Span>>emptyList());\n      }\n      Terms traceIdsAgg=input.getAggregations().get(\"traceId_agg\");\n      List<Long> traceIds=new ArrayList<>();\n      for (      Terms.Bucket bucket : traceIdsAgg.getBuckets()) {\n        traceIds.add(Util.lowerHexToUnsignedLong(bucket.getKeyAsString()));\n      }\n      return getTracesByIds(traceIds,indices);\n    }\n  }\n);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 437,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 116,
+        "startLineNumber" : 115,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 117,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "for (String annotation : request.annotations) {\n  filter.must(termQuery(\"annotations.value\",annotation));\n}\n",
+      "nodeType" : "EnhancedForStatement",
+      "astNodeNumber" : 17,
+      "astHeight" : 6
+    },
+    "tokenLength" : 2,
+    "type" : "java.util.List<java.lang.String>"
+  } ],
+  "positionList" : [ {
+    "charLength" : 19,
+    "startLineNumber" : 115,
+    "startColumnNumber" : 29,
+    "endLineNumber" : 115,
+    "endColumnNumber" : 48
+  } ],
+  "layoutRelationDataList" : [ ]
+}

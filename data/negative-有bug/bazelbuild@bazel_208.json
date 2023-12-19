@@ -1,0 +1,840 @@
+{
+  "id" : 208,
+  "expression" : "fsVal",
+  "projectName" : "bazelbuild@bazel",
+  "commitID" : "302971e1b3d803069ac949c0085c0d2a3916c8ab",
+  "filePath" : "/src/main/java/com/google/devtools/build/lib/skyframe/RecursiveFilesystemTraversalFunction.java",
+  "occurrences" : 5,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "fsVal",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 331,
+      "startColumnNumber" : 35,
+      "endLineNumber" : 331,
+      "endColumnNumber" : 40
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 90,
+        "startLineNumber" : 331,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 331,
+        "endColumnNumber" : 98
+      },
+      "nodeContext" : "Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\")",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 5,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 91,
+        "startLineNumber" : 331,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 331,
+        "endColumnNumber" : 99
+      },
+      "nodeContext" : "Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 285,
+        "startLineNumber" : 330,
+        "startColumnNumber" : 39,
+        "endLineNumber" : 337,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "{\n  Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n  return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 26,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1962,
+        "startLineNumber" : 330,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 370,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "if (traversal.strictOutputFiles) {\n  Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n  return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n}\n else {\n  Path path=traversal.root.asRootedPath().asPath();\n  FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n  if (fileState.getType() == FileStateType.NONEXISTENT) {\n    throw new IOException(\"Missing file: \" + path);\n  }\n  FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n  FileType type;\n  PathFragment unresolvedLinkTarget=null;\n  if (followStat == null) {\n    type=FileType.DANGLING_SYMLINK;\n    if (fileState.getType() != FileStateType.SYMLINK) {\n      throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n    }\n    unresolvedLinkTarget=path.readSymbolicLink();\n  }\n else   if (fileState.getType() == FileStateType.REGULAR_FILE) {\n    type=FileType.FILE;\n  }\n else   if (fileState.getType() == FileStateType.DIRECTORY) {\n    type=FileType.DIRECTORY;\n  }\n else {\n    unresolvedLinkTarget=path.readSymbolicLink();\n    realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n    type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n  }\n  if (fsVal == null) {\n    fsVal=fileState;\n  }\n  return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 216,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 2709,
+        "startLineNumber" : 311,
+        "startColumnNumber" : 35,
+        "endLineNumber" : 371,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  HasDigest fsVal=null;\n  if (traversal.root.getOutputArtifact() != null) {\n    Artifact artifact=traversal.root.getOutputArtifact();\n    SkyKey artifactKey=Artifact.key(artifact);\n    SkyValue value=env.getValue(artifactKey);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    if (value instanceof FileArtifactValue || value instanceof TreeArtifactValue) {\n      fsVal=(HasDigest)value;\n    }\n else     if (value instanceof ActionExecutionValue) {\n      fsVal=((ActionExecutionValue)value).getExistingFileArtifactValue(artifact);\n    }\n else {\n      return NON_EXISTENT_FILE_INFO;\n    }\n  }\n  RootedPath realPath=traversal.root.asRootedPath();\n  if (traversal.strictOutputFiles) {\n    Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n    return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n  }\n else {\n    Path path=traversal.root.asRootedPath().asPath();\n    FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n    if (fileState.getType() == FileStateType.NONEXISTENT) {\n      throw new IOException(\"Missing file: \" + path);\n    }\n    FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n    FileType type;\n    PathFragment unresolvedLinkTarget=null;\n    if (followStat == null) {\n      type=FileType.DANGLING_SYMLINK;\n      if (fileState.getType() != FileStateType.SYMLINK) {\n        throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n      }\n      unresolvedLinkTarget=path.readSymbolicLink();\n    }\n else     if (fileState.getType() == FileStateType.REGULAR_FILE) {\n      type=FileType.FILE;\n    }\n else     if (fileState.getType() == FileStateType.DIRECTORY) {\n      type=FileType.DIRECTORY;\n    }\n else {\n      unresolvedLinkTarget=path.readSymbolicLink();\n      realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n      type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n    }\n    if (fsVal == null) {\n      fsVal=fileState;\n    }\n    return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 315,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 4669,
+        "startLineNumber" : 311,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 417,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "if (traversal.isRootGenerated) {\n  HasDigest fsVal=null;\n  if (traversal.root.getOutputArtifact() != null) {\n    Artifact artifact=traversal.root.getOutputArtifact();\n    SkyKey artifactKey=Artifact.key(artifact);\n    SkyValue value=env.getValue(artifactKey);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    if (value instanceof FileArtifactValue || value instanceof TreeArtifactValue) {\n      fsVal=(HasDigest)value;\n    }\n else     if (value instanceof ActionExecutionValue) {\n      fsVal=((ActionExecutionValue)value).getExistingFileArtifactValue(artifact);\n    }\n else {\n      return NON_EXISTENT_FILE_INFO;\n    }\n  }\n  RootedPath realPath=traversal.root.asRootedPath();\n  if (traversal.strictOutputFiles) {\n    Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n    return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n  }\n else {\n    Path path=traversal.root.asRootedPath().asPath();\n    FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n    if (fileState.getType() == FileStateType.NONEXISTENT) {\n      throw new IOException(\"Missing file: \" + path);\n    }\n    FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n    FileType type;\n    PathFragment unresolvedLinkTarget=null;\n    if (followStat == null) {\n      type=FileType.DANGLING_SYMLINK;\n      if (fileState.getType() != FileStateType.SYMLINK) {\n        throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n      }\n      unresolvedLinkTarget=path.readSymbolicLink();\n    }\n else     if (fileState.getType() == FileStateType.REGULAR_FILE) {\n      type=FileType.FILE;\n    }\n else     if (fileState.getType() == FileStateType.DIRECTORY) {\n      type=FileType.DIRECTORY;\n    }\n else {\n      unresolvedLinkTarget=path.readSymbolicLink();\n      realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n      type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n    }\n    if (fsVal == null) {\n      fsVal=fileState;\n    }\n    return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n  }\n}\n else {\n  FileValue fileValue=(FileValue)env.getValueOrThrow(FileValue.key(traversal.root.asRootedPath()),IOException.class);\n  if (env.valuesMissing()) {\n    return null;\n  }\n  if (fileValue.unboundedAncestorSymlinkExpansionChain() != null) {\n    SkyKey uniquenessKey=FileSymlinkInfiniteExpansionUniquenessFunction.key(fileValue.unboundedAncestorSymlinkExpansionChain());\n    env.getValue(uniquenessKey);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    throw new FileSymlinkInfiniteExpansionException(fileValue.pathToUnboundedAncestorSymlinkExpansionChain(),fileValue.unboundedAncestorSymlinkExpansionChain());\n  }\n  if (fileValue.exists()) {\n    PathFragment unresolvedLinkTarget=null;\n    FileType type;\n    if (fileValue.isSymlink()) {\n      unresolvedLinkTarget=fileValue.getUnresolvedLinkTarget();\n      type=fileValue.isDirectory() ? FileType.SYMLINK_TO_DIRECTORY : FileType.SYMLINK_TO_FILE;\n    }\n else {\n      type=fileValue.isDirectory() ? FileType.DIRECTORY : FileType.FILE;\n    }\n    Path path=traversal.root.asRootedPath().asPath();\n    return new FileInfo(type,withDigest(fileValue.realFileStateValue(),path),fileValue.realRootedPath(),unresolvedLinkTarget);\n  }\n else {\n    return new FileInfo(fileValue.isSymlink() ? FileType.DANGLING_SYMLINK : FileType.NONEXISTENT,withDigest(fileValue.realFileStateValue(),null),null,fileValue.isSymlink() ? fileValue.getUnresolvedLinkTarget() : null);\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 500,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4679,
+        "startLineNumber" : 310,
+        "startColumnNumber" : 47,
+        "endLineNumber" : 418,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  if (traversal.isRootGenerated) {\n    HasDigest fsVal=null;\n    if (traversal.root.getOutputArtifact() != null) {\n      Artifact artifact=traversal.root.getOutputArtifact();\n      SkyKey artifactKey=Artifact.key(artifact);\n      SkyValue value=env.getValue(artifactKey);\n      if (env.valuesMissing()) {\n        return null;\n      }\n      if (value instanceof FileArtifactValue || value instanceof TreeArtifactValue) {\n        fsVal=(HasDigest)value;\n      }\n else       if (value instanceof ActionExecutionValue) {\n        fsVal=((ActionExecutionValue)value).getExistingFileArtifactValue(artifact);\n      }\n else {\n        return NON_EXISTENT_FILE_INFO;\n      }\n    }\n    RootedPath realPath=traversal.root.asRootedPath();\n    if (traversal.strictOutputFiles) {\n      Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n      return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n    }\n else {\n      Path path=traversal.root.asRootedPath().asPath();\n      FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n      if (fileState.getType() == FileStateType.NONEXISTENT) {\n        throw new IOException(\"Missing file: \" + path);\n      }\n      FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n      FileType type;\n      PathFragment unresolvedLinkTarget=null;\n      if (followStat == null) {\n        type=FileType.DANGLING_SYMLINK;\n        if (fileState.getType() != FileStateType.SYMLINK) {\n          throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n        }\n        unresolvedLinkTarget=path.readSymbolicLink();\n      }\n else       if (fileState.getType() == FileStateType.REGULAR_FILE) {\n        type=FileType.FILE;\n      }\n else       if (fileState.getType() == FileStateType.DIRECTORY) {\n        type=FileType.DIRECTORY;\n      }\n else {\n        unresolvedLinkTarget=path.readSymbolicLink();\n        realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n        type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n      }\n      if (fsVal == null) {\n        fsVal=fileState;\n      }\n      return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n    }\n  }\n else {\n    FileValue fileValue=(FileValue)env.getValueOrThrow(FileValue.key(traversal.root.asRootedPath()),IOException.class);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    if (fileValue.unboundedAncestorSymlinkExpansionChain() != null) {\n      SkyKey uniquenessKey=FileSymlinkInfiniteExpansionUniquenessFunction.key(fileValue.unboundedAncestorSymlinkExpansionChain());\n      env.getValue(uniquenessKey);\n      if (env.valuesMissing()) {\n        return null;\n      }\n      throw new FileSymlinkInfiniteExpansionException(fileValue.pathToUnboundedAncestorSymlinkExpansionChain(),fileValue.unboundedAncestorSymlinkExpansionChain());\n    }\n    if (fileValue.exists()) {\n      PathFragment unresolvedLinkTarget=null;\n      FileType type;\n      if (fileValue.isSymlink()) {\n        unresolvedLinkTarget=fileValue.getUnresolvedLinkTarget();\n        type=fileValue.isDirectory() ? FileType.SYMLINK_TO_DIRECTORY : FileType.SYMLINK_TO_FILE;\n      }\n else {\n        type=fileValue.isDirectory() ? FileType.DIRECTORY : FileType.FILE;\n      }\n      Path path=traversal.root.asRootedPath().asPath();\n      return new FileInfo(type,withDigest(fileValue.realFileStateValue(),path),fileValue.realRootedPath(),unresolvedLinkTarget);\n    }\n else {\n      return new FileInfo(fileValue.isSymlink() ? FileType.DANGLING_SYMLINK : FileType.NONEXISTENT,withDigest(fileValue.realFileStateValue(),null),null,fileValue.isSymlink() ? fileValue.getUnresolvedLinkTarget() : null);\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 501,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4822,
+        "startLineNumber" : 308,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 418,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "@Nullable private static FileInfo lookUpFileInfo(Environment env,TraversalRequest traversal) throws IOException, InterruptedException {\n  if (traversal.isRootGenerated) {\n    HasDigest fsVal=null;\n    if (traversal.root.getOutputArtifact() != null) {\n      Artifact artifact=traversal.root.getOutputArtifact();\n      SkyKey artifactKey=Artifact.key(artifact);\n      SkyValue value=env.getValue(artifactKey);\n      if (env.valuesMissing()) {\n        return null;\n      }\n      if (value instanceof FileArtifactValue || value instanceof TreeArtifactValue) {\n        fsVal=(HasDigest)value;\n      }\n else       if (value instanceof ActionExecutionValue) {\n        fsVal=((ActionExecutionValue)value).getExistingFileArtifactValue(artifact);\n      }\n else {\n        return NON_EXISTENT_FILE_INFO;\n      }\n    }\n    RootedPath realPath=traversal.root.asRootedPath();\n    if (traversal.strictOutputFiles) {\n      Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n      return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n    }\n else {\n      Path path=traversal.root.asRootedPath().asPath();\n      FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n      if (fileState.getType() == FileStateType.NONEXISTENT) {\n        throw new IOException(\"Missing file: \" + path);\n      }\n      FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n      FileType type;\n      PathFragment unresolvedLinkTarget=null;\n      if (followStat == null) {\n        type=FileType.DANGLING_SYMLINK;\n        if (fileState.getType() != FileStateType.SYMLINK) {\n          throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n        }\n        unresolvedLinkTarget=path.readSymbolicLink();\n      }\n else       if (fileState.getType() == FileStateType.REGULAR_FILE) {\n        type=FileType.FILE;\n      }\n else       if (fileState.getType() == FileStateType.DIRECTORY) {\n        type=FileType.DIRECTORY;\n      }\n else {\n        unresolvedLinkTarget=path.readSymbolicLink();\n        realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n        type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n      }\n      if (fsVal == null) {\n        fsVal=fileState;\n      }\n      return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n    }\n  }\n else {\n    FileValue fileValue=(FileValue)env.getValueOrThrow(FileValue.key(traversal.root.asRootedPath()),IOException.class);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    if (fileValue.unboundedAncestorSymlinkExpansionChain() != null) {\n      SkyKey uniquenessKey=FileSymlinkInfiniteExpansionUniquenessFunction.key(fileValue.unboundedAncestorSymlinkExpansionChain());\n      env.getValue(uniquenessKey);\n      if (env.valuesMissing()) {\n        return null;\n      }\n      throw new FileSymlinkInfiniteExpansionException(fileValue.pathToUnboundedAncestorSymlinkExpansionChain(),fileValue.unboundedAncestorSymlinkExpansionChain());\n    }\n    if (fileValue.exists()) {\n      PathFragment unresolvedLinkTarget=null;\n      FileType type;\n      if (fileValue.isSymlink()) {\n        unresolvedLinkTarget=fileValue.getUnresolvedLinkTarget();\n        type=fileValue.isDirectory() ? FileType.SYMLINK_TO_DIRECTORY : FileType.SYMLINK_TO_FILE;\n      }\n else {\n        type=fileValue.isDirectory() ? FileType.DIRECTORY : FileType.FILE;\n      }\n      Path path=traversal.root.asRootedPath().asPath();\n      return new FileInfo(type,withDigest(fileValue.realFileStateValue(),path),fileValue.realRootedPath(),unresolvedLinkTarget);\n    }\n else {\n      return new FileInfo(fileValue.isSymlink() ? FileType.DANGLING_SYMLINK : FileType.NONEXISTENT,withDigest(fileValue.realFileStateValue(),null),null,fileValue.isSymlink() ? fileValue.getUnresolvedLinkTarget() : null);\n    }\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 521,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 91,
+        "startLineNumber" : 331,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 331,
+        "endColumnNumber" : 99
+      },
+      "nodeContext" : "Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "com.google.devtools.build.lib.actions.HasDigest"
+  }, {
+    "nodeContext" : "fsVal",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 333,
+      "startColumnNumber" : 13,
+      "endLineNumber" : 333,
+      "endColumnNumber" : 18
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ConditionalExpression,expression]",
+      "nodePosition" : {
+        "charLength" : 34,
+        "startLineNumber" : 333,
+        "startColumnNumber" : 13,
+        "endLineNumber" : 333,
+        "endColumnNumber" : 47
+      },
+      "nodeContext" : "fsVal instanceof TreeArtifactValue",
+      "nodeType" : "InstanceofExpression",
+      "astNodeNumber" : 4,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ParenthesizedExpression,expression]",
+      "nodePosition" : {
+        "charLength" : 71,
+        "startLineNumber" : 333,
+        "startColumnNumber" : 13,
+        "endLineNumber" : 333,
+        "endColumnNumber" : 84
+      },
+      "nodeContext" : "fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE",
+      "nodeType" : "ConditionalExpression",
+      "astNodeNumber" : 11,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.ClassInstanceCreation,arguments]",
+      "nodePosition" : {
+        "charLength" : 73,
+        "startLineNumber" : 333,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 333,
+        "endColumnNumber" : 85
+      },
+      "nodeContext" : "(fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE)",
+      "nodeType" : "ParenthesizedExpression",
+      "astNodeNumber" : 12,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ReturnStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 159,
+        "startLineNumber" : 332,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 336,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null)",
+      "nodeType" : "ClassInstanceCreation",
+      "astNodeNumber" : 18,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 167,
+        "startLineNumber" : 332,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 336,
+        "endColumnNumber" : 18
+      },
+      "nodeContext" : "return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 19,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 285,
+        "startLineNumber" : 330,
+        "startColumnNumber" : 39,
+        "endLineNumber" : 337,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "{\n  Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n  return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 26,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1962,
+        "startLineNumber" : 330,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 370,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "if (traversal.strictOutputFiles) {\n  Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n  return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n}\n else {\n  Path path=traversal.root.asRootedPath().asPath();\n  FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n  if (fileState.getType() == FileStateType.NONEXISTENT) {\n    throw new IOException(\"Missing file: \" + path);\n  }\n  FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n  FileType type;\n  PathFragment unresolvedLinkTarget=null;\n  if (followStat == null) {\n    type=FileType.DANGLING_SYMLINK;\n    if (fileState.getType() != FileStateType.SYMLINK) {\n      throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n    }\n    unresolvedLinkTarget=path.readSymbolicLink();\n  }\n else   if (fileState.getType() == FileStateType.REGULAR_FILE) {\n    type=FileType.FILE;\n  }\n else   if (fileState.getType() == FileStateType.DIRECTORY) {\n    type=FileType.DIRECTORY;\n  }\n else {\n    unresolvedLinkTarget=path.readSymbolicLink();\n    realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n    type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n  }\n  if (fsVal == null) {\n    fsVal=fileState;\n  }\n  return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 216,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 2709,
+        "startLineNumber" : 311,
+        "startColumnNumber" : 35,
+        "endLineNumber" : 371,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  HasDigest fsVal=null;\n  if (traversal.root.getOutputArtifact() != null) {\n    Artifact artifact=traversal.root.getOutputArtifact();\n    SkyKey artifactKey=Artifact.key(artifact);\n    SkyValue value=env.getValue(artifactKey);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    if (value instanceof FileArtifactValue || value instanceof TreeArtifactValue) {\n      fsVal=(HasDigest)value;\n    }\n else     if (value instanceof ActionExecutionValue) {\n      fsVal=((ActionExecutionValue)value).getExistingFileArtifactValue(artifact);\n    }\n else {\n      return NON_EXISTENT_FILE_INFO;\n    }\n  }\n  RootedPath realPath=traversal.root.asRootedPath();\n  if (traversal.strictOutputFiles) {\n    Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n    return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n  }\n else {\n    Path path=traversal.root.asRootedPath().asPath();\n    FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n    if (fileState.getType() == FileStateType.NONEXISTENT) {\n      throw new IOException(\"Missing file: \" + path);\n    }\n    FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n    FileType type;\n    PathFragment unresolvedLinkTarget=null;\n    if (followStat == null) {\n      type=FileType.DANGLING_SYMLINK;\n      if (fileState.getType() != FileStateType.SYMLINK) {\n        throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n      }\n      unresolvedLinkTarget=path.readSymbolicLink();\n    }\n else     if (fileState.getType() == FileStateType.REGULAR_FILE) {\n      type=FileType.FILE;\n    }\n else     if (fileState.getType() == FileStateType.DIRECTORY) {\n      type=FileType.DIRECTORY;\n    }\n else {\n      unresolvedLinkTarget=path.readSymbolicLink();\n      realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n      type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n    }\n    if (fsVal == null) {\n      fsVal=fileState;\n    }\n    return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 315,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 4669,
+        "startLineNumber" : 311,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 417,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "if (traversal.isRootGenerated) {\n  HasDigest fsVal=null;\n  if (traversal.root.getOutputArtifact() != null) {\n    Artifact artifact=traversal.root.getOutputArtifact();\n    SkyKey artifactKey=Artifact.key(artifact);\n    SkyValue value=env.getValue(artifactKey);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    if (value instanceof FileArtifactValue || value instanceof TreeArtifactValue) {\n      fsVal=(HasDigest)value;\n    }\n else     if (value instanceof ActionExecutionValue) {\n      fsVal=((ActionExecutionValue)value).getExistingFileArtifactValue(artifact);\n    }\n else {\n      return NON_EXISTENT_FILE_INFO;\n    }\n  }\n  RootedPath realPath=traversal.root.asRootedPath();\n  if (traversal.strictOutputFiles) {\n    Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n    return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n  }\n else {\n    Path path=traversal.root.asRootedPath().asPath();\n    FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n    if (fileState.getType() == FileStateType.NONEXISTENT) {\n      throw new IOException(\"Missing file: \" + path);\n    }\n    FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n    FileType type;\n    PathFragment unresolvedLinkTarget=null;\n    if (followStat == null) {\n      type=FileType.DANGLING_SYMLINK;\n      if (fileState.getType() != FileStateType.SYMLINK) {\n        throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n      }\n      unresolvedLinkTarget=path.readSymbolicLink();\n    }\n else     if (fileState.getType() == FileStateType.REGULAR_FILE) {\n      type=FileType.FILE;\n    }\n else     if (fileState.getType() == FileStateType.DIRECTORY) {\n      type=FileType.DIRECTORY;\n    }\n else {\n      unresolvedLinkTarget=path.readSymbolicLink();\n      realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n      type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n    }\n    if (fsVal == null) {\n      fsVal=fileState;\n    }\n    return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n  }\n}\n else {\n  FileValue fileValue=(FileValue)env.getValueOrThrow(FileValue.key(traversal.root.asRootedPath()),IOException.class);\n  if (env.valuesMissing()) {\n    return null;\n  }\n  if (fileValue.unboundedAncestorSymlinkExpansionChain() != null) {\n    SkyKey uniquenessKey=FileSymlinkInfiniteExpansionUniquenessFunction.key(fileValue.unboundedAncestorSymlinkExpansionChain());\n    env.getValue(uniquenessKey);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    throw new FileSymlinkInfiniteExpansionException(fileValue.pathToUnboundedAncestorSymlinkExpansionChain(),fileValue.unboundedAncestorSymlinkExpansionChain());\n  }\n  if (fileValue.exists()) {\n    PathFragment unresolvedLinkTarget=null;\n    FileType type;\n    if (fileValue.isSymlink()) {\n      unresolvedLinkTarget=fileValue.getUnresolvedLinkTarget();\n      type=fileValue.isDirectory() ? FileType.SYMLINK_TO_DIRECTORY : FileType.SYMLINK_TO_FILE;\n    }\n else {\n      type=fileValue.isDirectory() ? FileType.DIRECTORY : FileType.FILE;\n    }\n    Path path=traversal.root.asRootedPath().asPath();\n    return new FileInfo(type,withDigest(fileValue.realFileStateValue(),path),fileValue.realRootedPath(),unresolvedLinkTarget);\n  }\n else {\n    return new FileInfo(fileValue.isSymlink() ? FileType.DANGLING_SYMLINK : FileType.NONEXISTENT,withDigest(fileValue.realFileStateValue(),null),null,fileValue.isSymlink() ? fileValue.getUnresolvedLinkTarget() : null);\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 500,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4679,
+        "startLineNumber" : 310,
+        "startColumnNumber" : 47,
+        "endLineNumber" : 418,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  if (traversal.isRootGenerated) {\n    HasDigest fsVal=null;\n    if (traversal.root.getOutputArtifact() != null) {\n      Artifact artifact=traversal.root.getOutputArtifact();\n      SkyKey artifactKey=Artifact.key(artifact);\n      SkyValue value=env.getValue(artifactKey);\n      if (env.valuesMissing()) {\n        return null;\n      }\n      if (value instanceof FileArtifactValue || value instanceof TreeArtifactValue) {\n        fsVal=(HasDigest)value;\n      }\n else       if (value instanceof ActionExecutionValue) {\n        fsVal=((ActionExecutionValue)value).getExistingFileArtifactValue(artifact);\n      }\n else {\n        return NON_EXISTENT_FILE_INFO;\n      }\n    }\n    RootedPath realPath=traversal.root.asRootedPath();\n    if (traversal.strictOutputFiles) {\n      Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n      return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n    }\n else {\n      Path path=traversal.root.asRootedPath().asPath();\n      FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n      if (fileState.getType() == FileStateType.NONEXISTENT) {\n        throw new IOException(\"Missing file: \" + path);\n      }\n      FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n      FileType type;\n      PathFragment unresolvedLinkTarget=null;\n      if (followStat == null) {\n        type=FileType.DANGLING_SYMLINK;\n        if (fileState.getType() != FileStateType.SYMLINK) {\n          throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n        }\n        unresolvedLinkTarget=path.readSymbolicLink();\n      }\n else       if (fileState.getType() == FileStateType.REGULAR_FILE) {\n        type=FileType.FILE;\n      }\n else       if (fileState.getType() == FileStateType.DIRECTORY) {\n        type=FileType.DIRECTORY;\n      }\n else {\n        unresolvedLinkTarget=path.readSymbolicLink();\n        realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n        type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n      }\n      if (fsVal == null) {\n        fsVal=fileState;\n      }\n      return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n    }\n  }\n else {\n    FileValue fileValue=(FileValue)env.getValueOrThrow(FileValue.key(traversal.root.asRootedPath()),IOException.class);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    if (fileValue.unboundedAncestorSymlinkExpansionChain() != null) {\n      SkyKey uniquenessKey=FileSymlinkInfiniteExpansionUniquenessFunction.key(fileValue.unboundedAncestorSymlinkExpansionChain());\n      env.getValue(uniquenessKey);\n      if (env.valuesMissing()) {\n        return null;\n      }\n      throw new FileSymlinkInfiniteExpansionException(fileValue.pathToUnboundedAncestorSymlinkExpansionChain(),fileValue.unboundedAncestorSymlinkExpansionChain());\n    }\n    if (fileValue.exists()) {\n      PathFragment unresolvedLinkTarget=null;\n      FileType type;\n      if (fileValue.isSymlink()) {\n        unresolvedLinkTarget=fileValue.getUnresolvedLinkTarget();\n        type=fileValue.isDirectory() ? FileType.SYMLINK_TO_DIRECTORY : FileType.SYMLINK_TO_FILE;\n      }\n else {\n        type=fileValue.isDirectory() ? FileType.DIRECTORY : FileType.FILE;\n      }\n      Path path=traversal.root.asRootedPath().asPath();\n      return new FileInfo(type,withDigest(fileValue.realFileStateValue(),path),fileValue.realRootedPath(),unresolvedLinkTarget);\n    }\n else {\n      return new FileInfo(fileValue.isSymlink() ? FileType.DANGLING_SYMLINK : FileType.NONEXISTENT,withDigest(fileValue.realFileStateValue(),null),null,fileValue.isSymlink() ? fileValue.getUnresolvedLinkTarget() : null);\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 501,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4822,
+        "startLineNumber" : 308,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 418,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "@Nullable private static FileInfo lookUpFileInfo(Environment env,TraversalRequest traversal) throws IOException, InterruptedException {\n  if (traversal.isRootGenerated) {\n    HasDigest fsVal=null;\n    if (traversal.root.getOutputArtifact() != null) {\n      Artifact artifact=traversal.root.getOutputArtifact();\n      SkyKey artifactKey=Artifact.key(artifact);\n      SkyValue value=env.getValue(artifactKey);\n      if (env.valuesMissing()) {\n        return null;\n      }\n      if (value instanceof FileArtifactValue || value instanceof TreeArtifactValue) {\n        fsVal=(HasDigest)value;\n      }\n else       if (value instanceof ActionExecutionValue) {\n        fsVal=((ActionExecutionValue)value).getExistingFileArtifactValue(artifact);\n      }\n else {\n        return NON_EXISTENT_FILE_INFO;\n      }\n    }\n    RootedPath realPath=traversal.root.asRootedPath();\n    if (traversal.strictOutputFiles) {\n      Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n      return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n    }\n else {\n      Path path=traversal.root.asRootedPath().asPath();\n      FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n      if (fileState.getType() == FileStateType.NONEXISTENT) {\n        throw new IOException(\"Missing file: \" + path);\n      }\n      FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n      FileType type;\n      PathFragment unresolvedLinkTarget=null;\n      if (followStat == null) {\n        type=FileType.DANGLING_SYMLINK;\n        if (fileState.getType() != FileStateType.SYMLINK) {\n          throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n        }\n        unresolvedLinkTarget=path.readSymbolicLink();\n      }\n else       if (fileState.getType() == FileStateType.REGULAR_FILE) {\n        type=FileType.FILE;\n      }\n else       if (fileState.getType() == FileStateType.DIRECTORY) {\n        type=FileType.DIRECTORY;\n      }\n else {\n        unresolvedLinkTarget=path.readSymbolicLink();\n        realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n        type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n      }\n      if (fsVal == null) {\n        fsVal=fileState;\n      }\n      return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n    }\n  }\n else {\n    FileValue fileValue=(FileValue)env.getValueOrThrow(FileValue.key(traversal.root.asRootedPath()),IOException.class);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    if (fileValue.unboundedAncestorSymlinkExpansionChain() != null) {\n      SkyKey uniquenessKey=FileSymlinkInfiniteExpansionUniquenessFunction.key(fileValue.unboundedAncestorSymlinkExpansionChain());\n      env.getValue(uniquenessKey);\n      if (env.valuesMissing()) {\n        return null;\n      }\n      throw new FileSymlinkInfiniteExpansionException(fileValue.pathToUnboundedAncestorSymlinkExpansionChain(),fileValue.unboundedAncestorSymlinkExpansionChain());\n    }\n    if (fileValue.exists()) {\n      PathFragment unresolvedLinkTarget=null;\n      FileType type;\n      if (fileValue.isSymlink()) {\n        unresolvedLinkTarget=fileValue.getUnresolvedLinkTarget();\n        type=fileValue.isDirectory() ? FileType.SYMLINK_TO_DIRECTORY : FileType.SYMLINK_TO_FILE;\n      }\n else {\n        type=fileValue.isDirectory() ? FileType.DIRECTORY : FileType.FILE;\n      }\n      Path path=traversal.root.asRootedPath().asPath();\n      return new FileInfo(type,withDigest(fileValue.realFileStateValue(),path),fileValue.realRootedPath(),unresolvedLinkTarget);\n    }\n else {\n      return new FileInfo(fileValue.isSymlink() ? FileType.DANGLING_SYMLINK : FileType.NONEXISTENT,withDigest(fileValue.realFileStateValue(),null),null,fileValue.isSymlink() ? fileValue.getUnresolvedLinkTarget() : null);\n    }\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 521,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.ClassInstanceCreation,arguments]",
+      "nodePosition" : {
+        "charLength" : 73,
+        "startLineNumber" : 333,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 333,
+        "endColumnNumber" : 85
+      },
+      "nodeContext" : "(fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE)",
+      "nodeType" : "ParenthesizedExpression",
+      "astNodeNumber" : 12,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "com.google.devtools.build.lib.actions.HasDigest"
+  }, {
+    "nodeContext" : "fsVal",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 334,
+      "startColumnNumber" : 12,
+      "endLineNumber" : 334,
+      "endColumnNumber" : 17
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ReturnStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 159,
+        "startLineNumber" : 332,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 336,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null)",
+      "nodeType" : "ClassInstanceCreation",
+      "astNodeNumber" : 18,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 167,
+        "startLineNumber" : 332,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 336,
+        "endColumnNumber" : 18
+      },
+      "nodeContext" : "return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 19,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 285,
+        "startLineNumber" : 330,
+        "startColumnNumber" : 39,
+        "endLineNumber" : 337,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "{\n  Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n  return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 26,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1962,
+        "startLineNumber" : 330,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 370,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "if (traversal.strictOutputFiles) {\n  Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n  return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n}\n else {\n  Path path=traversal.root.asRootedPath().asPath();\n  FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n  if (fileState.getType() == FileStateType.NONEXISTENT) {\n    throw new IOException(\"Missing file: \" + path);\n  }\n  FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n  FileType type;\n  PathFragment unresolvedLinkTarget=null;\n  if (followStat == null) {\n    type=FileType.DANGLING_SYMLINK;\n    if (fileState.getType() != FileStateType.SYMLINK) {\n      throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n    }\n    unresolvedLinkTarget=path.readSymbolicLink();\n  }\n else   if (fileState.getType() == FileStateType.REGULAR_FILE) {\n    type=FileType.FILE;\n  }\n else   if (fileState.getType() == FileStateType.DIRECTORY) {\n    type=FileType.DIRECTORY;\n  }\n else {\n    unresolvedLinkTarget=path.readSymbolicLink();\n    realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n    type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n  }\n  if (fsVal == null) {\n    fsVal=fileState;\n  }\n  return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 216,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 2709,
+        "startLineNumber" : 311,
+        "startColumnNumber" : 35,
+        "endLineNumber" : 371,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  HasDigest fsVal=null;\n  if (traversal.root.getOutputArtifact() != null) {\n    Artifact artifact=traversal.root.getOutputArtifact();\n    SkyKey artifactKey=Artifact.key(artifact);\n    SkyValue value=env.getValue(artifactKey);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    if (value instanceof FileArtifactValue || value instanceof TreeArtifactValue) {\n      fsVal=(HasDigest)value;\n    }\n else     if (value instanceof ActionExecutionValue) {\n      fsVal=((ActionExecutionValue)value).getExistingFileArtifactValue(artifact);\n    }\n else {\n      return NON_EXISTENT_FILE_INFO;\n    }\n  }\n  RootedPath realPath=traversal.root.asRootedPath();\n  if (traversal.strictOutputFiles) {\n    Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n    return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n  }\n else {\n    Path path=traversal.root.asRootedPath().asPath();\n    FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n    if (fileState.getType() == FileStateType.NONEXISTENT) {\n      throw new IOException(\"Missing file: \" + path);\n    }\n    FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n    FileType type;\n    PathFragment unresolvedLinkTarget=null;\n    if (followStat == null) {\n      type=FileType.DANGLING_SYMLINK;\n      if (fileState.getType() != FileStateType.SYMLINK) {\n        throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n      }\n      unresolvedLinkTarget=path.readSymbolicLink();\n    }\n else     if (fileState.getType() == FileStateType.REGULAR_FILE) {\n      type=FileType.FILE;\n    }\n else     if (fileState.getType() == FileStateType.DIRECTORY) {\n      type=FileType.DIRECTORY;\n    }\n else {\n      unresolvedLinkTarget=path.readSymbolicLink();\n      realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n      type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n    }\n    if (fsVal == null) {\n      fsVal=fileState;\n    }\n    return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 315,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 4669,
+        "startLineNumber" : 311,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 417,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "if (traversal.isRootGenerated) {\n  HasDigest fsVal=null;\n  if (traversal.root.getOutputArtifact() != null) {\n    Artifact artifact=traversal.root.getOutputArtifact();\n    SkyKey artifactKey=Artifact.key(artifact);\n    SkyValue value=env.getValue(artifactKey);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    if (value instanceof FileArtifactValue || value instanceof TreeArtifactValue) {\n      fsVal=(HasDigest)value;\n    }\n else     if (value instanceof ActionExecutionValue) {\n      fsVal=((ActionExecutionValue)value).getExistingFileArtifactValue(artifact);\n    }\n else {\n      return NON_EXISTENT_FILE_INFO;\n    }\n  }\n  RootedPath realPath=traversal.root.asRootedPath();\n  if (traversal.strictOutputFiles) {\n    Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n    return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n  }\n else {\n    Path path=traversal.root.asRootedPath().asPath();\n    FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n    if (fileState.getType() == FileStateType.NONEXISTENT) {\n      throw new IOException(\"Missing file: \" + path);\n    }\n    FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n    FileType type;\n    PathFragment unresolvedLinkTarget=null;\n    if (followStat == null) {\n      type=FileType.DANGLING_SYMLINK;\n      if (fileState.getType() != FileStateType.SYMLINK) {\n        throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n      }\n      unresolvedLinkTarget=path.readSymbolicLink();\n    }\n else     if (fileState.getType() == FileStateType.REGULAR_FILE) {\n      type=FileType.FILE;\n    }\n else     if (fileState.getType() == FileStateType.DIRECTORY) {\n      type=FileType.DIRECTORY;\n    }\n else {\n      unresolvedLinkTarget=path.readSymbolicLink();\n      realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n      type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n    }\n    if (fsVal == null) {\n      fsVal=fileState;\n    }\n    return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n  }\n}\n else {\n  FileValue fileValue=(FileValue)env.getValueOrThrow(FileValue.key(traversal.root.asRootedPath()),IOException.class);\n  if (env.valuesMissing()) {\n    return null;\n  }\n  if (fileValue.unboundedAncestorSymlinkExpansionChain() != null) {\n    SkyKey uniquenessKey=FileSymlinkInfiniteExpansionUniquenessFunction.key(fileValue.unboundedAncestorSymlinkExpansionChain());\n    env.getValue(uniquenessKey);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    throw new FileSymlinkInfiniteExpansionException(fileValue.pathToUnboundedAncestorSymlinkExpansionChain(),fileValue.unboundedAncestorSymlinkExpansionChain());\n  }\n  if (fileValue.exists()) {\n    PathFragment unresolvedLinkTarget=null;\n    FileType type;\n    if (fileValue.isSymlink()) {\n      unresolvedLinkTarget=fileValue.getUnresolvedLinkTarget();\n      type=fileValue.isDirectory() ? FileType.SYMLINK_TO_DIRECTORY : FileType.SYMLINK_TO_FILE;\n    }\n else {\n      type=fileValue.isDirectory() ? FileType.DIRECTORY : FileType.FILE;\n    }\n    Path path=traversal.root.asRootedPath().asPath();\n    return new FileInfo(type,withDigest(fileValue.realFileStateValue(),path),fileValue.realRootedPath(),unresolvedLinkTarget);\n  }\n else {\n    return new FileInfo(fileValue.isSymlink() ? FileType.DANGLING_SYMLINK : FileType.NONEXISTENT,withDigest(fileValue.realFileStateValue(),null),null,fileValue.isSymlink() ? fileValue.getUnresolvedLinkTarget() : null);\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 500,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4679,
+        "startLineNumber" : 310,
+        "startColumnNumber" : 47,
+        "endLineNumber" : 418,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  if (traversal.isRootGenerated) {\n    HasDigest fsVal=null;\n    if (traversal.root.getOutputArtifact() != null) {\n      Artifact artifact=traversal.root.getOutputArtifact();\n      SkyKey artifactKey=Artifact.key(artifact);\n      SkyValue value=env.getValue(artifactKey);\n      if (env.valuesMissing()) {\n        return null;\n      }\n      if (value instanceof FileArtifactValue || value instanceof TreeArtifactValue) {\n        fsVal=(HasDigest)value;\n      }\n else       if (value instanceof ActionExecutionValue) {\n        fsVal=((ActionExecutionValue)value).getExistingFileArtifactValue(artifact);\n      }\n else {\n        return NON_EXISTENT_FILE_INFO;\n      }\n    }\n    RootedPath realPath=traversal.root.asRootedPath();\n    if (traversal.strictOutputFiles) {\n      Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n      return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n    }\n else {\n      Path path=traversal.root.asRootedPath().asPath();\n      FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n      if (fileState.getType() == FileStateType.NONEXISTENT) {\n        throw new IOException(\"Missing file: \" + path);\n      }\n      FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n      FileType type;\n      PathFragment unresolvedLinkTarget=null;\n      if (followStat == null) {\n        type=FileType.DANGLING_SYMLINK;\n        if (fileState.getType() != FileStateType.SYMLINK) {\n          throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n        }\n        unresolvedLinkTarget=path.readSymbolicLink();\n      }\n else       if (fileState.getType() == FileStateType.REGULAR_FILE) {\n        type=FileType.FILE;\n      }\n else       if (fileState.getType() == FileStateType.DIRECTORY) {\n        type=FileType.DIRECTORY;\n      }\n else {\n        unresolvedLinkTarget=path.readSymbolicLink();\n        realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n        type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n      }\n      if (fsVal == null) {\n        fsVal=fileState;\n      }\n      return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n    }\n  }\n else {\n    FileValue fileValue=(FileValue)env.getValueOrThrow(FileValue.key(traversal.root.asRootedPath()),IOException.class);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    if (fileValue.unboundedAncestorSymlinkExpansionChain() != null) {\n      SkyKey uniquenessKey=FileSymlinkInfiniteExpansionUniquenessFunction.key(fileValue.unboundedAncestorSymlinkExpansionChain());\n      env.getValue(uniquenessKey);\n      if (env.valuesMissing()) {\n        return null;\n      }\n      throw new FileSymlinkInfiniteExpansionException(fileValue.pathToUnboundedAncestorSymlinkExpansionChain(),fileValue.unboundedAncestorSymlinkExpansionChain());\n    }\n    if (fileValue.exists()) {\n      PathFragment unresolvedLinkTarget=null;\n      FileType type;\n      if (fileValue.isSymlink()) {\n        unresolvedLinkTarget=fileValue.getUnresolvedLinkTarget();\n        type=fileValue.isDirectory() ? FileType.SYMLINK_TO_DIRECTORY : FileType.SYMLINK_TO_FILE;\n      }\n else {\n        type=fileValue.isDirectory() ? FileType.DIRECTORY : FileType.FILE;\n      }\n      Path path=traversal.root.asRootedPath().asPath();\n      return new FileInfo(type,withDigest(fileValue.realFileStateValue(),path),fileValue.realRootedPath(),unresolvedLinkTarget);\n    }\n else {\n      return new FileInfo(fileValue.isSymlink() ? FileType.DANGLING_SYMLINK : FileType.NONEXISTENT,withDigest(fileValue.realFileStateValue(),null),null,fileValue.isSymlink() ? fileValue.getUnresolvedLinkTarget() : null);\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 501,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4822,
+        "startLineNumber" : 308,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 418,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "@Nullable private static FileInfo lookUpFileInfo(Environment env,TraversalRequest traversal) throws IOException, InterruptedException {\n  if (traversal.isRootGenerated) {\n    HasDigest fsVal=null;\n    if (traversal.root.getOutputArtifact() != null) {\n      Artifact artifact=traversal.root.getOutputArtifact();\n      SkyKey artifactKey=Artifact.key(artifact);\n      SkyValue value=env.getValue(artifactKey);\n      if (env.valuesMissing()) {\n        return null;\n      }\n      if (value instanceof FileArtifactValue || value instanceof TreeArtifactValue) {\n        fsVal=(HasDigest)value;\n      }\n else       if (value instanceof ActionExecutionValue) {\n        fsVal=((ActionExecutionValue)value).getExistingFileArtifactValue(artifact);\n      }\n else {\n        return NON_EXISTENT_FILE_INFO;\n      }\n    }\n    RootedPath realPath=traversal.root.asRootedPath();\n    if (traversal.strictOutputFiles) {\n      Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n      return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n    }\n else {\n      Path path=traversal.root.asRootedPath().asPath();\n      FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n      if (fileState.getType() == FileStateType.NONEXISTENT) {\n        throw new IOException(\"Missing file: \" + path);\n      }\n      FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n      FileType type;\n      PathFragment unresolvedLinkTarget=null;\n      if (followStat == null) {\n        type=FileType.DANGLING_SYMLINK;\n        if (fileState.getType() != FileStateType.SYMLINK) {\n          throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n        }\n        unresolvedLinkTarget=path.readSymbolicLink();\n      }\n else       if (fileState.getType() == FileStateType.REGULAR_FILE) {\n        type=FileType.FILE;\n      }\n else       if (fileState.getType() == FileStateType.DIRECTORY) {\n        type=FileType.DIRECTORY;\n      }\n else {\n        unresolvedLinkTarget=path.readSymbolicLink();\n        realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n        type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n      }\n      if (fsVal == null) {\n        fsVal=fileState;\n      }\n      return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n    }\n  }\n else {\n    FileValue fileValue=(FileValue)env.getValueOrThrow(FileValue.key(traversal.root.asRootedPath()),IOException.class);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    if (fileValue.unboundedAncestorSymlinkExpansionChain() != null) {\n      SkyKey uniquenessKey=FileSymlinkInfiniteExpansionUniquenessFunction.key(fileValue.unboundedAncestorSymlinkExpansionChain());\n      env.getValue(uniquenessKey);\n      if (env.valuesMissing()) {\n        return null;\n      }\n      throw new FileSymlinkInfiniteExpansionException(fileValue.pathToUnboundedAncestorSymlinkExpansionChain(),fileValue.unboundedAncestorSymlinkExpansionChain());\n    }\n    if (fileValue.exists()) {\n      PathFragment unresolvedLinkTarget=null;\n      FileType type;\n      if (fileValue.isSymlink()) {\n        unresolvedLinkTarget=fileValue.getUnresolvedLinkTarget();\n        type=fileValue.isDirectory() ? FileType.SYMLINK_TO_DIRECTORY : FileType.SYMLINK_TO_FILE;\n      }\n else {\n        type=fileValue.isDirectory() ? FileType.DIRECTORY : FileType.FILE;\n      }\n      Path path=traversal.root.asRootedPath().asPath();\n      return new FileInfo(type,withDigest(fileValue.realFileStateValue(),path),fileValue.realRootedPath(),unresolvedLinkTarget);\n    }\n else {\n      return new FileInfo(fileValue.isSymlink() ? FileType.DANGLING_SYMLINK : FileType.NONEXISTENT,withDigest(fileValue.realFileStateValue(),null),null,fileValue.isSymlink() ? fileValue.getUnresolvedLinkTarget() : null);\n    }\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 521,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ReturnStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 159,
+        "startLineNumber" : 332,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 336,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null)",
+      "nodeType" : "ClassInstanceCreation",
+      "astNodeNumber" : 18,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "com.google.devtools.build.lib.actions.HasDigest"
+  }, {
+    "nodeContext" : "fsVal",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 366,
+      "startColumnNumber" : 12,
+      "endLineNumber" : 366,
+      "endColumnNumber" : 17
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 13,
+        "startLineNumber" : 366,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 366,
+        "endColumnNumber" : 25
+      },
+      "nodeContext" : "fsVal == null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 59,
+        "startLineNumber" : 366,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 368,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (fsVal == null) {\n  fsVal=fileState;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 1638,
+        "startLineNumber" : 337,
+        "startColumnNumber" : 13,
+        "endLineNumber" : 370,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "{\n  Path path=traversal.root.asRootedPath().asPath();\n  FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n  if (fileState.getType() == FileStateType.NONEXISTENT) {\n    throw new IOException(\"Missing file: \" + path);\n  }\n  FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n  FileType type;\n  PathFragment unresolvedLinkTarget=null;\n  if (followStat == null) {\n    type=FileType.DANGLING_SYMLINK;\n    if (fileState.getType() != FileStateType.SYMLINK) {\n      throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n    }\n    unresolvedLinkTarget=path.readSymbolicLink();\n  }\n else   if (fileState.getType() == FileStateType.REGULAR_FILE) {\n    type=FileType.FILE;\n  }\n else   if (fileState.getType() == FileStateType.DIRECTORY) {\n    type=FileType.DIRECTORY;\n  }\n else {\n    unresolvedLinkTarget=path.readSymbolicLink();\n    realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n    type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n  }\n  if (fsVal == null) {\n    fsVal=fileState;\n  }\n  return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 186,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1962,
+        "startLineNumber" : 330,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 370,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "if (traversal.strictOutputFiles) {\n  Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n  return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n}\n else {\n  Path path=traversal.root.asRootedPath().asPath();\n  FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n  if (fileState.getType() == FileStateType.NONEXISTENT) {\n    throw new IOException(\"Missing file: \" + path);\n  }\n  FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n  FileType type;\n  PathFragment unresolvedLinkTarget=null;\n  if (followStat == null) {\n    type=FileType.DANGLING_SYMLINK;\n    if (fileState.getType() != FileStateType.SYMLINK) {\n      throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n    }\n    unresolvedLinkTarget=path.readSymbolicLink();\n  }\n else   if (fileState.getType() == FileStateType.REGULAR_FILE) {\n    type=FileType.FILE;\n  }\n else   if (fileState.getType() == FileStateType.DIRECTORY) {\n    type=FileType.DIRECTORY;\n  }\n else {\n    unresolvedLinkTarget=path.readSymbolicLink();\n    realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n    type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n  }\n  if (fsVal == null) {\n    fsVal=fileState;\n  }\n  return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 216,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 2709,
+        "startLineNumber" : 311,
+        "startColumnNumber" : 35,
+        "endLineNumber" : 371,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  HasDigest fsVal=null;\n  if (traversal.root.getOutputArtifact() != null) {\n    Artifact artifact=traversal.root.getOutputArtifact();\n    SkyKey artifactKey=Artifact.key(artifact);\n    SkyValue value=env.getValue(artifactKey);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    if (value instanceof FileArtifactValue || value instanceof TreeArtifactValue) {\n      fsVal=(HasDigest)value;\n    }\n else     if (value instanceof ActionExecutionValue) {\n      fsVal=((ActionExecutionValue)value).getExistingFileArtifactValue(artifact);\n    }\n else {\n      return NON_EXISTENT_FILE_INFO;\n    }\n  }\n  RootedPath realPath=traversal.root.asRootedPath();\n  if (traversal.strictOutputFiles) {\n    Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n    return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n  }\n else {\n    Path path=traversal.root.asRootedPath().asPath();\n    FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n    if (fileState.getType() == FileStateType.NONEXISTENT) {\n      throw new IOException(\"Missing file: \" + path);\n    }\n    FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n    FileType type;\n    PathFragment unresolvedLinkTarget=null;\n    if (followStat == null) {\n      type=FileType.DANGLING_SYMLINK;\n      if (fileState.getType() != FileStateType.SYMLINK) {\n        throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n      }\n      unresolvedLinkTarget=path.readSymbolicLink();\n    }\n else     if (fileState.getType() == FileStateType.REGULAR_FILE) {\n      type=FileType.FILE;\n    }\n else     if (fileState.getType() == FileStateType.DIRECTORY) {\n      type=FileType.DIRECTORY;\n    }\n else {\n      unresolvedLinkTarget=path.readSymbolicLink();\n      realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n      type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n    }\n    if (fsVal == null) {\n      fsVal=fileState;\n    }\n    return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 315,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 4669,
+        "startLineNumber" : 311,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 417,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "if (traversal.isRootGenerated) {\n  HasDigest fsVal=null;\n  if (traversal.root.getOutputArtifact() != null) {\n    Artifact artifact=traversal.root.getOutputArtifact();\n    SkyKey artifactKey=Artifact.key(artifact);\n    SkyValue value=env.getValue(artifactKey);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    if (value instanceof FileArtifactValue || value instanceof TreeArtifactValue) {\n      fsVal=(HasDigest)value;\n    }\n else     if (value instanceof ActionExecutionValue) {\n      fsVal=((ActionExecutionValue)value).getExistingFileArtifactValue(artifact);\n    }\n else {\n      return NON_EXISTENT_FILE_INFO;\n    }\n  }\n  RootedPath realPath=traversal.root.asRootedPath();\n  if (traversal.strictOutputFiles) {\n    Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n    return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n  }\n else {\n    Path path=traversal.root.asRootedPath().asPath();\n    FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n    if (fileState.getType() == FileStateType.NONEXISTENT) {\n      throw new IOException(\"Missing file: \" + path);\n    }\n    FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n    FileType type;\n    PathFragment unresolvedLinkTarget=null;\n    if (followStat == null) {\n      type=FileType.DANGLING_SYMLINK;\n      if (fileState.getType() != FileStateType.SYMLINK) {\n        throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n      }\n      unresolvedLinkTarget=path.readSymbolicLink();\n    }\n else     if (fileState.getType() == FileStateType.REGULAR_FILE) {\n      type=FileType.FILE;\n    }\n else     if (fileState.getType() == FileStateType.DIRECTORY) {\n      type=FileType.DIRECTORY;\n    }\n else {\n      unresolvedLinkTarget=path.readSymbolicLink();\n      realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n      type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n    }\n    if (fsVal == null) {\n      fsVal=fileState;\n    }\n    return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n  }\n}\n else {\n  FileValue fileValue=(FileValue)env.getValueOrThrow(FileValue.key(traversal.root.asRootedPath()),IOException.class);\n  if (env.valuesMissing()) {\n    return null;\n  }\n  if (fileValue.unboundedAncestorSymlinkExpansionChain() != null) {\n    SkyKey uniquenessKey=FileSymlinkInfiniteExpansionUniquenessFunction.key(fileValue.unboundedAncestorSymlinkExpansionChain());\n    env.getValue(uniquenessKey);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    throw new FileSymlinkInfiniteExpansionException(fileValue.pathToUnboundedAncestorSymlinkExpansionChain(),fileValue.unboundedAncestorSymlinkExpansionChain());\n  }\n  if (fileValue.exists()) {\n    PathFragment unresolvedLinkTarget=null;\n    FileType type;\n    if (fileValue.isSymlink()) {\n      unresolvedLinkTarget=fileValue.getUnresolvedLinkTarget();\n      type=fileValue.isDirectory() ? FileType.SYMLINK_TO_DIRECTORY : FileType.SYMLINK_TO_FILE;\n    }\n else {\n      type=fileValue.isDirectory() ? FileType.DIRECTORY : FileType.FILE;\n    }\n    Path path=traversal.root.asRootedPath().asPath();\n    return new FileInfo(type,withDigest(fileValue.realFileStateValue(),path),fileValue.realRootedPath(),unresolvedLinkTarget);\n  }\n else {\n    return new FileInfo(fileValue.isSymlink() ? FileType.DANGLING_SYMLINK : FileType.NONEXISTENT,withDigest(fileValue.realFileStateValue(),null),null,fileValue.isSymlink() ? fileValue.getUnresolvedLinkTarget() : null);\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 500,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4679,
+        "startLineNumber" : 310,
+        "startColumnNumber" : 47,
+        "endLineNumber" : 418,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  if (traversal.isRootGenerated) {\n    HasDigest fsVal=null;\n    if (traversal.root.getOutputArtifact() != null) {\n      Artifact artifact=traversal.root.getOutputArtifact();\n      SkyKey artifactKey=Artifact.key(artifact);\n      SkyValue value=env.getValue(artifactKey);\n      if (env.valuesMissing()) {\n        return null;\n      }\n      if (value instanceof FileArtifactValue || value instanceof TreeArtifactValue) {\n        fsVal=(HasDigest)value;\n      }\n else       if (value instanceof ActionExecutionValue) {\n        fsVal=((ActionExecutionValue)value).getExistingFileArtifactValue(artifact);\n      }\n else {\n        return NON_EXISTENT_FILE_INFO;\n      }\n    }\n    RootedPath realPath=traversal.root.asRootedPath();\n    if (traversal.strictOutputFiles) {\n      Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n      return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n    }\n else {\n      Path path=traversal.root.asRootedPath().asPath();\n      FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n      if (fileState.getType() == FileStateType.NONEXISTENT) {\n        throw new IOException(\"Missing file: \" + path);\n      }\n      FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n      FileType type;\n      PathFragment unresolvedLinkTarget=null;\n      if (followStat == null) {\n        type=FileType.DANGLING_SYMLINK;\n        if (fileState.getType() != FileStateType.SYMLINK) {\n          throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n        }\n        unresolvedLinkTarget=path.readSymbolicLink();\n      }\n else       if (fileState.getType() == FileStateType.REGULAR_FILE) {\n        type=FileType.FILE;\n      }\n else       if (fileState.getType() == FileStateType.DIRECTORY) {\n        type=FileType.DIRECTORY;\n      }\n else {\n        unresolvedLinkTarget=path.readSymbolicLink();\n        realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n        type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n      }\n      if (fsVal == null) {\n        fsVal=fileState;\n      }\n      return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n    }\n  }\n else {\n    FileValue fileValue=(FileValue)env.getValueOrThrow(FileValue.key(traversal.root.asRootedPath()),IOException.class);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    if (fileValue.unboundedAncestorSymlinkExpansionChain() != null) {\n      SkyKey uniquenessKey=FileSymlinkInfiniteExpansionUniquenessFunction.key(fileValue.unboundedAncestorSymlinkExpansionChain());\n      env.getValue(uniquenessKey);\n      if (env.valuesMissing()) {\n        return null;\n      }\n      throw new FileSymlinkInfiniteExpansionException(fileValue.pathToUnboundedAncestorSymlinkExpansionChain(),fileValue.unboundedAncestorSymlinkExpansionChain());\n    }\n    if (fileValue.exists()) {\n      PathFragment unresolvedLinkTarget=null;\n      FileType type;\n      if (fileValue.isSymlink()) {\n        unresolvedLinkTarget=fileValue.getUnresolvedLinkTarget();\n        type=fileValue.isDirectory() ? FileType.SYMLINK_TO_DIRECTORY : FileType.SYMLINK_TO_FILE;\n      }\n else {\n        type=fileValue.isDirectory() ? FileType.DIRECTORY : FileType.FILE;\n      }\n      Path path=traversal.root.asRootedPath().asPath();\n      return new FileInfo(type,withDigest(fileValue.realFileStateValue(),path),fileValue.realRootedPath(),unresolvedLinkTarget);\n    }\n else {\n      return new FileInfo(fileValue.isSymlink() ? FileType.DANGLING_SYMLINK : FileType.NONEXISTENT,withDigest(fileValue.realFileStateValue(),null),null,fileValue.isSymlink() ? fileValue.getUnresolvedLinkTarget() : null);\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 501,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4822,
+        "startLineNumber" : 308,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 418,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "@Nullable private static FileInfo lookUpFileInfo(Environment env,TraversalRequest traversal) throws IOException, InterruptedException {\n  if (traversal.isRootGenerated) {\n    HasDigest fsVal=null;\n    if (traversal.root.getOutputArtifact() != null) {\n      Artifact artifact=traversal.root.getOutputArtifact();\n      SkyKey artifactKey=Artifact.key(artifact);\n      SkyValue value=env.getValue(artifactKey);\n      if (env.valuesMissing()) {\n        return null;\n      }\n      if (value instanceof FileArtifactValue || value instanceof TreeArtifactValue) {\n        fsVal=(HasDigest)value;\n      }\n else       if (value instanceof ActionExecutionValue) {\n        fsVal=((ActionExecutionValue)value).getExistingFileArtifactValue(artifact);\n      }\n else {\n        return NON_EXISTENT_FILE_INFO;\n      }\n    }\n    RootedPath realPath=traversal.root.asRootedPath();\n    if (traversal.strictOutputFiles) {\n      Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n      return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n    }\n else {\n      Path path=traversal.root.asRootedPath().asPath();\n      FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n      if (fileState.getType() == FileStateType.NONEXISTENT) {\n        throw new IOException(\"Missing file: \" + path);\n      }\n      FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n      FileType type;\n      PathFragment unresolvedLinkTarget=null;\n      if (followStat == null) {\n        type=FileType.DANGLING_SYMLINK;\n        if (fileState.getType() != FileStateType.SYMLINK) {\n          throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n        }\n        unresolvedLinkTarget=path.readSymbolicLink();\n      }\n else       if (fileState.getType() == FileStateType.REGULAR_FILE) {\n        type=FileType.FILE;\n      }\n else       if (fileState.getType() == FileStateType.DIRECTORY) {\n        type=FileType.DIRECTORY;\n      }\n else {\n        unresolvedLinkTarget=path.readSymbolicLink();\n        realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n        type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n      }\n      if (fsVal == null) {\n        fsVal=fileState;\n      }\n      return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n    }\n  }\n else {\n    FileValue fileValue=(FileValue)env.getValueOrThrow(FileValue.key(traversal.root.asRootedPath()),IOException.class);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    if (fileValue.unboundedAncestorSymlinkExpansionChain() != null) {\n      SkyKey uniquenessKey=FileSymlinkInfiniteExpansionUniquenessFunction.key(fileValue.unboundedAncestorSymlinkExpansionChain());\n      env.getValue(uniquenessKey);\n      if (env.valuesMissing()) {\n        return null;\n      }\n      throw new FileSymlinkInfiniteExpansionException(fileValue.pathToUnboundedAncestorSymlinkExpansionChain(),fileValue.unboundedAncestorSymlinkExpansionChain());\n    }\n    if (fileValue.exists()) {\n      PathFragment unresolvedLinkTarget=null;\n      FileType type;\n      if (fileValue.isSymlink()) {\n        unresolvedLinkTarget=fileValue.getUnresolvedLinkTarget();\n        type=fileValue.isDirectory() ? FileType.SYMLINK_TO_DIRECTORY : FileType.SYMLINK_TO_FILE;\n      }\n else {\n        type=fileValue.isDirectory() ? FileType.DIRECTORY : FileType.FILE;\n      }\n      Path path=traversal.root.asRootedPath().asPath();\n      return new FileInfo(type,withDigest(fileValue.realFileStateValue(),path),fileValue.realRootedPath(),unresolvedLinkTarget);\n    }\n else {\n      return new FileInfo(fileValue.isSymlink() ? FileType.DANGLING_SYMLINK : FileType.NONEXISTENT,withDigest(fileValue.realFileStateValue(),null),null,fileValue.isSymlink() ? fileValue.getUnresolvedLinkTarget() : null);\n    }\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 521,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 13,
+        "startLineNumber" : 366,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 366,
+        "endColumnNumber" : 25
+      },
+      "nodeContext" : "fsVal == null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    },
+    "tokenLength" : 1,
+    "type" : "com.google.devtools.build.lib.actions.HasDigest"
+  }, {
+    "nodeContext" : "fsVal",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 369,
+      "startColumnNumber" : 45,
+      "endLineNumber" : 369,
+      "endColumnNumber" : 50
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.ClassInstanceCreation,arguments]",
+      "nodePosition" : {
+        "charLength" : 23,
+        "startLineNumber" : 369,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 369,
+        "endColumnNumber" : 57
+      },
+      "nodeContext" : "withDigest(fsVal,path)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ReturnStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 75,
+        "startLineNumber" : 369,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 369,
+        "endColumnNumber" : 90
+      },
+      "nodeContext" : "new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget)",
+      "nodeType" : "ClassInstanceCreation",
+      "astNodeNumber" : 10,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 83,
+        "startLineNumber" : 369,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 369,
+        "endColumnNumber" : 91
+      },
+      "nodeContext" : "return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 1638,
+        "startLineNumber" : 337,
+        "startColumnNumber" : 13,
+        "endLineNumber" : 370,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "{\n  Path path=traversal.root.asRootedPath().asPath();\n  FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n  if (fileState.getType() == FileStateType.NONEXISTENT) {\n    throw new IOException(\"Missing file: \" + path);\n  }\n  FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n  FileType type;\n  PathFragment unresolvedLinkTarget=null;\n  if (followStat == null) {\n    type=FileType.DANGLING_SYMLINK;\n    if (fileState.getType() != FileStateType.SYMLINK) {\n      throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n    }\n    unresolvedLinkTarget=path.readSymbolicLink();\n  }\n else   if (fileState.getType() == FileStateType.REGULAR_FILE) {\n    type=FileType.FILE;\n  }\n else   if (fileState.getType() == FileStateType.DIRECTORY) {\n    type=FileType.DIRECTORY;\n  }\n else {\n    unresolvedLinkTarget=path.readSymbolicLink();\n    realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n    type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n  }\n  if (fsVal == null) {\n    fsVal=fileState;\n  }\n  return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 186,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1962,
+        "startLineNumber" : 330,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 370,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "if (traversal.strictOutputFiles) {\n  Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n  return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n}\n else {\n  Path path=traversal.root.asRootedPath().asPath();\n  FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n  if (fileState.getType() == FileStateType.NONEXISTENT) {\n    throw new IOException(\"Missing file: \" + path);\n  }\n  FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n  FileType type;\n  PathFragment unresolvedLinkTarget=null;\n  if (followStat == null) {\n    type=FileType.DANGLING_SYMLINK;\n    if (fileState.getType() != FileStateType.SYMLINK) {\n      throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n    }\n    unresolvedLinkTarget=path.readSymbolicLink();\n  }\n else   if (fileState.getType() == FileStateType.REGULAR_FILE) {\n    type=FileType.FILE;\n  }\n else   if (fileState.getType() == FileStateType.DIRECTORY) {\n    type=FileType.DIRECTORY;\n  }\n else {\n    unresolvedLinkTarget=path.readSymbolicLink();\n    realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n    type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n  }\n  if (fsVal == null) {\n    fsVal=fileState;\n  }\n  return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 216,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 2709,
+        "startLineNumber" : 311,
+        "startColumnNumber" : 35,
+        "endLineNumber" : 371,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  HasDigest fsVal=null;\n  if (traversal.root.getOutputArtifact() != null) {\n    Artifact artifact=traversal.root.getOutputArtifact();\n    SkyKey artifactKey=Artifact.key(artifact);\n    SkyValue value=env.getValue(artifactKey);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    if (value instanceof FileArtifactValue || value instanceof TreeArtifactValue) {\n      fsVal=(HasDigest)value;\n    }\n else     if (value instanceof ActionExecutionValue) {\n      fsVal=((ActionExecutionValue)value).getExistingFileArtifactValue(artifact);\n    }\n else {\n      return NON_EXISTENT_FILE_INFO;\n    }\n  }\n  RootedPath realPath=traversal.root.asRootedPath();\n  if (traversal.strictOutputFiles) {\n    Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n    return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n  }\n else {\n    Path path=traversal.root.asRootedPath().asPath();\n    FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n    if (fileState.getType() == FileStateType.NONEXISTENT) {\n      throw new IOException(\"Missing file: \" + path);\n    }\n    FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n    FileType type;\n    PathFragment unresolvedLinkTarget=null;\n    if (followStat == null) {\n      type=FileType.DANGLING_SYMLINK;\n      if (fileState.getType() != FileStateType.SYMLINK) {\n        throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n      }\n      unresolvedLinkTarget=path.readSymbolicLink();\n    }\n else     if (fileState.getType() == FileStateType.REGULAR_FILE) {\n      type=FileType.FILE;\n    }\n else     if (fileState.getType() == FileStateType.DIRECTORY) {\n      type=FileType.DIRECTORY;\n    }\n else {\n      unresolvedLinkTarget=path.readSymbolicLink();\n      realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n      type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n    }\n    if (fsVal == null) {\n      fsVal=fileState;\n    }\n    return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 315,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 4669,
+        "startLineNumber" : 311,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 417,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "if (traversal.isRootGenerated) {\n  HasDigest fsVal=null;\n  if (traversal.root.getOutputArtifact() != null) {\n    Artifact artifact=traversal.root.getOutputArtifact();\n    SkyKey artifactKey=Artifact.key(artifact);\n    SkyValue value=env.getValue(artifactKey);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    if (value instanceof FileArtifactValue || value instanceof TreeArtifactValue) {\n      fsVal=(HasDigest)value;\n    }\n else     if (value instanceof ActionExecutionValue) {\n      fsVal=((ActionExecutionValue)value).getExistingFileArtifactValue(artifact);\n    }\n else {\n      return NON_EXISTENT_FILE_INFO;\n    }\n  }\n  RootedPath realPath=traversal.root.asRootedPath();\n  if (traversal.strictOutputFiles) {\n    Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n    return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n  }\n else {\n    Path path=traversal.root.asRootedPath().asPath();\n    FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n    if (fileState.getType() == FileStateType.NONEXISTENT) {\n      throw new IOException(\"Missing file: \" + path);\n    }\n    FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n    FileType type;\n    PathFragment unresolvedLinkTarget=null;\n    if (followStat == null) {\n      type=FileType.DANGLING_SYMLINK;\n      if (fileState.getType() != FileStateType.SYMLINK) {\n        throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n      }\n      unresolvedLinkTarget=path.readSymbolicLink();\n    }\n else     if (fileState.getType() == FileStateType.REGULAR_FILE) {\n      type=FileType.FILE;\n    }\n else     if (fileState.getType() == FileStateType.DIRECTORY) {\n      type=FileType.DIRECTORY;\n    }\n else {\n      unresolvedLinkTarget=path.readSymbolicLink();\n      realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n      type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n    }\n    if (fsVal == null) {\n      fsVal=fileState;\n    }\n    return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n  }\n}\n else {\n  FileValue fileValue=(FileValue)env.getValueOrThrow(FileValue.key(traversal.root.asRootedPath()),IOException.class);\n  if (env.valuesMissing()) {\n    return null;\n  }\n  if (fileValue.unboundedAncestorSymlinkExpansionChain() != null) {\n    SkyKey uniquenessKey=FileSymlinkInfiniteExpansionUniquenessFunction.key(fileValue.unboundedAncestorSymlinkExpansionChain());\n    env.getValue(uniquenessKey);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    throw new FileSymlinkInfiniteExpansionException(fileValue.pathToUnboundedAncestorSymlinkExpansionChain(),fileValue.unboundedAncestorSymlinkExpansionChain());\n  }\n  if (fileValue.exists()) {\n    PathFragment unresolvedLinkTarget=null;\n    FileType type;\n    if (fileValue.isSymlink()) {\n      unresolvedLinkTarget=fileValue.getUnresolvedLinkTarget();\n      type=fileValue.isDirectory() ? FileType.SYMLINK_TO_DIRECTORY : FileType.SYMLINK_TO_FILE;\n    }\n else {\n      type=fileValue.isDirectory() ? FileType.DIRECTORY : FileType.FILE;\n    }\n    Path path=traversal.root.asRootedPath().asPath();\n    return new FileInfo(type,withDigest(fileValue.realFileStateValue(),path),fileValue.realRootedPath(),unresolvedLinkTarget);\n  }\n else {\n    return new FileInfo(fileValue.isSymlink() ? FileType.DANGLING_SYMLINK : FileType.NONEXISTENT,withDigest(fileValue.realFileStateValue(),null),null,fileValue.isSymlink() ? fileValue.getUnresolvedLinkTarget() : null);\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 500,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4679,
+        "startLineNumber" : 310,
+        "startColumnNumber" : 47,
+        "endLineNumber" : 418,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  if (traversal.isRootGenerated) {\n    HasDigest fsVal=null;\n    if (traversal.root.getOutputArtifact() != null) {\n      Artifact artifact=traversal.root.getOutputArtifact();\n      SkyKey artifactKey=Artifact.key(artifact);\n      SkyValue value=env.getValue(artifactKey);\n      if (env.valuesMissing()) {\n        return null;\n      }\n      if (value instanceof FileArtifactValue || value instanceof TreeArtifactValue) {\n        fsVal=(HasDigest)value;\n      }\n else       if (value instanceof ActionExecutionValue) {\n        fsVal=((ActionExecutionValue)value).getExistingFileArtifactValue(artifact);\n      }\n else {\n        return NON_EXISTENT_FILE_INFO;\n      }\n    }\n    RootedPath realPath=traversal.root.asRootedPath();\n    if (traversal.strictOutputFiles) {\n      Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n      return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n    }\n else {\n      Path path=traversal.root.asRootedPath().asPath();\n      FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n      if (fileState.getType() == FileStateType.NONEXISTENT) {\n        throw new IOException(\"Missing file: \" + path);\n      }\n      FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n      FileType type;\n      PathFragment unresolvedLinkTarget=null;\n      if (followStat == null) {\n        type=FileType.DANGLING_SYMLINK;\n        if (fileState.getType() != FileStateType.SYMLINK) {\n          throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n        }\n        unresolvedLinkTarget=path.readSymbolicLink();\n      }\n else       if (fileState.getType() == FileStateType.REGULAR_FILE) {\n        type=FileType.FILE;\n      }\n else       if (fileState.getType() == FileStateType.DIRECTORY) {\n        type=FileType.DIRECTORY;\n      }\n else {\n        unresolvedLinkTarget=path.readSymbolicLink();\n        realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n        type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n      }\n      if (fsVal == null) {\n        fsVal=fileState;\n      }\n      return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n    }\n  }\n else {\n    FileValue fileValue=(FileValue)env.getValueOrThrow(FileValue.key(traversal.root.asRootedPath()),IOException.class);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    if (fileValue.unboundedAncestorSymlinkExpansionChain() != null) {\n      SkyKey uniquenessKey=FileSymlinkInfiniteExpansionUniquenessFunction.key(fileValue.unboundedAncestorSymlinkExpansionChain());\n      env.getValue(uniquenessKey);\n      if (env.valuesMissing()) {\n        return null;\n      }\n      throw new FileSymlinkInfiniteExpansionException(fileValue.pathToUnboundedAncestorSymlinkExpansionChain(),fileValue.unboundedAncestorSymlinkExpansionChain());\n    }\n    if (fileValue.exists()) {\n      PathFragment unresolvedLinkTarget=null;\n      FileType type;\n      if (fileValue.isSymlink()) {\n        unresolvedLinkTarget=fileValue.getUnresolvedLinkTarget();\n        type=fileValue.isDirectory() ? FileType.SYMLINK_TO_DIRECTORY : FileType.SYMLINK_TO_FILE;\n      }\n else {\n        type=fileValue.isDirectory() ? FileType.DIRECTORY : FileType.FILE;\n      }\n      Path path=traversal.root.asRootedPath().asPath();\n      return new FileInfo(type,withDigest(fileValue.realFileStateValue(),path),fileValue.realRootedPath(),unresolvedLinkTarget);\n    }\n else {\n      return new FileInfo(fileValue.isSymlink() ? FileType.DANGLING_SYMLINK : FileType.NONEXISTENT,withDigest(fileValue.realFileStateValue(),null),null,fileValue.isSymlink() ? fileValue.getUnresolvedLinkTarget() : null);\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 501,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4822,
+        "startLineNumber" : 308,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 418,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "@Nullable private static FileInfo lookUpFileInfo(Environment env,TraversalRequest traversal) throws IOException, InterruptedException {\n  if (traversal.isRootGenerated) {\n    HasDigest fsVal=null;\n    if (traversal.root.getOutputArtifact() != null) {\n      Artifact artifact=traversal.root.getOutputArtifact();\n      SkyKey artifactKey=Artifact.key(artifact);\n      SkyValue value=env.getValue(artifactKey);\n      if (env.valuesMissing()) {\n        return null;\n      }\n      if (value instanceof FileArtifactValue || value instanceof TreeArtifactValue) {\n        fsVal=(HasDigest)value;\n      }\n else       if (value instanceof ActionExecutionValue) {\n        fsVal=((ActionExecutionValue)value).getExistingFileArtifactValue(artifact);\n      }\n else {\n        return NON_EXISTENT_FILE_INFO;\n      }\n    }\n    RootedPath realPath=traversal.root.asRootedPath();\n    if (traversal.strictOutputFiles) {\n      Preconditions.checkNotNull(fsVal,\"Strict Fileset output tree has null FileArtifactValue\");\n      return new FileInfo((fsVal instanceof TreeArtifactValue ? FileType.DIRECTORY : FileType.FILE),fsVal,realPath,null);\n    }\n else {\n      Path path=traversal.root.asRootedPath().asPath();\n      FileStateValue fileState=FileStateValue.create(traversal.root.asRootedPath(),DEFAULT_SYSCALLS,null);\n      if (fileState.getType() == FileStateType.NONEXISTENT) {\n        throw new IOException(\"Missing file: \" + path);\n      }\n      FileStatus followStat=path.statIfFound(Symlinks.FOLLOW);\n      FileType type;\n      PathFragment unresolvedLinkTarget=null;\n      if (followStat == null) {\n        type=FileType.DANGLING_SYMLINK;\n        if (fileState.getType() != FileStateType.SYMLINK) {\n          throw new IOException(\"Expected symlink for \" + path + \", but got: \"+ fileState);\n        }\n        unresolvedLinkTarget=path.readSymbolicLink();\n      }\n else       if (fileState.getType() == FileStateType.REGULAR_FILE) {\n        type=FileType.FILE;\n      }\n else       if (fileState.getType() == FileStateType.DIRECTORY) {\n        type=FileType.DIRECTORY;\n      }\n else {\n        unresolvedLinkTarget=path.readSymbolicLink();\n        realPath=RootedPath.toRootedPath(Root.absoluteRoot(path.getFileSystem()),path.resolveSymbolicLinks());\n        type=followStat.isFile() ? FileType.SYMLINK_TO_FILE : FileType.SYMLINK_TO_DIRECTORY;\n      }\n      if (fsVal == null) {\n        fsVal=fileState;\n      }\n      return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n    }\n  }\n else {\n    FileValue fileValue=(FileValue)env.getValueOrThrow(FileValue.key(traversal.root.asRootedPath()),IOException.class);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    if (fileValue.unboundedAncestorSymlinkExpansionChain() != null) {\n      SkyKey uniquenessKey=FileSymlinkInfiniteExpansionUniquenessFunction.key(fileValue.unboundedAncestorSymlinkExpansionChain());\n      env.getValue(uniquenessKey);\n      if (env.valuesMissing()) {\n        return null;\n      }\n      throw new FileSymlinkInfiniteExpansionException(fileValue.pathToUnboundedAncestorSymlinkExpansionChain(),fileValue.unboundedAncestorSymlinkExpansionChain());\n    }\n    if (fileValue.exists()) {\n      PathFragment unresolvedLinkTarget=null;\n      FileType type;\n      if (fileValue.isSymlink()) {\n        unresolvedLinkTarget=fileValue.getUnresolvedLinkTarget();\n        type=fileValue.isDirectory() ? FileType.SYMLINK_TO_DIRECTORY : FileType.SYMLINK_TO_FILE;\n      }\n else {\n        type=fileValue.isDirectory() ? FileType.DIRECTORY : FileType.FILE;\n      }\n      Path path=traversal.root.asRootedPath().asPath();\n      return new FileInfo(type,withDigest(fileValue.realFileStateValue(),path),fileValue.realRootedPath(),unresolvedLinkTarget);\n    }\n else {\n      return new FileInfo(fileValue.isSymlink() ? FileType.DANGLING_SYMLINK : FileType.NONEXISTENT,withDigest(fileValue.realFileStateValue(),null),null,fileValue.isSymlink() ? fileValue.getUnresolvedLinkTarget() : null);\n    }\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 521,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 83,
+        "startLineNumber" : 369,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 369,
+        "endColumnNumber" : 91
+      },
+      "nodeContext" : "return new FileInfo(type,withDigest(fsVal,path),realPath,unresolvedLinkTarget);\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "com.google.devtools.build.lib.actions.HasDigest"
+  } ],
+  "positionList" : [ {
+    "charLength" : 5,
+    "startLineNumber" : 331,
+    "startColumnNumber" : 35,
+    "endLineNumber" : 331,
+    "endColumnNumber" : 40
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 333,
+    "startColumnNumber" : 13,
+    "endLineNumber" : 333,
+    "endColumnNumber" : 18
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 334,
+    "startColumnNumber" : 12,
+    "endLineNumber" : 334,
+    "endColumnNumber" : 17
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 366,
+    "startColumnNumber" : 12,
+    "endLineNumber" : 366,
+    "endColumnNumber" : 17
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 369,
+    "startColumnNumber" : 45,
+    "endLineNumber" : 369,
+    "endColumnNumber" : 50
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 3,
+    "layout" : 6
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 4,
+    "layout" : 6
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 0
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 4,
+    "layout" : 2
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 3,
+    "layout" : 3
+  } ]
+}

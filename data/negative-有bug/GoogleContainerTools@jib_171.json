@@ -1,0 +1,126 @@
+{
+  "id" : 171,
+  "expression" : "UUID",
+  "projectName" : "GoogleContainerTools@jib",
+  "commitID" : "a0742fd277b5490a0965dba4443f5864f1250199",
+  "filePath" : "/jib-gradle-plugin/src/integration-test/java/com/google/cloud/tools/jib/gradle/JibPluginIntegrationTest.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "UUID",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 4,
+      "startLineNumber" : 181,
+      "startColumnNumber" : 41,
+      "endLineNumber" : 181,
+      "endColumnNumber" : 45
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,rightOperand]",
+      "nodePosition" : {
+        "charLength" : 17,
+        "startLineNumber" : 181,
+        "startColumnNumber" : 41,
+        "endLineNumber" : 181,
+        "endColumnNumber" : 58
+      },
+      "nodeContext" : "UUID.randomUUID()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 31,
+        "startLineNumber" : 181,
+        "startColumnNumber" : 27,
+        "endLineNumber" : 181,
+        "endColumnNumber" : 58
+      },
+      "nodeContext" : "\"registry-\" + UUID.randomUUID()",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 47,
+        "startLineNumber" : 181,
+        "startColumnNumber" : 11,
+        "endLineNumber" : 181,
+        "endColumnNumber" : 58
+      },
+      "nodeContext" : "containerName=\"registry-\" + UUID.randomUUID()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 55,
+        "startLineNumber" : 181,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 181,
+        "endColumnNumber" : 59
+      },
+      "nodeContext" : "String containerName=\"registry-\" + UUID.randomUUID();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3389,
+        "startLineNumber" : 178,
+        "startColumnNumber" : 75,
+        "endLineNumber" : 259,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  String containerName=\"registry-\" + UUID.randomUUID();\n  new Command(\"docker\",\"run\",\"-d\",\"-p\",\"5000:5000\",\"--restart=always\",\"--name\",containerName,\"-v\",simpleTestProject.getProjectRoot().resolve(\"auth\") + \":/auth\",\"-e\",\"REGISTRY_AUTH=htpasswd\",\"-e\",\"REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm\",\"-e\",\"REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd\",\"registry:2\").run();\n  try {\n    new Command(\"docker\",\"login\",\"localhost:5000\",\"-u\",\"testuser\",\"-p\",\"testpassword\").run();\n    new Command(\"docker\",\"pull\",\"gcr.io/distroless/java:latest\").run();\n    new Command(\"docker\",\"tag\",\"gcr.io/distroless/java:latest\",\"localhost:5000/distroless/java\").run();\n    new Command(\"docker\",\"push\",\"localhost:5000/distroless/java\").run();\n    new Command(\"docker\",\"logout\",\"localhost:5000\").run();\n    String targetImage=\"localhost:5000/compleximage:gradle\" + System.nanoTime();\n    Instant beforeBuild=Instant.now();\n    BuildResult buildResult=simpleTestProject.build(\"clean\",JibPlugin.BUILD_IMAGE_TASK_NAME,\"-D_TARGET_IMAGE=\" + targetImage,\"-DsendCredentialsOverHttp=true\",\"-b=complex-build.gradle\");\n    BuildTask classesTask=buildResult.task(\":classes\");\n    BuildTask jibTask=buildResult.task(\":\" + JibPlugin.BUILD_IMAGE_TASK_NAME);\n    Assert.assertNotNull(classesTask);\n    Assert.assertEquals(TaskOutcome.SUCCESS,classesTask.getOutcome());\n    Assert.assertNotNull(jibTask);\n    Assert.assertEquals(TaskOutcome.SUCCESS,jibTask.getOutcome());\n    Assert.assertThat(buildResult.getOutput(),CoreMatchers.containsString(\"Built and pushed image as \"));\n    Assert.assertThat(buildResult.getOutput(),CoreMatchers.containsString(targetImage));\n    new Command(\"docker\",\"login\",\"localhost:5000\",\"-u\",\"testuser\",\"-p\",\"testpassword\").run();\n    new Command(\"docker\",\"pull\",targetImage).run();\n    Assert.assertThat(new Command(\"docker\",\"inspect\",targetImage).run(),CoreMatchers.containsString(\"            \\\"ExposedPorts\\\": {\\n\" + \"                \\\"1000/tcp\\\": {},\\n\" + \"                \\\"2000/udp\\\": {},\\n\"+ \"                \\\"2001/udp\\\": {},\\n\"+ \"                \\\"2002/udp\\\": {},\\n\"+ \"                \\\"2003/udp\\\": {}\"));\n    Assert.assertEquals(\"Hello, world. An argument.\\nfoo\\ncat\\n-Xms512m\\n-Xdebug\\n\",new Command(\"docker\",\"run\",targetImage).run());\n    assertSimpleCreationTimeIsAfter(beforeBuild,targetImage);\n    new Command(\"docker\",\"logout\",\"localhost:5000\").run();\n  }\n  finally {\n    new Command(\"docker\",\"stop\",containerName).run();\n    new Command(\"docker\",\"rm\",\"-v\",containerName).run();\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 293,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3470,
+        "startLineNumber" : 177,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 259,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "@Test public void testBuild_complex() throws IOException, InterruptedException {\n  String containerName=\"registry-\" + UUID.randomUUID();\n  new Command(\"docker\",\"run\",\"-d\",\"-p\",\"5000:5000\",\"--restart=always\",\"--name\",containerName,\"-v\",simpleTestProject.getProjectRoot().resolve(\"auth\") + \":/auth\",\"-e\",\"REGISTRY_AUTH=htpasswd\",\"-e\",\"REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm\",\"-e\",\"REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd\",\"registry:2\").run();\n  try {\n    new Command(\"docker\",\"login\",\"localhost:5000\",\"-u\",\"testuser\",\"-p\",\"testpassword\").run();\n    new Command(\"docker\",\"pull\",\"gcr.io/distroless/java:latest\").run();\n    new Command(\"docker\",\"tag\",\"gcr.io/distroless/java:latest\",\"localhost:5000/distroless/java\").run();\n    new Command(\"docker\",\"push\",\"localhost:5000/distroless/java\").run();\n    new Command(\"docker\",\"logout\",\"localhost:5000\").run();\n    String targetImage=\"localhost:5000/compleximage:gradle\" + System.nanoTime();\n    Instant beforeBuild=Instant.now();\n    BuildResult buildResult=simpleTestProject.build(\"clean\",JibPlugin.BUILD_IMAGE_TASK_NAME,\"-D_TARGET_IMAGE=\" + targetImage,\"-DsendCredentialsOverHttp=true\",\"-b=complex-build.gradle\");\n    BuildTask classesTask=buildResult.task(\":classes\");\n    BuildTask jibTask=buildResult.task(\":\" + JibPlugin.BUILD_IMAGE_TASK_NAME);\n    Assert.assertNotNull(classesTask);\n    Assert.assertEquals(TaskOutcome.SUCCESS,classesTask.getOutcome());\n    Assert.assertNotNull(jibTask);\n    Assert.assertEquals(TaskOutcome.SUCCESS,jibTask.getOutcome());\n    Assert.assertThat(buildResult.getOutput(),CoreMatchers.containsString(\"Built and pushed image as \"));\n    Assert.assertThat(buildResult.getOutput(),CoreMatchers.containsString(targetImage));\n    new Command(\"docker\",\"login\",\"localhost:5000\",\"-u\",\"testuser\",\"-p\",\"testpassword\").run();\n    new Command(\"docker\",\"pull\",targetImage).run();\n    Assert.assertThat(new Command(\"docker\",\"inspect\",targetImage).run(),CoreMatchers.containsString(\"            \\\"ExposedPorts\\\": {\\n\" + \"                \\\"1000/tcp\\\": {},\\n\" + \"                \\\"2000/udp\\\": {},\\n\"+ \"                \\\"2001/udp\\\": {},\\n\"+ \"                \\\"2002/udp\\\": {},\\n\"+ \"                \\\"2003/udp\\\": {}\"));\n    Assert.assertEquals(\"Hello, world. An argument.\\nfoo\\ncat\\n-Xms512m\\n-Xdebug\\n\",new Command(\"docker\",\"run\",targetImage).run());\n    assertSimpleCreationTimeIsAfter(beforeBuild,targetImage);\n    new Command(\"docker\",\"logout\",\"localhost:5000\").run();\n  }\n  finally {\n    new Command(\"docker\",\"stop\",containerName).run();\n    new Command(\"docker\",\"rm\",\"-v\",containerName).run();\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 303,
+      "astHeight" : 10
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 55,
+        "startLineNumber" : 181,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 181,
+        "endColumnNumber" : 59
+      },
+      "nodeContext" : "String containerName=\"registry-\" + UUID.randomUUID();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "java.util.UUID"
+  } ],
+  "positionList" : [ {
+    "charLength" : 4,
+    "startLineNumber" : 181,
+    "startColumnNumber" : 41,
+    "endLineNumber" : 181,
+    "endColumnNumber" : 45
+  } ],
+  "layoutRelationDataList" : [ ]
+}

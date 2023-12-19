@@ -1,0 +1,87 @@
+{
+  "id" : 57,
+  "expression" : "phoneCall.id != call.id",
+  "projectName" : "DrKLO@Telegram",
+  "commitID" : "11fbfb1329df700b203e1852a71c4c11b5ab12f4",
+  "filePath" : "/TMessagesProj/src/main/java/org/telegram/messenger/voip/VoIPService.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "phoneCall.id != call.id",
+    "nodeType" : "InfixExpression",
+    "nodePosition" : {
+      "charLength" : 23,
+      "startLineNumber" : 824,
+      "startColumnNumber" : 6,
+      "endLineNumber" : 824,
+      "endColumnNumber" : 29
+    },
+    "astNodeNumber" : 7,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 199,
+        "startLineNumber" : 824,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 829,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "if (phoneCall.id != call.id) {\n  if (BuildVars.LOGS_ENABLED) {\n    FileLog.w(\"onCallUpdated called with wrong call id (got \" + phoneCall.id + \", expected \"+ this.call.id+ \")\");\n  }\n  return;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 31,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3951,
+        "startLineNumber" : 816,
+        "startColumnNumber" : 54,
+        "endLineNumber" : 937,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  if (call == null) {\n    pendingUpdates.add(phoneCall);\n    return;\n  }\n  if (phoneCall == null) {\n    return;\n  }\n  if (phoneCall.id != call.id) {\n    if (BuildVars.LOGS_ENABLED) {\n      FileLog.w(\"onCallUpdated called with wrong call id (got \" + phoneCall.id + \", expected \"+ this.call.id+ \")\");\n    }\n    return;\n  }\n  if (phoneCall.access_hash == 0) {\n    phoneCall.access_hash=this.call.access_hash;\n  }\n  if (BuildVars.LOGS_ENABLED) {\n    FileLog.d(\"Call updated: \" + phoneCall);\n    dumpCallObject();\n  }\n  call=phoneCall;\n  if (phoneCall instanceof TLRPC.TL_phoneCallDiscarded) {\n    needSendDebugLog=phoneCall.need_debug;\n    needRateCall=phoneCall.need_rating;\n    if (BuildVars.LOGS_ENABLED) {\n      FileLog.d(\"call discarded, stopping service\");\n    }\n    if (phoneCall.reason instanceof TLRPC.TL_phoneCallDiscardReasonBusy) {\n      dispatchStateChanged(STATE_BUSY);\n      playingSound=true;\n      soundPool.play(spBusyId,1,1,0,-1,1);\n      AndroidUtilities.runOnUIThread(afterSoundRunnable,1500);\n      endConnectionServiceCall(1500);\n      stopSelf();\n    }\n else {\n      callEnded();\n    }\n  }\n else   if (phoneCall instanceof TLRPC.TL_phoneCall && authKey == null) {\n    if (phoneCall.g_a_or_b == null) {\n      if (BuildVars.LOGS_ENABLED) {\n        FileLog.w(\"stopping VoIP service, Ga == null\");\n      }\n      callFailed();\n      return;\n    }\n    if (!Arrays.equals(g_a_hash,Utilities.computeSHA256(phoneCall.g_a_or_b,0,phoneCall.g_a_or_b.length))) {\n      if (BuildVars.LOGS_ENABLED) {\n        FileLog.w(\"stopping VoIP service, Ga hash doesn't match\");\n      }\n      callFailed();\n      return;\n    }\n    g_a=phoneCall.g_a_or_b;\n    BigInteger g_a=new BigInteger(1,phoneCall.g_a_or_b);\n    BigInteger p=new BigInteger(1,MessagesStorage.getInstance(currentAccount).getSecretPBytes());\n    if (!Utilities.isGoodGaAndGb(g_a,p)) {\n      if (BuildVars.LOGS_ENABLED) {\n        FileLog.w(\"stopping VoIP service, bad Ga and Gb (accepting)\");\n      }\n      callFailed();\n      return;\n    }\n    g_a=g_a.modPow(new BigInteger(1,a_or_b),p);\n    byte[] authKey=g_a.toByteArray();\n    if (authKey.length > 256) {\n      byte[] correctedAuth=new byte[256];\n      System.arraycopy(authKey,authKey.length - 256,correctedAuth,0,256);\n      authKey=correctedAuth;\n    }\n else     if (authKey.length < 256) {\n      byte[] correctedAuth=new byte[256];\n      System.arraycopy(authKey,0,correctedAuth,256 - authKey.length,authKey.length);\n      for (int a=0; a < 256 - authKey.length; a++) {\n        correctedAuth[a]=0;\n      }\n      authKey=correctedAuth;\n    }\n    byte[] authKeyHash=Utilities.computeSHA1(authKey);\n    byte[] authKeyId=new byte[8];\n    System.arraycopy(authKeyHash,authKeyHash.length - 8,authKeyId,0,8);\n    VoIPService.this.authKey=authKey;\n    keyFingerprint=Utilities.bytesToLong(authKeyId);\n    if (keyFingerprint != phoneCall.key_fingerprint) {\n      if (BuildVars.LOGS_ENABLED) {\n        FileLog.w(\"key fingerprints don't match\");\n      }\n      callFailed();\n      return;\n    }\n    initiateActualEncryptedCall();\n  }\n else   if (phoneCall instanceof TLRPC.TL_phoneCallAccepted && authKey == null) {\n    processAcceptedCall();\n  }\n else {\n    if (currentState == STATE_WAITING && phoneCall.receive_date != 0) {\n      dispatchStateChanged(STATE_RINGING);\n      if (BuildVars.LOGS_ENABLED) {\n        FileLog.d(\"!!!!!! CALL RECEIVED\");\n      }\n      if (connectingSoundRunnable != null) {\n        AndroidUtilities.cancelRunOnUIThread(connectingSoundRunnable);\n        connectingSoundRunnable=null;\n      }\n      if (spPlayID != 0) {\n        soundPool.stop(spPlayID);\n      }\n      spPlayID=soundPool.play(spRingbackID,1,1,0,-1,1);\n      if (timeoutRunnable != null) {\n        AndroidUtilities.cancelRunOnUIThread(timeoutRunnable);\n        timeoutRunnable=null;\n      }\n      timeoutRunnable=() -> {\n        timeoutRunnable=null;\n        declineIncomingCall(DISCARD_REASON_MISSED,null);\n      }\n;\n      AndroidUtilities.runOnUIThread(timeoutRunnable,MessagesController.getInstance(currentAccount).callRingTimeout);\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 586,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4004,
+        "startLineNumber" : 816,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 937,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "public void onCallUpdated(TLRPC.PhoneCall phoneCall){\n  if (call == null) {\n    pendingUpdates.add(phoneCall);\n    return;\n  }\n  if (phoneCall == null) {\n    return;\n  }\n  if (phoneCall.id != call.id) {\n    if (BuildVars.LOGS_ENABLED) {\n      FileLog.w(\"onCallUpdated called with wrong call id (got \" + phoneCall.id + \", expected \"+ this.call.id+ \")\");\n    }\n    return;\n  }\n  if (phoneCall.access_hash == 0) {\n    phoneCall.access_hash=this.call.access_hash;\n  }\n  if (BuildVars.LOGS_ENABLED) {\n    FileLog.d(\"Call updated: \" + phoneCall);\n    dumpCallObject();\n  }\n  call=phoneCall;\n  if (phoneCall instanceof TLRPC.TL_phoneCallDiscarded) {\n    needSendDebugLog=phoneCall.need_debug;\n    needRateCall=phoneCall.need_rating;\n    if (BuildVars.LOGS_ENABLED) {\n      FileLog.d(\"call discarded, stopping service\");\n    }\n    if (phoneCall.reason instanceof TLRPC.TL_phoneCallDiscardReasonBusy) {\n      dispatchStateChanged(STATE_BUSY);\n      playingSound=true;\n      soundPool.play(spBusyId,1,1,0,-1,1);\n      AndroidUtilities.runOnUIThread(afterSoundRunnable,1500);\n      endConnectionServiceCall(1500);\n      stopSelf();\n    }\n else {\n      callEnded();\n    }\n  }\n else   if (phoneCall instanceof TLRPC.TL_phoneCall && authKey == null) {\n    if (phoneCall.g_a_or_b == null) {\n      if (BuildVars.LOGS_ENABLED) {\n        FileLog.w(\"stopping VoIP service, Ga == null\");\n      }\n      callFailed();\n      return;\n    }\n    if (!Arrays.equals(g_a_hash,Utilities.computeSHA256(phoneCall.g_a_or_b,0,phoneCall.g_a_or_b.length))) {\n      if (BuildVars.LOGS_ENABLED) {\n        FileLog.w(\"stopping VoIP service, Ga hash doesn't match\");\n      }\n      callFailed();\n      return;\n    }\n    g_a=phoneCall.g_a_or_b;\n    BigInteger g_a=new BigInteger(1,phoneCall.g_a_or_b);\n    BigInteger p=new BigInteger(1,MessagesStorage.getInstance(currentAccount).getSecretPBytes());\n    if (!Utilities.isGoodGaAndGb(g_a,p)) {\n      if (BuildVars.LOGS_ENABLED) {\n        FileLog.w(\"stopping VoIP service, bad Ga and Gb (accepting)\");\n      }\n      callFailed();\n      return;\n    }\n    g_a=g_a.modPow(new BigInteger(1,a_or_b),p);\n    byte[] authKey=g_a.toByteArray();\n    if (authKey.length > 256) {\n      byte[] correctedAuth=new byte[256];\n      System.arraycopy(authKey,authKey.length - 256,correctedAuth,0,256);\n      authKey=correctedAuth;\n    }\n else     if (authKey.length < 256) {\n      byte[] correctedAuth=new byte[256];\n      System.arraycopy(authKey,0,correctedAuth,256 - authKey.length,authKey.length);\n      for (int a=0; a < 256 - authKey.length; a++) {\n        correctedAuth[a]=0;\n      }\n      authKey=correctedAuth;\n    }\n    byte[] authKeyHash=Utilities.computeSHA1(authKey);\n    byte[] authKeyId=new byte[8];\n    System.arraycopy(authKeyHash,authKeyHash.length - 8,authKeyId,0,8);\n    VoIPService.this.authKey=authKey;\n    keyFingerprint=Utilities.bytesToLong(authKeyId);\n    if (keyFingerprint != phoneCall.key_fingerprint) {\n      if (BuildVars.LOGS_ENABLED) {\n        FileLog.w(\"key fingerprints don't match\");\n      }\n      callFailed();\n      return;\n    }\n    initiateActualEncryptedCall();\n  }\n else   if (phoneCall instanceof TLRPC.TL_phoneCallAccepted && authKey == null) {\n    processAcceptedCall();\n  }\n else {\n    if (currentState == STATE_WAITING && phoneCall.receive_date != 0) {\n      dispatchStateChanged(STATE_RINGING);\n      if (BuildVars.LOGS_ENABLED) {\n        FileLog.d(\"!!!!!! CALL RECEIVED\");\n      }\n      if (connectingSoundRunnable != null) {\n        AndroidUtilities.cancelRunOnUIThread(connectingSoundRunnable);\n        connectingSoundRunnable=null;\n      }\n      if (spPlayID != 0) {\n        soundPool.stop(spPlayID);\n      }\n      spPlayID=soundPool.play(spRingbackID,1,1,0,-1,1);\n      if (timeoutRunnable != null) {\n        AndroidUtilities.cancelRunOnUIThread(timeoutRunnable);\n        timeoutRunnable=null;\n      }\n      timeoutRunnable=() -> {\n        timeoutRunnable=null;\n        declineIncomingCall(DISCARD_REASON_MISSED,null);\n      }\n;\n      AndroidUtilities.runOnUIThread(timeoutRunnable,MessagesController.getInstance(currentAccount).callRingTimeout);\n    }\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 596,
+      "astHeight" : 15
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 199,
+        "startLineNumber" : 824,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 829,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "if (phoneCall.id != call.id) {\n  if (BuildVars.LOGS_ENABLED) {\n    FileLog.w(\"onCallUpdated called with wrong call id (got \" + phoneCall.id + \", expected \"+ this.call.id+ \")\");\n  }\n  return;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 31,
+      "astHeight" : 10
+    },
+    "tokenLength" : 5,
+    "type" : "boolean"
+  } ],
+  "positionList" : [ {
+    "charLength" : 23,
+    "startLineNumber" : 824,
+    "startColumnNumber" : 6,
+    "endLineNumber" : 824,
+    "endColumnNumber" : 29
+  } ],
+  "layoutRelationDataList" : [ ]
+}

@@ -84,6 +84,8 @@ if __name__ == '__main__':
 
     for index in range(0, len(projects_info)):  # 84
         project_info = projects_info[index]
+        if project_info != 'bumptech@glide':
+            continue
         if project_info == 'ben-manes@caffeine' or project_info == 'medcl@elasticsearch-analysis-ik' or project_info == 'iBotPeaches@Apktool' \
                 or project_info == 'Tencent@VasSonic' or project_info == 'Yalantis@uCrop' or project_info == 'jfeinstein10@SlidingMenu' \
                 or project_info == 'Konloch@bytecode-viewer' or project_info == 'LMAX-Exchange/disruptor' or project_info == 'permissions-dispatcher@PermissionsDispatcher' \
@@ -116,3 +118,4 @@ if __name__ == '__main__':
             flag = open_github_page(project_info, i, json_data)
             if flag:
                 break
+        break

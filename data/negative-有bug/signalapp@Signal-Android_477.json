@@ -1,0 +1,1011 @@
+{
+  "id" : 477,
+  "expression" : "remotePeerGroup",
+  "projectName" : "signalapp@Signal-Android",
+  "commitID" : "7e91132e7ed62a58b5f347de252ab1eda3f43b90",
+  "filePath" : "/app/src/main/java/org/thoughtcrime/securesms/service/webrtc/IncomingGroupCallActionProcessor.java",
+  "occurrences" : 7,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "remotePeerGroup",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 53,
+      "startColumnNumber" : 60,
+      "endLineNumber" : 53,
+      "endColumnNumber" : 75
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,rightOperand]",
+      "nodePosition" : {
+        "charLength" : 23,
+        "startLineNumber" : 53,
+        "startColumnNumber" : 60,
+        "endLineNumber" : 53,
+        "endColumnNumber" : 83
+      },
+      "nodeContext" : "remotePeerGroup.getId()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 116,
+        "startLineNumber" : 53,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 53,
+        "endColumnNumber" : 131
+      },
+      "nodeContext" : "\"handleGroupCallRingUpdate(): recipient: \" + remotePeerGroup.getId() + \" ring: \"+ ringId+ \" update: \"+ ringUpdate",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 9,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 128,
+        "startLineNumber" : 53,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 53,
+        "endColumnNumber" : 132
+      },
+      "nodeContext" : "Log.i(TAG,\"handleGroupCallRingUpdate(): recipient: \" + remotePeerGroup.getId() + \" ring: \"+ ringId+ \" update: \"+ ringUpdate)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 13,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 129,
+        "startLineNumber" : 53,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 53,
+        "endColumnNumber" : 133
+      },
+      "nodeContext" : "Log.i(TAG,\"handleGroupCallRingUpdate(): recipient: \" + remotePeerGroup.getId() + \" ring: \"+ ringId+ \" update: \"+ ringUpdate);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 14,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5778,
+        "startLineNumber" : 52,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 162,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  Log.i(TAG,\"handleGroupCallRingUpdate(): recipient: \" + remotePeerGroup.getId() + \" ring: \"+ ringId+ \" update: \"+ ringUpdate);\n  Recipient recipient=remotePeerGroup.getRecipient();\n  boolean updateForCurrentRingId=ringId == currentState.getCallSetupState().getRingId();\n  boolean isCurrentlyRinging=currentState.getCallInfoState().getGroupCallState().isRinging();\n  if (DatabaseFactory.getGroupCallRingDatabase(context).isCancelled(ringId)) {\n    try {\n      Log.i(TAG,\"Ignoring incoming ring request for already cancelled ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,null);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (ringUpdate != CallManager.RingUpdate.REQUESTED) {\n    DatabaseFactory.getGroupCallRingDatabase(context).insertOrUpdateGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n    if (updateForCurrentRingId && isCurrentlyRinging) {\n      Log.i(TAG,\"Cancelling current ring: \" + ringId);\n      currentState=currentState.builder().changeCallInfoState().callState(WebRtcViewModel.State.CALL_DISCONNECTED).build();\n      webRtcInteractor.postStateUpdate(currentState);\n      return terminateGroupCall(currentState);\n    }\n else {\n      return currentState;\n    }\n  }\n  if (!updateForCurrentRingId && isCurrentlyRinging) {\n    try {\n      Log.i(TAG,\"Already ringing so reply busy for new ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,CallManager.RingCancelReason.Busy);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (updateForCurrentRingId) {\n    Log.i(TAG,\"Already ringing for ring: \" + ringId);\n    return currentState;\n  }\n  Log.i(TAG,\"Requesting new ring: \" + ringId);\n  DatabaseFactory.getGroupCallRingDatabase(context).insertGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n  currentState=WebRtcVideoUtil.initializeVideo(context,webRtcInteractor.getCameraEventListener(),currentState);\n  webRtcInteractor.setCallInProgressNotification(TYPE_INCOMING_RINGING,remotePeerGroup);\n  webRtcInteractor.updatePhoneState(LockManager.PhoneState.INTERACTIVE);\n  webRtcInteractor.initializeAudioForCall();\n  boolean shouldDisturbUserWithCall=DoNotDisturbUtil.shouldDisturbUserWithCall(context.getApplicationContext());\n  if (shouldDisturbUserWithCall) {\n    boolean started=webRtcInteractor.startWebRtcCallActivityIfPossible();\n    if (!started) {\n      Log.i(TAG,\"Unable to start call activity due to OS version or not being in the foreground\");\n      ApplicationDependencies.getAppForegroundObserver().addListener(webRtcInteractor.getForegroundListener());\n    }\n  }\n  if (shouldDisturbUserWithCall && SignalStore.settings().isCallNotificationsEnabled()) {\n    Uri ringtone=recipient.resolve().getCallRingtone();\n    RecipientDatabase.VibrateState vibrateState=recipient.resolve().getCallVibrate();\n    if (ringtone == null) {\n      ringtone=SignalStore.settings().getCallRingtone();\n    }\n    webRtcInteractor.startIncomingRinger(ringtone,vibrateState == RecipientDatabase.VibrateState.ENABLED || (vibrateState == RecipientDatabase.VibrateState.DEFAULT && SignalStore.settings().isCallVibrateEnabled()));\n  }\n  webRtcInteractor.registerPowerButtonReceiver();\n  return currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY)).build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 472,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 6371,
+        "startLineNumber" : 45,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 162,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "@Override protected @NonNull WebRtcServiceState handleGroupCallRingUpdate(@NonNull WebRtcServiceState currentState,@NonNull RemotePeer remotePeerGroup,@NonNull GroupId.V2 groupId,long ringId,@NonNull UUID uuid,@NonNull CallManager.RingUpdate ringUpdate){\n  Log.i(TAG,\"handleGroupCallRingUpdate(): recipient: \" + remotePeerGroup.getId() + \" ring: \"+ ringId+ \" update: \"+ ringUpdate);\n  Recipient recipient=remotePeerGroup.getRecipient();\n  boolean updateForCurrentRingId=ringId == currentState.getCallSetupState().getRingId();\n  boolean isCurrentlyRinging=currentState.getCallInfoState().getGroupCallState().isRinging();\n  if (DatabaseFactory.getGroupCallRingDatabase(context).isCancelled(ringId)) {\n    try {\n      Log.i(TAG,\"Ignoring incoming ring request for already cancelled ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,null);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (ringUpdate != CallManager.RingUpdate.REQUESTED) {\n    DatabaseFactory.getGroupCallRingDatabase(context).insertOrUpdateGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n    if (updateForCurrentRingId && isCurrentlyRinging) {\n      Log.i(TAG,\"Cancelling current ring: \" + ringId);\n      currentState=currentState.builder().changeCallInfoState().callState(WebRtcViewModel.State.CALL_DISCONNECTED).build();\n      webRtcInteractor.postStateUpdate(currentState);\n      return terminateGroupCall(currentState);\n    }\n else {\n      return currentState;\n    }\n  }\n  if (!updateForCurrentRingId && isCurrentlyRinging) {\n    try {\n      Log.i(TAG,\"Already ringing so reply busy for new ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,CallManager.RingCancelReason.Busy);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (updateForCurrentRingId) {\n    Log.i(TAG,\"Already ringing for ring: \" + ringId);\n    return currentState;\n  }\n  Log.i(TAG,\"Requesting new ring: \" + ringId);\n  DatabaseFactory.getGroupCallRingDatabase(context).insertGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n  currentState=WebRtcVideoUtil.initializeVideo(context,webRtcInteractor.getCameraEventListener(),currentState);\n  webRtcInteractor.setCallInProgressNotification(TYPE_INCOMING_RINGING,remotePeerGroup);\n  webRtcInteractor.updatePhoneState(LockManager.PhoneState.INTERACTIVE);\n  webRtcInteractor.initializeAudioForCall();\n  boolean shouldDisturbUserWithCall=DoNotDisturbUtil.shouldDisturbUserWithCall(context.getApplicationContext());\n  if (shouldDisturbUserWithCall) {\n    boolean started=webRtcInteractor.startWebRtcCallActivityIfPossible();\n    if (!started) {\n      Log.i(TAG,\"Unable to start call activity due to OS version or not being in the foreground\");\n      ApplicationDependencies.getAppForegroundObserver().addListener(webRtcInteractor.getForegroundListener());\n    }\n  }\n  if (shouldDisturbUserWithCall && SignalStore.settings().isCallNotificationsEnabled()) {\n    Uri ringtone=recipient.resolve().getCallRingtone();\n    RecipientDatabase.VibrateState vibrateState=recipient.resolve().getCallVibrate();\n    if (ringtone == null) {\n      ringtone=SignalStore.settings().getCallRingtone();\n    }\n    webRtcInteractor.startIncomingRinger(ringtone,vibrateState == RecipientDatabase.VibrateState.ENABLED || (vibrateState == RecipientDatabase.VibrateState.DEFAULT && SignalStore.settings().isCallVibrateEnabled()));\n  }\n  webRtcInteractor.registerPowerButtonReceiver();\n  return currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY)).build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 518,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 129,
+        "startLineNumber" : 53,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 53,
+        "endColumnNumber" : 133
+      },
+      "nodeContext" : "Log.i(TAG,\"handleGroupCallRingUpdate(): recipient: \" + remotePeerGroup.getId() + \" ring: \"+ ringId+ \" update: \"+ ringUpdate);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 14,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "org.thoughtcrime.securesms.ringrtc.RemotePeer"
+  }, {
+    "nodeContext" : "remotePeerGroup",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 55,
+      "startColumnNumber" : 39,
+      "endLineNumber" : 55,
+      "endColumnNumber" : 54
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 55,
+        "startColumnNumber" : 39,
+        "endLineNumber" : 55,
+        "endColumnNumber" : 69
+      },
+      "nodeContext" : "remotePeerGroup.getRecipient()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 55,
+        "startLineNumber" : 55,
+        "startColumnNumber" : 14,
+        "endLineNumber" : 55,
+        "endColumnNumber" : 69
+      },
+      "nodeContext" : "recipient=remotePeerGroup.getRecipient()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 66,
+        "startLineNumber" : 55,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 55,
+        "endColumnNumber" : 70
+      },
+      "nodeContext" : "Recipient recipient=remotePeerGroup.getRecipient();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5778,
+        "startLineNumber" : 52,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 162,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  Log.i(TAG,\"handleGroupCallRingUpdate(): recipient: \" + remotePeerGroup.getId() + \" ring: \"+ ringId+ \" update: \"+ ringUpdate);\n  Recipient recipient=remotePeerGroup.getRecipient();\n  boolean updateForCurrentRingId=ringId == currentState.getCallSetupState().getRingId();\n  boolean isCurrentlyRinging=currentState.getCallInfoState().getGroupCallState().isRinging();\n  if (DatabaseFactory.getGroupCallRingDatabase(context).isCancelled(ringId)) {\n    try {\n      Log.i(TAG,\"Ignoring incoming ring request for already cancelled ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,null);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (ringUpdate != CallManager.RingUpdate.REQUESTED) {\n    DatabaseFactory.getGroupCallRingDatabase(context).insertOrUpdateGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n    if (updateForCurrentRingId && isCurrentlyRinging) {\n      Log.i(TAG,\"Cancelling current ring: \" + ringId);\n      currentState=currentState.builder().changeCallInfoState().callState(WebRtcViewModel.State.CALL_DISCONNECTED).build();\n      webRtcInteractor.postStateUpdate(currentState);\n      return terminateGroupCall(currentState);\n    }\n else {\n      return currentState;\n    }\n  }\n  if (!updateForCurrentRingId && isCurrentlyRinging) {\n    try {\n      Log.i(TAG,\"Already ringing so reply busy for new ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,CallManager.RingCancelReason.Busy);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (updateForCurrentRingId) {\n    Log.i(TAG,\"Already ringing for ring: \" + ringId);\n    return currentState;\n  }\n  Log.i(TAG,\"Requesting new ring: \" + ringId);\n  DatabaseFactory.getGroupCallRingDatabase(context).insertGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n  currentState=WebRtcVideoUtil.initializeVideo(context,webRtcInteractor.getCameraEventListener(),currentState);\n  webRtcInteractor.setCallInProgressNotification(TYPE_INCOMING_RINGING,remotePeerGroup);\n  webRtcInteractor.updatePhoneState(LockManager.PhoneState.INTERACTIVE);\n  webRtcInteractor.initializeAudioForCall();\n  boolean shouldDisturbUserWithCall=DoNotDisturbUtil.shouldDisturbUserWithCall(context.getApplicationContext());\n  if (shouldDisturbUserWithCall) {\n    boolean started=webRtcInteractor.startWebRtcCallActivityIfPossible();\n    if (!started) {\n      Log.i(TAG,\"Unable to start call activity due to OS version or not being in the foreground\");\n      ApplicationDependencies.getAppForegroundObserver().addListener(webRtcInteractor.getForegroundListener());\n    }\n  }\n  if (shouldDisturbUserWithCall && SignalStore.settings().isCallNotificationsEnabled()) {\n    Uri ringtone=recipient.resolve().getCallRingtone();\n    RecipientDatabase.VibrateState vibrateState=recipient.resolve().getCallVibrate();\n    if (ringtone == null) {\n      ringtone=SignalStore.settings().getCallRingtone();\n    }\n    webRtcInteractor.startIncomingRinger(ringtone,vibrateState == RecipientDatabase.VibrateState.ENABLED || (vibrateState == RecipientDatabase.VibrateState.DEFAULT && SignalStore.settings().isCallVibrateEnabled()));\n  }\n  webRtcInteractor.registerPowerButtonReceiver();\n  return currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY)).build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 472,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 6371,
+        "startLineNumber" : 45,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 162,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "@Override protected @NonNull WebRtcServiceState handleGroupCallRingUpdate(@NonNull WebRtcServiceState currentState,@NonNull RemotePeer remotePeerGroup,@NonNull GroupId.V2 groupId,long ringId,@NonNull UUID uuid,@NonNull CallManager.RingUpdate ringUpdate){\n  Log.i(TAG,\"handleGroupCallRingUpdate(): recipient: \" + remotePeerGroup.getId() + \" ring: \"+ ringId+ \" update: \"+ ringUpdate);\n  Recipient recipient=remotePeerGroup.getRecipient();\n  boolean updateForCurrentRingId=ringId == currentState.getCallSetupState().getRingId();\n  boolean isCurrentlyRinging=currentState.getCallInfoState().getGroupCallState().isRinging();\n  if (DatabaseFactory.getGroupCallRingDatabase(context).isCancelled(ringId)) {\n    try {\n      Log.i(TAG,\"Ignoring incoming ring request for already cancelled ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,null);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (ringUpdate != CallManager.RingUpdate.REQUESTED) {\n    DatabaseFactory.getGroupCallRingDatabase(context).insertOrUpdateGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n    if (updateForCurrentRingId && isCurrentlyRinging) {\n      Log.i(TAG,\"Cancelling current ring: \" + ringId);\n      currentState=currentState.builder().changeCallInfoState().callState(WebRtcViewModel.State.CALL_DISCONNECTED).build();\n      webRtcInteractor.postStateUpdate(currentState);\n      return terminateGroupCall(currentState);\n    }\n else {\n      return currentState;\n    }\n  }\n  if (!updateForCurrentRingId && isCurrentlyRinging) {\n    try {\n      Log.i(TAG,\"Already ringing so reply busy for new ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,CallManager.RingCancelReason.Busy);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (updateForCurrentRingId) {\n    Log.i(TAG,\"Already ringing for ring: \" + ringId);\n    return currentState;\n  }\n  Log.i(TAG,\"Requesting new ring: \" + ringId);\n  DatabaseFactory.getGroupCallRingDatabase(context).insertGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n  currentState=WebRtcVideoUtil.initializeVideo(context,webRtcInteractor.getCameraEventListener(),currentState);\n  webRtcInteractor.setCallInProgressNotification(TYPE_INCOMING_RINGING,remotePeerGroup);\n  webRtcInteractor.updatePhoneState(LockManager.PhoneState.INTERACTIVE);\n  webRtcInteractor.initializeAudioForCall();\n  boolean shouldDisturbUserWithCall=DoNotDisturbUtil.shouldDisturbUserWithCall(context.getApplicationContext());\n  if (shouldDisturbUserWithCall) {\n    boolean started=webRtcInteractor.startWebRtcCallActivityIfPossible();\n    if (!started) {\n      Log.i(TAG,\"Unable to start call activity due to OS version or not being in the foreground\");\n      ApplicationDependencies.getAppForegroundObserver().addListener(webRtcInteractor.getForegroundListener());\n    }\n  }\n  if (shouldDisturbUserWithCall && SignalStore.settings().isCallNotificationsEnabled()) {\n    Uri ringtone=recipient.resolve().getCallRingtone();\n    RecipientDatabase.VibrateState vibrateState=recipient.resolve().getCallVibrate();\n    if (ringtone == null) {\n      ringtone=SignalStore.settings().getCallRingtone();\n    }\n    webRtcInteractor.startIncomingRinger(ringtone,vibrateState == RecipientDatabase.VibrateState.ENABLED || (vibrateState == RecipientDatabase.VibrateState.DEFAULT && SignalStore.settings().isCallVibrateEnabled()));\n  }\n  webRtcInteractor.registerPowerButtonReceiver();\n  return currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY)).build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 518,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 66,
+        "startLineNumber" : 55,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 55,
+        "endColumnNumber" : 70
+      },
+      "nodeContext" : "Recipient recipient=remotePeerGroup.getRecipient();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.thoughtcrime.securesms.ringrtc.RemotePeer"
+  }, {
+    "nodeContext" : "remotePeerGroup",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 109,
+      "startColumnNumber" : 74,
+      "endLineNumber" : 109,
+      "endColumnNumber" : 89
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 86,
+        "startLineNumber" : 109,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 109,
+        "endColumnNumber" : 90
+      },
+      "nodeContext" : "webRtcInteractor.setCallInProgressNotification(TYPE_INCOMING_RINGING,remotePeerGroup)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 5,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 87,
+        "startLineNumber" : 109,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 109,
+        "endColumnNumber" : 91
+      },
+      "nodeContext" : "webRtcInteractor.setCallInProgressNotification(TYPE_INCOMING_RINGING,remotePeerGroup);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5778,
+        "startLineNumber" : 52,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 162,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  Log.i(TAG,\"handleGroupCallRingUpdate(): recipient: \" + remotePeerGroup.getId() + \" ring: \"+ ringId+ \" update: \"+ ringUpdate);\n  Recipient recipient=remotePeerGroup.getRecipient();\n  boolean updateForCurrentRingId=ringId == currentState.getCallSetupState().getRingId();\n  boolean isCurrentlyRinging=currentState.getCallInfoState().getGroupCallState().isRinging();\n  if (DatabaseFactory.getGroupCallRingDatabase(context).isCancelled(ringId)) {\n    try {\n      Log.i(TAG,\"Ignoring incoming ring request for already cancelled ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,null);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (ringUpdate != CallManager.RingUpdate.REQUESTED) {\n    DatabaseFactory.getGroupCallRingDatabase(context).insertOrUpdateGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n    if (updateForCurrentRingId && isCurrentlyRinging) {\n      Log.i(TAG,\"Cancelling current ring: \" + ringId);\n      currentState=currentState.builder().changeCallInfoState().callState(WebRtcViewModel.State.CALL_DISCONNECTED).build();\n      webRtcInteractor.postStateUpdate(currentState);\n      return terminateGroupCall(currentState);\n    }\n else {\n      return currentState;\n    }\n  }\n  if (!updateForCurrentRingId && isCurrentlyRinging) {\n    try {\n      Log.i(TAG,\"Already ringing so reply busy for new ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,CallManager.RingCancelReason.Busy);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (updateForCurrentRingId) {\n    Log.i(TAG,\"Already ringing for ring: \" + ringId);\n    return currentState;\n  }\n  Log.i(TAG,\"Requesting new ring: \" + ringId);\n  DatabaseFactory.getGroupCallRingDatabase(context).insertGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n  currentState=WebRtcVideoUtil.initializeVideo(context,webRtcInteractor.getCameraEventListener(),currentState);\n  webRtcInteractor.setCallInProgressNotification(TYPE_INCOMING_RINGING,remotePeerGroup);\n  webRtcInteractor.updatePhoneState(LockManager.PhoneState.INTERACTIVE);\n  webRtcInteractor.initializeAudioForCall();\n  boolean shouldDisturbUserWithCall=DoNotDisturbUtil.shouldDisturbUserWithCall(context.getApplicationContext());\n  if (shouldDisturbUserWithCall) {\n    boolean started=webRtcInteractor.startWebRtcCallActivityIfPossible();\n    if (!started) {\n      Log.i(TAG,\"Unable to start call activity due to OS version or not being in the foreground\");\n      ApplicationDependencies.getAppForegroundObserver().addListener(webRtcInteractor.getForegroundListener());\n    }\n  }\n  if (shouldDisturbUserWithCall && SignalStore.settings().isCallNotificationsEnabled()) {\n    Uri ringtone=recipient.resolve().getCallRingtone();\n    RecipientDatabase.VibrateState vibrateState=recipient.resolve().getCallVibrate();\n    if (ringtone == null) {\n      ringtone=SignalStore.settings().getCallRingtone();\n    }\n    webRtcInteractor.startIncomingRinger(ringtone,vibrateState == RecipientDatabase.VibrateState.ENABLED || (vibrateState == RecipientDatabase.VibrateState.DEFAULT && SignalStore.settings().isCallVibrateEnabled()));\n  }\n  webRtcInteractor.registerPowerButtonReceiver();\n  return currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY)).build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 472,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 6371,
+        "startLineNumber" : 45,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 162,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "@Override protected @NonNull WebRtcServiceState handleGroupCallRingUpdate(@NonNull WebRtcServiceState currentState,@NonNull RemotePeer remotePeerGroup,@NonNull GroupId.V2 groupId,long ringId,@NonNull UUID uuid,@NonNull CallManager.RingUpdate ringUpdate){\n  Log.i(TAG,\"handleGroupCallRingUpdate(): recipient: \" + remotePeerGroup.getId() + \" ring: \"+ ringId+ \" update: \"+ ringUpdate);\n  Recipient recipient=remotePeerGroup.getRecipient();\n  boolean updateForCurrentRingId=ringId == currentState.getCallSetupState().getRingId();\n  boolean isCurrentlyRinging=currentState.getCallInfoState().getGroupCallState().isRinging();\n  if (DatabaseFactory.getGroupCallRingDatabase(context).isCancelled(ringId)) {\n    try {\n      Log.i(TAG,\"Ignoring incoming ring request for already cancelled ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,null);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (ringUpdate != CallManager.RingUpdate.REQUESTED) {\n    DatabaseFactory.getGroupCallRingDatabase(context).insertOrUpdateGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n    if (updateForCurrentRingId && isCurrentlyRinging) {\n      Log.i(TAG,\"Cancelling current ring: \" + ringId);\n      currentState=currentState.builder().changeCallInfoState().callState(WebRtcViewModel.State.CALL_DISCONNECTED).build();\n      webRtcInteractor.postStateUpdate(currentState);\n      return terminateGroupCall(currentState);\n    }\n else {\n      return currentState;\n    }\n  }\n  if (!updateForCurrentRingId && isCurrentlyRinging) {\n    try {\n      Log.i(TAG,\"Already ringing so reply busy for new ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,CallManager.RingCancelReason.Busy);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (updateForCurrentRingId) {\n    Log.i(TAG,\"Already ringing for ring: \" + ringId);\n    return currentState;\n  }\n  Log.i(TAG,\"Requesting new ring: \" + ringId);\n  DatabaseFactory.getGroupCallRingDatabase(context).insertGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n  currentState=WebRtcVideoUtil.initializeVideo(context,webRtcInteractor.getCameraEventListener(),currentState);\n  webRtcInteractor.setCallInProgressNotification(TYPE_INCOMING_RINGING,remotePeerGroup);\n  webRtcInteractor.updatePhoneState(LockManager.PhoneState.INTERACTIVE);\n  webRtcInteractor.initializeAudioForCall();\n  boolean shouldDisturbUserWithCall=DoNotDisturbUtil.shouldDisturbUserWithCall(context.getApplicationContext());\n  if (shouldDisturbUserWithCall) {\n    boolean started=webRtcInteractor.startWebRtcCallActivityIfPossible();\n    if (!started) {\n      Log.i(TAG,\"Unable to start call activity due to OS version or not being in the foreground\");\n      ApplicationDependencies.getAppForegroundObserver().addListener(webRtcInteractor.getForegroundListener());\n    }\n  }\n  if (shouldDisturbUserWithCall && SignalStore.settings().isCallNotificationsEnabled()) {\n    Uri ringtone=recipient.resolve().getCallRingtone();\n    RecipientDatabase.VibrateState vibrateState=recipient.resolve().getCallVibrate();\n    if (ringtone == null) {\n      ringtone=SignalStore.settings().getCallRingtone();\n    }\n    webRtcInteractor.startIncomingRinger(ringtone,vibrateState == RecipientDatabase.VibrateState.ENABLED || (vibrateState == RecipientDatabase.VibrateState.DEFAULT && SignalStore.settings().isCallVibrateEnabled()));\n  }\n  webRtcInteractor.registerPowerButtonReceiver();\n  return currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY)).build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 518,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 87,
+        "startLineNumber" : 109,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 109,
+        "endColumnNumber" : 91
+      },
+      "nodeContext" : "webRtcInteractor.setCallInProgressNotification(TYPE_INCOMING_RINGING,remotePeerGroup);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "org.thoughtcrime.securesms.ringrtc.RemotePeer"
+  }, {
+    "nodeContext" : "remotePeerGroup",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 142,
+      "startColumnNumber" : 38,
+      "endLineNumber" : 142,
+      "endColumnNumber" : 53
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 142,
+        "startColumnNumber" : 38,
+        "endLineNumber" : 142,
+        "endColumnNumber" : 68
+      },
+      "nodeContext" : "remotePeerGroup.getRecipient()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 398,
+        "startLineNumber" : 135,
+        "startColumnNumber" : 11,
+        "endLineNumber" : 142,
+        "endColumnNumber" : 69
+      },
+      "nodeContext" : "currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 29,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 469,
+        "startLineNumber" : 135,
+        "startColumnNumber" : 11,
+        "endLineNumber" : 143,
+        "endColumnNumber" : 70
+      },
+      "nodeContext" : "currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 36,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 548,
+        "startLineNumber" : 135,
+        "startColumnNumber" : 11,
+        "endLineNumber" : 144,
+        "endColumnNumber" : 78
+      },
+      "nodeContext" : "currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 43,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 1999,
+        "startLineNumber" : 135,
+        "startColumnNumber" : 11,
+        "endLineNumber" : 160,
+        "endColumnNumber" : 41
+      },
+      "nodeContext" : "currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 89,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ReturnStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 2031,
+        "startLineNumber" : 135,
+        "startColumnNumber" : 11,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 31
+      },
+      "nodeContext" : "currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY)).build()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 91,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 2039,
+        "startLineNumber" : 135,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 32
+      },
+      "nodeContext" : "return currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY)).build();\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 92,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5778,
+        "startLineNumber" : 52,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 162,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  Log.i(TAG,\"handleGroupCallRingUpdate(): recipient: \" + remotePeerGroup.getId() + \" ring: \"+ ringId+ \" update: \"+ ringUpdate);\n  Recipient recipient=remotePeerGroup.getRecipient();\n  boolean updateForCurrentRingId=ringId == currentState.getCallSetupState().getRingId();\n  boolean isCurrentlyRinging=currentState.getCallInfoState().getGroupCallState().isRinging();\n  if (DatabaseFactory.getGroupCallRingDatabase(context).isCancelled(ringId)) {\n    try {\n      Log.i(TAG,\"Ignoring incoming ring request for already cancelled ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,null);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (ringUpdate != CallManager.RingUpdate.REQUESTED) {\n    DatabaseFactory.getGroupCallRingDatabase(context).insertOrUpdateGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n    if (updateForCurrentRingId && isCurrentlyRinging) {\n      Log.i(TAG,\"Cancelling current ring: \" + ringId);\n      currentState=currentState.builder().changeCallInfoState().callState(WebRtcViewModel.State.CALL_DISCONNECTED).build();\n      webRtcInteractor.postStateUpdate(currentState);\n      return terminateGroupCall(currentState);\n    }\n else {\n      return currentState;\n    }\n  }\n  if (!updateForCurrentRingId && isCurrentlyRinging) {\n    try {\n      Log.i(TAG,\"Already ringing so reply busy for new ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,CallManager.RingCancelReason.Busy);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (updateForCurrentRingId) {\n    Log.i(TAG,\"Already ringing for ring: \" + ringId);\n    return currentState;\n  }\n  Log.i(TAG,\"Requesting new ring: \" + ringId);\n  DatabaseFactory.getGroupCallRingDatabase(context).insertGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n  currentState=WebRtcVideoUtil.initializeVideo(context,webRtcInteractor.getCameraEventListener(),currentState);\n  webRtcInteractor.setCallInProgressNotification(TYPE_INCOMING_RINGING,remotePeerGroup);\n  webRtcInteractor.updatePhoneState(LockManager.PhoneState.INTERACTIVE);\n  webRtcInteractor.initializeAudioForCall();\n  boolean shouldDisturbUserWithCall=DoNotDisturbUtil.shouldDisturbUserWithCall(context.getApplicationContext());\n  if (shouldDisturbUserWithCall) {\n    boolean started=webRtcInteractor.startWebRtcCallActivityIfPossible();\n    if (!started) {\n      Log.i(TAG,\"Unable to start call activity due to OS version or not being in the foreground\");\n      ApplicationDependencies.getAppForegroundObserver().addListener(webRtcInteractor.getForegroundListener());\n    }\n  }\n  if (shouldDisturbUserWithCall && SignalStore.settings().isCallNotificationsEnabled()) {\n    Uri ringtone=recipient.resolve().getCallRingtone();\n    RecipientDatabase.VibrateState vibrateState=recipient.resolve().getCallVibrate();\n    if (ringtone == null) {\n      ringtone=SignalStore.settings().getCallRingtone();\n    }\n    webRtcInteractor.startIncomingRinger(ringtone,vibrateState == RecipientDatabase.VibrateState.ENABLED || (vibrateState == RecipientDatabase.VibrateState.DEFAULT && SignalStore.settings().isCallVibrateEnabled()));\n  }\n  webRtcInteractor.registerPowerButtonReceiver();\n  return currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY)).build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 472,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 6371,
+        "startLineNumber" : 45,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 162,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "@Override protected @NonNull WebRtcServiceState handleGroupCallRingUpdate(@NonNull WebRtcServiceState currentState,@NonNull RemotePeer remotePeerGroup,@NonNull GroupId.V2 groupId,long ringId,@NonNull UUID uuid,@NonNull CallManager.RingUpdate ringUpdate){\n  Log.i(TAG,\"handleGroupCallRingUpdate(): recipient: \" + remotePeerGroup.getId() + \" ring: \"+ ringId+ \" update: \"+ ringUpdate);\n  Recipient recipient=remotePeerGroup.getRecipient();\n  boolean updateForCurrentRingId=ringId == currentState.getCallSetupState().getRingId();\n  boolean isCurrentlyRinging=currentState.getCallInfoState().getGroupCallState().isRinging();\n  if (DatabaseFactory.getGroupCallRingDatabase(context).isCancelled(ringId)) {\n    try {\n      Log.i(TAG,\"Ignoring incoming ring request for already cancelled ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,null);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (ringUpdate != CallManager.RingUpdate.REQUESTED) {\n    DatabaseFactory.getGroupCallRingDatabase(context).insertOrUpdateGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n    if (updateForCurrentRingId && isCurrentlyRinging) {\n      Log.i(TAG,\"Cancelling current ring: \" + ringId);\n      currentState=currentState.builder().changeCallInfoState().callState(WebRtcViewModel.State.CALL_DISCONNECTED).build();\n      webRtcInteractor.postStateUpdate(currentState);\n      return terminateGroupCall(currentState);\n    }\n else {\n      return currentState;\n    }\n  }\n  if (!updateForCurrentRingId && isCurrentlyRinging) {\n    try {\n      Log.i(TAG,\"Already ringing so reply busy for new ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,CallManager.RingCancelReason.Busy);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (updateForCurrentRingId) {\n    Log.i(TAG,\"Already ringing for ring: \" + ringId);\n    return currentState;\n  }\n  Log.i(TAG,\"Requesting new ring: \" + ringId);\n  DatabaseFactory.getGroupCallRingDatabase(context).insertGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n  currentState=WebRtcVideoUtil.initializeVideo(context,webRtcInteractor.getCameraEventListener(),currentState);\n  webRtcInteractor.setCallInProgressNotification(TYPE_INCOMING_RINGING,remotePeerGroup);\n  webRtcInteractor.updatePhoneState(LockManager.PhoneState.INTERACTIVE);\n  webRtcInteractor.initializeAudioForCall();\n  boolean shouldDisturbUserWithCall=DoNotDisturbUtil.shouldDisturbUserWithCall(context.getApplicationContext());\n  if (shouldDisturbUserWithCall) {\n    boolean started=webRtcInteractor.startWebRtcCallActivityIfPossible();\n    if (!started) {\n      Log.i(TAG,\"Unable to start call activity due to OS version or not being in the foreground\");\n      ApplicationDependencies.getAppForegroundObserver().addListener(webRtcInteractor.getForegroundListener());\n    }\n  }\n  if (shouldDisturbUserWithCall && SignalStore.settings().isCallNotificationsEnabled()) {\n    Uri ringtone=recipient.resolve().getCallRingtone();\n    RecipientDatabase.VibrateState vibrateState=recipient.resolve().getCallVibrate();\n    if (ringtone == null) {\n      ringtone=SignalStore.settings().getCallRingtone();\n    }\n    webRtcInteractor.startIncomingRinger(ringtone,vibrateState == RecipientDatabase.VibrateState.ENABLED || (vibrateState == RecipientDatabase.VibrateState.DEFAULT && SignalStore.settings().isCallVibrateEnabled()));\n  }\n  webRtcInteractor.registerPowerButtonReceiver();\n  return currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY)).build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 518,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 142,
+        "startColumnNumber" : 38,
+        "endLineNumber" : 142,
+        "endColumnNumber" : 68
+      },
+      "nodeContext" : "remotePeerGroup.getRecipient()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    },
+    "tokenLength" : 1,
+    "type" : "org.thoughtcrime.securesms.ringrtc.RemotePeer"
+  }, {
+    "nodeContext" : "remotePeerGroup",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 145,
+      "startColumnNumber" : 39,
+      "endLineNumber" : 145,
+      "endColumnNumber" : 54
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 145,
+        "startColumnNumber" : 39,
+        "endLineNumber" : 145,
+        "endColumnNumber" : 69
+      },
+      "nodeContext" : "remotePeerGroup.getRecipient()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 1999,
+        "startLineNumber" : 135,
+        "startColumnNumber" : 11,
+        "endLineNumber" : 160,
+        "endColumnNumber" : 41
+      },
+      "nodeContext" : "currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 89,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ReturnStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 2031,
+        "startLineNumber" : 135,
+        "startColumnNumber" : 11,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 31
+      },
+      "nodeContext" : "currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY)).build()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 91,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 2039,
+        "startLineNumber" : 135,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 32
+      },
+      "nodeContext" : "return currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY)).build();\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 92,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5778,
+        "startLineNumber" : 52,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 162,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  Log.i(TAG,\"handleGroupCallRingUpdate(): recipient: \" + remotePeerGroup.getId() + \" ring: \"+ ringId+ \" update: \"+ ringUpdate);\n  Recipient recipient=remotePeerGroup.getRecipient();\n  boolean updateForCurrentRingId=ringId == currentState.getCallSetupState().getRingId();\n  boolean isCurrentlyRinging=currentState.getCallInfoState().getGroupCallState().isRinging();\n  if (DatabaseFactory.getGroupCallRingDatabase(context).isCancelled(ringId)) {\n    try {\n      Log.i(TAG,\"Ignoring incoming ring request for already cancelled ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,null);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (ringUpdate != CallManager.RingUpdate.REQUESTED) {\n    DatabaseFactory.getGroupCallRingDatabase(context).insertOrUpdateGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n    if (updateForCurrentRingId && isCurrentlyRinging) {\n      Log.i(TAG,\"Cancelling current ring: \" + ringId);\n      currentState=currentState.builder().changeCallInfoState().callState(WebRtcViewModel.State.CALL_DISCONNECTED).build();\n      webRtcInteractor.postStateUpdate(currentState);\n      return terminateGroupCall(currentState);\n    }\n else {\n      return currentState;\n    }\n  }\n  if (!updateForCurrentRingId && isCurrentlyRinging) {\n    try {\n      Log.i(TAG,\"Already ringing so reply busy for new ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,CallManager.RingCancelReason.Busy);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (updateForCurrentRingId) {\n    Log.i(TAG,\"Already ringing for ring: \" + ringId);\n    return currentState;\n  }\n  Log.i(TAG,\"Requesting new ring: \" + ringId);\n  DatabaseFactory.getGroupCallRingDatabase(context).insertGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n  currentState=WebRtcVideoUtil.initializeVideo(context,webRtcInteractor.getCameraEventListener(),currentState);\n  webRtcInteractor.setCallInProgressNotification(TYPE_INCOMING_RINGING,remotePeerGroup);\n  webRtcInteractor.updatePhoneState(LockManager.PhoneState.INTERACTIVE);\n  webRtcInteractor.initializeAudioForCall();\n  boolean shouldDisturbUserWithCall=DoNotDisturbUtil.shouldDisturbUserWithCall(context.getApplicationContext());\n  if (shouldDisturbUserWithCall) {\n    boolean started=webRtcInteractor.startWebRtcCallActivityIfPossible();\n    if (!started) {\n      Log.i(TAG,\"Unable to start call activity due to OS version or not being in the foreground\");\n      ApplicationDependencies.getAppForegroundObserver().addListener(webRtcInteractor.getForegroundListener());\n    }\n  }\n  if (shouldDisturbUserWithCall && SignalStore.settings().isCallNotificationsEnabled()) {\n    Uri ringtone=recipient.resolve().getCallRingtone();\n    RecipientDatabase.VibrateState vibrateState=recipient.resolve().getCallVibrate();\n    if (ringtone == null) {\n      ringtone=SignalStore.settings().getCallRingtone();\n    }\n    webRtcInteractor.startIncomingRinger(ringtone,vibrateState == RecipientDatabase.VibrateState.ENABLED || (vibrateState == RecipientDatabase.VibrateState.DEFAULT && SignalStore.settings().isCallVibrateEnabled()));\n  }\n  webRtcInteractor.registerPowerButtonReceiver();\n  return currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY)).build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 472,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 6371,
+        "startLineNumber" : 45,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 162,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "@Override protected @NonNull WebRtcServiceState handleGroupCallRingUpdate(@NonNull WebRtcServiceState currentState,@NonNull RemotePeer remotePeerGroup,@NonNull GroupId.V2 groupId,long ringId,@NonNull UUID uuid,@NonNull CallManager.RingUpdate ringUpdate){\n  Log.i(TAG,\"handleGroupCallRingUpdate(): recipient: \" + remotePeerGroup.getId() + \" ring: \"+ ringId+ \" update: \"+ ringUpdate);\n  Recipient recipient=remotePeerGroup.getRecipient();\n  boolean updateForCurrentRingId=ringId == currentState.getCallSetupState().getRingId();\n  boolean isCurrentlyRinging=currentState.getCallInfoState().getGroupCallState().isRinging();\n  if (DatabaseFactory.getGroupCallRingDatabase(context).isCancelled(ringId)) {\n    try {\n      Log.i(TAG,\"Ignoring incoming ring request for already cancelled ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,null);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (ringUpdate != CallManager.RingUpdate.REQUESTED) {\n    DatabaseFactory.getGroupCallRingDatabase(context).insertOrUpdateGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n    if (updateForCurrentRingId && isCurrentlyRinging) {\n      Log.i(TAG,\"Cancelling current ring: \" + ringId);\n      currentState=currentState.builder().changeCallInfoState().callState(WebRtcViewModel.State.CALL_DISCONNECTED).build();\n      webRtcInteractor.postStateUpdate(currentState);\n      return terminateGroupCall(currentState);\n    }\n else {\n      return currentState;\n    }\n  }\n  if (!updateForCurrentRingId && isCurrentlyRinging) {\n    try {\n      Log.i(TAG,\"Already ringing so reply busy for new ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,CallManager.RingCancelReason.Busy);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (updateForCurrentRingId) {\n    Log.i(TAG,\"Already ringing for ring: \" + ringId);\n    return currentState;\n  }\n  Log.i(TAG,\"Requesting new ring: \" + ringId);\n  DatabaseFactory.getGroupCallRingDatabase(context).insertGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n  currentState=WebRtcVideoUtil.initializeVideo(context,webRtcInteractor.getCameraEventListener(),currentState);\n  webRtcInteractor.setCallInProgressNotification(TYPE_INCOMING_RINGING,remotePeerGroup);\n  webRtcInteractor.updatePhoneState(LockManager.PhoneState.INTERACTIVE);\n  webRtcInteractor.initializeAudioForCall();\n  boolean shouldDisturbUserWithCall=DoNotDisturbUtil.shouldDisturbUserWithCall(context.getApplicationContext());\n  if (shouldDisturbUserWithCall) {\n    boolean started=webRtcInteractor.startWebRtcCallActivityIfPossible();\n    if (!started) {\n      Log.i(TAG,\"Unable to start call activity due to OS version or not being in the foreground\");\n      ApplicationDependencies.getAppForegroundObserver().addListener(webRtcInteractor.getForegroundListener());\n    }\n  }\n  if (shouldDisturbUserWithCall && SignalStore.settings().isCallNotificationsEnabled()) {\n    Uri ringtone=recipient.resolve().getCallRingtone();\n    RecipientDatabase.VibrateState vibrateState=recipient.resolve().getCallVibrate();\n    if (ringtone == null) {\n      ringtone=SignalStore.settings().getCallRingtone();\n    }\n    webRtcInteractor.startIncomingRinger(ringtone,vibrateState == RecipientDatabase.VibrateState.ENABLED || (vibrateState == RecipientDatabase.VibrateState.DEFAULT && SignalStore.settings().isCallVibrateEnabled()));\n  }\n  webRtcInteractor.registerPowerButtonReceiver();\n  return currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY)).build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 518,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 145,
+        "startColumnNumber" : 39,
+        "endLineNumber" : 145,
+        "endColumnNumber" : 69
+      },
+      "nodeContext" : "remotePeerGroup.getRecipient()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    },
+    "tokenLength" : 1,
+    "type" : "org.thoughtcrime.securesms.ringrtc.RemotePeer"
+  }, {
+    "nodeContext" : "remotePeerGroup",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 146,
+      "startColumnNumber" : 90,
+      "endLineNumber" : 146,
+      "endColumnNumber" : 105
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.ClassInstanceCreation,arguments]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 146,
+        "startColumnNumber" : 90,
+        "endLineNumber" : 146,
+        "endColumnNumber" : 120
+      },
+      "nodeContext" : "remotePeerGroup.getRecipient()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 53,
+        "startLineNumber" : 146,
+        "startColumnNumber" : 68,
+        "endLineNumber" : 146,
+        "endColumnNumber" : 121
+      },
+      "nodeContext" : "new CallParticipantId(remotePeerGroup.getRecipient())",
+      "nodeType" : "ClassInstanceCreation",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 1339,
+        "startLineNumber" : 146,
+        "startColumnNumber" : 39,
+        "endLineNumber" : 160,
+        "endColumnNumber" : 40
+      },
+      "nodeContext" : "CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 41,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 1999,
+        "startLineNumber" : 135,
+        "startColumnNumber" : 11,
+        "endLineNumber" : 160,
+        "endColumnNumber" : 41
+      },
+      "nodeContext" : "currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 89,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ReturnStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 2031,
+        "startLineNumber" : 135,
+        "startColumnNumber" : 11,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 31
+      },
+      "nodeContext" : "currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY)).build()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 91,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 2039,
+        "startLineNumber" : 135,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 32
+      },
+      "nodeContext" : "return currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY)).build();\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 92,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5778,
+        "startLineNumber" : 52,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 162,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  Log.i(TAG,\"handleGroupCallRingUpdate(): recipient: \" + remotePeerGroup.getId() + \" ring: \"+ ringId+ \" update: \"+ ringUpdate);\n  Recipient recipient=remotePeerGroup.getRecipient();\n  boolean updateForCurrentRingId=ringId == currentState.getCallSetupState().getRingId();\n  boolean isCurrentlyRinging=currentState.getCallInfoState().getGroupCallState().isRinging();\n  if (DatabaseFactory.getGroupCallRingDatabase(context).isCancelled(ringId)) {\n    try {\n      Log.i(TAG,\"Ignoring incoming ring request for already cancelled ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,null);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (ringUpdate != CallManager.RingUpdate.REQUESTED) {\n    DatabaseFactory.getGroupCallRingDatabase(context).insertOrUpdateGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n    if (updateForCurrentRingId && isCurrentlyRinging) {\n      Log.i(TAG,\"Cancelling current ring: \" + ringId);\n      currentState=currentState.builder().changeCallInfoState().callState(WebRtcViewModel.State.CALL_DISCONNECTED).build();\n      webRtcInteractor.postStateUpdate(currentState);\n      return terminateGroupCall(currentState);\n    }\n else {\n      return currentState;\n    }\n  }\n  if (!updateForCurrentRingId && isCurrentlyRinging) {\n    try {\n      Log.i(TAG,\"Already ringing so reply busy for new ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,CallManager.RingCancelReason.Busy);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (updateForCurrentRingId) {\n    Log.i(TAG,\"Already ringing for ring: \" + ringId);\n    return currentState;\n  }\n  Log.i(TAG,\"Requesting new ring: \" + ringId);\n  DatabaseFactory.getGroupCallRingDatabase(context).insertGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n  currentState=WebRtcVideoUtil.initializeVideo(context,webRtcInteractor.getCameraEventListener(),currentState);\n  webRtcInteractor.setCallInProgressNotification(TYPE_INCOMING_RINGING,remotePeerGroup);\n  webRtcInteractor.updatePhoneState(LockManager.PhoneState.INTERACTIVE);\n  webRtcInteractor.initializeAudioForCall();\n  boolean shouldDisturbUserWithCall=DoNotDisturbUtil.shouldDisturbUserWithCall(context.getApplicationContext());\n  if (shouldDisturbUserWithCall) {\n    boolean started=webRtcInteractor.startWebRtcCallActivityIfPossible();\n    if (!started) {\n      Log.i(TAG,\"Unable to start call activity due to OS version or not being in the foreground\");\n      ApplicationDependencies.getAppForegroundObserver().addListener(webRtcInteractor.getForegroundListener());\n    }\n  }\n  if (shouldDisturbUserWithCall && SignalStore.settings().isCallNotificationsEnabled()) {\n    Uri ringtone=recipient.resolve().getCallRingtone();\n    RecipientDatabase.VibrateState vibrateState=recipient.resolve().getCallVibrate();\n    if (ringtone == null) {\n      ringtone=SignalStore.settings().getCallRingtone();\n    }\n    webRtcInteractor.startIncomingRinger(ringtone,vibrateState == RecipientDatabase.VibrateState.ENABLED || (vibrateState == RecipientDatabase.VibrateState.DEFAULT && SignalStore.settings().isCallVibrateEnabled()));\n  }\n  webRtcInteractor.registerPowerButtonReceiver();\n  return currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY)).build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 472,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 6371,
+        "startLineNumber" : 45,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 162,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "@Override protected @NonNull WebRtcServiceState handleGroupCallRingUpdate(@NonNull WebRtcServiceState currentState,@NonNull RemotePeer remotePeerGroup,@NonNull GroupId.V2 groupId,long ringId,@NonNull UUID uuid,@NonNull CallManager.RingUpdate ringUpdate){\n  Log.i(TAG,\"handleGroupCallRingUpdate(): recipient: \" + remotePeerGroup.getId() + \" ring: \"+ ringId+ \" update: \"+ ringUpdate);\n  Recipient recipient=remotePeerGroup.getRecipient();\n  boolean updateForCurrentRingId=ringId == currentState.getCallSetupState().getRingId();\n  boolean isCurrentlyRinging=currentState.getCallInfoState().getGroupCallState().isRinging();\n  if (DatabaseFactory.getGroupCallRingDatabase(context).isCancelled(ringId)) {\n    try {\n      Log.i(TAG,\"Ignoring incoming ring request for already cancelled ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,null);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (ringUpdate != CallManager.RingUpdate.REQUESTED) {\n    DatabaseFactory.getGroupCallRingDatabase(context).insertOrUpdateGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n    if (updateForCurrentRingId && isCurrentlyRinging) {\n      Log.i(TAG,\"Cancelling current ring: \" + ringId);\n      currentState=currentState.builder().changeCallInfoState().callState(WebRtcViewModel.State.CALL_DISCONNECTED).build();\n      webRtcInteractor.postStateUpdate(currentState);\n      return terminateGroupCall(currentState);\n    }\n else {\n      return currentState;\n    }\n  }\n  if (!updateForCurrentRingId && isCurrentlyRinging) {\n    try {\n      Log.i(TAG,\"Already ringing so reply busy for new ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,CallManager.RingCancelReason.Busy);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (updateForCurrentRingId) {\n    Log.i(TAG,\"Already ringing for ring: \" + ringId);\n    return currentState;\n  }\n  Log.i(TAG,\"Requesting new ring: \" + ringId);\n  DatabaseFactory.getGroupCallRingDatabase(context).insertGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n  currentState=WebRtcVideoUtil.initializeVideo(context,webRtcInteractor.getCameraEventListener(),currentState);\n  webRtcInteractor.setCallInProgressNotification(TYPE_INCOMING_RINGING,remotePeerGroup);\n  webRtcInteractor.updatePhoneState(LockManager.PhoneState.INTERACTIVE);\n  webRtcInteractor.initializeAudioForCall();\n  boolean shouldDisturbUserWithCall=DoNotDisturbUtil.shouldDisturbUserWithCall(context.getApplicationContext());\n  if (shouldDisturbUserWithCall) {\n    boolean started=webRtcInteractor.startWebRtcCallActivityIfPossible();\n    if (!started) {\n      Log.i(TAG,\"Unable to start call activity due to OS version or not being in the foreground\");\n      ApplicationDependencies.getAppForegroundObserver().addListener(webRtcInteractor.getForegroundListener());\n    }\n  }\n  if (shouldDisturbUserWithCall && SignalStore.settings().isCallNotificationsEnabled()) {\n    Uri ringtone=recipient.resolve().getCallRingtone();\n    RecipientDatabase.VibrateState vibrateState=recipient.resolve().getCallVibrate();\n    if (ringtone == null) {\n      ringtone=SignalStore.settings().getCallRingtone();\n    }\n    webRtcInteractor.startIncomingRinger(ringtone,vibrateState == RecipientDatabase.VibrateState.ENABLED || (vibrateState == RecipientDatabase.VibrateState.DEFAULT && SignalStore.settings().isCallVibrateEnabled()));\n  }\n  webRtcInteractor.registerPowerButtonReceiver();\n  return currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY)).build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 518,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 53,
+        "startLineNumber" : 146,
+        "startColumnNumber" : 68,
+        "endLineNumber" : 146,
+        "endColumnNumber" : 121
+      },
+      "nodeContext" : "new CallParticipantId(remotePeerGroup.getRecipient())",
+      "nodeType" : "ClassInstanceCreation",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "org.thoughtcrime.securesms.ringrtc.RemotePeer"
+  }, {
+    "nodeContext" : "remotePeerGroup",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 147,
+      "startColumnNumber" : 68,
+      "endLineNumber" : 147,
+      "endColumnNumber" : 83
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 147,
+        "startColumnNumber" : 68,
+        "endLineNumber" : 147,
+        "endColumnNumber" : 98
+      },
+      "nodeContext" : "remotePeerGroup.getRecipient()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 1339,
+        "startLineNumber" : 146,
+        "startColumnNumber" : 39,
+        "endLineNumber" : 160,
+        "endColumnNumber" : 40
+      },
+      "nodeContext" : "CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 41,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 1999,
+        "startLineNumber" : 135,
+        "startColumnNumber" : 11,
+        "endLineNumber" : 160,
+        "endColumnNumber" : 41
+      },
+      "nodeContext" : "currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 89,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ReturnStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 2031,
+        "startLineNumber" : 135,
+        "startColumnNumber" : 11,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 31
+      },
+      "nodeContext" : "currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY)).build()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 91,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 2039,
+        "startLineNumber" : 135,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 32
+      },
+      "nodeContext" : "return currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY)).build();\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 92,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5778,
+        "startLineNumber" : 52,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 162,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  Log.i(TAG,\"handleGroupCallRingUpdate(): recipient: \" + remotePeerGroup.getId() + \" ring: \"+ ringId+ \" update: \"+ ringUpdate);\n  Recipient recipient=remotePeerGroup.getRecipient();\n  boolean updateForCurrentRingId=ringId == currentState.getCallSetupState().getRingId();\n  boolean isCurrentlyRinging=currentState.getCallInfoState().getGroupCallState().isRinging();\n  if (DatabaseFactory.getGroupCallRingDatabase(context).isCancelled(ringId)) {\n    try {\n      Log.i(TAG,\"Ignoring incoming ring request for already cancelled ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,null);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (ringUpdate != CallManager.RingUpdate.REQUESTED) {\n    DatabaseFactory.getGroupCallRingDatabase(context).insertOrUpdateGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n    if (updateForCurrentRingId && isCurrentlyRinging) {\n      Log.i(TAG,\"Cancelling current ring: \" + ringId);\n      currentState=currentState.builder().changeCallInfoState().callState(WebRtcViewModel.State.CALL_DISCONNECTED).build();\n      webRtcInteractor.postStateUpdate(currentState);\n      return terminateGroupCall(currentState);\n    }\n else {\n      return currentState;\n    }\n  }\n  if (!updateForCurrentRingId && isCurrentlyRinging) {\n    try {\n      Log.i(TAG,\"Already ringing so reply busy for new ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,CallManager.RingCancelReason.Busy);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (updateForCurrentRingId) {\n    Log.i(TAG,\"Already ringing for ring: \" + ringId);\n    return currentState;\n  }\n  Log.i(TAG,\"Requesting new ring: \" + ringId);\n  DatabaseFactory.getGroupCallRingDatabase(context).insertGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n  currentState=WebRtcVideoUtil.initializeVideo(context,webRtcInteractor.getCameraEventListener(),currentState);\n  webRtcInteractor.setCallInProgressNotification(TYPE_INCOMING_RINGING,remotePeerGroup);\n  webRtcInteractor.updatePhoneState(LockManager.PhoneState.INTERACTIVE);\n  webRtcInteractor.initializeAudioForCall();\n  boolean shouldDisturbUserWithCall=DoNotDisturbUtil.shouldDisturbUserWithCall(context.getApplicationContext());\n  if (shouldDisturbUserWithCall) {\n    boolean started=webRtcInteractor.startWebRtcCallActivityIfPossible();\n    if (!started) {\n      Log.i(TAG,\"Unable to start call activity due to OS version or not being in the foreground\");\n      ApplicationDependencies.getAppForegroundObserver().addListener(webRtcInteractor.getForegroundListener());\n    }\n  }\n  if (shouldDisturbUserWithCall && SignalStore.settings().isCallNotificationsEnabled()) {\n    Uri ringtone=recipient.resolve().getCallRingtone();\n    RecipientDatabase.VibrateState vibrateState=recipient.resolve().getCallVibrate();\n    if (ringtone == null) {\n      ringtone=SignalStore.settings().getCallRingtone();\n    }\n    webRtcInteractor.startIncomingRinger(ringtone,vibrateState == RecipientDatabase.VibrateState.ENABLED || (vibrateState == RecipientDatabase.VibrateState.DEFAULT && SignalStore.settings().isCallVibrateEnabled()));\n  }\n  webRtcInteractor.registerPowerButtonReceiver();\n  return currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY)).build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 472,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 6371,
+        "startLineNumber" : 45,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 162,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "@Override protected @NonNull WebRtcServiceState handleGroupCallRingUpdate(@NonNull WebRtcServiceState currentState,@NonNull RemotePeer remotePeerGroup,@NonNull GroupId.V2 groupId,long ringId,@NonNull UUID uuid,@NonNull CallManager.RingUpdate ringUpdate){\n  Log.i(TAG,\"handleGroupCallRingUpdate(): recipient: \" + remotePeerGroup.getId() + \" ring: \"+ ringId+ \" update: \"+ ringUpdate);\n  Recipient recipient=remotePeerGroup.getRecipient();\n  boolean updateForCurrentRingId=ringId == currentState.getCallSetupState().getRingId();\n  boolean isCurrentlyRinging=currentState.getCallInfoState().getGroupCallState().isRinging();\n  if (DatabaseFactory.getGroupCallRingDatabase(context).isCancelled(ringId)) {\n    try {\n      Log.i(TAG,\"Ignoring incoming ring request for already cancelled ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,null);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (ringUpdate != CallManager.RingUpdate.REQUESTED) {\n    DatabaseFactory.getGroupCallRingDatabase(context).insertOrUpdateGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n    if (updateForCurrentRingId && isCurrentlyRinging) {\n      Log.i(TAG,\"Cancelling current ring: \" + ringId);\n      currentState=currentState.builder().changeCallInfoState().callState(WebRtcViewModel.State.CALL_DISCONNECTED).build();\n      webRtcInteractor.postStateUpdate(currentState);\n      return terminateGroupCall(currentState);\n    }\n else {\n      return currentState;\n    }\n  }\n  if (!updateForCurrentRingId && isCurrentlyRinging) {\n    try {\n      Log.i(TAG,\"Already ringing so reply busy for new ring: \" + ringId);\n      webRtcInteractor.getCallManager().cancelGroupRing(groupId.getDecodedId(),ringId,CallManager.RingCancelReason.Busy);\n    }\n catch (    CallException e) {\n      Log.w(TAG,\"Error while trying to cancel ring: \" + ringId,e);\n    }\n    return currentState;\n  }\n  if (updateForCurrentRingId) {\n    Log.i(TAG,\"Already ringing for ring: \" + ringId);\n    return currentState;\n  }\n  Log.i(TAG,\"Requesting new ring: \" + ringId);\n  DatabaseFactory.getGroupCallRingDatabase(context).insertGroupRing(ringId,System.currentTimeMillis(),ringUpdate);\n  currentState=WebRtcVideoUtil.initializeVideo(context,webRtcInteractor.getCameraEventListener(),currentState);\n  webRtcInteractor.setCallInProgressNotification(TYPE_INCOMING_RINGING,remotePeerGroup);\n  webRtcInteractor.updatePhoneState(LockManager.PhoneState.INTERACTIVE);\n  webRtcInteractor.initializeAudioForCall();\n  boolean shouldDisturbUserWithCall=DoNotDisturbUtil.shouldDisturbUserWithCall(context.getApplicationContext());\n  if (shouldDisturbUserWithCall) {\n    boolean started=webRtcInteractor.startWebRtcCallActivityIfPossible();\n    if (!started) {\n      Log.i(TAG,\"Unable to start call activity due to OS version or not being in the foreground\");\n      ApplicationDependencies.getAppForegroundObserver().addListener(webRtcInteractor.getForegroundListener());\n    }\n  }\n  if (shouldDisturbUserWithCall && SignalStore.settings().isCallNotificationsEnabled()) {\n    Uri ringtone=recipient.resolve().getCallRingtone();\n    RecipientDatabase.VibrateState vibrateState=recipient.resolve().getCallVibrate();\n    if (ringtone == null) {\n      ringtone=SignalStore.settings().getCallRingtone();\n    }\n    webRtcInteractor.startIncomingRinger(ringtone,vibrateState == RecipientDatabase.VibrateState.ENABLED || (vibrateState == RecipientDatabase.VibrateState.DEFAULT && SignalStore.settings().isCallVibrateEnabled()));\n  }\n  webRtcInteractor.registerPowerButtonReceiver();\n  return currentState.builder().changeCallSetupState().isRemoteVideoOffer(true).ringId(ringId).ringerRecipient(Recipient.externalPush(context,uuid,null,false)).commit().changeCallInfoState().callRecipient(remotePeerGroup.getRecipient()).callState(WebRtcViewModel.State.CALL_INCOMING).groupCallState(WebRtcViewModel.GroupCallState.RINGING).putParticipant(remotePeerGroup.getRecipient(),CallParticipant.createRemote(new CallParticipantId(remotePeerGroup.getRecipient()),remotePeerGroup.getRecipient(),null,new BroadcastVideoSink(currentState.getVideoState().getLockableEglBase(),false,true,currentState.getLocalDeviceState().getOrientation().getDegrees()),true,false,0,true,0,false,CallParticipant.DeviceOrdinal.PRIMARY)).build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 518,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 147,
+        "startColumnNumber" : 68,
+        "endLineNumber" : 147,
+        "endColumnNumber" : 98
+      },
+      "nodeContext" : "remotePeerGroup.getRecipient()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    },
+    "tokenLength" : 1,
+    "type" : "org.thoughtcrime.securesms.ringrtc.RemotePeer"
+  } ],
+  "positionList" : [ {
+    "charLength" : 15,
+    "startLineNumber" : 53,
+    "startColumnNumber" : 60,
+    "endLineNumber" : 53,
+    "endColumnNumber" : 75
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 55,
+    "startColumnNumber" : 39,
+    "endLineNumber" : 55,
+    "endColumnNumber" : 54
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 109,
+    "startColumnNumber" : 74,
+    "endLineNumber" : 109,
+    "endColumnNumber" : 89
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 142,
+    "startColumnNumber" : 38,
+    "endLineNumber" : 142,
+    "endColumnNumber" : 53
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 145,
+    "startColumnNumber" : 39,
+    "endLineNumber" : 145,
+    "endColumnNumber" : 54
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 146,
+    "startColumnNumber" : 90,
+    "endLineNumber" : 146,
+    "endColumnNumber" : 105
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 147,
+    "startColumnNumber" : 68,
+    "endLineNumber" : 147,
+    "endColumnNumber" : 83
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 5,
+    "layout" : 4
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 6,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 4,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 5,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 6,
+    "layout" : 2
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 0,
+    "layout" : 7
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 1,
+    "layout" : 7
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 2,
+    "layout" : 7
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 5,
+    "layout" : 4
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 6,
+    "layout" : 4
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 3,
+    "layout" : 1
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 5,
+    "layout" : 1
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 6,
+    "layout" : 1
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 0,
+    "layout" : 6
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 1,
+    "layout" : 6
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 2,
+    "layout" : 6
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 6,
+    "layout" : 2
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 4,
+    "layout" : 2
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 5,
+    "layout" : 1
+  } ]
+}

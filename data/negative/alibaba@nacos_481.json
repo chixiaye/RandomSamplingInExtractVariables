@@ -1,0 +1,195 @@
+{
+  "id" : 481,
+  "expression" : "new HashMap<String,List<CacheData>>(16)",
+  "projectName" : "alibaba@nacos",
+  "commitID" : "4e7346db1d6657ffe07c96bebd2d348229c2812f",
+  "filePath" : "/client/src/main/java/com/alibaba/nacos/client/config/impl/ClientWorker.java",
+  "occurrences" : 2,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "new HashMap<String,List<CacheData>>(16)",
+    "nodeType" : "ClassInstanceCreation",
+    "nodePosition" : {
+      "charLength" : 40,
+      "startLineNumber" : 718,
+      "startColumnNumber" : 59,
+      "endLineNumber" : 718,
+      "endColumnNumber" : 99
+    },
+    "astNodeNumber" : 12,
+    "astHeight" : 5,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 58,
+        "startLineNumber" : 718,
+        "startColumnNumber" : 41,
+        "endLineNumber" : 718,
+        "endColumnNumber" : 99
+      },
+      "nodeContext" : "listenCachesMap=new HashMap<String,List<CacheData>>(16)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 14,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 88,
+        "startLineNumber" : 718,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 718,
+        "endColumnNumber" : 100
+      },
+      "nodeContext" : "Map<String,List<CacheData>> listenCachesMap=new HashMap<String,List<CacheData>>(16);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 25,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 7667,
+        "startLineNumber" : 716,
+        "startColumnNumber" : 42,
+        "endLineNumber" : 856,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  Map<String,List<CacheData>> listenCachesMap=new HashMap<String,List<CacheData>>(16);\n  Map<String,List<CacheData>> removeListenCachesMap=new HashMap<String,List<CacheData>>(16);\n  for (  CacheData cache : cacheMap.get().values()) {\nsynchronized (cache) {\n      if (cache.isSync()) {\n        continue;\n      }\n      if (!CollectionUtils.isEmpty(cache.getListeners())) {\n        if (!cache.isUseLocalConfigInfo()) {\n          List<CacheData> cacheDatas=listenCachesMap.get(String.valueOf(cache.getTaskId()));\n          if (cacheDatas == null) {\n            cacheDatas=new LinkedList<CacheData>();\n            listenCachesMap.put(String.valueOf(cache.getTaskId()),cacheDatas);\n          }\n          cacheDatas.add(cache);\n        }\n      }\n else       if (CollectionUtils.isEmpty(cache.getListeners())) {\n        if (!cache.isUseLocalConfigInfo()) {\n          List<CacheData> cacheDatas=removeListenCachesMap.get(String.valueOf(cache.getTaskId()));\n          if (cacheDatas == null) {\n            cacheDatas=new LinkedList<CacheData>();\n            removeListenCachesMap.put(String.valueOf(cache.getTaskId()),cacheDatas);\n          }\n          cacheDatas.add(cache);\n        }\n      }\n    }\n  }\n  boolean hasChangedKeys=false;\n  if (!listenCachesMap.isEmpty()) {\n    for (    Map.Entry<String,List<CacheData>> entry : listenCachesMap.entrySet()) {\n      String taskId=entry.getKey();\n      List<CacheData> listenCaches=entry.getValue();\n      ConfigBatchListenRequest configChangeListenRequest=buildConfigRequest(listenCaches);\n      configChangeListenRequest.setListen(true);\n      try {\n        RpcClient rpcClient=ensureRpcClient(taskId);\n        ConfigChangeBatchListenResponse configChangeBatchListenResponse=(ConfigChangeBatchListenResponse)requestProxy(rpcClient,configChangeListenRequest);\n        if (configChangeBatchListenResponse != null && configChangeBatchListenResponse.isSuccess()) {\n          Set<String> changeKeys=new HashSet<String>();\n          if (!CollectionUtils.isEmpty(configChangeBatchListenResponse.getChangedConfigs())) {\n            hasChangedKeys=true;\n            for (            ConfigChangeBatchListenResponse.ConfigContext changeConfig : configChangeBatchListenResponse.getChangedConfigs()) {\n              String changeKey=GroupKey.getKeyTenant(changeConfig.getDataId(),changeConfig.getGroup(),changeConfig.getTenant());\n              changeKeys.add(changeKey);\n              boolean isInitializing=cacheMap.get().get(changeKey).isInitializing();\n              refreshContentAndCheck(changeKey,!isInitializing);\n            }\n          }\n          for (          CacheData cacheData : listenCaches) {\n            String groupKey=GroupKey.getKeyTenant(cacheData.dataId,cacheData.group,cacheData.getTenant());\n            if (!changeKeys.contains(groupKey)) {\nsynchronized (cacheData) {\n                if (!cacheData.getListeners().isEmpty() && cacheData.checkListenersMd5Consistent()) {\n                  LOGGER.info(\" Check listeners consistent,set cacheData sync flag, groupKey={}, sync={}\",groupKey,true);\n                  cacheData.setSync(true);\n                  continue;\n                }\n              }\n              cacheData.checkListenerMd5();\n            }\n            cacheData.setInitializing(false);\n          }\n        }\n      }\n catch (      Exception e) {\n        LOGGER.error(\"Async listen config change error \",e);\n        try {\n          Thread.sleep(50L);\n        }\n catch (        InterruptedException interruptedException) {\n        }\n      }\n    }\n  }\n  if (!removeListenCachesMap.isEmpty()) {\n    for (    Map.Entry<String,List<CacheData>> entry : removeListenCachesMap.entrySet()) {\n      String taskId=entry.getKey();\n      List<CacheData> removeListenCaches=entry.getValue();\n      ConfigBatchListenRequest configChangeListenRequest=buildConfigRequest(removeListenCaches);\n      configChangeListenRequest.setListen(false);\n      try {\n        RpcClient rpcClient=ensureRpcClient(taskId);\n        boolean removeSuccess=unListenConfigChange(rpcClient,configChangeListenRequest);\n        if (removeSuccess) {\n          for (          CacheData cacheData : removeListenCaches) {\nsynchronized (cacheData) {\n              if (cacheData.getListeners().isEmpty()) {\n                ClientWorker.this.removeCache(cacheData.dataId,cacheData.group,cacheData.tenant);\n              }\n            }\n          }\n        }\n      }\n catch (      Exception e) {\n        LOGGER.error(\"async remove listen config change error \",e);\n      }\n      try {\n        Thread.sleep(50L);\n      }\n catch (      InterruptedException interruptedException) {\n      }\n    }\n  }\n  if (hasChangedKeys) {\n    notifyListenConfig();\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 598,
+      "astHeight" : 21
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 7719,
+        "startLineNumber" : 715,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 856,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "@Override public void executeConfigListen(){\n  Map<String,List<CacheData>> listenCachesMap=new HashMap<String,List<CacheData>>(16);\n  Map<String,List<CacheData>> removeListenCachesMap=new HashMap<String,List<CacheData>>(16);\n  for (  CacheData cache : cacheMap.get().values()) {\nsynchronized (cache) {\n      if (cache.isSync()) {\n        continue;\n      }\n      if (!CollectionUtils.isEmpty(cache.getListeners())) {\n        if (!cache.isUseLocalConfigInfo()) {\n          List<CacheData> cacheDatas=listenCachesMap.get(String.valueOf(cache.getTaskId()));\n          if (cacheDatas == null) {\n            cacheDatas=new LinkedList<CacheData>();\n            listenCachesMap.put(String.valueOf(cache.getTaskId()),cacheDatas);\n          }\n          cacheDatas.add(cache);\n        }\n      }\n else       if (CollectionUtils.isEmpty(cache.getListeners())) {\n        if (!cache.isUseLocalConfigInfo()) {\n          List<CacheData> cacheDatas=removeListenCachesMap.get(String.valueOf(cache.getTaskId()));\n          if (cacheDatas == null) {\n            cacheDatas=new LinkedList<CacheData>();\n            removeListenCachesMap.put(String.valueOf(cache.getTaskId()),cacheDatas);\n          }\n          cacheDatas.add(cache);\n        }\n      }\n    }\n  }\n  boolean hasChangedKeys=false;\n  if (!listenCachesMap.isEmpty()) {\n    for (    Map.Entry<String,List<CacheData>> entry : listenCachesMap.entrySet()) {\n      String taskId=entry.getKey();\n      List<CacheData> listenCaches=entry.getValue();\n      ConfigBatchListenRequest configChangeListenRequest=buildConfigRequest(listenCaches);\n      configChangeListenRequest.setListen(true);\n      try {\n        RpcClient rpcClient=ensureRpcClient(taskId);\n        ConfigChangeBatchListenResponse configChangeBatchListenResponse=(ConfigChangeBatchListenResponse)requestProxy(rpcClient,configChangeListenRequest);\n        if (configChangeBatchListenResponse != null && configChangeBatchListenResponse.isSuccess()) {\n          Set<String> changeKeys=new HashSet<String>();\n          if (!CollectionUtils.isEmpty(configChangeBatchListenResponse.getChangedConfigs())) {\n            hasChangedKeys=true;\n            for (            ConfigChangeBatchListenResponse.ConfigContext changeConfig : configChangeBatchListenResponse.getChangedConfigs()) {\n              String changeKey=GroupKey.getKeyTenant(changeConfig.getDataId(),changeConfig.getGroup(),changeConfig.getTenant());\n              changeKeys.add(changeKey);\n              boolean isInitializing=cacheMap.get().get(changeKey).isInitializing();\n              refreshContentAndCheck(changeKey,!isInitializing);\n            }\n          }\n          for (          CacheData cacheData : listenCaches) {\n            String groupKey=GroupKey.getKeyTenant(cacheData.dataId,cacheData.group,cacheData.getTenant());\n            if (!changeKeys.contains(groupKey)) {\nsynchronized (cacheData) {\n                if (!cacheData.getListeners().isEmpty() && cacheData.checkListenersMd5Consistent()) {\n                  LOGGER.info(\" Check listeners consistent,set cacheData sync flag, groupKey={}, sync={}\",groupKey,true);\n                  cacheData.setSync(true);\n                  continue;\n                }\n              }\n              cacheData.checkListenerMd5();\n            }\n            cacheData.setInitializing(false);\n          }\n        }\n      }\n catch (      Exception e) {\n        LOGGER.error(\"Async listen config change error \",e);\n        try {\n          Thread.sleep(50L);\n        }\n catch (        InterruptedException interruptedException) {\n        }\n      }\n    }\n  }\n  if (!removeListenCachesMap.isEmpty()) {\n    for (    Map.Entry<String,List<CacheData>> entry : removeListenCachesMap.entrySet()) {\n      String taskId=entry.getKey();\n      List<CacheData> removeListenCaches=entry.getValue();\n      ConfigBatchListenRequest configChangeListenRequest=buildConfigRequest(removeListenCaches);\n      configChangeListenRequest.setListen(false);\n      try {\n        RpcClient rpcClient=ensureRpcClient(taskId);\n        boolean removeSuccess=unListenConfigChange(rpcClient,configChangeListenRequest);\n        if (removeSuccess) {\n          for (          CacheData cacheData : removeListenCaches) {\nsynchronized (cacheData) {\n              if (cacheData.getListeners().isEmpty()) {\n                ClientWorker.this.removeCache(cacheData.dataId,cacheData.group,cacheData.tenant);\n              }\n            }\n          }\n        }\n      }\n catch (      Exception e) {\n        LOGGER.error(\"async remove listen config change error \",e);\n      }\n      try {\n        Thread.sleep(50L);\n      }\n catch (      InterruptedException interruptedException) {\n      }\n    }\n  }\n  if (hasChangedKeys) {\n    notifyListenConfig();\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 604,
+      "astHeight" : 22
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 88,
+        "startLineNumber" : 718,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 718,
+        "endColumnNumber" : 100
+      },
+      "nodeContext" : "Map<String,List<CacheData>> listenCachesMap=new HashMap<String,List<CacheData>>(16);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 25,
+      "astHeight" : 7
+    },
+    "tokenLength" : 3,
+    "type" : "java.util.HashMap<java.lang.String,java.util.List<com.alibaba.nacos.client.config.impl.CacheData>>"
+  }, {
+    "nodeContext" : "new HashMap<String,List<CacheData>>(16)",
+    "nodeType" : "ClassInstanceCreation",
+    "nodePosition" : {
+      "charLength" : 40,
+      "startLineNumber" : 719,
+      "startColumnNumber" : 65,
+      "endLineNumber" : 719,
+      "endColumnNumber" : 105
+    },
+    "astNodeNumber" : 12,
+    "astHeight" : 5,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 64,
+        "startLineNumber" : 719,
+        "startColumnNumber" : 41,
+        "endLineNumber" : 719,
+        "endColumnNumber" : 105
+      },
+      "nodeContext" : "removeListenCachesMap=new HashMap<String,List<CacheData>>(16)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 14,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 94,
+        "startLineNumber" : 719,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 719,
+        "endColumnNumber" : 106
+      },
+      "nodeContext" : "Map<String,List<CacheData>> removeListenCachesMap=new HashMap<String,List<CacheData>>(16);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 25,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 7667,
+        "startLineNumber" : 716,
+        "startColumnNumber" : 42,
+        "endLineNumber" : 856,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  Map<String,List<CacheData>> listenCachesMap=new HashMap<String,List<CacheData>>(16);\n  Map<String,List<CacheData>> removeListenCachesMap=new HashMap<String,List<CacheData>>(16);\n  for (  CacheData cache : cacheMap.get().values()) {\nsynchronized (cache) {\n      if (cache.isSync()) {\n        continue;\n      }\n      if (!CollectionUtils.isEmpty(cache.getListeners())) {\n        if (!cache.isUseLocalConfigInfo()) {\n          List<CacheData> cacheDatas=listenCachesMap.get(String.valueOf(cache.getTaskId()));\n          if (cacheDatas == null) {\n            cacheDatas=new LinkedList<CacheData>();\n            listenCachesMap.put(String.valueOf(cache.getTaskId()),cacheDatas);\n          }\n          cacheDatas.add(cache);\n        }\n      }\n else       if (CollectionUtils.isEmpty(cache.getListeners())) {\n        if (!cache.isUseLocalConfigInfo()) {\n          List<CacheData> cacheDatas=removeListenCachesMap.get(String.valueOf(cache.getTaskId()));\n          if (cacheDatas == null) {\n            cacheDatas=new LinkedList<CacheData>();\n            removeListenCachesMap.put(String.valueOf(cache.getTaskId()),cacheDatas);\n          }\n          cacheDatas.add(cache);\n        }\n      }\n    }\n  }\n  boolean hasChangedKeys=false;\n  if (!listenCachesMap.isEmpty()) {\n    for (    Map.Entry<String,List<CacheData>> entry : listenCachesMap.entrySet()) {\n      String taskId=entry.getKey();\n      List<CacheData> listenCaches=entry.getValue();\n      ConfigBatchListenRequest configChangeListenRequest=buildConfigRequest(listenCaches);\n      configChangeListenRequest.setListen(true);\n      try {\n        RpcClient rpcClient=ensureRpcClient(taskId);\n        ConfigChangeBatchListenResponse configChangeBatchListenResponse=(ConfigChangeBatchListenResponse)requestProxy(rpcClient,configChangeListenRequest);\n        if (configChangeBatchListenResponse != null && configChangeBatchListenResponse.isSuccess()) {\n          Set<String> changeKeys=new HashSet<String>();\n          if (!CollectionUtils.isEmpty(configChangeBatchListenResponse.getChangedConfigs())) {\n            hasChangedKeys=true;\n            for (            ConfigChangeBatchListenResponse.ConfigContext changeConfig : configChangeBatchListenResponse.getChangedConfigs()) {\n              String changeKey=GroupKey.getKeyTenant(changeConfig.getDataId(),changeConfig.getGroup(),changeConfig.getTenant());\n              changeKeys.add(changeKey);\n              boolean isInitializing=cacheMap.get().get(changeKey).isInitializing();\n              refreshContentAndCheck(changeKey,!isInitializing);\n            }\n          }\n          for (          CacheData cacheData : listenCaches) {\n            String groupKey=GroupKey.getKeyTenant(cacheData.dataId,cacheData.group,cacheData.getTenant());\n            if (!changeKeys.contains(groupKey)) {\nsynchronized (cacheData) {\n                if (!cacheData.getListeners().isEmpty() && cacheData.checkListenersMd5Consistent()) {\n                  LOGGER.info(\" Check listeners consistent,set cacheData sync flag, groupKey={}, sync={}\",groupKey,true);\n                  cacheData.setSync(true);\n                  continue;\n                }\n              }\n              cacheData.checkListenerMd5();\n            }\n            cacheData.setInitializing(false);\n          }\n        }\n      }\n catch (      Exception e) {\n        LOGGER.error(\"Async listen config change error \",e);\n        try {\n          Thread.sleep(50L);\n        }\n catch (        InterruptedException interruptedException) {\n        }\n      }\n    }\n  }\n  if (!removeListenCachesMap.isEmpty()) {\n    for (    Map.Entry<String,List<CacheData>> entry : removeListenCachesMap.entrySet()) {\n      String taskId=entry.getKey();\n      List<CacheData> removeListenCaches=entry.getValue();\n      ConfigBatchListenRequest configChangeListenRequest=buildConfigRequest(removeListenCaches);\n      configChangeListenRequest.setListen(false);\n      try {\n        RpcClient rpcClient=ensureRpcClient(taskId);\n        boolean removeSuccess=unListenConfigChange(rpcClient,configChangeListenRequest);\n        if (removeSuccess) {\n          for (          CacheData cacheData : removeListenCaches) {\nsynchronized (cacheData) {\n              if (cacheData.getListeners().isEmpty()) {\n                ClientWorker.this.removeCache(cacheData.dataId,cacheData.group,cacheData.tenant);\n              }\n            }\n          }\n        }\n      }\n catch (      Exception e) {\n        LOGGER.error(\"async remove listen config change error \",e);\n      }\n      try {\n        Thread.sleep(50L);\n      }\n catch (      InterruptedException interruptedException) {\n      }\n    }\n  }\n  if (hasChangedKeys) {\n    notifyListenConfig();\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 598,
+      "astHeight" : 21
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 7719,
+        "startLineNumber" : 715,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 856,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "@Override public void executeConfigListen(){\n  Map<String,List<CacheData>> listenCachesMap=new HashMap<String,List<CacheData>>(16);\n  Map<String,List<CacheData>> removeListenCachesMap=new HashMap<String,List<CacheData>>(16);\n  for (  CacheData cache : cacheMap.get().values()) {\nsynchronized (cache) {\n      if (cache.isSync()) {\n        continue;\n      }\n      if (!CollectionUtils.isEmpty(cache.getListeners())) {\n        if (!cache.isUseLocalConfigInfo()) {\n          List<CacheData> cacheDatas=listenCachesMap.get(String.valueOf(cache.getTaskId()));\n          if (cacheDatas == null) {\n            cacheDatas=new LinkedList<CacheData>();\n            listenCachesMap.put(String.valueOf(cache.getTaskId()),cacheDatas);\n          }\n          cacheDatas.add(cache);\n        }\n      }\n else       if (CollectionUtils.isEmpty(cache.getListeners())) {\n        if (!cache.isUseLocalConfigInfo()) {\n          List<CacheData> cacheDatas=removeListenCachesMap.get(String.valueOf(cache.getTaskId()));\n          if (cacheDatas == null) {\n            cacheDatas=new LinkedList<CacheData>();\n            removeListenCachesMap.put(String.valueOf(cache.getTaskId()),cacheDatas);\n          }\n          cacheDatas.add(cache);\n        }\n      }\n    }\n  }\n  boolean hasChangedKeys=false;\n  if (!listenCachesMap.isEmpty()) {\n    for (    Map.Entry<String,List<CacheData>> entry : listenCachesMap.entrySet()) {\n      String taskId=entry.getKey();\n      List<CacheData> listenCaches=entry.getValue();\n      ConfigBatchListenRequest configChangeListenRequest=buildConfigRequest(listenCaches);\n      configChangeListenRequest.setListen(true);\n      try {\n        RpcClient rpcClient=ensureRpcClient(taskId);\n        ConfigChangeBatchListenResponse configChangeBatchListenResponse=(ConfigChangeBatchListenResponse)requestProxy(rpcClient,configChangeListenRequest);\n        if (configChangeBatchListenResponse != null && configChangeBatchListenResponse.isSuccess()) {\n          Set<String> changeKeys=new HashSet<String>();\n          if (!CollectionUtils.isEmpty(configChangeBatchListenResponse.getChangedConfigs())) {\n            hasChangedKeys=true;\n            for (            ConfigChangeBatchListenResponse.ConfigContext changeConfig : configChangeBatchListenResponse.getChangedConfigs()) {\n              String changeKey=GroupKey.getKeyTenant(changeConfig.getDataId(),changeConfig.getGroup(),changeConfig.getTenant());\n              changeKeys.add(changeKey);\n              boolean isInitializing=cacheMap.get().get(changeKey).isInitializing();\n              refreshContentAndCheck(changeKey,!isInitializing);\n            }\n          }\n          for (          CacheData cacheData : listenCaches) {\n            String groupKey=GroupKey.getKeyTenant(cacheData.dataId,cacheData.group,cacheData.getTenant());\n            if (!changeKeys.contains(groupKey)) {\nsynchronized (cacheData) {\n                if (!cacheData.getListeners().isEmpty() && cacheData.checkListenersMd5Consistent()) {\n                  LOGGER.info(\" Check listeners consistent,set cacheData sync flag, groupKey={}, sync={}\",groupKey,true);\n                  cacheData.setSync(true);\n                  continue;\n                }\n              }\n              cacheData.checkListenerMd5();\n            }\n            cacheData.setInitializing(false);\n          }\n        }\n      }\n catch (      Exception e) {\n        LOGGER.error(\"Async listen config change error \",e);\n        try {\n          Thread.sleep(50L);\n        }\n catch (        InterruptedException interruptedException) {\n        }\n      }\n    }\n  }\n  if (!removeListenCachesMap.isEmpty()) {\n    for (    Map.Entry<String,List<CacheData>> entry : removeListenCachesMap.entrySet()) {\n      String taskId=entry.getKey();\n      List<CacheData> removeListenCaches=entry.getValue();\n      ConfigBatchListenRequest configChangeListenRequest=buildConfigRequest(removeListenCaches);\n      configChangeListenRequest.setListen(false);\n      try {\n        RpcClient rpcClient=ensureRpcClient(taskId);\n        boolean removeSuccess=unListenConfigChange(rpcClient,configChangeListenRequest);\n        if (removeSuccess) {\n          for (          CacheData cacheData : removeListenCaches) {\nsynchronized (cacheData) {\n              if (cacheData.getListeners().isEmpty()) {\n                ClientWorker.this.removeCache(cacheData.dataId,cacheData.group,cacheData.tenant);\n              }\n            }\n          }\n        }\n      }\n catch (      Exception e) {\n        LOGGER.error(\"async remove listen config change error \",e);\n      }\n      try {\n        Thread.sleep(50L);\n      }\n catch (      InterruptedException interruptedException) {\n      }\n    }\n  }\n  if (hasChangedKeys) {\n    notifyListenConfig();\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 604,
+      "astHeight" : 22
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 94,
+        "startLineNumber" : 719,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 719,
+        "endColumnNumber" : 106
+      },
+      "nodeContext" : "Map<String,List<CacheData>> removeListenCachesMap=new HashMap<String,List<CacheData>>(16);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 25,
+      "astHeight" : 7
+    },
+    "tokenLength" : 3,
+    "type" : "java.util.HashMap<java.lang.String,java.util.List<com.alibaba.nacos.client.config.impl.CacheData>>"
+  } ],
+  "positionList" : [ {
+    "charLength" : 40,
+    "startLineNumber" : 718,
+    "startColumnNumber" : 59,
+    "endLineNumber" : 718,
+    "endColumnNumber" : 99
+  }, {
+    "charLength" : 40,
+    "startLineNumber" : 719,
+    "startColumnNumber" : 65,
+    "endLineNumber" : 719,
+    "endColumnNumber" : 105
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 2
+  } ]
+}

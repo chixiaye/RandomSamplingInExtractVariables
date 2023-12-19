@@ -1,0 +1,126 @@
+{
+  "id" : 467,
+  "expression" : "InstanceInfo.Status.OUT_OF_SERVICE",
+  "projectName" : "Netflix@eureka",
+  "commitID" : "2f6d04dae7f6fca2a17e85fc53020e13272a79b2",
+  "filePath" : "/eureka-client/src/test/java/com/netflix/eureka2/client/channel/RetryableInterestChannelTest.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "InstanceInfo.Status.OUT_OF_SERVICE",
+    "nodeType" : "QualifiedName",
+    "nodePosition" : {
+      "charLength" : 34,
+      "startLineNumber" : 272,
+      "startColumnNumber" : 97,
+      "endLineNumber" : 272,
+      "endColumnNumber" : 131
+    },
+    "astNodeNumber" : 5,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 96,
+        "startLineNumber" : 272,
+        "startColumnNumber" : 36,
+        "endLineNumber" : 272,
+        "endColumnNumber" : 132
+      },
+      "nodeContext" : "new InstanceInfo.Builder().withInstanceInfo(INFO).withStatus(InstanceInfo.Status.OUT_OF_SERVICE)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 15,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 104,
+        "startLineNumber" : 272,
+        "startColumnNumber" : 36,
+        "endLineNumber" : 272,
+        "endColumnNumber" : 140
+      },
+      "nodeContext" : "new InstanceInfo.Builder().withInstanceInfo(INFO).withStatus(InstanceInfo.Status.OUT_OF_SERVICE).build()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 17,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 119,
+        "startLineNumber" : 272,
+        "startColumnNumber" : 21,
+        "endLineNumber" : 272,
+        "endColumnNumber" : 140
+      },
+      "nodeContext" : "updatedINFOb=new InstanceInfo.Builder().withInstanceInfo(INFO).withStatus(InstanceInfo.Status.OUT_OF_SERVICE).build()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 19,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 133,
+        "startLineNumber" : 272,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 272,
+        "endColumnNumber" : 141
+      },
+      "nodeContext" : "InstanceInfo updatedINFOb=new InstanceInfo.Builder().withInstanceInfo(INFO).withStatus(InstanceInfo.Status.OUT_OF_SERVICE).build();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 22,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5808,
+        "startLineNumber" : 188,
+        "startColumnNumber" : 85,
+        "endLineNumber" : 294,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final AtomicBoolean completed=new AtomicBoolean(false);\n  final AtomicBoolean errored=new AtomicBoolean(false);\n  final List<ChangeNotification<InstanceInfo>> notifications=new ArrayList<>();\n  registry.forInterest(INTEREST).subscribe(new Subscriber<ChangeNotification<InstanceInfo>>(){\n    @Override public void onCompleted(){\n      completed.set(true);\n    }\n    @Override public void onError(    Throwable e){\n      errored.set(true);\n    }\n    @Override public void onNext(    ChangeNotification<InstanceInfo> notification){\n      notifications.add(notification);\n    }\n  }\n);\n  retryableInterestChannel.appendInterest(INTEREST).toBlocking().firstOrDefault(null);\n  retryableInterestChannel.appendInterest(INTEREST2).toBlocking().firstOrDefault(null);\n  verify(interestChannel1,timeout(1)).appendInterest(INTEREST);\n  verify(interestChannel1,timeout(1)).appendInterest(INTEREST2);\n  registry.register(INFO,interestChannel1.getSource()).subscribe();\n  scheduler.triggerActions();\n  assertThat(retryableInterestChannel.associatedRegistry(),instanceOf(PreservableEurekaRegistry.class));\n  assertThat((PreservableEurekaRegistry)retryableInterestChannel.associatedRegistry(),equalTo(registry));\n  assertThat(registry.size(),is(equalTo(1)));\n  registry.register(INFO2,interestChannel1.getSource()).subscribe();\n  scheduler.triggerActions();\n  assertThat(registry.size(),is(equalTo(2)));\n  assertThat(notifications.size(),equalTo(1));\n  assertThat(notifications.get(0).getData(),equalTo(INFO));\n  channelLifecycle1.onError(new Exception(\"channel error msg\"));\n  scheduler.advanceTimeBy(RetryableInterestChannel.DEFAULT_INITIAL_DELAY,TimeUnit.MILLISECONDS);\n  verify(interestChannel2).appendInterest(new MultipleInterests<>(INTEREST,INTEREST2));\n  scheduler.advanceTimeBy(EVICTION_TIMEOUT_MS * 2 - 1,TimeUnit.MILLISECONDS);\n  assertTrue(registry.isInSelfPreservation());\n  assertThat(evictionQueue.size(),equalTo(1));\n  assertThat(retryableInterestChannel.associatedRegistry().size(),is(equalTo(1)));\n  registry.register(INFO,interestChannel2.getSource()).subscribe();\n  registry.register(INFO2,interestChannel2.getSource()).subscribe();\n  scheduler.triggerActions();\n  assertThat(registry.size(),is(equalTo(2)));\n  assertFalse(registry.isInSelfPreservation());\n  verify(interestChannel1,times(1)).close();\n  assertThat(evictionQueue.size(),equalTo(1));\n  scheduler.advanceTimeBy(EVICTION_TIMEOUT_MS * 2 - 1,TimeUnit.MILLISECONDS);\n  assertThat(evictionQueue.size(),equalTo(0));\n  InstanceInfo updatedINFOa=new InstanceInfo.Builder().withInstanceInfo(INFO).withStatus(InstanceInfo.Status.DOWN).build();\n  InstanceInfo updatedINFOb=new InstanceInfo.Builder().withInstanceInfo(INFO).withStatus(InstanceInfo.Status.OUT_OF_SERVICE).build();\n  registry.register(updatedINFOa,interestChannel1.getSource()).subscribe();\n  registry.register(updatedINFOb,interestChannel2.getSource()).subscribe();\n  scheduler.triggerActions();\n  if (notifications.size() == 2) {\n    assertThat(notifications.get(0),addChangeNotificationOf(INFO));\n    assertThat(notifications.get(1),modifyChangeNotificationOf(updatedINFOb));\n  }\n else   if (notifications.size() == 4) {\n    assertThat(notifications.get(0),addChangeNotificationOf(INFO));\n    assertThat(notifications.get(1),deleteChangeNotificationOf(INFO));\n    assertThat(notifications.get(2),addChangeNotificationOf(INFO));\n    assertThat(notifications.get(3),modifyChangeNotificationOf(updatedINFOb));\n  }\n else {\n    fail(\"Should never reach here\");\n  }\n  assertThat(completed.get(),is(false));\n  assertThat(errored.get(),is(false));\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 550,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 5899,
+        "startLineNumber" : 187,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 294,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test public void testDelegateFailureSendAllRegistryToEvictionQueue() throws Exception {\n  final AtomicBoolean completed=new AtomicBoolean(false);\n  final AtomicBoolean errored=new AtomicBoolean(false);\n  final List<ChangeNotification<InstanceInfo>> notifications=new ArrayList<>();\n  registry.forInterest(INTEREST).subscribe(new Subscriber<ChangeNotification<InstanceInfo>>(){\n    @Override public void onCompleted(){\n      completed.set(true);\n    }\n    @Override public void onError(    Throwable e){\n      errored.set(true);\n    }\n    @Override public void onNext(    ChangeNotification<InstanceInfo> notification){\n      notifications.add(notification);\n    }\n  }\n);\n  retryableInterestChannel.appendInterest(INTEREST).toBlocking().firstOrDefault(null);\n  retryableInterestChannel.appendInterest(INTEREST2).toBlocking().firstOrDefault(null);\n  verify(interestChannel1,timeout(1)).appendInterest(INTEREST);\n  verify(interestChannel1,timeout(1)).appendInterest(INTEREST2);\n  registry.register(INFO,interestChannel1.getSource()).subscribe();\n  scheduler.triggerActions();\n  assertThat(retryableInterestChannel.associatedRegistry(),instanceOf(PreservableEurekaRegistry.class));\n  assertThat((PreservableEurekaRegistry)retryableInterestChannel.associatedRegistry(),equalTo(registry));\n  assertThat(registry.size(),is(equalTo(1)));\n  registry.register(INFO2,interestChannel1.getSource()).subscribe();\n  scheduler.triggerActions();\n  assertThat(registry.size(),is(equalTo(2)));\n  assertThat(notifications.size(),equalTo(1));\n  assertThat(notifications.get(0).getData(),equalTo(INFO));\n  channelLifecycle1.onError(new Exception(\"channel error msg\"));\n  scheduler.advanceTimeBy(RetryableInterestChannel.DEFAULT_INITIAL_DELAY,TimeUnit.MILLISECONDS);\n  verify(interestChannel2).appendInterest(new MultipleInterests<>(INTEREST,INTEREST2));\n  scheduler.advanceTimeBy(EVICTION_TIMEOUT_MS * 2 - 1,TimeUnit.MILLISECONDS);\n  assertTrue(registry.isInSelfPreservation());\n  assertThat(evictionQueue.size(),equalTo(1));\n  assertThat(retryableInterestChannel.associatedRegistry().size(),is(equalTo(1)));\n  registry.register(INFO,interestChannel2.getSource()).subscribe();\n  registry.register(INFO2,interestChannel2.getSource()).subscribe();\n  scheduler.triggerActions();\n  assertThat(registry.size(),is(equalTo(2)));\n  assertFalse(registry.isInSelfPreservation());\n  verify(interestChannel1,times(1)).close();\n  assertThat(evictionQueue.size(),equalTo(1));\n  scheduler.advanceTimeBy(EVICTION_TIMEOUT_MS * 2 - 1,TimeUnit.MILLISECONDS);\n  assertThat(evictionQueue.size(),equalTo(0));\n  InstanceInfo updatedINFOa=new InstanceInfo.Builder().withInstanceInfo(INFO).withStatus(InstanceInfo.Status.DOWN).build();\n  InstanceInfo updatedINFOb=new InstanceInfo.Builder().withInstanceInfo(INFO).withStatus(InstanceInfo.Status.OUT_OF_SERVICE).build();\n  registry.register(updatedINFOa,interestChannel1.getSource()).subscribe();\n  registry.register(updatedINFOb,interestChannel2.getSource()).subscribe();\n  scheduler.triggerActions();\n  if (notifications.size() == 2) {\n    assertThat(notifications.get(0),addChangeNotificationOf(INFO));\n    assertThat(notifications.get(1),modifyChangeNotificationOf(updatedINFOb));\n  }\n else   if (notifications.size() == 4) {\n    assertThat(notifications.get(0),addChangeNotificationOf(INFO));\n    assertThat(notifications.get(1),deleteChangeNotificationOf(INFO));\n    assertThat(notifications.get(2),addChangeNotificationOf(INFO));\n    assertThat(notifications.get(3),modifyChangeNotificationOf(updatedINFOb));\n  }\n else {\n    fail(\"Should never reach here\");\n  }\n  assertThat(completed.get(),is(false));\n  assertThat(errored.get(),is(false));\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 558,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 133,
+        "startLineNumber" : 272,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 272,
+        "endColumnNumber" : 141
+      },
+      "nodeContext" : "InstanceInfo updatedINFOb=new InstanceInfo.Builder().withInstanceInfo(INFO).withStatus(InstanceInfo.Status.OUT_OF_SERVICE).build();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 22,
+      "astHeight" : 9
+    },
+    "tokenLength" : 5,
+    "type" : "com.netflix.eureka2.registry.instance.InstanceInfo.Status"
+  } ],
+  "positionList" : [ {
+    "charLength" : 34,
+    "startLineNumber" : 272,
+    "startColumnNumber" : 97,
+    "endLineNumber" : 272,
+    "endColumnNumber" : 131
+  } ],
+  "layoutRelationDataList" : [ ]
+}

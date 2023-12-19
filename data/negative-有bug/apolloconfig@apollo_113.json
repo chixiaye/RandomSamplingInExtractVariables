@@ -1,0 +1,234 @@
+{
+  "id" : 113,
+  "expression" : "cluster",
+  "projectName" : "apolloconfig@apollo",
+  "commitID" : "7b7d753f78e444f9cf97b0f238f7e33f585cb277",
+  "filePath" : "/apollo-configservice/src/main/java/com/ctrip/framework/apollo/configservice/controller/NotificationControllerV2.java",
+  "occurrences" : 2,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "cluster",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 7,
+      "startLineNumber" : 116,
+      "startColumnNumber" : 50,
+      "endLineNumber" : 116,
+      "endColumnNumber" : 57
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 74,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 82
+      },
+      "nodeContext" : "watchKeysUtil.assembleAllWatchKeys(appId,cluster,namespaces,dataCenter)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 99,
+        "startLineNumber" : 115,
+        "startColumnNumber" : 29,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 82
+      },
+      "nodeContext" : "watchedKeysMap=watchKeysUtil.assembleAllWatchKeys(appId,cluster,namespaces,dataCenter)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 9,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 125,
+        "startLineNumber" : 115,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 83
+      },
+      "nodeContext" : "Multimap<String,String> watchedKeysMap=watchKeysUtil.assembleAllWatchKeys(appId,cluster,namespaces,dataCenter);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 17,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2977,
+        "startLineNumber" : 85,
+        "startColumnNumber" : 69,
+        "endLineNumber" : 163,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  List<ApolloConfigNotification> notifications=null;\n  try {\n    notifications=gson.fromJson(notificationsAsString,notificationsTypeReference);\n  }\n catch (  Throwable ex) {\n    Cat.logError(ex);\n  }\n  if (CollectionUtils.isEmpty(notifications)) {\n    throw new BadRequestException(\"Invalid format of notifications: \" + notificationsAsString);\n  }\n  Set<String> namespaces=Sets.newHashSet();\n  Map<String,Long> clientSideNotifications=Maps.newHashMap();\n  for (  ApolloConfigNotification notification : notifications) {\n    if (Strings.isNullOrEmpty(notification.getNamespaceName())) {\n      continue;\n    }\n    String namespace=namespaceUtil.filterNamespaceName(notification.getNamespaceName());\n    namespaces.add(namespace);\n    clientSideNotifications.put(namespace,notification.getNotificationId());\n  }\n  if (CollectionUtils.isEmpty(namespaces)) {\n    throw new BadRequestException(\"Invalid format of notifications: \" + notificationsAsString);\n  }\n  Multimap<String,String> watchedKeysMap=watchKeysUtil.assembleAllWatchKeys(appId,cluster,namespaces,dataCenter);\n  DeferredResult<ResponseEntity<List<ApolloConfigNotification>>> deferredResult=new DeferredResult<>(TIMEOUT,NOT_MODIFIED_RESPONSE_LIST);\n  Set<String> watchedKeys=Sets.newHashSet(watchedKeysMap.values());\n  List<ReleaseMessage> latestReleaseMessages=releaseMessageService.findLatestReleaseMessagesGroupByMessages(watchedKeys);\n  entityManagerUtil.closeEntityManager();\n  List<ApolloConfigNotification> newNotifications=getApolloConfigNotifications(namespaces,clientSideNotifications,watchedKeysMap,latestReleaseMessages);\n  if (!CollectionUtils.isEmpty(newNotifications)) {\n    deferredResult.setResult(new ResponseEntity<>(newNotifications,HttpStatus.OK));\n  }\n else {\n    for (    String key : watchedKeys) {\n      this.deferredResults.put(key,deferredResult);\n    }\n    deferredResult.onTimeout(() -> logWatchedKeysToCat(watchedKeys,\"Apollo.LongPoll.TimeOutKeys\"));\n    deferredResult.onCompletion(() -> {\n      for (      String key : watchedKeys) {\n        deferredResults.remove(key,deferredResult);\n      }\n      logWatchedKeysToCat(watchedKeys,\"Apollo.LongPoll.CompletedKeys\");\n    }\n);\n    logWatchedKeysToCat(watchedKeys,\"Apollo.LongPoll.RegisteredKeys\");\n    logger.debug(\"Listening {} from appId: {}, cluster: {}, namespace: {}, datacenter: {}\",watchedKeys,appId,cluster,namespaces,dataCenter);\n  }\n  return deferredResult;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 287,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3440,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 163,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "@RequestMapping(method=RequestMethod.GET) public DeferredResult<ResponseEntity<List<ApolloConfigNotification>>> pollNotification(@RequestParam(value=\"appId\") String appId,@RequestParam(value=\"cluster\") String cluster,@RequestParam(value=\"notifications\") String notificationsAsString,@RequestParam(value=\"dataCenter\",required=false) String dataCenter,@RequestParam(value=\"ip\",required=false) String clientIp){\n  List<ApolloConfigNotification> notifications=null;\n  try {\n    notifications=gson.fromJson(notificationsAsString,notificationsTypeReference);\n  }\n catch (  Throwable ex) {\n    Cat.logError(ex);\n  }\n  if (CollectionUtils.isEmpty(notifications)) {\n    throw new BadRequestException(\"Invalid format of notifications: \" + notificationsAsString);\n  }\n  Set<String> namespaces=Sets.newHashSet();\n  Map<String,Long> clientSideNotifications=Maps.newHashMap();\n  for (  ApolloConfigNotification notification : notifications) {\n    if (Strings.isNullOrEmpty(notification.getNamespaceName())) {\n      continue;\n    }\n    String namespace=namespaceUtil.filterNamespaceName(notification.getNamespaceName());\n    namespaces.add(namespace);\n    clientSideNotifications.put(namespace,notification.getNotificationId());\n  }\n  if (CollectionUtils.isEmpty(namespaces)) {\n    throw new BadRequestException(\"Invalid format of notifications: \" + notificationsAsString);\n  }\n  Multimap<String,String> watchedKeysMap=watchKeysUtil.assembleAllWatchKeys(appId,cluster,namespaces,dataCenter);\n  DeferredResult<ResponseEntity<List<ApolloConfigNotification>>> deferredResult=new DeferredResult<>(TIMEOUT,NOT_MODIFIED_RESPONSE_LIST);\n  Set<String> watchedKeys=Sets.newHashSet(watchedKeysMap.values());\n  List<ReleaseMessage> latestReleaseMessages=releaseMessageService.findLatestReleaseMessagesGroupByMessages(watchedKeys);\n  entityManagerUtil.closeEntityManager();\n  List<ApolloConfigNotification> newNotifications=getApolloConfigNotifications(namespaces,clientSideNotifications,watchedKeysMap,latestReleaseMessages);\n  if (!CollectionUtils.isEmpty(newNotifications)) {\n    deferredResult.setResult(new ResponseEntity<>(newNotifications,HttpStatus.OK));\n  }\n else {\n    for (    String key : watchedKeys) {\n      this.deferredResults.put(key,deferredResult);\n    }\n    deferredResult.onTimeout(() -> logWatchedKeysToCat(watchedKeys,\"Apollo.LongPoll.TimeOutKeys\"));\n    deferredResult.onCompletion(() -> {\n      for (      String key : watchedKeys) {\n        deferredResults.remove(key,deferredResult);\n      }\n      logWatchedKeysToCat(watchedKeys,\"Apollo.LongPoll.CompletedKeys\");\n    }\n);\n    logWatchedKeysToCat(watchedKeys,\"Apollo.LongPoll.RegisteredKeys\");\n    logger.debug(\"Listening {} from appId: {}, cluster: {}, namespace: {}, datacenter: {}\",watchedKeys,appId,cluster,namespaces,dataCenter);\n  }\n  return deferredResult;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 359,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 74,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 82
+      },
+      "nodeContext" : "watchKeysUtil.assembleAllWatchKeys(appId,cluster,namespaces,dataCenter)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 2
+    },
+    "tokenLength" : 1,
+    "type" : "java.lang.String"
+  }, {
+    "nodeContext" : "cluster",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 7,
+      "startLineNumber" : 159,
+      "startColumnNumber" : 30,
+      "endLineNumber" : 159,
+      "endColumnNumber" : 37
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 150,
+        "startLineNumber" : 158,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 159,
+        "endColumnNumber" : 62
+      },
+      "nodeContext" : "logger.debug(\"Listening {} from appId: {}, cluster: {}, namespace: {}, datacenter: {}\",watchedKeys,appId,cluster,namespaces,dataCenter)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 9,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 151,
+        "startLineNumber" : 158,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 159,
+        "endColumnNumber" : 63
+      },
+      "nodeContext" : "logger.debug(\"Listening {} from appId: {}, cluster: {}, namespace: {}, datacenter: {}\",watchedKeys,appId,cluster,namespaces,dataCenter);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 747,
+        "startLineNumber" : 140,
+        "startColumnNumber" : 11,
+        "endLineNumber" : 160,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  for (  String key : watchedKeys) {\n    this.deferredResults.put(key,deferredResult);\n  }\n  deferredResult.onTimeout(() -> logWatchedKeysToCat(watchedKeys,\"Apollo.LongPoll.TimeOutKeys\"));\n  deferredResult.onCompletion(() -> {\n    for (    String key : watchedKeys) {\n      deferredResults.remove(key,deferredResult);\n    }\n    logWatchedKeysToCat(watchedKeys,\"Apollo.LongPoll.CompletedKeys\");\n  }\n);\n  logWatchedKeysToCat(watchedKeys,\"Apollo.LongPoll.RegisteredKeys\");\n  logger.debug(\"Listening {} from appId: {}, cluster: {}, namespace: {}, datacenter: {}\",watchedKeys,appId,cluster,namespaces,dataCenter);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 64,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 895,
+        "startLineNumber" : 138,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 160,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "if (!CollectionUtils.isEmpty(newNotifications)) {\n  deferredResult.setResult(new ResponseEntity<>(newNotifications,HttpStatus.OK));\n}\n else {\n  for (  String key : watchedKeys) {\n    this.deferredResults.put(key,deferredResult);\n  }\n  deferredResult.onTimeout(() -> logWatchedKeysToCat(watchedKeys,\"Apollo.LongPoll.TimeOutKeys\"));\n  deferredResult.onCompletion(() -> {\n    for (    String key : watchedKeys) {\n      deferredResults.remove(key,deferredResult);\n    }\n    logWatchedKeysToCat(watchedKeys,\"Apollo.LongPoll.CompletedKeys\");\n  }\n);\n  logWatchedKeysToCat(watchedKeys,\"Apollo.LongPoll.RegisteredKeys\");\n  logger.debug(\"Listening {} from appId: {}, cluster: {}, namespace: {}, datacenter: {}\",watchedKeys,appId,cluster,namespaces,dataCenter);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 83,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2977,
+        "startLineNumber" : 85,
+        "startColumnNumber" : 69,
+        "endLineNumber" : 163,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  List<ApolloConfigNotification> notifications=null;\n  try {\n    notifications=gson.fromJson(notificationsAsString,notificationsTypeReference);\n  }\n catch (  Throwable ex) {\n    Cat.logError(ex);\n  }\n  if (CollectionUtils.isEmpty(notifications)) {\n    throw new BadRequestException(\"Invalid format of notifications: \" + notificationsAsString);\n  }\n  Set<String> namespaces=Sets.newHashSet();\n  Map<String,Long> clientSideNotifications=Maps.newHashMap();\n  for (  ApolloConfigNotification notification : notifications) {\n    if (Strings.isNullOrEmpty(notification.getNamespaceName())) {\n      continue;\n    }\n    String namespace=namespaceUtil.filterNamespaceName(notification.getNamespaceName());\n    namespaces.add(namespace);\n    clientSideNotifications.put(namespace,notification.getNotificationId());\n  }\n  if (CollectionUtils.isEmpty(namespaces)) {\n    throw new BadRequestException(\"Invalid format of notifications: \" + notificationsAsString);\n  }\n  Multimap<String,String> watchedKeysMap=watchKeysUtil.assembleAllWatchKeys(appId,cluster,namespaces,dataCenter);\n  DeferredResult<ResponseEntity<List<ApolloConfigNotification>>> deferredResult=new DeferredResult<>(TIMEOUT,NOT_MODIFIED_RESPONSE_LIST);\n  Set<String> watchedKeys=Sets.newHashSet(watchedKeysMap.values());\n  List<ReleaseMessage> latestReleaseMessages=releaseMessageService.findLatestReleaseMessagesGroupByMessages(watchedKeys);\n  entityManagerUtil.closeEntityManager();\n  List<ApolloConfigNotification> newNotifications=getApolloConfigNotifications(namespaces,clientSideNotifications,watchedKeysMap,latestReleaseMessages);\n  if (!CollectionUtils.isEmpty(newNotifications)) {\n    deferredResult.setResult(new ResponseEntity<>(newNotifications,HttpStatus.OK));\n  }\n else {\n    for (    String key : watchedKeys) {\n      this.deferredResults.put(key,deferredResult);\n    }\n    deferredResult.onTimeout(() -> logWatchedKeysToCat(watchedKeys,\"Apollo.LongPoll.TimeOutKeys\"));\n    deferredResult.onCompletion(() -> {\n      for (      String key : watchedKeys) {\n        deferredResults.remove(key,deferredResult);\n      }\n      logWatchedKeysToCat(watchedKeys,\"Apollo.LongPoll.CompletedKeys\");\n    }\n);\n    logWatchedKeysToCat(watchedKeys,\"Apollo.LongPoll.RegisteredKeys\");\n    logger.debug(\"Listening {} from appId: {}, cluster: {}, namespace: {}, datacenter: {}\",watchedKeys,appId,cluster,namespaces,dataCenter);\n  }\n  return deferredResult;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 287,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3440,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 163,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "@RequestMapping(method=RequestMethod.GET) public DeferredResult<ResponseEntity<List<ApolloConfigNotification>>> pollNotification(@RequestParam(value=\"appId\") String appId,@RequestParam(value=\"cluster\") String cluster,@RequestParam(value=\"notifications\") String notificationsAsString,@RequestParam(value=\"dataCenter\",required=false) String dataCenter,@RequestParam(value=\"ip\",required=false) String clientIp){\n  List<ApolloConfigNotification> notifications=null;\n  try {\n    notifications=gson.fromJson(notificationsAsString,notificationsTypeReference);\n  }\n catch (  Throwable ex) {\n    Cat.logError(ex);\n  }\n  if (CollectionUtils.isEmpty(notifications)) {\n    throw new BadRequestException(\"Invalid format of notifications: \" + notificationsAsString);\n  }\n  Set<String> namespaces=Sets.newHashSet();\n  Map<String,Long> clientSideNotifications=Maps.newHashMap();\n  for (  ApolloConfigNotification notification : notifications) {\n    if (Strings.isNullOrEmpty(notification.getNamespaceName())) {\n      continue;\n    }\n    String namespace=namespaceUtil.filterNamespaceName(notification.getNamespaceName());\n    namespaces.add(namespace);\n    clientSideNotifications.put(namespace,notification.getNotificationId());\n  }\n  if (CollectionUtils.isEmpty(namespaces)) {\n    throw new BadRequestException(\"Invalid format of notifications: \" + notificationsAsString);\n  }\n  Multimap<String,String> watchedKeysMap=watchKeysUtil.assembleAllWatchKeys(appId,cluster,namespaces,dataCenter);\n  DeferredResult<ResponseEntity<List<ApolloConfigNotification>>> deferredResult=new DeferredResult<>(TIMEOUT,NOT_MODIFIED_RESPONSE_LIST);\n  Set<String> watchedKeys=Sets.newHashSet(watchedKeysMap.values());\n  List<ReleaseMessage> latestReleaseMessages=releaseMessageService.findLatestReleaseMessagesGroupByMessages(watchedKeys);\n  entityManagerUtil.closeEntityManager();\n  List<ApolloConfigNotification> newNotifications=getApolloConfigNotifications(namespaces,clientSideNotifications,watchedKeysMap,latestReleaseMessages);\n  if (!CollectionUtils.isEmpty(newNotifications)) {\n    deferredResult.setResult(new ResponseEntity<>(newNotifications,HttpStatus.OK));\n  }\n else {\n    for (    String key : watchedKeys) {\n      this.deferredResults.put(key,deferredResult);\n    }\n    deferredResult.onTimeout(() -> logWatchedKeysToCat(watchedKeys,\"Apollo.LongPoll.TimeOutKeys\"));\n    deferredResult.onCompletion(() -> {\n      for (      String key : watchedKeys) {\n        deferredResults.remove(key,deferredResult);\n      }\n      logWatchedKeysToCat(watchedKeys,\"Apollo.LongPoll.CompletedKeys\");\n    }\n);\n    logWatchedKeysToCat(watchedKeys,\"Apollo.LongPoll.RegisteredKeys\");\n    logger.debug(\"Listening {} from appId: {}, cluster: {}, namespace: {}, datacenter: {}\",watchedKeys,appId,cluster,namespaces,dataCenter);\n  }\n  return deferredResult;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 359,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 150,
+        "startLineNumber" : 158,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 159,
+        "endColumnNumber" : 62
+      },
+      "nodeContext" : "logger.debug(\"Listening {} from appId: {}, cluster: {}, namespace: {}, datacenter: {}\",watchedKeys,appId,cluster,namespaces,dataCenter)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 9,
+      "astHeight" : 2
+    },
+    "tokenLength" : 1,
+    "type" : "java.lang.String"
+  } ],
+  "positionList" : [ {
+    "charLength" : 7,
+    "startLineNumber" : 116,
+    "startColumnNumber" : 50,
+    "endLineNumber" : 116,
+    "endColumnNumber" : 57
+  }, {
+    "charLength" : 7,
+    "startLineNumber" : 159,
+    "startColumnNumber" : 30,
+    "endLineNumber" : 159,
+    "endColumnNumber" : 37
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 4
+  } ]
+}

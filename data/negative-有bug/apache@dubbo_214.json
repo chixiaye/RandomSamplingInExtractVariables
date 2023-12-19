@@ -1,0 +1,221 @@
+{
+  "id" : 214,
+  "expression" : "observer",
+  "projectName" : "apache@dubbo",
+  "commitID" : "4ea0a09846fa74b7b1a6a1a548f31859a2cddcc8",
+  "filePath" : "/dubbo-rpc/dubbo-rpc-triple/src/main/java/org/apache/dubbo/rpc/protocol/tri/TripleHttp2FrameServerHandler.java",
+  "occurrences" : 2,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "observer",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 8,
+      "startLineNumber" : 204,
+      "startColumnNumber" : 8,
+      "endLineNumber" : 204,
+      "endColumnNumber" : 16
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 59,
+        "startLineNumber" : 204,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 67
+      },
+      "nodeContext" : "observer.tryOnMetadata(new Http2HeaderMeta(headers),false)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 60,
+        "startLineNumber" : 204,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 68
+      },
+      "nodeContext" : "observer.tryOnMetadata(new Http2HeaderMeta(headers),false);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4886,
+        "startLineNumber" : 107,
+        "startColumnNumber" : 97,
+        "endLineNumber" : 210,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final Http2Headers headers=msg.headers();\n  if (!HttpMethod.POST.asciiName().contentEquals(headers.method())) {\n    responsePlainTextError(ctx,HttpResponseStatus.METHOD_NOT_ALLOWED.code(),GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL).withDescription(String.format(\"Method '%s' is not supported\",headers.method())));\n    return;\n  }\n  if (headers.path() == null) {\n    responsePlainTextError(ctx,HttpResponseStatus.NOT_FOUND.code(),GrpcStatus.fromCode(Code.UNIMPLEMENTED.code).withDescription(\"Expected path but is missing\"));\n    return;\n  }\n  final String path=headers.path().toString();\n  if (path.charAt(0) != '/') {\n    responsePlainTextError(ctx,HttpResponseStatus.NOT_FOUND.code(),GrpcStatus.fromCode(Code.UNIMPLEMENTED.code).withDescription(String.format(\"Expected path to start with /: %s\",path)));\n    return;\n  }\n  final CharSequence contentType=HttpUtil.getMimeType(headers.get(HttpHeaderNames.CONTENT_TYPE));\n  if (contentType == null) {\n    responsePlainTextError(ctx,HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL.code).withDescription(\"Content-Type is missing from the request\"));\n    return;\n  }\n  final String contentString=contentType.toString();\n  if (!TripleUtil.supportContentType(contentString)) {\n    responsePlainTextError(ctx,HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),GrpcStatus.fromCode(Code.INTERNAL.code).withDescription(String.format(\"Content-Type '%s' is not supported\",contentString)));\n    return;\n  }\n  String[] parts=path.split(\"/\");\n  if (parts.length != 3) {\n    responseErr(ctx,GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription(\"Bad path format:\" + path));\n    return;\n  }\n  String serviceName=parts[1];\n  String originalMethodName=parts[2];\n  String methodName=Character.toLowerCase(originalMethodName.charAt(0)) + originalMethodName.substring(1);\n  final Invoker<?> invoker=getInvoker(headers,serviceName);\n  if (invoker == null) {\n    responseErr(ctx,GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription(\"Service not found:\" + serviceName));\n    return;\n  }\n  ServiceRepository repo=ApplicationModel.getServiceRepository();\n  final ServiceDescriptor serviceDescriptor=repo.lookupService(invoker.getUrl().getServiceKey());\n  if (serviceDescriptor == null) {\n    responseErr(ctx,GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription(\"Service not found:\" + serviceName));\n    return;\n  }\n  MethodDescriptor methodDescriptor=null;\n  List<MethodDescriptor> methodDescriptors=null;\n  if (CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName)) {\n    methodDescriptor=repo.lookupMethod(GenericService.class.getName(),methodName);\n  }\n else   if (CommonConstants.$ECHO.equals(methodName)) {\n    methodDescriptor=repo.lookupMethod(EchoService.class.getName(),methodName);\n  }\n else {\n    methodDescriptors=serviceDescriptor.getMethods(methodName);\n    if (methodDescriptors == null || methodDescriptors.isEmpty()) {\n      responseErr(ctx,GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription(\"Method :\" + methodName + \" not found of service:\"+ serviceName));\n      return;\n    }\n    if (methodDescriptors.size() == 1) {\n      methodDescriptor=methodDescriptors.get(0);\n    }\n  }\n  final AbstractServerStream stream;\n  if (methodDescriptor != null && methodDescriptor.isStream()) {\n    stream=AbstractServerStream.stream(invoker.getUrl());\n  }\n else {\n    stream=AbstractServerStream.unary(invoker.getUrl());\n  }\n  stream.service(serviceDescriptor).invoker(invoker).methodName(methodName).subscribe(new ServerTransportObserver(ctx));\n  if (methodDescriptor != null) {\n    stream.method(methodDescriptor);\n  }\n else {\n    stream.methods(methodDescriptors);\n  }\n  final TransportObserver observer=stream.asTransportObserver();\n  observer.tryOnMetadata(new Http2HeaderMeta(headers),false);\n  if (msg.isEndStream()) {\n    observer.tryOnComplete();\n  }\n  ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).set(stream);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 566,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4979,
+        "startLineNumber" : 107,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 210,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "public void onHeadersRead(ChannelHandlerContext ctx,Http2HeadersFrame msg) throws Exception {\n  final Http2Headers headers=msg.headers();\n  if (!HttpMethod.POST.asciiName().contentEquals(headers.method())) {\n    responsePlainTextError(ctx,HttpResponseStatus.METHOD_NOT_ALLOWED.code(),GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL).withDescription(String.format(\"Method '%s' is not supported\",headers.method())));\n    return;\n  }\n  if (headers.path() == null) {\n    responsePlainTextError(ctx,HttpResponseStatus.NOT_FOUND.code(),GrpcStatus.fromCode(Code.UNIMPLEMENTED.code).withDescription(\"Expected path but is missing\"));\n    return;\n  }\n  final String path=headers.path().toString();\n  if (path.charAt(0) != '/') {\n    responsePlainTextError(ctx,HttpResponseStatus.NOT_FOUND.code(),GrpcStatus.fromCode(Code.UNIMPLEMENTED.code).withDescription(String.format(\"Expected path to start with /: %s\",path)));\n    return;\n  }\n  final CharSequence contentType=HttpUtil.getMimeType(headers.get(HttpHeaderNames.CONTENT_TYPE));\n  if (contentType == null) {\n    responsePlainTextError(ctx,HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL.code).withDescription(\"Content-Type is missing from the request\"));\n    return;\n  }\n  final String contentString=contentType.toString();\n  if (!TripleUtil.supportContentType(contentString)) {\n    responsePlainTextError(ctx,HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),GrpcStatus.fromCode(Code.INTERNAL.code).withDescription(String.format(\"Content-Type '%s' is not supported\",contentString)));\n    return;\n  }\n  String[] parts=path.split(\"/\");\n  if (parts.length != 3) {\n    responseErr(ctx,GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription(\"Bad path format:\" + path));\n    return;\n  }\n  String serviceName=parts[1];\n  String originalMethodName=parts[2];\n  String methodName=Character.toLowerCase(originalMethodName.charAt(0)) + originalMethodName.substring(1);\n  final Invoker<?> invoker=getInvoker(headers,serviceName);\n  if (invoker == null) {\n    responseErr(ctx,GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription(\"Service not found:\" + serviceName));\n    return;\n  }\n  ServiceRepository repo=ApplicationModel.getServiceRepository();\n  final ServiceDescriptor serviceDescriptor=repo.lookupService(invoker.getUrl().getServiceKey());\n  if (serviceDescriptor == null) {\n    responseErr(ctx,GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription(\"Service not found:\" + serviceName));\n    return;\n  }\n  MethodDescriptor methodDescriptor=null;\n  List<MethodDescriptor> methodDescriptors=null;\n  if (CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName)) {\n    methodDescriptor=repo.lookupMethod(GenericService.class.getName(),methodName);\n  }\n else   if (CommonConstants.$ECHO.equals(methodName)) {\n    methodDescriptor=repo.lookupMethod(EchoService.class.getName(),methodName);\n  }\n else {\n    methodDescriptors=serviceDescriptor.getMethods(methodName);\n    if (methodDescriptors == null || methodDescriptors.isEmpty()) {\n      responseErr(ctx,GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription(\"Method :\" + methodName + \" not found of service:\"+ serviceName));\n      return;\n    }\n    if (methodDescriptors.size() == 1) {\n      methodDescriptor=methodDescriptors.get(0);\n    }\n  }\n  final AbstractServerStream stream;\n  if (methodDescriptor != null && methodDescriptor.isStream()) {\n    stream=AbstractServerStream.stream(invoker.getUrl());\n  }\n else {\n    stream=AbstractServerStream.unary(invoker.getUrl());\n  }\n  stream.service(serviceDescriptor).invoker(invoker).methodName(methodName).subscribe(new ServerTransportObserver(ctx));\n  if (methodDescriptor != null) {\n    stream.method(methodDescriptor);\n  }\n else {\n    stream.methods(methodDescriptors);\n  }\n  final TransportObserver observer=stream.asTransportObserver();\n  observer.tryOnMetadata(new Http2HeaderMeta(headers),false);\n  if (msg.isEndStream()) {\n    observer.tryOnComplete();\n  }\n  ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).set(stream);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 580,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 60,
+        "startLineNumber" : 204,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 68
+      },
+      "nodeContext" : "observer.tryOnMetadata(new Http2HeaderMeta(headers),false);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.dubbo.rpc.protocol.tri.TransportObserver"
+  }, {
+    "nodeContext" : "observer",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 8,
+      "startLineNumber" : 206,
+      "startColumnNumber" : 12,
+      "endLineNumber" : 206,
+      "endColumnNumber" : 20
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 24,
+        "startLineNumber" : 206,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 206,
+        "endColumnNumber" : 36
+      },
+      "nodeContext" : "observer.tryOnComplete()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 25,
+        "startLineNumber" : 206,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 206,
+        "endColumnNumber" : 37
+      },
+      "nodeContext" : "observer.tryOnComplete();\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 4,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 49,
+        "startLineNumber" : 205,
+        "startColumnNumber" : 31,
+        "endLineNumber" : 207,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  observer.tryOnComplete();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 5,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 72,
+        "startLineNumber" : 205,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 207,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (msg.isEndStream()) {\n  observer.tryOnComplete();\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4886,
+        "startLineNumber" : 107,
+        "startColumnNumber" : 97,
+        "endLineNumber" : 210,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final Http2Headers headers=msg.headers();\n  if (!HttpMethod.POST.asciiName().contentEquals(headers.method())) {\n    responsePlainTextError(ctx,HttpResponseStatus.METHOD_NOT_ALLOWED.code(),GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL).withDescription(String.format(\"Method '%s' is not supported\",headers.method())));\n    return;\n  }\n  if (headers.path() == null) {\n    responsePlainTextError(ctx,HttpResponseStatus.NOT_FOUND.code(),GrpcStatus.fromCode(Code.UNIMPLEMENTED.code).withDescription(\"Expected path but is missing\"));\n    return;\n  }\n  final String path=headers.path().toString();\n  if (path.charAt(0) != '/') {\n    responsePlainTextError(ctx,HttpResponseStatus.NOT_FOUND.code(),GrpcStatus.fromCode(Code.UNIMPLEMENTED.code).withDescription(String.format(\"Expected path to start with /: %s\",path)));\n    return;\n  }\n  final CharSequence contentType=HttpUtil.getMimeType(headers.get(HttpHeaderNames.CONTENT_TYPE));\n  if (contentType == null) {\n    responsePlainTextError(ctx,HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL.code).withDescription(\"Content-Type is missing from the request\"));\n    return;\n  }\n  final String contentString=contentType.toString();\n  if (!TripleUtil.supportContentType(contentString)) {\n    responsePlainTextError(ctx,HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),GrpcStatus.fromCode(Code.INTERNAL.code).withDescription(String.format(\"Content-Type '%s' is not supported\",contentString)));\n    return;\n  }\n  String[] parts=path.split(\"/\");\n  if (parts.length != 3) {\n    responseErr(ctx,GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription(\"Bad path format:\" + path));\n    return;\n  }\n  String serviceName=parts[1];\n  String originalMethodName=parts[2];\n  String methodName=Character.toLowerCase(originalMethodName.charAt(0)) + originalMethodName.substring(1);\n  final Invoker<?> invoker=getInvoker(headers,serviceName);\n  if (invoker == null) {\n    responseErr(ctx,GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription(\"Service not found:\" + serviceName));\n    return;\n  }\n  ServiceRepository repo=ApplicationModel.getServiceRepository();\n  final ServiceDescriptor serviceDescriptor=repo.lookupService(invoker.getUrl().getServiceKey());\n  if (serviceDescriptor == null) {\n    responseErr(ctx,GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription(\"Service not found:\" + serviceName));\n    return;\n  }\n  MethodDescriptor methodDescriptor=null;\n  List<MethodDescriptor> methodDescriptors=null;\n  if (CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName)) {\n    methodDescriptor=repo.lookupMethod(GenericService.class.getName(),methodName);\n  }\n else   if (CommonConstants.$ECHO.equals(methodName)) {\n    methodDescriptor=repo.lookupMethod(EchoService.class.getName(),methodName);\n  }\n else {\n    methodDescriptors=serviceDescriptor.getMethods(methodName);\n    if (methodDescriptors == null || methodDescriptors.isEmpty()) {\n      responseErr(ctx,GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription(\"Method :\" + methodName + \" not found of service:\"+ serviceName));\n      return;\n    }\n    if (methodDescriptors.size() == 1) {\n      methodDescriptor=methodDescriptors.get(0);\n    }\n  }\n  final AbstractServerStream stream;\n  if (methodDescriptor != null && methodDescriptor.isStream()) {\n    stream=AbstractServerStream.stream(invoker.getUrl());\n  }\n else {\n    stream=AbstractServerStream.unary(invoker.getUrl());\n  }\n  stream.service(serviceDescriptor).invoker(invoker).methodName(methodName).subscribe(new ServerTransportObserver(ctx));\n  if (methodDescriptor != null) {\n    stream.method(methodDescriptor);\n  }\n else {\n    stream.methods(methodDescriptors);\n  }\n  final TransportObserver observer=stream.asTransportObserver();\n  observer.tryOnMetadata(new Http2HeaderMeta(headers),false);\n  if (msg.isEndStream()) {\n    observer.tryOnComplete();\n  }\n  ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).set(stream);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 566,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4979,
+        "startLineNumber" : 107,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 210,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "public void onHeadersRead(ChannelHandlerContext ctx,Http2HeadersFrame msg) throws Exception {\n  final Http2Headers headers=msg.headers();\n  if (!HttpMethod.POST.asciiName().contentEquals(headers.method())) {\n    responsePlainTextError(ctx,HttpResponseStatus.METHOD_NOT_ALLOWED.code(),GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL).withDescription(String.format(\"Method '%s' is not supported\",headers.method())));\n    return;\n  }\n  if (headers.path() == null) {\n    responsePlainTextError(ctx,HttpResponseStatus.NOT_FOUND.code(),GrpcStatus.fromCode(Code.UNIMPLEMENTED.code).withDescription(\"Expected path but is missing\"));\n    return;\n  }\n  final String path=headers.path().toString();\n  if (path.charAt(0) != '/') {\n    responsePlainTextError(ctx,HttpResponseStatus.NOT_FOUND.code(),GrpcStatus.fromCode(Code.UNIMPLEMENTED.code).withDescription(String.format(\"Expected path to start with /: %s\",path)));\n    return;\n  }\n  final CharSequence contentType=HttpUtil.getMimeType(headers.get(HttpHeaderNames.CONTENT_TYPE));\n  if (contentType == null) {\n    responsePlainTextError(ctx,HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL.code).withDescription(\"Content-Type is missing from the request\"));\n    return;\n  }\n  final String contentString=contentType.toString();\n  if (!TripleUtil.supportContentType(contentString)) {\n    responsePlainTextError(ctx,HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),GrpcStatus.fromCode(Code.INTERNAL.code).withDescription(String.format(\"Content-Type '%s' is not supported\",contentString)));\n    return;\n  }\n  String[] parts=path.split(\"/\");\n  if (parts.length != 3) {\n    responseErr(ctx,GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription(\"Bad path format:\" + path));\n    return;\n  }\n  String serviceName=parts[1];\n  String originalMethodName=parts[2];\n  String methodName=Character.toLowerCase(originalMethodName.charAt(0)) + originalMethodName.substring(1);\n  final Invoker<?> invoker=getInvoker(headers,serviceName);\n  if (invoker == null) {\n    responseErr(ctx,GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription(\"Service not found:\" + serviceName));\n    return;\n  }\n  ServiceRepository repo=ApplicationModel.getServiceRepository();\n  final ServiceDescriptor serviceDescriptor=repo.lookupService(invoker.getUrl().getServiceKey());\n  if (serviceDescriptor == null) {\n    responseErr(ctx,GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription(\"Service not found:\" + serviceName));\n    return;\n  }\n  MethodDescriptor methodDescriptor=null;\n  List<MethodDescriptor> methodDescriptors=null;\n  if (CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName)) {\n    methodDescriptor=repo.lookupMethod(GenericService.class.getName(),methodName);\n  }\n else   if (CommonConstants.$ECHO.equals(methodName)) {\n    methodDescriptor=repo.lookupMethod(EchoService.class.getName(),methodName);\n  }\n else {\n    methodDescriptors=serviceDescriptor.getMethods(methodName);\n    if (methodDescriptors == null || methodDescriptors.isEmpty()) {\n      responseErr(ctx,GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription(\"Method :\" + methodName + \" not found of service:\"+ serviceName));\n      return;\n    }\n    if (methodDescriptors.size() == 1) {\n      methodDescriptor=methodDescriptors.get(0);\n    }\n  }\n  final AbstractServerStream stream;\n  if (methodDescriptor != null && methodDescriptor.isStream()) {\n    stream=AbstractServerStream.stream(invoker.getUrl());\n  }\n else {\n    stream=AbstractServerStream.unary(invoker.getUrl());\n  }\n  stream.service(serviceDescriptor).invoker(invoker).methodName(methodName).subscribe(new ServerTransportObserver(ctx));\n  if (methodDescriptor != null) {\n    stream.method(methodDescriptor);\n  }\n else {\n    stream.methods(methodDescriptors);\n  }\n  final TransportObserver observer=stream.asTransportObserver();\n  observer.tryOnMetadata(new Http2HeaderMeta(headers),false);\n  if (msg.isEndStream()) {\n    observer.tryOnComplete();\n  }\n  ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).set(stream);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 580,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 25,
+        "startLineNumber" : 206,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 206,
+        "endColumnNumber" : 37
+      },
+      "nodeContext" : "observer.tryOnComplete();\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 4,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.dubbo.rpc.protocol.tri.TransportObserver"
+  } ],
+  "positionList" : [ {
+    "charLength" : 8,
+    "startLineNumber" : 204,
+    "startColumnNumber" : 8,
+    "endLineNumber" : 204,
+    "endColumnNumber" : 16
+  }, {
+    "charLength" : 8,
+    "startLineNumber" : 206,
+    "startColumnNumber" : 12,
+    "endLineNumber" : 206,
+    "endColumnNumber" : 20
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 4
+  } ]
+}

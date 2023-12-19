@@ -1,0 +1,113 @@
+{
+  "id" : 182,
+  "expression" : "tokenManager.toLogoutToken(encodedLogoutToken)",
+  "projectName" : "keycloak@keycloak",
+  "commitID" : "aacae9b9acb0fbedc49d4f88c9fbd7aa11922dce",
+  "filePath" : "/services/src/main/java/org/keycloak/protocol/oidc/endpoints/LogoutEndpoint.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "tokenManager.toLogoutToken(encodedLogoutToken)",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 46,
+      "startLineNumber" : 436,
+      "startColumnNumber" : 34,
+      "endLineNumber" : 436,
+      "endColumnNumber" : 80
+    },
+    "astNodeNumber" : 4,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 52,
+        "startLineNumber" : 436,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 436,
+        "endColumnNumber" : 86
+      },
+      "nodeContext" : "tokenManager.toLogoutToken(encodedLogoutToken).get()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 66,
+        "startLineNumber" : 436,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 436,
+        "endColumnNumber" : 86
+      },
+      "nodeContext" : "logoutToken=tokenManager.toLogoutToken(encodedLogoutToken).get()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 79,
+        "startLineNumber" : 436,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 436,
+        "endColumnNumber" : 87
+      },
+      "nodeContext" : "LogoutToken logoutToken=tokenManager.toLogoutToken(encodedLogoutToken).get();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2831,
+        "startLineNumber" : 418,
+        "startColumnNumber" : 40,
+        "endLineNumber" : 477,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  MultivaluedMap<String,String> form=request.getDecodedFormParameters();\n  event.event(EventType.LOGOUT);\n  String encodedLogoutToken=form.getFirst(OAuth2Constants.LOGOUT_TOKEN);\n  if (encodedLogoutToken == null) {\n    event.error(Errors.INVALID_TOKEN);\n    throw new ErrorResponseException(OAuthErrorException.INVALID_REQUEST,\"No logout token\",Response.Status.BAD_REQUEST);\n  }\n  LogoutTokenValidationCode validationCode=tokenManager.verifyLogoutToken(session,realm,encodedLogoutToken);\n  if (!validationCode.equals(LogoutTokenValidationCode.VALIDATION_SUCCESS)) {\n    event.error(Errors.INVALID_TOKEN);\n    throw new ErrorResponseException(OAuthErrorException.INVALID_REQUEST,validationCode.getErrorMessage(),Response.Status.BAD_REQUEST);\n  }\n  LogoutToken logoutToken=tokenManager.toLogoutToken(encodedLogoutToken).get();\n  Stream<String> identityProviderAliases=tokenManager.getValidOIDCIdentityProvidersForBackchannelLogout(realm,session,encodedLogoutToken,logoutToken).map(idp -> idp.getConfig().getAlias());\n  boolean logoutOfflineSessions=Boolean.parseBoolean(logoutToken.getEvents().getOrDefault(TokenUtil.TOKEN_BACKCHANNEL_LOGOUT_EVENT_REVOKE_OFFLINE_TOKENS,false).toString());\n  BackchannelLogoutResponse backchannelLogoutResponse;\n  if (logoutToken.getSid() != null) {\n    backchannelLogoutResponse=backchannelLogoutWithSessionId(logoutToken.getSid(),identityProviderAliases,logoutOfflineSessions,logoutToken.getSubject());\n  }\n else {\n    backchannelLogoutResponse=backchannelLogoutFederatedUserId(logoutToken.getSubject(),identityProviderAliases,logoutOfflineSessions);\n  }\n  if (!backchannelLogoutResponse.getLocalLogoutSucceeded()) {\n    event.error(Errors.LOGOUT_FAILED);\n    throw new ErrorResponseException(OAuthErrorException.SERVER_ERROR,\"There was an error in the local logout\",Response.Status.NOT_IMPLEMENTED);\n  }\n  session.getProvider(SecurityHeadersProvider.class).options().allowEmptyContentType();\n  if (oneOrMoreDownstreamLogoutsFailed(backchannelLogoutResponse)) {\n    return Cors.add(request).auth().builder(Response.status(Response.Status.GATEWAY_TIMEOUT).type(MediaType.APPLICATION_JSON_TYPE)).build();\n  }\n  return Cors.add(request).auth().builder(Response.ok().type(MediaType.APPLICATION_JSON_TYPE)).build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 274,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3363,
+        "startLineNumber" : 405,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 477,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Backchannel logout endpoint implementation for Keycloak, which tries to logout the user from all sessions via POST with a valid LogoutToken. Logout a session via a non-browser invocation. Will be implemented as a backchannel logout based on the specification https://openid.net/specs/openid-connect-backchannel-1_0.html\n * @return\n */\n@Path(\"/backchannel-logout\") @POST @Consumes(MediaType.APPLICATION_FORM_URLENCODED) public Response backchannelLogout(){\n  MultivaluedMap<String,String> form=request.getDecodedFormParameters();\n  event.event(EventType.LOGOUT);\n  String encodedLogoutToken=form.getFirst(OAuth2Constants.LOGOUT_TOKEN);\n  if (encodedLogoutToken == null) {\n    event.error(Errors.INVALID_TOKEN);\n    throw new ErrorResponseException(OAuthErrorException.INVALID_REQUEST,\"No logout token\",Response.Status.BAD_REQUEST);\n  }\n  LogoutTokenValidationCode validationCode=tokenManager.verifyLogoutToken(session,realm,encodedLogoutToken);\n  if (!validationCode.equals(LogoutTokenValidationCode.VALIDATION_SUCCESS)) {\n    event.error(Errors.INVALID_TOKEN);\n    throw new ErrorResponseException(OAuthErrorException.INVALID_REQUEST,validationCode.getErrorMessage(),Response.Status.BAD_REQUEST);\n  }\n  LogoutToken logoutToken=tokenManager.toLogoutToken(encodedLogoutToken).get();\n  Stream<String> identityProviderAliases=tokenManager.getValidOIDCIdentityProvidersForBackchannelLogout(realm,session,encodedLogoutToken,logoutToken).map(idp -> idp.getConfig().getAlias());\n  boolean logoutOfflineSessions=Boolean.parseBoolean(logoutToken.getEvents().getOrDefault(TokenUtil.TOKEN_BACKCHANNEL_LOGOUT_EVENT_REVOKE_OFFLINE_TOKENS,false).toString());\n  BackchannelLogoutResponse backchannelLogoutResponse;\n  if (logoutToken.getSid() != null) {\n    backchannelLogoutResponse=backchannelLogoutWithSessionId(logoutToken.getSid(),identityProviderAliases,logoutOfflineSessions,logoutToken.getSubject());\n  }\n else {\n    backchannelLogoutResponse=backchannelLogoutFederatedUserId(logoutToken.getSubject(),identityProviderAliases,logoutOfflineSessions);\n  }\n  if (!backchannelLogoutResponse.getLocalLogoutSucceeded()) {\n    event.error(Errors.LOGOUT_FAILED);\n    throw new ErrorResponseException(OAuthErrorException.SERVER_ERROR,\"There was an error in the local logout\",Response.Status.NOT_IMPLEMENTED);\n  }\n  session.getProvider(SecurityHeadersProvider.class).options().allowEmptyContentType();\n  if (oneOrMoreDownstreamLogoutsFailed(backchannelLogoutResponse)) {\n    return Cors.add(request).auth().builder(Response.status(Response.Status.GATEWAY_TIMEOUT).type(MediaType.APPLICATION_JSON_TYPE)).build();\n  }\n  return Cors.add(request).auth().builder(Response.ok().type(MediaType.APPLICATION_JSON_TYPE)).build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 290,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 79,
+        "startLineNumber" : 436,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 436,
+        "endColumnNumber" : 87
+      },
+      "nodeContext" : "LogoutToken logoutToken=tokenManager.toLogoutToken(encodedLogoutToken).get();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 5
+    },
+    "tokenLength" : 3,
+    "type" : "java.util.Optional<org.keycloak.representations.LogoutToken>"
+  } ],
+  "positionList" : [ {
+    "charLength" : 46,
+    "startLineNumber" : 436,
+    "startColumnNumber" : 34,
+    "endLineNumber" : 436,
+    "endColumnNumber" : 80
+  } ],
+  "layoutRelationDataList" : [ ]
+}

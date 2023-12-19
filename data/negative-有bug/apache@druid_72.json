@@ -1,0 +1,100 @@
+{
+  "id" : 72,
+  "expression" : "8",
+  "projectName" : "apache@druid",
+  "commitID" : "f6662b4893a9b8cc8a0ebb77e63daddde882148d",
+  "filePath" : "/processing/src/test/java/org/apache/druid/frame/processor/FrameProcessorExecutorTest.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "8",
+    "nodeType" : "NumberLiteral",
+    "nodePosition" : {
+      "charLength" : 1,
+      "startLineNumber" : 272,
+      "startColumnNumber" : 41,
+      "endLineNumber" : 272,
+      "endColumnNumber" : 42
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 26,
+        "startLineNumber" : 272,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 272,
+        "endColumnNumber" : 42
+      },
+      "nodeContext" : "numGeneratorsPerSystem=8",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 37,
+        "startLineNumber" : 272,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 272,
+        "endColumnNumber" : 43
+      },
+      "nodeContext" : "final int numGeneratorsPerSystem=8;\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5151,
+        "startLineNumber" : 270,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 385,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final int numSystems=1000;\n  final int numGeneratorsPerSystem=8;\n  final Frame frame=Iterables.getOnlyElement(FrameSequenceBuilder.fromAdapter(new QueryableIndexStorageAdapter(TestIndex.getMMappedTestIndex())).frameType(FrameType.ROW_BASED).frames().toList());\n  final Set<String> systemIds=new HashSet<>();\n  final Map<String,List<InfiniteFrameProcessor>> systemGeneratorsMap=new HashMap<>();\n  final Map<String,ChompingFrameProcessor> systemChomperMap=new HashMap<>();\n  final Map<FrameProcessor<?>,ListenableFuture<Long>> processorFutureMap=new IdentityHashMap<>();\n  final Map<String,Boolean> systemCleanStopMap=new HashMap<>();\n  boolean doCleanStop=false;\n  for (int systemNumber=0; systemNumber < numSystems; systemNumber++) {\n    final String systemId=UUID.randomUUID().toString();\n    final List<InfiniteFrameProcessor> generators=new ArrayList<>(numGeneratorsPerSystem);\n    final List<ReadableFrameChannel> channels=new ArrayList<>(numGeneratorsPerSystem);\n    for (int i=0; i < numGeneratorsPerSystem; i++) {\n      final BlockingQueueFrameChannel channel=BlockingQueueFrameChannel.minimal();\n      generators.add(new InfiniteFrameProcessor(frame,channel.writable()));\n      channels.add(channel.readable());\n    }\n    final ChompingFrameProcessor chomper=new ChompingFrameProcessor(channels);\n    systemIds.add(systemId);\n    systemGeneratorsMap.put(systemId,generators);\n    systemChomperMap.put(systemId,chomper);\n    systemCleanStopMap.put(systemId,doCleanStop);\n    doCleanStop=!doCleanStop;\n  }\n  for (  final String systemId : systemGeneratorsMap.keySet()) {\n    for (    InfiniteFrameProcessor generator : systemGeneratorsMap.get(systemId)) {\n      processorFutureMap.put(generator,exec.runFully(generator,systemId));\n    }\n    final ChompingFrameProcessor chomper=systemChomperMap.get(systemId);\n    processorFutureMap.put(chomper,exec.runFully(chomper,systemId));\n  }\n  for (  Map.Entry<String,ChompingFrameProcessor> entry : systemChomperMap.entrySet()) {\n    final String systemId=entry.getKey();\n    entry.getValue().awaitRead();\n    if (systemCleanStopMap.get(systemId)) {\n      systemGeneratorsMap.get(systemId).forEach(InfiniteFrameProcessor::stop);\n    }\n else {\n      exec.cancel(systemId);\n    }\n  }\n  for (  final String systemId : systemIds) {\n    final boolean cleanStop=systemCleanStopMap.get(systemId);\n    final List<InfiniteFrameProcessor> generators=systemGeneratorsMap.get(systemId);\n    final ChompingFrameProcessor chomper=systemChomperMap.get(systemId);\n    if (cleanStop) {\n      long systemFrameCount=0;\n      for (      final InfiniteFrameProcessor generator : generators) {\n        final Long retVal=processorFutureMap.get(generator).get();\n        Assert.assertNotNull(retVal);\n        Assert.assertEquals(generator.getNumFrames(),(long)retVal);\n        systemFrameCount+=retVal;\n      }\n      final Long retVal=processorFutureMap.get(chomper).get();\n      Assert.assertNotNull(retVal);\n      Assert.assertEquals(systemFrameCount,(long)retVal);\n    }\n else {\n      final List<FrameProcessor<?>> allProcessors=ImmutableList.copyOf(Iterables.concat(generators,Collections.singleton(chomper)));\n      for (      FrameProcessor<?> processor : allProcessors) {\n        final ListenableFuture<Long> future=processorFutureMap.get(processor);\n        Assert.assertTrue(future.isDone());\n        Assert.assertTrue(future.isCancelled());\n        final Exception e=Assert.assertThrows(Exception.class,future::get);\n        MatcherAssert.assertThat(e,CoreMatchers.instanceOf(CancellationException.class));\n      }\n    }\n    for (    final InfiniteFrameProcessor generator : generators) {\n      Assert.assertTrue(generator.didCleanup());\n    }\n    Assert.assertTrue(chomper.didCleanup());\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 576,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 5222,
+        "startLineNumber" : 268,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 385,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test public void test_cancel_concurrency() throws Exception {\n  final int numSystems=1000;\n  final int numGeneratorsPerSystem=8;\n  final Frame frame=Iterables.getOnlyElement(FrameSequenceBuilder.fromAdapter(new QueryableIndexStorageAdapter(TestIndex.getMMappedTestIndex())).frameType(FrameType.ROW_BASED).frames().toList());\n  final Set<String> systemIds=new HashSet<>();\n  final Map<String,List<InfiniteFrameProcessor>> systemGeneratorsMap=new HashMap<>();\n  final Map<String,ChompingFrameProcessor> systemChomperMap=new HashMap<>();\n  final Map<FrameProcessor<?>,ListenableFuture<Long>> processorFutureMap=new IdentityHashMap<>();\n  final Map<String,Boolean> systemCleanStopMap=new HashMap<>();\n  boolean doCleanStop=false;\n  for (int systemNumber=0; systemNumber < numSystems; systemNumber++) {\n    final String systemId=UUID.randomUUID().toString();\n    final List<InfiniteFrameProcessor> generators=new ArrayList<>(numGeneratorsPerSystem);\n    final List<ReadableFrameChannel> channels=new ArrayList<>(numGeneratorsPerSystem);\n    for (int i=0; i < numGeneratorsPerSystem; i++) {\n      final BlockingQueueFrameChannel channel=BlockingQueueFrameChannel.minimal();\n      generators.add(new InfiniteFrameProcessor(frame,channel.writable()));\n      channels.add(channel.readable());\n    }\n    final ChompingFrameProcessor chomper=new ChompingFrameProcessor(channels);\n    systemIds.add(systemId);\n    systemGeneratorsMap.put(systemId,generators);\n    systemChomperMap.put(systemId,chomper);\n    systemCleanStopMap.put(systemId,doCleanStop);\n    doCleanStop=!doCleanStop;\n  }\n  for (  final String systemId : systemGeneratorsMap.keySet()) {\n    for (    InfiniteFrameProcessor generator : systemGeneratorsMap.get(systemId)) {\n      processorFutureMap.put(generator,exec.runFully(generator,systemId));\n    }\n    final ChompingFrameProcessor chomper=systemChomperMap.get(systemId);\n    processorFutureMap.put(chomper,exec.runFully(chomper,systemId));\n  }\n  for (  Map.Entry<String,ChompingFrameProcessor> entry : systemChomperMap.entrySet()) {\n    final String systemId=entry.getKey();\n    entry.getValue().awaitRead();\n    if (systemCleanStopMap.get(systemId)) {\n      systemGeneratorsMap.get(systemId).forEach(InfiniteFrameProcessor::stop);\n    }\n else {\n      exec.cancel(systemId);\n    }\n  }\n  for (  final String systemId : systemIds) {\n    final boolean cleanStop=systemCleanStopMap.get(systemId);\n    final List<InfiniteFrameProcessor> generators=systemGeneratorsMap.get(systemId);\n    final ChompingFrameProcessor chomper=systemChomperMap.get(systemId);\n    if (cleanStop) {\n      long systemFrameCount=0;\n      for (      final InfiniteFrameProcessor generator : generators) {\n        final Long retVal=processorFutureMap.get(generator).get();\n        Assert.assertNotNull(retVal);\n        Assert.assertEquals(generator.getNumFrames(),(long)retVal);\n        systemFrameCount+=retVal;\n      }\n      final Long retVal=processorFutureMap.get(chomper).get();\n      Assert.assertNotNull(retVal);\n      Assert.assertEquals(systemFrameCount,(long)retVal);\n    }\n else {\n      final List<FrameProcessor<?>> allProcessors=ImmutableList.copyOf(Iterables.concat(generators,Collections.singleton(chomper)));\n      for (      FrameProcessor<?> processor : allProcessors) {\n        final ListenableFuture<Long> future=processorFutureMap.get(processor);\n        Assert.assertTrue(future.isDone());\n        Assert.assertTrue(future.isCancelled());\n        final Exception e=Assert.assertThrows(Exception.class,future::get);\n        MatcherAssert.assertThat(e,CoreMatchers.instanceOf(CancellationException.class));\n      }\n    }\n    for (    final InfiniteFrameProcessor generator : generators) {\n      Assert.assertTrue(generator.didCleanup());\n    }\n    Assert.assertTrue(chomper.didCleanup());\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 584,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 37,
+        "startLineNumber" : 272,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 272,
+        "endColumnNumber" : 43
+      },
+      "nodeContext" : "final int numGeneratorsPerSystem=8;\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "int"
+  } ],
+  "positionList" : [ {
+    "charLength" : 1,
+    "startLineNumber" : 272,
+    "startColumnNumber" : 41,
+    "endLineNumber" : 272,
+    "endColumnNumber" : 42
+  } ],
+  "layoutRelationDataList" : [ ]
+}

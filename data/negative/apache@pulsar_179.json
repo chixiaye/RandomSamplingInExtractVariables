@@ -1,0 +1,113 @@
+{
+  "id" : 179,
+  "expression" : "2000",
+  "projectName" : "apache@pulsar",
+  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
+  "filePath" : "/pulsar-broker/src/test/java/org/apache/pulsar/client/api/SubscriptionMessageDispatchThrottlingTest.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "2000",
+    "nodeType" : "NumberLiteral",
+    "nodePosition" : {
+      "charLength" : 4,
+      "startLineNumber" : 306,
+      "startColumnNumber" : 43,
+      "endLineNumber" : 306,
+      "endColumnNumber" : 47
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 21,
+        "startLineNumber" : 306,
+        "startColumnNumber" : 26,
+        "endLineNumber" : 306,
+        "endColumnNumber" : 47
+      },
+      "nodeContext" : "(end - start) >= 2000",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 40,
+        "startLineNumber" : 306,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 306,
+        "endColumnNumber" : 48
+      },
+      "nodeContext" : "Assert.assertTrue((end - start) >= 2000)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 41,
+        "startLineNumber" : 306,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 306,
+        "endColumnNumber" : 49
+      },
+      "nodeContext" : "Assert.assertTrue((end - start) >= 2000);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3574,
+        "startLineNumber" : 235,
+        "startColumnNumber" : 119,
+        "endLineNumber" : 311,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  log.info(\"-- Starting {} test --\",methodName);\n  final String namespace=\"my-property/throttling_ns\";\n  final String topicName=BrokerTestUtil.newUniqueName(\"persistent://\" + namespace + \"/throttlingAll\");\n  final String subName=\"my-subscriber-name-\" + subscription;\n  final int byteRate=1000;\n  DispatchRate dispatchRate=DispatchRate.builder().dispatchThrottlingRateInMsg(-1).dispatchThrottlingRateInByte(byteRate).ratePeriodInSecond(1).build();\n  admin.namespaces().createNamespace(namespace,Sets.newHashSet(\"test\"));\n  admin.namespaces().setSubscriptionDispatchRate(namespace,dispatchRate);\n  final int numProducedMessages=30;\n  final CountDownLatch latch=new CountDownLatch(numProducedMessages);\n  final AtomicInteger totalReceived=new AtomicInteger(0);\n  conf.setDispatchThrottlingOnNonBacklogConsumerEnabled(true);\n  Consumer<byte[]> consumer=pulsarClient.newConsumer().topic(topicName).subscriptionName(subName).receiverQueueSize(10).subscriptionType(subscription).messageListener((c1,msg) -> {\n    Assert.assertNotNull(msg,\"Message cannot be null\");\n    String receivedMessage=new String(msg.getData());\n    log.debug(\"Received message [{}] in the listener\",receivedMessage);\n    totalReceived.incrementAndGet();\n    latch.countDown();\n  }\n).subscribe();\n  Producer<byte[]> producer=pulsarClient.newProducer().topic(topicName).create();\n  PersistentTopic topic=(PersistentTopic)pulsar.getBrokerService().getOrCreateTopic(topicName).get();\n  DispatchRateLimiter subRateLimiter=null;\n  Dispatcher subDispatcher=topic.getSubscription(subName).getDispatcher();\n  if (subDispatcher instanceof PersistentDispatcherMultipleConsumers) {\n    subRateLimiter=subDispatcher.getRateLimiter().get();\n  }\n else   if (subDispatcher instanceof PersistentDispatcherSingleActiveConsumer) {\n    subRateLimiter=subDispatcher.getRateLimiter().get();\n  }\n else {\n    Assert.fail(\"Should only have PersistentDispatcher in this test\");\n  }\n  boolean isMessageRateUpdate=false;\n  int retry=5;\n  for (int i=0; i < retry; i++) {\n    if (subRateLimiter.getDispatchRateOnMsg() > 0 || subRateLimiter.getDispatchRateOnByte() > 0) {\n      isMessageRateUpdate=true;\n      break;\n    }\n else {\n      if (i != retry - 1) {\n        Thread.sleep(100);\n      }\n    }\n  }\n  Assert.assertTrue(isMessageRateUpdate);\n  Assert.assertEquals(admin.namespaces().getSubscriptionDispatchRate(namespace),dispatchRate);\n  long start=System.currentTimeMillis();\n  for (int i=0; i < numProducedMessages; i++) {\n    producer.send(new byte[byteRate / 10]);\n  }\n  latch.await();\n  Assert.assertEquals(totalReceived.get(),numProducedMessages,10);\n  long end=System.currentTimeMillis();\n  log.info(\"-- end - start: {} \",end - start);\n  Assert.assertTrue((end - start) >= 2000);\n  consumer.close();\n  producer.close();\n  log.info(\"-- Exiting {} test --\",methodName);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 412,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4096,
+        "startLineNumber" : 222,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 311,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * verify rate-limiting should throttle message-dispatching based on byte-rate <pre> 1. dispatch-byte-rate = 1000 bytes/sec 2. send 30 msgs : each with 100 byte 3. it should take up to 2 second to receive all messages </pre>\n * @param subscription\n * @throws Exception\n */\n@Test(dataProvider=\"subscriptions\",timeOut=5000) public void testBytesRateLimitingReceiveAllMessagesAfterThrottling(SubscriptionType subscription) throws Exception {\n  log.info(\"-- Starting {} test --\",methodName);\n  final String namespace=\"my-property/throttling_ns\";\n  final String topicName=BrokerTestUtil.newUniqueName(\"persistent://\" + namespace + \"/throttlingAll\");\n  final String subName=\"my-subscriber-name-\" + subscription;\n  final int byteRate=1000;\n  DispatchRate dispatchRate=DispatchRate.builder().dispatchThrottlingRateInMsg(-1).dispatchThrottlingRateInByte(byteRate).ratePeriodInSecond(1).build();\n  admin.namespaces().createNamespace(namespace,Sets.newHashSet(\"test\"));\n  admin.namespaces().setSubscriptionDispatchRate(namespace,dispatchRate);\n  final int numProducedMessages=30;\n  final CountDownLatch latch=new CountDownLatch(numProducedMessages);\n  final AtomicInteger totalReceived=new AtomicInteger(0);\n  conf.setDispatchThrottlingOnNonBacklogConsumerEnabled(true);\n  Consumer<byte[]> consumer=pulsarClient.newConsumer().topic(topicName).subscriptionName(subName).receiverQueueSize(10).subscriptionType(subscription).messageListener((c1,msg) -> {\n    Assert.assertNotNull(msg,\"Message cannot be null\");\n    String receivedMessage=new String(msg.getData());\n    log.debug(\"Received message [{}] in the listener\",receivedMessage);\n    totalReceived.incrementAndGet();\n    latch.countDown();\n  }\n).subscribe();\n  Producer<byte[]> producer=pulsarClient.newProducer().topic(topicName).create();\n  PersistentTopic topic=(PersistentTopic)pulsar.getBrokerService().getOrCreateTopic(topicName).get();\n  DispatchRateLimiter subRateLimiter=null;\n  Dispatcher subDispatcher=topic.getSubscription(subName).getDispatcher();\n  if (subDispatcher instanceof PersistentDispatcherMultipleConsumers) {\n    subRateLimiter=subDispatcher.getRateLimiter().get();\n  }\n else   if (subDispatcher instanceof PersistentDispatcherSingleActiveConsumer) {\n    subRateLimiter=subDispatcher.getRateLimiter().get();\n  }\n else {\n    Assert.fail(\"Should only have PersistentDispatcher in this test\");\n  }\n  boolean isMessageRateUpdate=false;\n  int retry=5;\n  for (int i=0; i < retry; i++) {\n    if (subRateLimiter.getDispatchRateOnMsg() > 0 || subRateLimiter.getDispatchRateOnByte() > 0) {\n      isMessageRateUpdate=true;\n      break;\n    }\n else {\n      if (i != retry - 1) {\n        Thread.sleep(100);\n      }\n    }\n  }\n  Assert.assertTrue(isMessageRateUpdate);\n  Assert.assertEquals(admin.namespaces().getSubscriptionDispatchRate(namespace),dispatchRate);\n  long start=System.currentTimeMillis();\n  for (int i=0; i < numProducedMessages; i++) {\n    producer.send(new byte[byteRate / 10]);\n  }\n  latch.await();\n  Assert.assertEquals(totalReceived.get(),numProducedMessages,10);\n  long end=System.currentTimeMillis();\n  log.info(\"-- end - start: {} \",end - start);\n  Assert.assertTrue((end - start) >= 2000);\n  consumer.close();\n  producer.close();\n  log.info(\"-- Exiting {} test --\",methodName);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 431,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 41,
+        "startLineNumber" : 306,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 306,
+        "endColumnNumber" : 49
+      },
+      "nodeContext" : "Assert.assertTrue((end - start) >= 2000);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "int"
+  } ],
+  "positionList" : [ {
+    "charLength" : 4,
+    "startLineNumber" : 306,
+    "startColumnNumber" : 43,
+    "endLineNumber" : 306,
+    "endColumnNumber" : 47
+  } ],
+  "layoutRelationDataList" : [ ]
+}

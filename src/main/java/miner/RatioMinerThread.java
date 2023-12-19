@@ -4,6 +4,7 @@ import ast.ProjectsParser;
 import git.GitUtils;
 import json.LabelData;
 import json.utils.NodePosition;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jdt.core.dom.*;
 import sample.Constants;
@@ -16,10 +17,13 @@ import java.nio.file.Paths;
 public class RatioMinerThread extends AbstractMinerThread {
 
     LabelData fLabelData;
+    @Getter
+    private RatioVisitor visitor;
 
     public RatioMinerThread(String projectName, int totalRecords, LabelData labelData) {
         super(projectName, totalRecords);
         fLabelData = labelData;
+        visitor = new RatioVisitor();
     }
 
     @Override
@@ -27,7 +31,6 @@ public class RatioMinerThread extends AbstractMinerThread {
         String gitPath = Constants.PREFIX_PATH + fProjectName + System.getProperty("file.separator");
         GitUtils.removeGitLock(gitPath);
         Path projectPath = Paths.get(gitPath);
-        log.info("searchinging ... {}-{}", fProjectName, fLabelData.getId());
         String commitID = fLabelData.getRefactoredCommitID();
         String filePath = fLabelData.getRefactoredFilePath();
         String name = fLabelData.getRefactoredName();
@@ -69,8 +72,11 @@ public class RatioMinerThread extends AbstractMinerThread {
                 return super.preVisit2(node);
             }
         });
-        System.out.println(enclosingBody[0]);
+        enclosingBody[0].accept(visitor);
+//        System.out.println(enclosingBody[0]);
+//        System.out.println(visitor.getCount());
 
+        log.info("searching ... {}-{}， got count {}", fProjectName, fLabelData.getId(), visitor.getCount() );
 
         //enclosingBody
 //        cu.getCommentList().forEach(node -> System.out.println(node));

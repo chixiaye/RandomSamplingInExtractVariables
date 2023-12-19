@@ -1,0 +1,113 @@
+{
+  "id" : 388,
+  "expression" : "DebuggerTraceManagerService.class",
+  "projectName" : "NationalSecurityAgency@ghidra",
+  "commitID" : "a54d0e28d652c48502551a88278808549aed5f98",
+  "filePath" : "/Ghidra/Debug/Debugger-agent-dbgmodel-traceloader/ghidra_scripts/PopulateTraceLocal.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "DebuggerTraceManagerService.class",
+    "nodeType" : "TypeLiteral",
+    "nodePosition" : {
+      "charLength" : 33,
+      "startLineNumber" : 188,
+      "startColumnNumber" : 39,
+      "endLineNumber" : 188,
+      "endColumnNumber" : 72
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
+      "nodePosition" : {
+        "charLength" : 61,
+        "startLineNumber" : 188,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 188,
+        "endColumnNumber" : 73
+      },
+      "nodeContext" : "state.getTool().getService(DebuggerTraceManagerService.class)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 71,
+        "startLineNumber" : 188,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 188,
+        "endColumnNumber" : 73
+      },
+      "nodeContext" : "manager=state.getTool().getService(DebuggerTraceManagerService.class)",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 72,
+        "startLineNumber" : 188,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 188,
+        "endColumnNumber" : 74
+      },
+      "nodeContext" : "manager=state.getTool().getService(DebuggerTraceManagerService.class);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 8886,
+        "startLineNumber" : 169,
+        "startColumnNumber" : 39,
+        "endLineNumber" : 407,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  access=DbgModel.debugCreate();\n  client=access.getClient();\n  control=client.getControl();\n  util=new HDMAUtil(access);\n  File f=askFile(\"Trace\",\"Load\");\n  cspec=currentProgram.getCompilerSpec();\n  lang=currentProgram.getLanguage();\n  defaultSpace=lang.getAddressFactory().getDefaultAddressSpace();\n  trace=new DBTrace(f.getName(),cspec,this);\n  memory=trace.getMemoryManager();\n  modules=trace.getModuleManager();\n  threads=trace.getThreadManager();\n  timeManager=trace.getTimeManager();\n  manager=state.getTool().getService(DebuggerTraceManagerService.class);\n  client.openDumpFileWide(f.getAbsolutePath());\n  control.waitForEvent();\n  try (UndoableTransaction tid=UndoableTransaction.start(trace,\"Populate Events\",true)){\n    List<ModelObject> children=util.getElements(List.of(\"Debugger\",\"State\",\"DebuggerVariables\",\"curprocess\",\"TTD\",\"Events\"));\n    Map<String,ModelObject> maxPos=util.getAttributes(List.of(\"Debugger\",\"State\",\"DebuggerVariables\",\"curprocess\",\"TTD\",\"Lifetime\",\"MaxPosition\"));\n    Long max=(Long)maxPos.get(\"Sequence\").getValue();\n    for (    ModelObject event : children) {\n      Map<String,ModelObject> eventMap=event.getKeyValueMap();\n      ModelObject pos=eventMap.get(\"Position\");\n      ModelObject seq=pos.getKeyValue(\"Sequence\");\n      ModelObject type=eventMap.get(\"Type\");\n      String display=type.getValueString();\n      Long snap=(Long)seq.getValue();\n      if (display.contains(\"ModuleLoaded\") || display.contains(\"ModuleUnloaded\")) {\n        ModelObject module=eventMap.get(\"Module\");\n        Map<String,ModelObject> moduleMap=module.getKeyValueMap();\n        ModelObject name=moduleMap.get(\"Name\");\n        ModelObject address=moduleMap.get(\"Address\");\n        ModelObject size=moduleMap.get(\"Size\");\n        String moduleId=name.getValueString();\n        display+=\" \" + moduleId;\n        Address base=currentProgram.getAddressFactory().getAddress(address.getValueString());\n        if (display.contains(\"ModuleLoaded\")) {\n          Long start=(Long)address.getValue();\n          Long sz=(Long)size.getValue();\n          buf=ByteBuffer.allocate(sz.intValue()).order(ByteOrder.LITTLE_ENDIAN);\n          AddressRange rng=rng(start,start + sz - 1);\n          modules.addLoadedModule(moduleId,moduleId,rng,snap);\n          memory.addRegion(moduleId,Range.atLeast(snap),rng,TraceMemoryFlag.READ,TraceMemoryFlag.WRITE,TraceMemoryFlag.EXECUTE);\n          try {\n            int read=client.getDataSpaces().readVirtual(start,buf,sz.intValue());\n            int written=memory.putBytes(snap,rng.getMinAddress(),buf.flip());\n            if (read != written) {\n              Msg.debug(this,\"read:written=\" + read + \":\"+ written+ \" at \"+ start);\n            }\n          }\n catch (          Exception e) {\n            System.err.println(\"Unable to read \" + moduleId + \" at \"+ snap);\n          }\n        }\n else {\n          if (snap >= 0) {\n            Collection<? extends TraceModule> mods=modules.getModulesByPath(moduleId);\n            Iterator<? extends TraceModule> iterator=mods.iterator();\n            while (iterator.hasNext()) {\n              TraceModule next=iterator.next();\n              next.setUnloadedSnap(snap);\n            }\n          }\n        }\n      }\n else       if (display.contains(\"ThreadCreated\") || display.contains(\"ThreadTerminated\")) {\n        ModelObject thread=eventMap.get(\"Thread\");\n        ModelObject id=thread.getKeyValue(\"Id\");\n        String threadId=id.getValueString();\n        display+=\" \" + threadId;\n        if (display.contains(\"ThreadCreated\")) {\n          threads.addThread(threadId,Range.atLeast(snap));\n        }\n else {\n          if (snap >= 0) {\n            Collection<? extends TraceThread> thrs=threads.getThreadsByPath(threadId);\n            Iterator<? extends TraceThread> iterator=thrs.iterator();\n            while (iterator.hasNext()) {\n              TraceThread next=iterator.next();\n              next.setDestructionSnap(snap);\n            }\n          }\n        }\n      }\n      if (snap < 0) {\n        snap=++max;\n      }\n      timeManager.getSnapshot(snap,true).setDescription(display);\n      eventSnaps.add(snap);\n    }\n  }\n   try (UndoableTransaction tid=UndoableTransaction.start(trace,\"Populate Registers\",true)){\n    for (    Long snap : eventSnaps) {\n      control.execute(\"!tt \" + Long.toHexString(snap) + \":0\");\n      control.waitForEvent();\n      List<ModelObject> modelThreads=util.getElements(List.of(\"Debugger\",\"State\",\"DebuggerVariables\",\"curprocess\",\"Threads\"));\n      Map<String,ModelObject> modelThreadMap=new HashMap<String,ModelObject>();\n      for (      ModelObject obj : modelThreads) {\n        modelThreadMap.put(obj.getSearchKey(),obj);\n      }\n      Collection<? extends TraceThread> liveThreads=threads.getLiveThreads(snap);\n      for (      TraceThread thread : liveThreads) {\n        TraceMemoryRegisterSpace regspace=memory.getMemoryRegisterSpace(thread,true);\n        ModelObject modelThread=modelThreadMap.get(\"0x\" + thread.getName());\n        if (modelThread != null) {\n          Map<String,ModelObject> registers=modelThread.getKeyValue(\"Registers\").getKeyValue(\"User\").getKeyValueMap();\n          for (          String rname : registers.keySet()) {\n            ModelObject r=registers.get(rname);\n            Register reg=reg(rname.toUpperCase());\n            if (reg != null) {\n              try {\n                regspace.setValue(snap,new RegisterValue(reg,BigInteger.valueOf(Long.parseUnsignedLong(r.getValueString(),16))));\n              }\n catch (              Exception e) {\n                System.err.println(rname + \"<--\" + r.getValueString());\n              }\n            }\n          }\n        }\n else {\n          System.err.println(thread.getName() + \" not found!\");\n        }\n      }\n    }\n  }\n   manager.openTrace(trace);\n  manager.activateTrace(trace);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 909,
+      "astHeight" : 22
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 8936,
+        "startLineNumber" : 168,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 407,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "@Override protected void run() throws Exception {\n  access=DbgModel.debugCreate();\n  client=access.getClient();\n  control=client.getControl();\n  util=new HDMAUtil(access);\n  File f=askFile(\"Trace\",\"Load\");\n  cspec=currentProgram.getCompilerSpec();\n  lang=currentProgram.getLanguage();\n  defaultSpace=lang.getAddressFactory().getDefaultAddressSpace();\n  trace=new DBTrace(f.getName(),cspec,this);\n  memory=trace.getMemoryManager();\n  modules=trace.getModuleManager();\n  threads=trace.getThreadManager();\n  timeManager=trace.getTimeManager();\n  manager=state.getTool().getService(DebuggerTraceManagerService.class);\n  client.openDumpFileWide(f.getAbsolutePath());\n  control.waitForEvent();\n  try (UndoableTransaction tid=UndoableTransaction.start(trace,\"Populate Events\",true)){\n    List<ModelObject> children=util.getElements(List.of(\"Debugger\",\"State\",\"DebuggerVariables\",\"curprocess\",\"TTD\",\"Events\"));\n    Map<String,ModelObject> maxPos=util.getAttributes(List.of(\"Debugger\",\"State\",\"DebuggerVariables\",\"curprocess\",\"TTD\",\"Lifetime\",\"MaxPosition\"));\n    Long max=(Long)maxPos.get(\"Sequence\").getValue();\n    for (    ModelObject event : children) {\n      Map<String,ModelObject> eventMap=event.getKeyValueMap();\n      ModelObject pos=eventMap.get(\"Position\");\n      ModelObject seq=pos.getKeyValue(\"Sequence\");\n      ModelObject type=eventMap.get(\"Type\");\n      String display=type.getValueString();\n      Long snap=(Long)seq.getValue();\n      if (display.contains(\"ModuleLoaded\") || display.contains(\"ModuleUnloaded\")) {\n        ModelObject module=eventMap.get(\"Module\");\n        Map<String,ModelObject> moduleMap=module.getKeyValueMap();\n        ModelObject name=moduleMap.get(\"Name\");\n        ModelObject address=moduleMap.get(\"Address\");\n        ModelObject size=moduleMap.get(\"Size\");\n        String moduleId=name.getValueString();\n        display+=\" \" + moduleId;\n        Address base=currentProgram.getAddressFactory().getAddress(address.getValueString());\n        if (display.contains(\"ModuleLoaded\")) {\n          Long start=(Long)address.getValue();\n          Long sz=(Long)size.getValue();\n          buf=ByteBuffer.allocate(sz.intValue()).order(ByteOrder.LITTLE_ENDIAN);\n          AddressRange rng=rng(start,start + sz - 1);\n          modules.addLoadedModule(moduleId,moduleId,rng,snap);\n          memory.addRegion(moduleId,Range.atLeast(snap),rng,TraceMemoryFlag.READ,TraceMemoryFlag.WRITE,TraceMemoryFlag.EXECUTE);\n          try {\n            int read=client.getDataSpaces().readVirtual(start,buf,sz.intValue());\n            int written=memory.putBytes(snap,rng.getMinAddress(),buf.flip());\n            if (read != written) {\n              Msg.debug(this,\"read:written=\" + read + \":\"+ written+ \" at \"+ start);\n            }\n          }\n catch (          Exception e) {\n            System.err.println(\"Unable to read \" + moduleId + \" at \"+ snap);\n          }\n        }\n else {\n          if (snap >= 0) {\n            Collection<? extends TraceModule> mods=modules.getModulesByPath(moduleId);\n            Iterator<? extends TraceModule> iterator=mods.iterator();\n            while (iterator.hasNext()) {\n              TraceModule next=iterator.next();\n              next.setUnloadedSnap(snap);\n            }\n          }\n        }\n      }\n else       if (display.contains(\"ThreadCreated\") || display.contains(\"ThreadTerminated\")) {\n        ModelObject thread=eventMap.get(\"Thread\");\n        ModelObject id=thread.getKeyValue(\"Id\");\n        String threadId=id.getValueString();\n        display+=\" \" + threadId;\n        if (display.contains(\"ThreadCreated\")) {\n          threads.addThread(threadId,Range.atLeast(snap));\n        }\n else {\n          if (snap >= 0) {\n            Collection<? extends TraceThread> thrs=threads.getThreadsByPath(threadId);\n            Iterator<? extends TraceThread> iterator=thrs.iterator();\n            while (iterator.hasNext()) {\n              TraceThread next=iterator.next();\n              next.setDestructionSnap(snap);\n            }\n          }\n        }\n      }\n      if (snap < 0) {\n        snap=++max;\n      }\n      timeManager.getSnapshot(snap,true).setDescription(display);\n      eventSnaps.add(snap);\n    }\n  }\n   try (UndoableTransaction tid=UndoableTransaction.start(trace,\"Populate Registers\",true)){\n    for (    Long snap : eventSnaps) {\n      control.execute(\"!tt \" + Long.toHexString(snap) + \":0\");\n      control.waitForEvent();\n      List<ModelObject> modelThreads=util.getElements(List.of(\"Debugger\",\"State\",\"DebuggerVariables\",\"curprocess\",\"Threads\"));\n      Map<String,ModelObject> modelThreadMap=new HashMap<String,ModelObject>();\n      for (      ModelObject obj : modelThreads) {\n        modelThreadMap.put(obj.getSearchKey(),obj);\n      }\n      Collection<? extends TraceThread> liveThreads=threads.getLiveThreads(snap);\n      for (      TraceThread thread : liveThreads) {\n        TraceMemoryRegisterSpace regspace=memory.getMemoryRegisterSpace(thread,true);\n        ModelObject modelThread=modelThreadMap.get(\"0x\" + thread.getName());\n        if (modelThread != null) {\n          Map<String,ModelObject> registers=modelThread.getKeyValue(\"Registers\").getKeyValue(\"User\").getKeyValueMap();\n          for (          String rname : registers.keySet()) {\n            ModelObject r=registers.get(rname);\n            Register reg=reg(rname.toUpperCase());\n            if (reg != null) {\n              try {\n                regspace.setValue(snap,new RegisterValue(reg,BigInteger.valueOf(Long.parseUnsignedLong(r.getValueString(),16))));\n              }\n catch (              Exception e) {\n                System.err.println(rname + \"<--\" + r.getValueString());\n              }\n            }\n          }\n        }\n else {\n          System.err.println(thread.getName() + \" not found!\");\n        }\n      }\n    }\n  }\n   manager.openTrace(trace);\n  manager.activateTrace(trace);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 917,
+      "astHeight" : 23
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 72,
+        "startLineNumber" : 188,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 188,
+        "endColumnNumber" : 74
+      },
+      "nodeContext" : "manager=state.getTool().getService(DebuggerTraceManagerService.class);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "java.lang.Class<ghidra.app.services.DebuggerTraceManagerService>"
+  } ],
+  "positionList" : [ {
+    "charLength" : 33,
+    "startLineNumber" : 188,
+    "startColumnNumber" : 39,
+    "endLineNumber" : 188,
+    "endColumnNumber" : 72
+  } ],
+  "layoutRelationDataList" : [ ]
+}

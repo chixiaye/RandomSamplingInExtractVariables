@@ -1,0 +1,100 @@
+{
+  "id" : 220,
+  "expression" : "\"if(\" + getCheckString(methodEntry.where) + \")\"",
+  "projectName" : "Anuken@Mindustry",
+  "commitID" : "a7188c48845dd423fc9b58bc6bcf6797f6d25b46",
+  "filePath" : "/annotations/src/main/java/mindustry/annotations/remote/RemoteWriteGenerator.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "\"if(\" + getCheckString(methodEntry.where) + \")\"",
+    "nodeType" : "InfixExpression",
+    "nodePosition" : {
+      "charLength" : 47,
+      "startLineNumber" : 130,
+      "startColumnNumber" : 32,
+      "endLineNumber" : 130,
+      "endColumnNumber" : 79
+    },
+    "astNodeNumber" : 8,
+    "astHeight" : 4,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 72,
+        "startLineNumber" : 130,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 130,
+        "endColumnNumber" : 80
+      },
+      "nodeContext" : "method.beginControlFlow(\"if(\" + getCheckString(methodEntry.where) + \")\")",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 11,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 73,
+        "startLineNumber" : 130,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 130,
+        "endColumnNumber" : 81
+      },
+      "nodeContext" : "method.beginControlFlow(\"if(\" + getCheckString(methodEntry.where) + \")\");\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 12,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 6998,
+        "startLineNumber" : 63,
+        "startColumnNumber" : 125,
+        "endLineNumber" : 221,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  ExecutableElement elem=methodEntry.element;\n  MethodSpec.Builder method=MethodSpec.methodBuilder(elem.getSimpleName().toString() + (forwarded ? \"__forward\" : \"\")).addModifiers(Modifier.STATIC).returns(void.class);\n  if (!forwarded) {\n    method.addModifiers(Modifier.PUBLIC);\n  }\n  if (methodEntry.where.isClient) {\n    if (elem.getParameters().isEmpty()) {\n      BaseProcessor.err(\"Client invoke methods must have a first parameter of type Player\",elem);\n      return;\n    }\n    if (!elem.getParameters().get(0).asType().toString().contains(\"Player\")) {\n      BaseProcessor.err(\"Client invoke methods should have a first parameter of type Player\",elem);\n      return;\n    }\n  }\n  if (!toAll) {\n    method.addParameter(ClassName.bestGuess(\"mindustry.net.NetConnection\"),\"playerConnection\");\n  }\n  if (forwarded) {\n    method.addParameter(ClassName.bestGuess(\"mindustry.net.NetConnection\"),\"exceptConnection\");\n  }\n  if (!forwarded && methodEntry.local != Loc.none) {\n    if (methodEntry.local != Loc.both) {\n      method.beginControlFlow(\"if(\" + getCheckString(methodEntry.local) + \" || !mindustry.Vars.net.active())\");\n    }\n    int index=0;\n    StringBuilder results=new StringBuilder();\n    for (    VariableElement var : elem.getParameters()) {\n      if (index == 0 && methodEntry.where == Loc.client) {\n        results.append(\"mindustry.Vars.player\");\n      }\n else {\n        results.append(var.getSimpleName());\n      }\n      if (index != elem.getParameters().size() - 1)       results.append(\", \");\n      index++;\n    }\n    method.addStatement(\"$N.\" + elem.getSimpleName() + \"(\"+ results.toString()+ \")\",((TypeElement)elem.getEnclosingElement()).getQualifiedName().toString());\n    if (methodEntry.local != Loc.both) {\n      method.endControlFlow();\n    }\n  }\n  method.beginControlFlow(\"if(\" + getCheckString(methodEntry.where) + \")\");\n  method.addStatement(\"$1N packet = $2N.obtain($1N.class, $1N::new)\",\"mindustry.net.Packets.InvokePacket\",\"arc.util.pooling.Pools\");\n  method.addStatement(\"packet.priority = (byte)\" + methodEntry.priority.ordinal());\n  method.addStatement(\"packet.type = (byte)\" + methodEntry.id);\n  method.addStatement(\"OUT.reset()\");\n  method.addTypeVariables(Seq.with(elem.getTypeParameters()).map(BaseProcessor::getTVN));\n  for (int i=0; i < elem.getParameters().size(); i++) {\n    if ((!methodEntry.where.isServer) && i == 0) {\n      continue;\n    }\n    VariableElement var=elem.getParameters().get(i);\n    try {\n      method.addParameter(TypeName.get(var.asType()),var.getSimpleName().toString());\n    }\n catch (    Throwable t) {\n      throw new RuntimeException(\"Error parsing method \" + methodEntry.targetMethod);\n    }\n    String varName=var.getSimpleName().toString();\n    String typeName=var.asType().toString();\n    String capName=typeName.equals(\"byte\") ? \"\" : Character.toUpperCase(typeName.charAt(0)) + typeName.substring(1);\n    boolean writePlayerSkipCheck=methodEntry.where == Loc.both && i == 0;\n    if (writePlayerSkipCheck) {\n      method.beginControlFlow(\"if(mindustry.Vars.net.server())\");\n    }\n    if (BaseProcessor.isPrimitive(typeName)) {\n      method.addStatement(\"WRITE.$L($L)\",typeName.equals(\"boolean\") ? \"bool\" : typeName.charAt(0) + \"\",varName);\n    }\n else {\n      String ser=serializers.writers.get(typeName.replace(\"mindustry.gen.\",\"\"),SerializerResolver.locate(elem,var.asType(),true));\n      if (ser == null) {\n        BaseProcessor.err(\"No @WriteClass method to write class type: '\" + typeName + \"'\",var);\n        return;\n      }\n      method.addStatement(ser + \"(WRITE, \" + varName+ \")\");\n    }\n    if (writePlayerSkipCheck) {\n      method.endControlFlow();\n    }\n  }\n  method.addStatement(\"packet.bytes = OUT.getBytes()\");\n  method.addStatement(\"packet.length = OUT.size()\");\n  String sendString;\n  if (forwarded) {\n    if (!methodEntry.local.isClient) {\n      sendString=\"mindustry.Vars.net.send(\";\n    }\n else {\n      sendString=\"mindustry.Vars.net.sendExcept(exceptConnection, \";\n    }\n  }\n else   if (toAll) {\n    sendString=\"mindustry.Vars.net.send(\";\n  }\n else {\n    sendString=\"playerConnection.send(\";\n  }\n  method.addStatement(sendString + \"packet, \" + (methodEntry.unreliable ? \"mindustry.net.Net.SendMode.udp\" : \"mindustry.net.Net.SendMode.tcp\")+ \")\");\n  method.endControlFlow();\n  classBuilder.addMethod(method.build());\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 606,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 7177,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 221,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Creates a specific variant for a method entry. \n */\nprivate void writeMethodVariant(TypeSpec.Builder classBuilder,MethodEntry methodEntry,boolean toAll,boolean forwarded){\n  ExecutableElement elem=methodEntry.element;\n  MethodSpec.Builder method=MethodSpec.methodBuilder(elem.getSimpleName().toString() + (forwarded ? \"__forward\" : \"\")).addModifiers(Modifier.STATIC).returns(void.class);\n  if (!forwarded) {\n    method.addModifiers(Modifier.PUBLIC);\n  }\n  if (methodEntry.where.isClient) {\n    if (elem.getParameters().isEmpty()) {\n      BaseProcessor.err(\"Client invoke methods must have a first parameter of type Player\",elem);\n      return;\n    }\n    if (!elem.getParameters().get(0).asType().toString().contains(\"Player\")) {\n      BaseProcessor.err(\"Client invoke methods should have a first parameter of type Player\",elem);\n      return;\n    }\n  }\n  if (!toAll) {\n    method.addParameter(ClassName.bestGuess(\"mindustry.net.NetConnection\"),\"playerConnection\");\n  }\n  if (forwarded) {\n    method.addParameter(ClassName.bestGuess(\"mindustry.net.NetConnection\"),\"exceptConnection\");\n  }\n  if (!forwarded && methodEntry.local != Loc.none) {\n    if (methodEntry.local != Loc.both) {\n      method.beginControlFlow(\"if(\" + getCheckString(methodEntry.local) + \" || !mindustry.Vars.net.active())\");\n    }\n    int index=0;\n    StringBuilder results=new StringBuilder();\n    for (    VariableElement var : elem.getParameters()) {\n      if (index == 0 && methodEntry.where == Loc.client) {\n        results.append(\"mindustry.Vars.player\");\n      }\n else {\n        results.append(var.getSimpleName());\n      }\n      if (index != elem.getParameters().size() - 1)       results.append(\", \");\n      index++;\n    }\n    method.addStatement(\"$N.\" + elem.getSimpleName() + \"(\"+ results.toString()+ \")\",((TypeElement)elem.getEnclosingElement()).getQualifiedName().toString());\n    if (methodEntry.local != Loc.both) {\n      method.endControlFlow();\n    }\n  }\n  method.beginControlFlow(\"if(\" + getCheckString(methodEntry.where) + \")\");\n  method.addStatement(\"$1N packet = $2N.obtain($1N.class, $1N::new)\",\"mindustry.net.Packets.InvokePacket\",\"arc.util.pooling.Pools\");\n  method.addStatement(\"packet.priority = (byte)\" + methodEntry.priority.ordinal());\n  method.addStatement(\"packet.type = (byte)\" + methodEntry.id);\n  method.addStatement(\"OUT.reset()\");\n  method.addTypeVariables(Seq.with(elem.getTypeParameters()).map(BaseProcessor::getTVN));\n  for (int i=0; i < elem.getParameters().size(); i++) {\n    if ((!methodEntry.where.isServer) && i == 0) {\n      continue;\n    }\n    VariableElement var=elem.getParameters().get(i);\n    try {\n      method.addParameter(TypeName.get(var.asType()),var.getSimpleName().toString());\n    }\n catch (    Throwable t) {\n      throw new RuntimeException(\"Error parsing method \" + methodEntry.targetMethod);\n    }\n    String varName=var.getSimpleName().toString();\n    String typeName=var.asType().toString();\n    String capName=typeName.equals(\"byte\") ? \"\" : Character.toUpperCase(typeName.charAt(0)) + typeName.substring(1);\n    boolean writePlayerSkipCheck=methodEntry.where == Loc.both && i == 0;\n    if (writePlayerSkipCheck) {\n      method.beginControlFlow(\"if(mindustry.Vars.net.server())\");\n    }\n    if (BaseProcessor.isPrimitive(typeName)) {\n      method.addStatement(\"WRITE.$L($L)\",typeName.equals(\"boolean\") ? \"bool\" : typeName.charAt(0) + \"\",varName);\n    }\n else {\n      String ser=serializers.writers.get(typeName.replace(\"mindustry.gen.\",\"\"),SerializerResolver.locate(elem,var.asType(),true));\n      if (ser == null) {\n        BaseProcessor.err(\"No @WriteClass method to write class type: '\" + typeName + \"'\",var);\n        return;\n      }\n      method.addStatement(ser + \"(WRITE, \" + varName+ \")\");\n    }\n    if (writePlayerSkipCheck) {\n      method.endControlFlow();\n    }\n  }\n  method.addStatement(\"packet.bytes = OUT.getBytes()\");\n  method.addStatement(\"packet.length = OUT.size()\");\n  String sendString;\n  if (forwarded) {\n    if (!methodEntry.local.isClient) {\n      sendString=\"mindustry.Vars.net.send(\";\n    }\n else {\n      sendString=\"mindustry.Vars.net.sendExcept(exceptConnection, \";\n    }\n  }\n else   if (toAll) {\n    sendString=\"mindustry.Vars.net.send(\";\n  }\n else {\n    sendString=\"playerConnection.send(\";\n  }\n  method.addStatement(sendString + \"packet, \" + (methodEntry.unreliable ? \"mindustry.net.Net.SendMode.udp\" : \"mindustry.net.Net.SendMode.tcp\")+ \")\");\n  method.endControlFlow();\n  classBuilder.addMethod(method.build());\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 627,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 73,
+        "startLineNumber" : 130,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 130,
+        "endColumnNumber" : 81
+      },
+      "nodeContext" : "method.beginControlFlow(\"if(\" + getCheckString(methodEntry.where) + \")\");\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 12,
+      "astHeight" : 6
+    },
+    "tokenLength" : 5,
+    "type" : "java.lang.String"
+  } ],
+  "positionList" : [ {
+    "charLength" : 47,
+    "startLineNumber" : 130,
+    "startColumnNumber" : 32,
+    "endLineNumber" : 130,
+    "endColumnNumber" : 79
+  } ],
+  "layoutRelationDataList" : [ ]
+}

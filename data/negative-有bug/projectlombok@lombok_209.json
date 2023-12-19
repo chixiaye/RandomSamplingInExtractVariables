@@ -1,0 +1,2093 @@
+{
+  "id" : 209,
+  "expression" : "maker",
+  "projectName" : "projectlombok@lombok",
+  "commitID" : "25def866b50860715ee7c315c678b8c3d1ba9b56",
+  "filePath" : "/src/core/lombok/javac/handlers/HandleCleanup.java",
+  "occurrences" : 13,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "maker",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 116,
+      "startColumnNumber" : 32,
+      "endLineNumber" : 116,
+      "endColumnNumber" : 37
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 72,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 32,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 104
+      },
+      "nodeContext" : "maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 13,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 88,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 104
+      },
+      "nodeContext" : "cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName))",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 103,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 105
+      },
+      "nodeContext" : "JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 18,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3035,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 112,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 457,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3146,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "@Override public void handle(AnnotationValues<Cleanup> annotation,JCAnnotation ast,JavacNode annotationNode){\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 478,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 103,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 105
+      },
+      "nodeContext" : "JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 18,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "lombok.javac.handlers.TreeMaker"
+  }, {
+    "nodeContext" : "maker",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 116,
+      "startColumnNumber" : 45,
+      "endLineNumber" : 116,
+      "endColumnNumber" : 50
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 22,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 45,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 67
+      },
+      "nodeContext" : "maker.Ident(decl.name)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 72,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 32,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 104
+      },
+      "nodeContext" : "maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 13,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 88,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 104
+      },
+      "nodeContext" : "cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName))",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 103,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 105
+      },
+      "nodeContext" : "JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 18,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3035,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 112,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 457,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3146,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "@Override public void handle(AnnotationValues<Cleanup> annotation,JCAnnotation ast,JavacNode annotationNode){\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 478,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 103,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 105
+      },
+      "nodeContext" : "JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 18,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "lombok.javac.handlers.TreeMaker"
+  }, {
+    "nodeContext" : "maker",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 117,
+      "startColumnNumber" : 55,
+      "endLineNumber" : 117,
+      "endColumnNumber" : 60
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 95,
+        "startLineNumber" : 117,
+        "startColumnNumber" : 55,
+        "endLineNumber" : 118,
+        "endColumnNumber" : 83
+      },
+      "nodeContext" : "maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil()))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 17,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 117,
+        "startLineNumber" : 117,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 118,
+        "endColumnNumber" : 84
+      },
+      "nodeContext" : "List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 22,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 131,
+        "startLineNumber" : 117,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 118,
+        "endColumnNumber" : 84
+      },
+      "nodeContext" : "cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())))",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 24,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 150,
+        "startLineNumber" : 117,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 118,
+        "endColumnNumber" : 85
+      },
+      "nodeContext" : "List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 30,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3035,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 112,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 457,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3146,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "@Override public void handle(AnnotationValues<Cleanup> annotation,JCAnnotation ast,JavacNode annotationNode){\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 478,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 95,
+        "startLineNumber" : 117,
+        "startColumnNumber" : 55,
+        "endLineNumber" : 118,
+        "endColumnNumber" : 83
+      },
+      "nodeContext" : "maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil()))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 17,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "lombok.javac.handlers.TreeMaker"
+  }, {
+    "nodeContext" : "maker",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 118,
+      "startColumnNumber" : 4,
+      "endLineNumber" : 118,
+      "endColumnNumber" : 9
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 78,
+        "startLineNumber" : 118,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 118,
+        "endColumnNumber" : 82
+      },
+      "nodeContext" : "maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 14,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 95,
+        "startLineNumber" : 117,
+        "startColumnNumber" : 55,
+        "endLineNumber" : 118,
+        "endColumnNumber" : 83
+      },
+      "nodeContext" : "maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil()))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 17,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 117,
+        "startLineNumber" : 117,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 118,
+        "endColumnNumber" : 84
+      },
+      "nodeContext" : "List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 22,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 131,
+        "startLineNumber" : 117,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 118,
+        "endColumnNumber" : 84
+      },
+      "nodeContext" : "cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())))",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 24,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 150,
+        "startLineNumber" : 117,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 118,
+        "endColumnNumber" : 85
+      },
+      "nodeContext" : "List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 30,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3035,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 112,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 457,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3146,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "@Override public void handle(AnnotationValues<Cleanup> annotation,JCAnnotation ast,JavacNode annotationNode){\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 478,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 78,
+        "startLineNumber" : 118,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 118,
+        "endColumnNumber" : 82
+      },
+      "nodeContext" : "maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 14,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "lombok.javac.handlers.TreeMaker"
+  }, {
+    "nodeContext" : "maker",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 120,
+      "startColumnNumber" : 63,
+      "endLineNumber" : 120,
+      "endColumnNumber" : 68
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 66,
+        "startLineNumber" : 120,
+        "startColumnNumber" : 43,
+        "endLineNumber" : 120,
+        "endColumnNumber" : 109
+      },
+      "nodeContext" : "preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 88,
+        "startLineNumber" : 120,
+        "startColumnNumber" : 21,
+        "endLineNumber" : 120,
+        "endColumnNumber" : 109
+      },
+      "nodeContext" : "preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name))",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 12,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 108,
+        "startLineNumber" : 120,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 120,
+        "endColumnNumber" : 110
+      },
+      "nodeContext" : "JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3035,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 112,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 457,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3146,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "@Override public void handle(AnnotationValues<Cleanup> annotation,JCAnnotation ast,JavacNode annotationNode){\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 478,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 108,
+        "startLineNumber" : 120,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 120,
+        "endColumnNumber" : 110
+      },
+      "nodeContext" : "JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "lombok.javac.handlers.TreeMaker"
+  }, {
+    "nodeContext" : "maker",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 120,
+      "startColumnNumber" : 86,
+      "endLineNumber" : 120,
+      "endColumnNumber" : 91
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 22,
+        "startLineNumber" : 120,
+        "startColumnNumber" : 86,
+        "endLineNumber" : 120,
+        "endColumnNumber" : 108
+      },
+      "nodeContext" : "maker.Ident(decl.name)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 66,
+        "startLineNumber" : 120,
+        "startColumnNumber" : 43,
+        "endLineNumber" : 120,
+        "endColumnNumber" : 109
+      },
+      "nodeContext" : "preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 88,
+        "startLineNumber" : 120,
+        "startColumnNumber" : 21,
+        "endLineNumber" : 120,
+        "endColumnNumber" : 109
+      },
+      "nodeContext" : "preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name))",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 12,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 108,
+        "startLineNumber" : 120,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 120,
+        "endColumnNumber" : 110
+      },
+      "nodeContext" : "JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3035,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 112,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 457,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3146,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "@Override public void handle(AnnotationValues<Cleanup> annotation,JCAnnotation ast,JavacNode annotationNode){\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 478,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 108,
+        "startLineNumber" : 120,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 120,
+        "endColumnNumber" : 110
+      },
+      "nodeContext" : "JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "lombok.javac.handlers.TreeMaker"
+  }, {
+    "nodeContext" : "maker",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 121,
+      "startColumnNumber" : 20,
+      "endLineNumber" : 121,
+      "endColumnNumber" : 25
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 131,
+        "startLineNumber" : 121,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 121,
+        "endColumnNumber" : 151
+      },
+      "nodeContext" : "maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 22,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 140,
+        "startLineNumber" : 121,
+        "startColumnNumber" : 11,
+        "endLineNumber" : 121,
+        "endColumnNumber" : 151
+      },
+      "nodeContext" : "isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null))",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 24,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 150,
+        "startLineNumber" : 121,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 121,
+        "endColumnNumber" : 152
+      },
+      "nodeContext" : "JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 27,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3035,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 112,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 457,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3146,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "@Override public void handle(AnnotationValues<Cleanup> annotation,JCAnnotation ast,JavacNode annotationNode){\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 478,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 150,
+        "startLineNumber" : 121,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 121,
+        "endColumnNumber" : 152
+      },
+      "nodeContext" : "JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 27,
+      "astHeight" : 8
+    },
+    "tokenLength" : 1,
+    "type" : "lombok.javac.handlers.TreeMaker"
+  }, {
+    "nodeContext" : "maker",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 121,
+      "startColumnNumber" : 91,
+      "endLineNumber" : 121,
+      "endColumnNumber" : 96
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 59,
+        "startLineNumber" : 121,
+        "startColumnNumber" : 91,
+        "endLineNumber" : 121,
+        "endColumnNumber" : 150
+      },
+      "nodeContext" : "maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 11,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 131,
+        "startLineNumber" : 121,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 121,
+        "endColumnNumber" : 151
+      },
+      "nodeContext" : "maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 22,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 140,
+        "startLineNumber" : 121,
+        "startColumnNumber" : 11,
+        "endLineNumber" : 121,
+        "endColumnNumber" : 151
+      },
+      "nodeContext" : "isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null))",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 24,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 150,
+        "startLineNumber" : 121,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 121,
+        "endColumnNumber" : 152
+      },
+      "nodeContext" : "JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 27,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3035,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 112,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 457,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3146,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "@Override public void handle(AnnotationValues<Cleanup> annotation,JCAnnotation ast,JavacNode annotationNode){\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 478,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 150,
+        "startLineNumber" : 121,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 121,
+        "endColumnNumber" : 152
+      },
+      "nodeContext" : "JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 27,
+      "astHeight" : 8
+    },
+    "tokenLength" : 1,
+    "type" : "lombok.javac.handlers.TreeMaker"
+  }, {
+    "nodeContext" : "maker",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 123,
+      "startColumnNumber" : 26,
+      "endLineNumber" : 123,
+      "endColumnNumber" : 31
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 51,
+        "startLineNumber" : 123,
+        "startColumnNumber" : 26,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 77
+      },
+      "nodeContext" : "maker.If(isNull,maker.Block(0,cleanupCall),null)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 10,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 70,
+        "startLineNumber" : 123,
+        "startColumnNumber" : 7,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 77
+      },
+      "nodeContext" : "ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 12,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 76,
+        "startLineNumber" : 123,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 78
+      },
+      "nodeContext" : "JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3035,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 112,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 457,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3146,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "@Override public void handle(AnnotationValues<Cleanup> annotation,JCAnnotation ast,JavacNode annotationNode){\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 478,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 76,
+        "startLineNumber" : 123,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 78
+      },
+      "nodeContext" : "JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "lombok.javac.handlers.TreeMaker"
+  }, {
+    "nodeContext" : "maker",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 123,
+      "startColumnNumber" : 43,
+      "endLineNumber" : 123,
+      "endColumnNumber" : 48
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 27,
+        "startLineNumber" : 123,
+        "startColumnNumber" : 43,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 70
+      },
+      "nodeContext" : "maker.Block(0,cleanupCall)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 5,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 51,
+        "startLineNumber" : 123,
+        "startColumnNumber" : 26,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 77
+      },
+      "nodeContext" : "maker.If(isNull,maker.Block(0,cleanupCall),null)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 10,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 70,
+        "startLineNumber" : 123,
+        "startColumnNumber" : 7,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 77
+      },
+      "nodeContext" : "ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 12,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 76,
+        "startLineNumber" : 123,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 78
+      },
+      "nodeContext" : "JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3035,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 112,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 457,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3146,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "@Override public void handle(AnnotationValues<Cleanup> annotation,JCAnnotation ast,JavacNode annotationNode){\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 478,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 76,
+        "startLineNumber" : 123,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 78
+      },
+      "nodeContext" : "JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "lombok.javac.handlers.TreeMaker"
+  }, {
+    "nodeContext" : "maker",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 125,
+      "startColumnNumber" : 46,
+      "endLineNumber" : 125,
+      "endColumnNumber" : 51
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 54,
+        "startLineNumber" : 125,
+        "startColumnNumber" : 46,
+        "endLineNumber" : 125,
+        "endColumnNumber" : 100
+      },
+      "nodeContext" : "maker.Block(0,List.<JCStatement>of(ifNotNullCleanup))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 84,
+        "startLineNumber" : 125,
+        "startColumnNumber" : 22,
+        "endLineNumber" : 125,
+        "endColumnNumber" : 106
+      },
+      "nodeContext" : "recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 13,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 96,
+        "startLineNumber" : 125,
+        "startColumnNumber" : 10,
+        "endLineNumber" : 125,
+        "endColumnNumber" : 106
+      },
+      "nodeContext" : "finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 15,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 105,
+        "startLineNumber" : 125,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 125,
+        "endColumnNumber" : 107
+      },
+      "nodeContext" : "JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 18,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3035,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 112,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 457,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3146,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "@Override public void handle(AnnotationValues<Cleanup> annotation,JCAnnotation ast,JavacNode annotationNode){\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 478,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 105,
+        "startLineNumber" : 125,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 125,
+        "endColumnNumber" : 107
+      },
+      "nodeContext" : "JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 18,
+      "astHeight" : 7
+    },
+    "tokenLength" : 1,
+    "type" : "lombok.javac.handlers.TreeMaker"
+  }, {
+    "nodeContext" : "maker",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 127,
+      "startColumnNumber" : 38,
+      "endLineNumber" : 127,
+      "endColumnNumber" : 43
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 97,
+        "startLineNumber" : 127,
+        "startColumnNumber" : 38,
+        "endLineNumber" : 127,
+        "endColumnNumber" : 135
+      },
+      "nodeContext" : "maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 19,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 118,
+        "startLineNumber" : 127,
+        "startColumnNumber" : 23,
+        "endLineNumber" : 127,
+        "endColumnNumber" : 141
+      },
+      "nodeContext" : "setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 22,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 140,
+        "startLineNumber" : 127,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 127,
+        "endColumnNumber" : 142
+      },
+      "nodeContext" : "newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 25,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 141,
+        "startLineNumber" : 127,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 127,
+        "endColumnNumber" : 143
+      },
+      "nodeContext" : "newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 26,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3035,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 112,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 457,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3146,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "@Override public void handle(AnnotationValues<Cleanup> annotation,JCAnnotation ast,JavacNode annotationNode){\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 478,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 141,
+        "startLineNumber" : 127,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 127,
+        "endColumnNumber" : 143
+      },
+      "nodeContext" : "newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 26,
+      "astHeight" : 8
+    },
+    "tokenLength" : 1,
+    "type" : "lombok.javac.handlers.TreeMaker"
+  }, {
+    "nodeContext" : "maker",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 127,
+      "startColumnNumber" : 63,
+      "endLineNumber" : 127,
+      "endColumnNumber" : 68
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 33,
+        "startLineNumber" : 127,
+        "startColumnNumber" : 63,
+        "endLineNumber" : 127,
+        "endColumnNumber" : 96
+      },
+      "nodeContext" : "maker.Block(0,tryBlock.toList())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 54,
+        "startLineNumber" : 127,
+        "startColumnNumber" : 48,
+        "endLineNumber" : 127,
+        "endColumnNumber" : 102
+      },
+      "nodeContext" : "setGeneratedBy(maker.Block(0,tryBlock.toList()),ast)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 97,
+        "startLineNumber" : 127,
+        "startColumnNumber" : 38,
+        "endLineNumber" : 127,
+        "endColumnNumber" : 135
+      },
+      "nodeContext" : "maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 19,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 118,
+        "startLineNumber" : 127,
+        "startColumnNumber" : 23,
+        "endLineNumber" : 127,
+        "endColumnNumber" : 141
+      },
+      "nodeContext" : "setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 22,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 140,
+        "startLineNumber" : 127,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 127,
+        "endColumnNumber" : 142
+      },
+      "nodeContext" : "newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 25,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 141,
+        "startLineNumber" : 127,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 127,
+        "endColumnNumber" : 143
+      },
+      "nodeContext" : "newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 26,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3035,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 112,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 457,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3146,
+        "startLineNumber" : 62,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "@Override public void handle(AnnotationValues<Cleanup> annotation,JCAnnotation ast,JavacNode annotationNode){\n  deleteAnnotationIfNeccessary(annotationNode,Cleanup.class);\n  String cleanupName=annotation.getInstance().value();\n  if (cleanupName.length() == 0) {\n    annotationNode.addError(\"cleanupName cannot be the empty string.\");\n    return;\n  }\n  if (annotationNode.up().getKind() != Kind.LOCAL) {\n    annotationNode.addError(\"@Cleanup is legal only on local variable declarations.\");\n    return;\n  }\n  JCVariableDecl decl=(JCVariableDecl)annotationNode.up().get();\n  if (decl.init == null) {\n    annotationNode.addError(\"@Cleanup variable declarations need to be initialized.\");\n    return;\n  }\n  JavacNode ancestor=annotationNode.up().directUp();\n  JCTree blockNode=ancestor.get();\n  final List<JCStatement> statements;\n  if (blockNode instanceof JCBlock) {\n    statements=((JCBlock)blockNode).stats;\n  }\n else   if (blockNode instanceof JCCase) {\n    statements=((JCCase)blockNode).stats;\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    statements=((JCMethodDecl)blockNode).body.stats;\n  }\n else {\n    annotationNode.addError(\"@Cleanup is legal only on a local variable declaration inside a block.\");\n    return;\n  }\n  boolean seenDeclaration=false;\n  ListBuffer<JCStatement> newStatements=ListBuffer.lb();\n  ListBuffer<JCStatement> tryBlock=ListBuffer.lb();\n  for (  JCStatement statement : statements) {\n    if (!seenDeclaration) {\n      if (statement == decl)       seenDeclaration=true;\n      newStatements.append(statement);\n    }\n else {\n      tryBlock.append(statement);\n    }\n  }\n  if (!seenDeclaration) {\n    annotationNode.addError(\"LOMBOK BUG: Can't find this local variable declaration inside its parent.\");\n    return;\n  }\n  doAssignmentCheck(annotationNode,tryBlock.toList(),decl.name);\n  TreeMaker maker=annotationNode.getTreeMaker();\n  JCFieldAccess cleanupMethod=maker.Select(maker.Ident(decl.name),annotationNode.toName(cleanupName));\n  List<JCStatement> cleanupCall=List.<JCStatement>of(maker.Exec(maker.Apply(List.<JCExpression>nil(),cleanupMethod,List.<JCExpression>nil())));\n  JCMethodInvocation preventNullAnalysis=preventNullAnalysis(maker,annotationNode,maker.Ident(decl.name));\n  JCBinary isNull=maker.Binary(Javac.getCtcInt(JCTree.class,\"NE\"),preventNullAnalysis,maker.Literal(Javac.getCtcInt(TypeTags.class,\"BOT\"),null));\n  JCIf ifNotNullCleanup=maker.If(isNull,maker.Block(0,cleanupCall),null);\n  JCBlock finalizer=recursiveSetGeneratedBy(maker.Block(0,List.<JCStatement>of(ifNotNullCleanup)),ast);\n  newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n  if (blockNode instanceof JCBlock) {\n    ((JCBlock)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCCase) {\n    ((JCCase)blockNode).stats=newStatements.toList();\n  }\n else   if (blockNode instanceof JCMethodDecl) {\n    ((JCMethodDecl)blockNode).body.stats=newStatements.toList();\n  }\n else   throw new AssertionError(\"Should not get here\");\n  ancestor.rebuild();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 478,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 141,
+        "startLineNumber" : 127,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 127,
+        "endColumnNumber" : 143
+      },
+      "nodeContext" : "newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0,tryBlock.toList()),ast),List.<JCCatch>nil(),finalizer),ast));\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 26,
+      "astHeight" : 8
+    },
+    "tokenLength" : 1,
+    "type" : "lombok.javac.handlers.TreeMaker"
+  } ],
+  "positionList" : [ {
+    "charLength" : 5,
+    "startLineNumber" : 116,
+    "startColumnNumber" : 32,
+    "endLineNumber" : 116,
+    "endColumnNumber" : 37
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 116,
+    "startColumnNumber" : 45,
+    "endLineNumber" : 116,
+    "endColumnNumber" : 50
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 117,
+    "startColumnNumber" : 55,
+    "endLineNumber" : 117,
+    "endColumnNumber" : 60
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 118,
+    "startColumnNumber" : 4,
+    "endLineNumber" : 118,
+    "endColumnNumber" : 9
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 120,
+    "startColumnNumber" : 63,
+    "endLineNumber" : 120,
+    "endColumnNumber" : 68
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 120,
+    "startColumnNumber" : 86,
+    "endLineNumber" : 120,
+    "endColumnNumber" : 91
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 121,
+    "startColumnNumber" : 20,
+    "endLineNumber" : 121,
+    "endColumnNumber" : 25
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 121,
+    "startColumnNumber" : 91,
+    "endLineNumber" : 121,
+    "endColumnNumber" : 96
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 123,
+    "startColumnNumber" : 26,
+    "endLineNumber" : 123,
+    "endColumnNumber" : 31
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 123,
+    "startColumnNumber" : 43,
+    "endLineNumber" : 123,
+    "endColumnNumber" : 48
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 125,
+    "startColumnNumber" : 46,
+    "endLineNumber" : 125,
+    "endColumnNumber" : 51
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 127,
+    "startColumnNumber" : 38,
+    "endLineNumber" : 127,
+    "endColumnNumber" : 43
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 127,
+    "startColumnNumber" : 63,
+    "endLineNumber" : 127,
+    "endColumnNumber" : 68
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 0
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 7,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 10,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 11,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 12,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 1
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 5,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 6,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 7,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 8,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 9,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 10,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 11,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 12,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 3,
+    "layout" : 0
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 5,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 6,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 7,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 8,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 9,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 10,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 11,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 12,
+    "layout" : 4
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 2,
+    "layout" : 1
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 4,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 5,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 6,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 7,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 8,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 9,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 10,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 11,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 12,
+    "layout" : 5
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 5,
+    "layout" : 0
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 7,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 10,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 11,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 12,
+    "layout" : 3
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 4,
+    "layout" : 1
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 6,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 7,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 8,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 9,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 10,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 11,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 12,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 7,
+    "layout" : 0
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 10,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 11,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 12,
+    "layout" : 3
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 5,
+    "layout" : 4
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 6,
+    "layout" : 1
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 8,
+    "layout" : 4
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 9,
+    "layout" : 4
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 10,
+    "layout" : 4
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 11,
+    "layout" : 4
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 12,
+    "layout" : 4
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 7,
+    "layout" : 3
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 9,
+    "layout" : 0
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 10,
+    "layout" : 3
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 11,
+    "layout" : 3
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 12,
+    "layout" : 3
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 5,
+    "layout" : 4
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 6,
+    "layout" : 4
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 7,
+    "layout" : 4
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 8,
+    "layout" : 1
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 10,
+    "layout" : 4
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 11,
+    "layout" : 4
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 12,
+    "layout" : 4
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 5,
+    "layout" : 4
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 6,
+    "layout" : 4
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 7,
+    "layout" : 4
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 8,
+    "layout" : 4
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 9,
+    "layout" : 4
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 11,
+    "layout" : 4
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 12,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 5,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 6,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 7,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 8,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 9,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 10,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 12,
+    "layout" : 0
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 0,
+    "layout" : 6
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 1,
+    "layout" : 6
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 2,
+    "layout" : 6
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 3,
+    "layout" : 6
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 4,
+    "layout" : 6
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 5,
+    "layout" : 6
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 6,
+    "layout" : 6
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 7,
+    "layout" : 6
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 8,
+    "layout" : 6
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 9,
+    "layout" : 6
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 10,
+    "layout" : 6
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 11,
+    "layout" : 2
+  } ]
+}

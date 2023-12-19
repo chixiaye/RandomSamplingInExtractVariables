@@ -1,0 +1,1058 @@
+{
+  "id" : 391,
+  "expression" : "statement",
+  "projectName" : "baomidou@mybatis-plus",
+  "commitID" : "7815611a659da4cc8d5443f5ef4c10ca0d937582",
+  "filePath" : "/mybatis-plus-core/src/main/java/com/baomidou/mybatisplus/plugins/PerformanceInterceptor.java",
+  "occurrences" : 6,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "statement",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 9,
+      "startLineNumber" : 86,
+      "startColumnNumber" : 60,
+      "endLineNumber" : 86,
+      "endColumnNumber" : 69
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 37,
+        "startLineNumber" : 86,
+        "startColumnNumber" : 33,
+        "endLineNumber" : 86,
+        "endColumnNumber" : 70
+      },
+      "nodeContext" : "SystemMetaObject.forObject(statement)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 51,
+        "startLineNumber" : 86,
+        "startColumnNumber" : 19,
+        "endLineNumber" : 86,
+        "endColumnNumber" : 70
+      },
+      "nodeContext" : "stmtMetaObj=SystemMetaObject.forObject(statement)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 63,
+        "startLineNumber" : 86,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 86,
+        "endColumnNumber" : 71
+      },
+      "nodeContext" : "MetaObject stmtMetaObj=SystemMetaObject.forObject(statement);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4221,
+        "startLineNumber" : 78,
+        "startColumnNumber" : 68,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  Statement statement;\n  Object firstArg=invocation.getArgs()[0];\n  if (Proxy.isProxyClass(firstArg.getClass())) {\n    statement=(Statement)SystemMetaObject.forObject(firstArg).getValue(\"h.statement\");\n  }\n else {\n    statement=(Statement)firstArg;\n  }\n  MetaObject stmtMetaObj=SystemMetaObject.forObject(statement);\n  try {\n    statement=(Statement)stmtMetaObj.getValue(\"stmt.statement\");\n  }\n catch (  Exception e) {\n  }\n  if (stmtMetaObj.hasGetter(\"delegate\")) {\n    try {\n      statement=(Statement)stmtMetaObj.getValue(\"delegate\");\n    }\n catch (    Exception e) {\n    }\n  }\n  String originalSql=null;\n  String stmtClassName=statement.getClass().getName();\n  if (DruidPooledPreparedStatement.equals(stmtClassName)) {\n    try {\n      if (druidGetSQLMethod == null) {\n        Class<?> clazz=Class.forName(DruidPooledPreparedStatement);\n        druidGetSQLMethod=clazz.getMethod(\"getSql\");\n      }\n      Object stmtSql=druidGetSQLMethod.invoke(statement);\n      if (stmtSql != null && stmtSql instanceof String) {\n        originalSql=(String)stmtSql;\n      }\n    }\n catch (    Exception ignored) {\n    }\n  }\n else   if (T4CPreparedStatement.equals(stmtClassName) || OraclePreparedStatementWrapper.equals(stmtClassName)) {\n    try {\n      if (oracleGetOriginalSqlMethod != null) {\n        Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n        if (stmtSql != null && stmtSql instanceof String) {\n          originalSql=(String)stmtSql;\n        }\n      }\n else {\n        Class<?> clazz=Class.forName(stmtClassName);\n        oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n        if (oracleGetOriginalSqlMethod != null) {\n          oracleGetOriginalSqlMethod.setAccessible(true);\n          if (oracleGetOriginalSqlMethod != null) {\n            Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n            if (stmtSql != null && stmtSql instanceof String) {\n              originalSql=(String)stmtSql;\n            }\n          }\n        }\n      }\n    }\n catch (    Exception e) {\n    }\n  }\n  if (originalSql == null) {\n    originalSql=statement.toString();\n  }\n  int index=originalSql.indexOf(':');\n  if (index > 0) {\n    originalSql=originalSql.substring(index + 1,originalSql.length());\n  }\n  long start=SystemClock.now();\n  Object result=invocation.proceed();\n  long timing=SystemClock.now() - start;\n  Object target=PluginUtils.realTarget(invocation.getTarget());\n  MetaObject metaObject=SystemMetaObject.forObject(target);\n  MappedStatement ms=(MappedStatement)metaObject.getValue(\"delegate.mappedStatement\");\n  StringBuilder formatSql=new StringBuilder();\n  formatSql.append(\" Time：\").append(timing);\n  formatSql.append(\" ms - ID：\").append(ms.getId());\n  formatSql.append(\"\\n Execute SQL：\").append(SqlUtils.sqlFormat(originalSql,format)).append(\"\\n\");\n  if (this.isWriteInLog()) {\n    if (this.getMaxTime() >= 1 && timing > this.getMaxTime()) {\n      logger.error(formatSql.toString());\n    }\n else {\n      logger.debug(formatSql.toString());\n    }\n  }\n else {\n    System.err.println(formatSql.toString());\n    if (this.getMaxTime() >= 1 && timing > this.getMaxTime()) {\n      throw new MybatisPlusException(\" The SQL execution time is too large, please optimize ! \");\n    }\n  }\n  return result;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 481,
+      "astHeight" : 19
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4299,
+        "startLineNumber" : 77,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public Object intercept(Invocation invocation) throws Throwable {\n  Statement statement;\n  Object firstArg=invocation.getArgs()[0];\n  if (Proxy.isProxyClass(firstArg.getClass())) {\n    statement=(Statement)SystemMetaObject.forObject(firstArg).getValue(\"h.statement\");\n  }\n else {\n    statement=(Statement)firstArg;\n  }\n  MetaObject stmtMetaObj=SystemMetaObject.forObject(statement);\n  try {\n    statement=(Statement)stmtMetaObj.getValue(\"stmt.statement\");\n  }\n catch (  Exception e) {\n  }\n  if (stmtMetaObj.hasGetter(\"delegate\")) {\n    try {\n      statement=(Statement)stmtMetaObj.getValue(\"delegate\");\n    }\n catch (    Exception e) {\n    }\n  }\n  String originalSql=null;\n  String stmtClassName=statement.getClass().getName();\n  if (DruidPooledPreparedStatement.equals(stmtClassName)) {\n    try {\n      if (druidGetSQLMethod == null) {\n        Class<?> clazz=Class.forName(DruidPooledPreparedStatement);\n        druidGetSQLMethod=clazz.getMethod(\"getSql\");\n      }\n      Object stmtSql=druidGetSQLMethod.invoke(statement);\n      if (stmtSql != null && stmtSql instanceof String) {\n        originalSql=(String)stmtSql;\n      }\n    }\n catch (    Exception ignored) {\n    }\n  }\n else   if (T4CPreparedStatement.equals(stmtClassName) || OraclePreparedStatementWrapper.equals(stmtClassName)) {\n    try {\n      if (oracleGetOriginalSqlMethod != null) {\n        Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n        if (stmtSql != null && stmtSql instanceof String) {\n          originalSql=(String)stmtSql;\n        }\n      }\n else {\n        Class<?> clazz=Class.forName(stmtClassName);\n        oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n        if (oracleGetOriginalSqlMethod != null) {\n          oracleGetOriginalSqlMethod.setAccessible(true);\n          if (oracleGetOriginalSqlMethod != null) {\n            Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n            if (stmtSql != null && stmtSql instanceof String) {\n              originalSql=(String)stmtSql;\n            }\n          }\n        }\n      }\n    }\n catch (    Exception e) {\n    }\n  }\n  if (originalSql == null) {\n    originalSql=statement.toString();\n  }\n  int index=originalSql.indexOf(':');\n  if (index > 0) {\n    originalSql=originalSql.substring(index + 1,originalSql.length());\n  }\n  long start=SystemClock.now();\n  Object result=invocation.proceed();\n  long timing=SystemClock.now() - start;\n  Object target=PluginUtils.realTarget(invocation.getTarget());\n  MetaObject metaObject=SystemMetaObject.forObject(target);\n  MappedStatement ms=(MappedStatement)metaObject.getValue(\"delegate.mappedStatement\");\n  StringBuilder formatSql=new StringBuilder();\n  formatSql.append(\" Time：\").append(timing);\n  formatSql.append(\" ms - ID：\").append(ms.getId());\n  formatSql.append(\"\\n Execute SQL：\").append(SqlUtils.sqlFormat(originalSql,format)).append(\"\\n\");\n  if (this.isWriteInLog()) {\n    if (this.getMaxTime() >= 1 && timing > this.getMaxTime()) {\n      logger.error(formatSql.toString());\n    }\n else {\n      logger.debug(formatSql.toString());\n    }\n  }\n else {\n    System.err.println(formatSql.toString());\n    if (this.getMaxTime() >= 1 && timing > this.getMaxTime()) {\n      throw new MybatisPlusException(\" The SQL execution time is too large, please optimize ! \");\n    }\n  }\n  return result;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 494,
+      "astHeight" : 20
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 63,
+        "startLineNumber" : 86,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 86,
+        "endColumnNumber" : 71
+      },
+      "nodeContext" : "MetaObject stmtMetaObj=SystemMetaObject.forObject(statement);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "java.sql.Statement"
+  }, {
+    "nodeContext" : "statement",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 9,
+      "startLineNumber" : 101,
+      "startColumnNumber" : 31,
+      "endLineNumber" : 101,
+      "endColumnNumber" : 40
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 20,
+        "startLineNumber" : 101,
+        "startColumnNumber" : 31,
+        "endLineNumber" : 101,
+        "endColumnNumber" : 51
+      },
+      "nodeContext" : "statement.getClass()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 101,
+        "startColumnNumber" : 31,
+        "endLineNumber" : 101,
+        "endColumnNumber" : 61
+      },
+      "nodeContext" : "statement.getClass().getName()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 46,
+        "startLineNumber" : 101,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 101,
+        "endColumnNumber" : 61
+      },
+      "nodeContext" : "stmtClassName=statement.getClass().getName()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 54,
+        "startLineNumber" : 101,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 101,
+        "endColumnNumber" : 62
+      },
+      "nodeContext" : "String stmtClassName=statement.getClass().getName();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4221,
+        "startLineNumber" : 78,
+        "startColumnNumber" : 68,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  Statement statement;\n  Object firstArg=invocation.getArgs()[0];\n  if (Proxy.isProxyClass(firstArg.getClass())) {\n    statement=(Statement)SystemMetaObject.forObject(firstArg).getValue(\"h.statement\");\n  }\n else {\n    statement=(Statement)firstArg;\n  }\n  MetaObject stmtMetaObj=SystemMetaObject.forObject(statement);\n  try {\n    statement=(Statement)stmtMetaObj.getValue(\"stmt.statement\");\n  }\n catch (  Exception e) {\n  }\n  if (stmtMetaObj.hasGetter(\"delegate\")) {\n    try {\n      statement=(Statement)stmtMetaObj.getValue(\"delegate\");\n    }\n catch (    Exception e) {\n    }\n  }\n  String originalSql=null;\n  String stmtClassName=statement.getClass().getName();\n  if (DruidPooledPreparedStatement.equals(stmtClassName)) {\n    try {\n      if (druidGetSQLMethod == null) {\n        Class<?> clazz=Class.forName(DruidPooledPreparedStatement);\n        druidGetSQLMethod=clazz.getMethod(\"getSql\");\n      }\n      Object stmtSql=druidGetSQLMethod.invoke(statement);\n      if (stmtSql != null && stmtSql instanceof String) {\n        originalSql=(String)stmtSql;\n      }\n    }\n catch (    Exception ignored) {\n    }\n  }\n else   if (T4CPreparedStatement.equals(stmtClassName) || OraclePreparedStatementWrapper.equals(stmtClassName)) {\n    try {\n      if (oracleGetOriginalSqlMethod != null) {\n        Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n        if (stmtSql != null && stmtSql instanceof String) {\n          originalSql=(String)stmtSql;\n        }\n      }\n else {\n        Class<?> clazz=Class.forName(stmtClassName);\n        oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n        if (oracleGetOriginalSqlMethod != null) {\n          oracleGetOriginalSqlMethod.setAccessible(true);\n          if (oracleGetOriginalSqlMethod != null) {\n            Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n            if (stmtSql != null && stmtSql instanceof String) {\n              originalSql=(String)stmtSql;\n            }\n          }\n        }\n      }\n    }\n catch (    Exception e) {\n    }\n  }\n  if (originalSql == null) {\n    originalSql=statement.toString();\n  }\n  int index=originalSql.indexOf(':');\n  if (index > 0) {\n    originalSql=originalSql.substring(index + 1,originalSql.length());\n  }\n  long start=SystemClock.now();\n  Object result=invocation.proceed();\n  long timing=SystemClock.now() - start;\n  Object target=PluginUtils.realTarget(invocation.getTarget());\n  MetaObject metaObject=SystemMetaObject.forObject(target);\n  MappedStatement ms=(MappedStatement)metaObject.getValue(\"delegate.mappedStatement\");\n  StringBuilder formatSql=new StringBuilder();\n  formatSql.append(\" Time：\").append(timing);\n  formatSql.append(\" ms - ID：\").append(ms.getId());\n  formatSql.append(\"\\n Execute SQL：\").append(SqlUtils.sqlFormat(originalSql,format)).append(\"\\n\");\n  if (this.isWriteInLog()) {\n    if (this.getMaxTime() >= 1 && timing > this.getMaxTime()) {\n      logger.error(formatSql.toString());\n    }\n else {\n      logger.debug(formatSql.toString());\n    }\n  }\n else {\n    System.err.println(formatSql.toString());\n    if (this.getMaxTime() >= 1 && timing > this.getMaxTime()) {\n      throw new MybatisPlusException(\" The SQL execution time is too large, please optimize ! \");\n    }\n  }\n  return result;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 481,
+      "astHeight" : 19
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4299,
+        "startLineNumber" : 77,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public Object intercept(Invocation invocation) throws Throwable {\n  Statement statement;\n  Object firstArg=invocation.getArgs()[0];\n  if (Proxy.isProxyClass(firstArg.getClass())) {\n    statement=(Statement)SystemMetaObject.forObject(firstArg).getValue(\"h.statement\");\n  }\n else {\n    statement=(Statement)firstArg;\n  }\n  MetaObject stmtMetaObj=SystemMetaObject.forObject(statement);\n  try {\n    statement=(Statement)stmtMetaObj.getValue(\"stmt.statement\");\n  }\n catch (  Exception e) {\n  }\n  if (stmtMetaObj.hasGetter(\"delegate\")) {\n    try {\n      statement=(Statement)stmtMetaObj.getValue(\"delegate\");\n    }\n catch (    Exception e) {\n    }\n  }\n  String originalSql=null;\n  String stmtClassName=statement.getClass().getName();\n  if (DruidPooledPreparedStatement.equals(stmtClassName)) {\n    try {\n      if (druidGetSQLMethod == null) {\n        Class<?> clazz=Class.forName(DruidPooledPreparedStatement);\n        druidGetSQLMethod=clazz.getMethod(\"getSql\");\n      }\n      Object stmtSql=druidGetSQLMethod.invoke(statement);\n      if (stmtSql != null && stmtSql instanceof String) {\n        originalSql=(String)stmtSql;\n      }\n    }\n catch (    Exception ignored) {\n    }\n  }\n else   if (T4CPreparedStatement.equals(stmtClassName) || OraclePreparedStatementWrapper.equals(stmtClassName)) {\n    try {\n      if (oracleGetOriginalSqlMethod != null) {\n        Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n        if (stmtSql != null && stmtSql instanceof String) {\n          originalSql=(String)stmtSql;\n        }\n      }\n else {\n        Class<?> clazz=Class.forName(stmtClassName);\n        oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n        if (oracleGetOriginalSqlMethod != null) {\n          oracleGetOriginalSqlMethod.setAccessible(true);\n          if (oracleGetOriginalSqlMethod != null) {\n            Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n            if (stmtSql != null && stmtSql instanceof String) {\n              originalSql=(String)stmtSql;\n            }\n          }\n        }\n      }\n    }\n catch (    Exception e) {\n    }\n  }\n  if (originalSql == null) {\n    originalSql=statement.toString();\n  }\n  int index=originalSql.indexOf(':');\n  if (index > 0) {\n    originalSql=originalSql.substring(index + 1,originalSql.length());\n  }\n  long start=SystemClock.now();\n  Object result=invocation.proceed();\n  long timing=SystemClock.now() - start;\n  Object target=PluginUtils.realTarget(invocation.getTarget());\n  MetaObject metaObject=SystemMetaObject.forObject(target);\n  MappedStatement ms=(MappedStatement)metaObject.getValue(\"delegate.mappedStatement\");\n  StringBuilder formatSql=new StringBuilder();\n  formatSql.append(\" Time：\").append(timing);\n  formatSql.append(\" ms - ID：\").append(ms.getId());\n  formatSql.append(\"\\n Execute SQL：\").append(SqlUtils.sqlFormat(originalSql,format)).append(\"\\n\");\n  if (this.isWriteInLog()) {\n    if (this.getMaxTime() >= 1 && timing > this.getMaxTime()) {\n      logger.error(formatSql.toString());\n    }\n else {\n      logger.debug(formatSql.toString());\n    }\n  }\n else {\n    System.err.println(formatSql.toString());\n    if (this.getMaxTime() >= 1 && timing > this.getMaxTime()) {\n      throw new MybatisPlusException(\" The SQL execution time is too large, please optimize ! \");\n    }\n  }\n  return result;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 494,
+      "astHeight" : 20
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 54,
+        "startLineNumber" : 101,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 101,
+        "endColumnNumber" : 62
+      },
+      "nodeContext" : "String stmtClassName=statement.getClass().getName();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "java.sql.Statement"
+  }, {
+    "nodeContext" : "statement",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 9,
+      "startLineNumber" : 108,
+      "startColumnNumber" : 58,
+      "endLineNumber" : 108,
+      "endColumnNumber" : 67
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 35,
+        "startLineNumber" : 108,
+        "startColumnNumber" : 33,
+        "endLineNumber" : 108,
+        "endColumnNumber" : 68
+      },
+      "nodeContext" : "druidGetSQLMethod.invoke(statement)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 45,
+        "startLineNumber" : 108,
+        "startColumnNumber" : 23,
+        "endLineNumber" : 108,
+        "endColumnNumber" : 68
+      },
+      "nodeContext" : "stmtSql=druidGetSQLMethod.invoke(statement)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 53,
+        "startLineNumber" : 108,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 108,
+        "endColumnNumber" : 69
+      },
+      "nodeContext" : "Object stmtSql=druidGetSQLMethod.invoke(statement);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 439,
+        "startLineNumber" : 103,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 112,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  if (druidGetSQLMethod == null) {\n    Class<?> clazz=Class.forName(DruidPooledPreparedStatement);\n    druidGetSQLMethod=clazz.getMethod(\"getSql\");\n  }\n  Object stmtSql=druidGetSQLMethod.invoke(statement);\n  if (stmtSql != null && stmtSql instanceof String) {\n    originalSql=(String)stmtSql;\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 50,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 485,
+        "startLineNumber" : 103,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 113,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "try {\n  if (druidGetSQLMethod == null) {\n    Class<?> clazz=Class.forName(DruidPooledPreparedStatement);\n    druidGetSQLMethod=clazz.getMethod(\"getSql\");\n  }\n  Object stmtSql=druidGetSQLMethod.invoke(statement);\n  if (stmtSql != null && stmtSql instanceof String) {\n    originalSql=(String)stmtSql;\n  }\n}\n catch (Exception ignored) {\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 57,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 509,
+        "startLineNumber" : 102,
+        "startColumnNumber" : 64,
+        "endLineNumber" : 114,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  try {\n    if (druidGetSQLMethod == null) {\n      Class<?> clazz=Class.forName(DruidPooledPreparedStatement);\n      druidGetSQLMethod=clazz.getMethod(\"getSql\");\n    }\n    Object stmtSql=druidGetSQLMethod.invoke(statement);\n    if (stmtSql != null && stmtSql instanceof String) {\n      originalSql=(String)stmtSql;\n    }\n  }\n catch (  Exception ignored) {\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 58,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1867,
+        "startLineNumber" : 102,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (DruidPooledPreparedStatement.equals(stmtClassName)) {\n  try {\n    if (druidGetSQLMethod == null) {\n      Class<?> clazz=Class.forName(DruidPooledPreparedStatement);\n      druidGetSQLMethod=clazz.getMethod(\"getSql\");\n    }\n    Object stmtSql=druidGetSQLMethod.invoke(statement);\n    if (stmtSql != null && stmtSql instanceof String) {\n      originalSql=(String)stmtSql;\n    }\n  }\n catch (  Exception ignored) {\n  }\n}\n else if (T4CPreparedStatement.equals(stmtClassName) || OraclePreparedStatementWrapper.equals(stmtClassName)) {\n  try {\n    if (oracleGetOriginalSqlMethod != null) {\n      Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n      if (stmtSql != null && stmtSql instanceof String) {\n        originalSql=(String)stmtSql;\n      }\n    }\n else {\n      Class<?> clazz=Class.forName(stmtClassName);\n      oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n      if (oracleGetOriginalSqlMethod != null) {\n        oracleGetOriginalSqlMethod.setAccessible(true);\n        if (oracleGetOriginalSqlMethod != null) {\n          Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n          if (stmtSql != null && stmtSql instanceof String) {\n            originalSql=(String)stmtSql;\n          }\n        }\n      }\n    }\n  }\n catch (  Exception e) {\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 173,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4221,
+        "startLineNumber" : 78,
+        "startColumnNumber" : 68,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  Statement statement;\n  Object firstArg=invocation.getArgs()[0];\n  if (Proxy.isProxyClass(firstArg.getClass())) {\n    statement=(Statement)SystemMetaObject.forObject(firstArg).getValue(\"h.statement\");\n  }\n else {\n    statement=(Statement)firstArg;\n  }\n  MetaObject stmtMetaObj=SystemMetaObject.forObject(statement);\n  try {\n    statement=(Statement)stmtMetaObj.getValue(\"stmt.statement\");\n  }\n catch (  Exception e) {\n  }\n  if (stmtMetaObj.hasGetter(\"delegate\")) {\n    try {\n      statement=(Statement)stmtMetaObj.getValue(\"delegate\");\n    }\n catch (    Exception e) {\n    }\n  }\n  String originalSql=null;\n  String stmtClassName=statement.getClass().getName();\n  if (DruidPooledPreparedStatement.equals(stmtClassName)) {\n    try {\n      if (druidGetSQLMethod == null) {\n        Class<?> clazz=Class.forName(DruidPooledPreparedStatement);\n        druidGetSQLMethod=clazz.getMethod(\"getSql\");\n      }\n      Object stmtSql=druidGetSQLMethod.invoke(statement);\n      if (stmtSql != null && stmtSql instanceof String) {\n        originalSql=(String)stmtSql;\n      }\n    }\n catch (    Exception ignored) {\n    }\n  }\n else   if (T4CPreparedStatement.equals(stmtClassName) || OraclePreparedStatementWrapper.equals(stmtClassName)) {\n    try {\n      if (oracleGetOriginalSqlMethod != null) {\n        Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n        if (stmtSql != null && stmtSql instanceof String) {\n          originalSql=(String)stmtSql;\n        }\n      }\n else {\n        Class<?> clazz=Class.forName(stmtClassName);\n        oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n        if (oracleGetOriginalSqlMethod != null) {\n          oracleGetOriginalSqlMethod.setAccessible(true);\n          if (oracleGetOriginalSqlMethod != null) {\n            Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n            if (stmtSql != null && stmtSql instanceof String) {\n              originalSql=(String)stmtSql;\n            }\n          }\n        }\n      }\n    }\n catch (    Exception e) {\n    }\n  }\n  if (originalSql == null) {\n    originalSql=statement.toString();\n  }\n  int index=originalSql.indexOf(':');\n  if (index > 0) {\n    originalSql=originalSql.substring(index + 1,originalSql.length());\n  }\n  long start=SystemClock.now();\n  Object result=invocation.proceed();\n  long timing=SystemClock.now() - start;\n  Object target=PluginUtils.realTarget(invocation.getTarget());\n  MetaObject metaObject=SystemMetaObject.forObject(target);\n  MappedStatement ms=(MappedStatement)metaObject.getValue(\"delegate.mappedStatement\");\n  StringBuilder formatSql=new StringBuilder();\n  formatSql.append(\" Time：\").append(timing);\n  formatSql.append(\" ms - ID：\").append(ms.getId());\n  formatSql.append(\"\\n Execute SQL：\").append(SqlUtils.sqlFormat(originalSql,format)).append(\"\\n\");\n  if (this.isWriteInLog()) {\n    if (this.getMaxTime() >= 1 && timing > this.getMaxTime()) {\n      logger.error(formatSql.toString());\n    }\n else {\n      logger.debug(formatSql.toString());\n    }\n  }\n else {\n    System.err.println(formatSql.toString());\n    if (this.getMaxTime() >= 1 && timing > this.getMaxTime()) {\n      throw new MybatisPlusException(\" The SQL execution time is too large, please optimize ! \");\n    }\n  }\n  return result;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 481,
+      "astHeight" : 19
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4299,
+        "startLineNumber" : 77,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public Object intercept(Invocation invocation) throws Throwable {\n  Statement statement;\n  Object firstArg=invocation.getArgs()[0];\n  if (Proxy.isProxyClass(firstArg.getClass())) {\n    statement=(Statement)SystemMetaObject.forObject(firstArg).getValue(\"h.statement\");\n  }\n else {\n    statement=(Statement)firstArg;\n  }\n  MetaObject stmtMetaObj=SystemMetaObject.forObject(statement);\n  try {\n    statement=(Statement)stmtMetaObj.getValue(\"stmt.statement\");\n  }\n catch (  Exception e) {\n  }\n  if (stmtMetaObj.hasGetter(\"delegate\")) {\n    try {\n      statement=(Statement)stmtMetaObj.getValue(\"delegate\");\n    }\n catch (    Exception e) {\n    }\n  }\n  String originalSql=null;\n  String stmtClassName=statement.getClass().getName();\n  if (DruidPooledPreparedStatement.equals(stmtClassName)) {\n    try {\n      if (druidGetSQLMethod == null) {\n        Class<?> clazz=Class.forName(DruidPooledPreparedStatement);\n        druidGetSQLMethod=clazz.getMethod(\"getSql\");\n      }\n      Object stmtSql=druidGetSQLMethod.invoke(statement);\n      if (stmtSql != null && stmtSql instanceof String) {\n        originalSql=(String)stmtSql;\n      }\n    }\n catch (    Exception ignored) {\n    }\n  }\n else   if (T4CPreparedStatement.equals(stmtClassName) || OraclePreparedStatementWrapper.equals(stmtClassName)) {\n    try {\n      if (oracleGetOriginalSqlMethod != null) {\n        Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n        if (stmtSql != null && stmtSql instanceof String) {\n          originalSql=(String)stmtSql;\n        }\n      }\n else {\n        Class<?> clazz=Class.forName(stmtClassName);\n        oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n        if (oracleGetOriginalSqlMethod != null) {\n          oracleGetOriginalSqlMethod.setAccessible(true);\n          if (oracleGetOriginalSqlMethod != null) {\n            Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n            if (stmtSql != null && stmtSql instanceof String) {\n              originalSql=(String)stmtSql;\n            }\n          }\n        }\n      }\n    }\n catch (    Exception e) {\n    }\n  }\n  if (originalSql == null) {\n    originalSql=statement.toString();\n  }\n  int index=originalSql.indexOf(':');\n  if (index > 0) {\n    originalSql=originalSql.substring(index + 1,originalSql.length());\n  }\n  long start=SystemClock.now();\n  Object result=invocation.proceed();\n  long timing=SystemClock.now() - start;\n  Object target=PluginUtils.realTarget(invocation.getTarget());\n  MetaObject metaObject=SystemMetaObject.forObject(target);\n  MappedStatement ms=(MappedStatement)metaObject.getValue(\"delegate.mappedStatement\");\n  StringBuilder formatSql=new StringBuilder();\n  formatSql.append(\" Time：\").append(timing);\n  formatSql.append(\" ms - ID：\").append(ms.getId());\n  formatSql.append(\"\\n Execute SQL：\").append(SqlUtils.sqlFormat(originalSql,format)).append(\"\\n\");\n  if (this.isWriteInLog()) {\n    if (this.getMaxTime() >= 1 && timing > this.getMaxTime()) {\n      logger.error(formatSql.toString());\n    }\n else {\n      logger.debug(formatSql.toString());\n    }\n  }\n else {\n    System.err.println(formatSql.toString());\n    if (this.getMaxTime() >= 1 && timing > this.getMaxTime()) {\n      throw new MybatisPlusException(\" The SQL execution time is too large, please optimize ! \");\n    }\n  }\n  return result;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 494,
+      "astHeight" : 20
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 53,
+        "startLineNumber" : 108,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 108,
+        "endColumnNumber" : 69
+      },
+      "nodeContext" : "Object stmtSql=druidGetSQLMethod.invoke(statement);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "java.sql.Statement"
+  }, {
+    "nodeContext" : "statement",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 9,
+      "startLineNumber" : 118,
+      "startColumnNumber" : 71,
+      "endLineNumber" : 118,
+      "endColumnNumber" : 80
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 44,
+        "startLineNumber" : 118,
+        "startColumnNumber" : 37,
+        "endLineNumber" : 118,
+        "endColumnNumber" : 81
+      },
+      "nodeContext" : "oracleGetOriginalSqlMethod.invoke(statement)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 54,
+        "startLineNumber" : 118,
+        "startColumnNumber" : 27,
+        "endLineNumber" : 118,
+        "endColumnNumber" : 81
+      },
+      "nodeContext" : "stmtSql=oracleGetOriginalSqlMethod.invoke(statement)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 62,
+        "startLineNumber" : 118,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 118,
+        "endColumnNumber" : 82
+      },
+      "nodeContext" : "Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 252,
+        "startLineNumber" : 117,
+        "startColumnNumber" : 56,
+        "endLineNumber" : 122,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "{\n  Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n  if (stmtSql != null && stmtSql instanceof String) {\n    originalSql=(String)stmtSql;\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 27,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1059,
+        "startLineNumber" : 117,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 134,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "if (oracleGetOriginalSqlMethod != null) {\n  Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n  if (stmtSql != null && stmtSql instanceof String) {\n    originalSql=(String)stmtSql;\n  }\n}\n else {\n  Class<?> clazz=Class.forName(stmtClassName);\n  oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n  if (oracleGetOriginalSqlMethod != null) {\n    oracleGetOriginalSqlMethod.setAccessible(true);\n    if (oracleGetOriginalSqlMethod != null) {\n      Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n      if (stmtSql != null && stmtSql instanceof String) {\n        originalSql=(String)stmtSql;\n      }\n    }\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 91,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 1091,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 135,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  if (oracleGetOriginalSqlMethod != null) {\n    Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n    if (stmtSql != null && stmtSql instanceof String) {\n      originalSql=(String)stmtSql;\n    }\n  }\n else {\n    Class<?> clazz=Class.forName(stmtClassName);\n    oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n    if (oracleGetOriginalSqlMethod != null) {\n      oracleGetOriginalSqlMethod.setAccessible(true);\n      if (oracleGetOriginalSqlMethod != null) {\n        Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n        if (stmtSql != null && stmtSql instanceof String) {\n          originalSql=(String)stmtSql;\n        }\n      }\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 92,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1156,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 137,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "try {\n  if (oracleGetOriginalSqlMethod != null) {\n    Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n    if (stmtSql != null && stmtSql instanceof String) {\n      originalSql=(String)stmtSql;\n    }\n  }\n else {\n    Class<?> clazz=Class.forName(stmtClassName);\n    oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n    if (oracleGetOriginalSqlMethod != null) {\n      oracleGetOriginalSqlMethod.setAccessible(true);\n      if (oracleGetOriginalSqlMethod != null) {\n        Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n        if (stmtSql != null && stmtSql instanceof String) {\n          originalSql=(String)stmtSql;\n        }\n      }\n    }\n  }\n}\n catch (Exception e) {\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 99,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 1180,
+        "startLineNumber" : 115,
+        "startColumnNumber" : 69,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  try {\n    if (oracleGetOriginalSqlMethod != null) {\n      Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n      if (stmtSql != null && stmtSql instanceof String) {\n        originalSql=(String)stmtSql;\n      }\n    }\n else {\n      Class<?> clazz=Class.forName(stmtClassName);\n      oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n      if (oracleGetOriginalSqlMethod != null) {\n        oracleGetOriginalSqlMethod.setAccessible(true);\n        if (oracleGetOriginalSqlMethod != null) {\n          Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n          if (stmtSql != null && stmtSql instanceof String) {\n            originalSql=(String)stmtSql;\n          }\n        }\n      }\n    }\n  }\n catch (  Exception e) {\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 100,
+      "astHeight" : 16
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 1296,
+        "startLineNumber" : 114,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (T4CPreparedStatement.equals(stmtClassName) || OraclePreparedStatementWrapper.equals(stmtClassName)) {\n  try {\n    if (oracleGetOriginalSqlMethod != null) {\n      Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n      if (stmtSql != null && stmtSql instanceof String) {\n        originalSql=(String)stmtSql;\n      }\n    }\n else {\n      Class<?> clazz=Class.forName(stmtClassName);\n      oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n      if (oracleGetOriginalSqlMethod != null) {\n        oracleGetOriginalSqlMethod.setAccessible(true);\n        if (oracleGetOriginalSqlMethod != null) {\n          Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n          if (stmtSql != null && stmtSql instanceof String) {\n            originalSql=(String)stmtSql;\n          }\n        }\n      }\n    }\n  }\n catch (  Exception e) {\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 110,
+      "astHeight" : 17
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1867,
+        "startLineNumber" : 102,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (DruidPooledPreparedStatement.equals(stmtClassName)) {\n  try {\n    if (druidGetSQLMethod == null) {\n      Class<?> clazz=Class.forName(DruidPooledPreparedStatement);\n      druidGetSQLMethod=clazz.getMethod(\"getSql\");\n    }\n    Object stmtSql=druidGetSQLMethod.invoke(statement);\n    if (stmtSql != null && stmtSql instanceof String) {\n      originalSql=(String)stmtSql;\n    }\n  }\n catch (  Exception ignored) {\n  }\n}\n else if (T4CPreparedStatement.equals(stmtClassName) || OraclePreparedStatementWrapper.equals(stmtClassName)) {\n  try {\n    if (oracleGetOriginalSqlMethod != null) {\n      Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n      if (stmtSql != null && stmtSql instanceof String) {\n        originalSql=(String)stmtSql;\n      }\n    }\n else {\n      Class<?> clazz=Class.forName(stmtClassName);\n      oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n      if (oracleGetOriginalSqlMethod != null) {\n        oracleGetOriginalSqlMethod.setAccessible(true);\n        if (oracleGetOriginalSqlMethod != null) {\n          Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n          if (stmtSql != null && stmtSql instanceof String) {\n            originalSql=(String)stmtSql;\n          }\n        }\n      }\n    }\n  }\n catch (  Exception e) {\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 173,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4221,
+        "startLineNumber" : 78,
+        "startColumnNumber" : 68,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  Statement statement;\n  Object firstArg=invocation.getArgs()[0];\n  if (Proxy.isProxyClass(firstArg.getClass())) {\n    statement=(Statement)SystemMetaObject.forObject(firstArg).getValue(\"h.statement\");\n  }\n else {\n    statement=(Statement)firstArg;\n  }\n  MetaObject stmtMetaObj=SystemMetaObject.forObject(statement);\n  try {\n    statement=(Statement)stmtMetaObj.getValue(\"stmt.statement\");\n  }\n catch (  Exception e) {\n  }\n  if (stmtMetaObj.hasGetter(\"delegate\")) {\n    try {\n      statement=(Statement)stmtMetaObj.getValue(\"delegate\");\n    }\n catch (    Exception e) {\n    }\n  }\n  String originalSql=null;\n  String stmtClassName=statement.getClass().getName();\n  if (DruidPooledPreparedStatement.equals(stmtClassName)) {\n    try {\n      if (druidGetSQLMethod == null) {\n        Class<?> clazz=Class.forName(DruidPooledPreparedStatement);\n        druidGetSQLMethod=clazz.getMethod(\"getSql\");\n      }\n      Object stmtSql=druidGetSQLMethod.invoke(statement);\n      if (stmtSql != null && stmtSql instanceof String) {\n        originalSql=(String)stmtSql;\n      }\n    }\n catch (    Exception ignored) {\n    }\n  }\n else   if (T4CPreparedStatement.equals(stmtClassName) || OraclePreparedStatementWrapper.equals(stmtClassName)) {\n    try {\n      if (oracleGetOriginalSqlMethod != null) {\n        Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n        if (stmtSql != null && stmtSql instanceof String) {\n          originalSql=(String)stmtSql;\n        }\n      }\n else {\n        Class<?> clazz=Class.forName(stmtClassName);\n        oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n        if (oracleGetOriginalSqlMethod != null) {\n          oracleGetOriginalSqlMethod.setAccessible(true);\n          if (oracleGetOriginalSqlMethod != null) {\n            Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n            if (stmtSql != null && stmtSql instanceof String) {\n              originalSql=(String)stmtSql;\n            }\n          }\n        }\n      }\n    }\n catch (    Exception e) {\n    }\n  }\n  if (originalSql == null) {\n    originalSql=statement.toString();\n  }\n  int index=originalSql.indexOf(':');\n  if (index > 0) {\n    originalSql=originalSql.substring(index + 1,originalSql.length());\n  }\n  long start=SystemClock.now();\n  Object result=invocation.proceed();\n  long timing=SystemClock.now() - start;\n  Object target=PluginUtils.realTarget(invocation.getTarget());\n  MetaObject metaObject=SystemMetaObject.forObject(target);\n  MappedStatement ms=(MappedStatement)metaObject.getValue(\"delegate.mappedStatement\");\n  StringBuilder formatSql=new StringBuilder();\n  formatSql.append(\" Time：\").append(timing);\n  formatSql.append(\" ms - ID：\").append(ms.getId());\n  formatSql.append(\"\\n Execute SQL：\").append(SqlUtils.sqlFormat(originalSql,format)).append(\"\\n\");\n  if (this.isWriteInLog()) {\n    if (this.getMaxTime() >= 1 && timing > this.getMaxTime()) {\n      logger.error(formatSql.toString());\n    }\n else {\n      logger.debug(formatSql.toString());\n    }\n  }\n else {\n    System.err.println(formatSql.toString());\n    if (this.getMaxTime() >= 1 && timing > this.getMaxTime()) {\n      throw new MybatisPlusException(\" The SQL execution time is too large, please optimize ! \");\n    }\n  }\n  return result;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 481,
+      "astHeight" : 19
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4299,
+        "startLineNumber" : 77,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public Object intercept(Invocation invocation) throws Throwable {\n  Statement statement;\n  Object firstArg=invocation.getArgs()[0];\n  if (Proxy.isProxyClass(firstArg.getClass())) {\n    statement=(Statement)SystemMetaObject.forObject(firstArg).getValue(\"h.statement\");\n  }\n else {\n    statement=(Statement)firstArg;\n  }\n  MetaObject stmtMetaObj=SystemMetaObject.forObject(statement);\n  try {\n    statement=(Statement)stmtMetaObj.getValue(\"stmt.statement\");\n  }\n catch (  Exception e) {\n  }\n  if (stmtMetaObj.hasGetter(\"delegate\")) {\n    try {\n      statement=(Statement)stmtMetaObj.getValue(\"delegate\");\n    }\n catch (    Exception e) {\n    }\n  }\n  String originalSql=null;\n  String stmtClassName=statement.getClass().getName();\n  if (DruidPooledPreparedStatement.equals(stmtClassName)) {\n    try {\n      if (druidGetSQLMethod == null) {\n        Class<?> clazz=Class.forName(DruidPooledPreparedStatement);\n        druidGetSQLMethod=clazz.getMethod(\"getSql\");\n      }\n      Object stmtSql=druidGetSQLMethod.invoke(statement);\n      if (stmtSql != null && stmtSql instanceof String) {\n        originalSql=(String)stmtSql;\n      }\n    }\n catch (    Exception ignored) {\n    }\n  }\n else   if (T4CPreparedStatement.equals(stmtClassName) || OraclePreparedStatementWrapper.equals(stmtClassName)) {\n    try {\n      if (oracleGetOriginalSqlMethod != null) {\n        Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n        if (stmtSql != null && stmtSql instanceof String) {\n          originalSql=(String)stmtSql;\n        }\n      }\n else {\n        Class<?> clazz=Class.forName(stmtClassName);\n        oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n        if (oracleGetOriginalSqlMethod != null) {\n          oracleGetOriginalSqlMethod.setAccessible(true);\n          if (oracleGetOriginalSqlMethod != null) {\n            Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n            if (stmtSql != null && stmtSql instanceof String) {\n              originalSql=(String)stmtSql;\n            }\n          }\n        }\n      }\n    }\n catch (    Exception e) {\n    }\n  }\n  if (originalSql == null) {\n    originalSql=statement.toString();\n  }\n  int index=originalSql.indexOf(':');\n  if (index > 0) {\n    originalSql=originalSql.substring(index + 1,originalSql.length());\n  }\n  long start=SystemClock.now();\n  Object result=invocation.proceed();\n  long timing=SystemClock.now() - start;\n  Object target=PluginUtils.realTarget(invocation.getTarget());\n  MetaObject metaObject=SystemMetaObject.forObject(target);\n  MappedStatement ms=(MappedStatement)metaObject.getValue(\"delegate.mappedStatement\");\n  StringBuilder formatSql=new StringBuilder();\n  formatSql.append(\" Time：\").append(timing);\n  formatSql.append(\" ms - ID：\").append(ms.getId());\n  formatSql.append(\"\\n Execute SQL：\").append(SqlUtils.sqlFormat(originalSql,format)).append(\"\\n\");\n  if (this.isWriteInLog()) {\n    if (this.getMaxTime() >= 1 && timing > this.getMaxTime()) {\n      logger.error(formatSql.toString());\n    }\n else {\n      logger.debug(formatSql.toString());\n    }\n  }\n else {\n    System.err.println(formatSql.toString());\n    if (this.getMaxTime() >= 1 && timing > this.getMaxTime()) {\n      throw new MybatisPlusException(\" The SQL execution time is too large, please optimize ! \");\n    }\n  }\n  return result;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 494,
+      "astHeight" : 20
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 62,
+        "startLineNumber" : 118,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 118,
+        "endColumnNumber" : 82
+      },
+      "nodeContext" : "Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "java.sql.Statement"
+  }, {
+    "nodeContext" : "statement",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 9,
+      "startLineNumber" : 128,
+      "startColumnNumber" : 79,
+      "endLineNumber" : 128,
+      "endColumnNumber" : 88
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 44,
+        "startLineNumber" : 128,
+        "startColumnNumber" : 45,
+        "endLineNumber" : 128,
+        "endColumnNumber" : 89
+      },
+      "nodeContext" : "oracleGetOriginalSqlMethod.invoke(statement)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 54,
+        "startLineNumber" : 128,
+        "startColumnNumber" : 35,
+        "endLineNumber" : 128,
+        "endColumnNumber" : 89
+      },
+      "nodeContext" : "stmtSql=oracleGetOriginalSqlMethod.invoke(statement)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 62,
+        "startLineNumber" : 128,
+        "startColumnNumber" : 28,
+        "endLineNumber" : 128,
+        "endColumnNumber" : 90
+      },
+      "nodeContext" : "Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 292,
+        "startLineNumber" : 127,
+        "startColumnNumber" : 64,
+        "endLineNumber" : 132,
+        "endColumnNumber" : 25
+      },
+      "nodeContext" : "{\n  Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n  if (stmtSql != null && stmtSql instanceof String) {\n    originalSql=(String)stmtSql;\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 27,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 332,
+        "startLineNumber" : 127,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 132,
+        "endColumnNumber" : 25
+      },
+      "nodeContext" : "if (oracleGetOriginalSqlMethod != null) {\n  Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n  if (stmtSql != null && stmtSql instanceof String) {\n    originalSql=(String)stmtSql;\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 31,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 522,
+        "startLineNumber" : 125,
+        "startColumnNumber" : 60,
+        "endLineNumber" : 133,
+        "endColumnNumber" : 21
+      },
+      "nodeContext" : "{\n  oracleGetOriginalSqlMethod.setAccessible(true);\n  if (oracleGetOriginalSqlMethod != null) {\n    Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n    if (stmtSql != null && stmtSql instanceof String) {\n      originalSql=(String)stmtSql;\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 37,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 562,
+        "startLineNumber" : 125,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 133,
+        "endColumnNumber" : 21
+      },
+      "nodeContext" : "if (oracleGetOriginalSqlMethod != null) {\n  oracleGetOriginalSqlMethod.setAccessible(true);\n  if (oracleGetOriginalSqlMethod != null) {\n    Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n    if (stmtSql != null && stmtSql instanceof String) {\n      originalSql=(String)stmtSql;\n    }\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 41,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 761,
+        "startLineNumber" : 122,
+        "startColumnNumber" : 23,
+        "endLineNumber" : 134,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "{\n  Class<?> clazz=Class.forName(stmtClassName);\n  oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n  if (oracleGetOriginalSqlMethod != null) {\n    oracleGetOriginalSqlMethod.setAccessible(true);\n    if (oracleGetOriginalSqlMethod != null) {\n      Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n      if (stmtSql != null && stmtSql instanceof String) {\n        originalSql=(String)stmtSql;\n      }\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 60,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1059,
+        "startLineNumber" : 117,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 134,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "if (oracleGetOriginalSqlMethod != null) {\n  Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n  if (stmtSql != null && stmtSql instanceof String) {\n    originalSql=(String)stmtSql;\n  }\n}\n else {\n  Class<?> clazz=Class.forName(stmtClassName);\n  oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n  if (oracleGetOriginalSqlMethod != null) {\n    oracleGetOriginalSqlMethod.setAccessible(true);\n    if (oracleGetOriginalSqlMethod != null) {\n      Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n      if (stmtSql != null && stmtSql instanceof String) {\n        originalSql=(String)stmtSql;\n      }\n    }\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 91,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 1091,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 135,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  if (oracleGetOriginalSqlMethod != null) {\n    Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n    if (stmtSql != null && stmtSql instanceof String) {\n      originalSql=(String)stmtSql;\n    }\n  }\n else {\n    Class<?> clazz=Class.forName(stmtClassName);\n    oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n    if (oracleGetOriginalSqlMethod != null) {\n      oracleGetOriginalSqlMethod.setAccessible(true);\n      if (oracleGetOriginalSqlMethod != null) {\n        Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n        if (stmtSql != null && stmtSql instanceof String) {\n          originalSql=(String)stmtSql;\n        }\n      }\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 92,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1156,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 137,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "try {\n  if (oracleGetOriginalSqlMethod != null) {\n    Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n    if (stmtSql != null && stmtSql instanceof String) {\n      originalSql=(String)stmtSql;\n    }\n  }\n else {\n    Class<?> clazz=Class.forName(stmtClassName);\n    oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n    if (oracleGetOriginalSqlMethod != null) {\n      oracleGetOriginalSqlMethod.setAccessible(true);\n      if (oracleGetOriginalSqlMethod != null) {\n        Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n        if (stmtSql != null && stmtSql instanceof String) {\n          originalSql=(String)stmtSql;\n        }\n      }\n    }\n  }\n}\n catch (Exception e) {\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 99,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 1180,
+        "startLineNumber" : 115,
+        "startColumnNumber" : 69,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  try {\n    if (oracleGetOriginalSqlMethod != null) {\n      Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n      if (stmtSql != null && stmtSql instanceof String) {\n        originalSql=(String)stmtSql;\n      }\n    }\n else {\n      Class<?> clazz=Class.forName(stmtClassName);\n      oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n      if (oracleGetOriginalSqlMethod != null) {\n        oracleGetOriginalSqlMethod.setAccessible(true);\n        if (oracleGetOriginalSqlMethod != null) {\n          Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n          if (stmtSql != null && stmtSql instanceof String) {\n            originalSql=(String)stmtSql;\n          }\n        }\n      }\n    }\n  }\n catch (  Exception e) {\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 100,
+      "astHeight" : 16
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 1296,
+        "startLineNumber" : 114,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (T4CPreparedStatement.equals(stmtClassName) || OraclePreparedStatementWrapper.equals(stmtClassName)) {\n  try {\n    if (oracleGetOriginalSqlMethod != null) {\n      Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n      if (stmtSql != null && stmtSql instanceof String) {\n        originalSql=(String)stmtSql;\n      }\n    }\n else {\n      Class<?> clazz=Class.forName(stmtClassName);\n      oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n      if (oracleGetOriginalSqlMethod != null) {\n        oracleGetOriginalSqlMethod.setAccessible(true);\n        if (oracleGetOriginalSqlMethod != null) {\n          Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n          if (stmtSql != null && stmtSql instanceof String) {\n            originalSql=(String)stmtSql;\n          }\n        }\n      }\n    }\n  }\n catch (  Exception e) {\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 110,
+      "astHeight" : 17
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1867,
+        "startLineNumber" : 102,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 138,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (DruidPooledPreparedStatement.equals(stmtClassName)) {\n  try {\n    if (druidGetSQLMethod == null) {\n      Class<?> clazz=Class.forName(DruidPooledPreparedStatement);\n      druidGetSQLMethod=clazz.getMethod(\"getSql\");\n    }\n    Object stmtSql=druidGetSQLMethod.invoke(statement);\n    if (stmtSql != null && stmtSql instanceof String) {\n      originalSql=(String)stmtSql;\n    }\n  }\n catch (  Exception ignored) {\n  }\n}\n else if (T4CPreparedStatement.equals(stmtClassName) || OraclePreparedStatementWrapper.equals(stmtClassName)) {\n  try {\n    if (oracleGetOriginalSqlMethod != null) {\n      Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n      if (stmtSql != null && stmtSql instanceof String) {\n        originalSql=(String)stmtSql;\n      }\n    }\n else {\n      Class<?> clazz=Class.forName(stmtClassName);\n      oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n      if (oracleGetOriginalSqlMethod != null) {\n        oracleGetOriginalSqlMethod.setAccessible(true);\n        if (oracleGetOriginalSqlMethod != null) {\n          Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n          if (stmtSql != null && stmtSql instanceof String) {\n            originalSql=(String)stmtSql;\n          }\n        }\n      }\n    }\n  }\n catch (  Exception e) {\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 173,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4221,
+        "startLineNumber" : 78,
+        "startColumnNumber" : 68,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  Statement statement;\n  Object firstArg=invocation.getArgs()[0];\n  if (Proxy.isProxyClass(firstArg.getClass())) {\n    statement=(Statement)SystemMetaObject.forObject(firstArg).getValue(\"h.statement\");\n  }\n else {\n    statement=(Statement)firstArg;\n  }\n  MetaObject stmtMetaObj=SystemMetaObject.forObject(statement);\n  try {\n    statement=(Statement)stmtMetaObj.getValue(\"stmt.statement\");\n  }\n catch (  Exception e) {\n  }\n  if (stmtMetaObj.hasGetter(\"delegate\")) {\n    try {\n      statement=(Statement)stmtMetaObj.getValue(\"delegate\");\n    }\n catch (    Exception e) {\n    }\n  }\n  String originalSql=null;\n  String stmtClassName=statement.getClass().getName();\n  if (DruidPooledPreparedStatement.equals(stmtClassName)) {\n    try {\n      if (druidGetSQLMethod == null) {\n        Class<?> clazz=Class.forName(DruidPooledPreparedStatement);\n        druidGetSQLMethod=clazz.getMethod(\"getSql\");\n      }\n      Object stmtSql=druidGetSQLMethod.invoke(statement);\n      if (stmtSql != null && stmtSql instanceof String) {\n        originalSql=(String)stmtSql;\n      }\n    }\n catch (    Exception ignored) {\n    }\n  }\n else   if (T4CPreparedStatement.equals(stmtClassName) || OraclePreparedStatementWrapper.equals(stmtClassName)) {\n    try {\n      if (oracleGetOriginalSqlMethod != null) {\n        Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n        if (stmtSql != null && stmtSql instanceof String) {\n          originalSql=(String)stmtSql;\n        }\n      }\n else {\n        Class<?> clazz=Class.forName(stmtClassName);\n        oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n        if (oracleGetOriginalSqlMethod != null) {\n          oracleGetOriginalSqlMethod.setAccessible(true);\n          if (oracleGetOriginalSqlMethod != null) {\n            Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n            if (stmtSql != null && stmtSql instanceof String) {\n              originalSql=(String)stmtSql;\n            }\n          }\n        }\n      }\n    }\n catch (    Exception e) {\n    }\n  }\n  if (originalSql == null) {\n    originalSql=statement.toString();\n  }\n  int index=originalSql.indexOf(':');\n  if (index > 0) {\n    originalSql=originalSql.substring(index + 1,originalSql.length());\n  }\n  long start=SystemClock.now();\n  Object result=invocation.proceed();\n  long timing=SystemClock.now() - start;\n  Object target=PluginUtils.realTarget(invocation.getTarget());\n  MetaObject metaObject=SystemMetaObject.forObject(target);\n  MappedStatement ms=(MappedStatement)metaObject.getValue(\"delegate.mappedStatement\");\n  StringBuilder formatSql=new StringBuilder();\n  formatSql.append(\" Time：\").append(timing);\n  formatSql.append(\" ms - ID：\").append(ms.getId());\n  formatSql.append(\"\\n Execute SQL：\").append(SqlUtils.sqlFormat(originalSql,format)).append(\"\\n\");\n  if (this.isWriteInLog()) {\n    if (this.getMaxTime() >= 1 && timing > this.getMaxTime()) {\n      logger.error(formatSql.toString());\n    }\n else {\n      logger.debug(formatSql.toString());\n    }\n  }\n else {\n    System.err.println(formatSql.toString());\n    if (this.getMaxTime() >= 1 && timing > this.getMaxTime()) {\n      throw new MybatisPlusException(\" The SQL execution time is too large, please optimize ! \");\n    }\n  }\n  return result;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 481,
+      "astHeight" : 19
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4299,
+        "startLineNumber" : 77,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public Object intercept(Invocation invocation) throws Throwable {\n  Statement statement;\n  Object firstArg=invocation.getArgs()[0];\n  if (Proxy.isProxyClass(firstArg.getClass())) {\n    statement=(Statement)SystemMetaObject.forObject(firstArg).getValue(\"h.statement\");\n  }\n else {\n    statement=(Statement)firstArg;\n  }\n  MetaObject stmtMetaObj=SystemMetaObject.forObject(statement);\n  try {\n    statement=(Statement)stmtMetaObj.getValue(\"stmt.statement\");\n  }\n catch (  Exception e) {\n  }\n  if (stmtMetaObj.hasGetter(\"delegate\")) {\n    try {\n      statement=(Statement)stmtMetaObj.getValue(\"delegate\");\n    }\n catch (    Exception e) {\n    }\n  }\n  String originalSql=null;\n  String stmtClassName=statement.getClass().getName();\n  if (DruidPooledPreparedStatement.equals(stmtClassName)) {\n    try {\n      if (druidGetSQLMethod == null) {\n        Class<?> clazz=Class.forName(DruidPooledPreparedStatement);\n        druidGetSQLMethod=clazz.getMethod(\"getSql\");\n      }\n      Object stmtSql=druidGetSQLMethod.invoke(statement);\n      if (stmtSql != null && stmtSql instanceof String) {\n        originalSql=(String)stmtSql;\n      }\n    }\n catch (    Exception ignored) {\n    }\n  }\n else   if (T4CPreparedStatement.equals(stmtClassName) || OraclePreparedStatementWrapper.equals(stmtClassName)) {\n    try {\n      if (oracleGetOriginalSqlMethod != null) {\n        Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n        if (stmtSql != null && stmtSql instanceof String) {\n          originalSql=(String)stmtSql;\n        }\n      }\n else {\n        Class<?> clazz=Class.forName(stmtClassName);\n        oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n        if (oracleGetOriginalSqlMethod != null) {\n          oracleGetOriginalSqlMethod.setAccessible(true);\n          if (oracleGetOriginalSqlMethod != null) {\n            Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n            if (stmtSql != null && stmtSql instanceof String) {\n              originalSql=(String)stmtSql;\n            }\n          }\n        }\n      }\n    }\n catch (    Exception e) {\n    }\n  }\n  if (originalSql == null) {\n    originalSql=statement.toString();\n  }\n  int index=originalSql.indexOf(':');\n  if (index > 0) {\n    originalSql=originalSql.substring(index + 1,originalSql.length());\n  }\n  long start=SystemClock.now();\n  Object result=invocation.proceed();\n  long timing=SystemClock.now() - start;\n  Object target=PluginUtils.realTarget(invocation.getTarget());\n  MetaObject metaObject=SystemMetaObject.forObject(target);\n  MappedStatement ms=(MappedStatement)metaObject.getValue(\"delegate.mappedStatement\");\n  StringBuilder formatSql=new StringBuilder();\n  formatSql.append(\" Time：\").append(timing);\n  formatSql.append(\" ms - ID：\").append(ms.getId());\n  formatSql.append(\"\\n Execute SQL：\").append(SqlUtils.sqlFormat(originalSql,format)).append(\"\\n\");\n  if (this.isWriteInLog()) {\n    if (this.getMaxTime() >= 1 && timing > this.getMaxTime()) {\n      logger.error(formatSql.toString());\n    }\n else {\n      logger.debug(formatSql.toString());\n    }\n  }\n else {\n    System.err.println(formatSql.toString());\n    if (this.getMaxTime() >= 1 && timing > this.getMaxTime()) {\n      throw new MybatisPlusException(\" The SQL execution time is too large, please optimize ! \");\n    }\n  }\n  return result;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 494,
+      "astHeight" : 20
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 62,
+        "startLineNumber" : 128,
+        "startColumnNumber" : 28,
+        "endLineNumber" : 128,
+        "endColumnNumber" : 90
+      },
+      "nodeContext" : "Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "java.sql.Statement"
+  }, {
+    "nodeContext" : "statement",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 9,
+      "startLineNumber" : 140,
+      "startColumnNumber" : 26,
+      "endLineNumber" : 140,
+      "endColumnNumber" : 35
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
+      "nodePosition" : {
+        "charLength" : 20,
+        "startLineNumber" : 140,
+        "startColumnNumber" : 26,
+        "endLineNumber" : 140,
+        "endColumnNumber" : 46
+      },
+      "nodeContext" : "statement.toString()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 34,
+        "startLineNumber" : 140,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 140,
+        "endColumnNumber" : 46
+      },
+      "nodeContext" : "originalSql=statement.toString()",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 35,
+        "startLineNumber" : 140,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 140,
+        "endColumnNumber" : 47
+      },
+      "nodeContext" : "originalSql=statement.toString();\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 59,
+        "startLineNumber" : 139,
+        "startColumnNumber" : 33,
+        "endLineNumber" : 141,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  originalSql=statement.toString();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 7,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 84,
+        "startLineNumber" : 139,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 141,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (originalSql == null) {\n  originalSql=statement.toString();\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4221,
+        "startLineNumber" : 78,
+        "startColumnNumber" : 68,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  Statement statement;\n  Object firstArg=invocation.getArgs()[0];\n  if (Proxy.isProxyClass(firstArg.getClass())) {\n    statement=(Statement)SystemMetaObject.forObject(firstArg).getValue(\"h.statement\");\n  }\n else {\n    statement=(Statement)firstArg;\n  }\n  MetaObject stmtMetaObj=SystemMetaObject.forObject(statement);\n  try {\n    statement=(Statement)stmtMetaObj.getValue(\"stmt.statement\");\n  }\n catch (  Exception e) {\n  }\n  if (stmtMetaObj.hasGetter(\"delegate\")) {\n    try {\n      statement=(Statement)stmtMetaObj.getValue(\"delegate\");\n    }\n catch (    Exception e) {\n    }\n  }\n  String originalSql=null;\n  String stmtClassName=statement.getClass().getName();\n  if (DruidPooledPreparedStatement.equals(stmtClassName)) {\n    try {\n      if (druidGetSQLMethod == null) {\n        Class<?> clazz=Class.forName(DruidPooledPreparedStatement);\n        druidGetSQLMethod=clazz.getMethod(\"getSql\");\n      }\n      Object stmtSql=druidGetSQLMethod.invoke(statement);\n      if (stmtSql != null && stmtSql instanceof String) {\n        originalSql=(String)stmtSql;\n      }\n    }\n catch (    Exception ignored) {\n    }\n  }\n else   if (T4CPreparedStatement.equals(stmtClassName) || OraclePreparedStatementWrapper.equals(stmtClassName)) {\n    try {\n      if (oracleGetOriginalSqlMethod != null) {\n        Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n        if (stmtSql != null && stmtSql instanceof String) {\n          originalSql=(String)stmtSql;\n        }\n      }\n else {\n        Class<?> clazz=Class.forName(stmtClassName);\n        oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n        if (oracleGetOriginalSqlMethod != null) {\n          oracleGetOriginalSqlMethod.setAccessible(true);\n          if (oracleGetOriginalSqlMethod != null) {\n            Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n            if (stmtSql != null && stmtSql instanceof String) {\n              originalSql=(String)stmtSql;\n            }\n          }\n        }\n      }\n    }\n catch (    Exception e) {\n    }\n  }\n  if (originalSql == null) {\n    originalSql=statement.toString();\n  }\n  int index=originalSql.indexOf(':');\n  if (index > 0) {\n    originalSql=originalSql.substring(index + 1,originalSql.length());\n  }\n  long start=SystemClock.now();\n  Object result=invocation.proceed();\n  long timing=SystemClock.now() - start;\n  Object target=PluginUtils.realTarget(invocation.getTarget());\n  MetaObject metaObject=SystemMetaObject.forObject(target);\n  MappedStatement ms=(MappedStatement)metaObject.getValue(\"delegate.mappedStatement\");\n  StringBuilder formatSql=new StringBuilder();\n  formatSql.append(\" Time：\").append(timing);\n  formatSql.append(\" ms - ID：\").append(ms.getId());\n  formatSql.append(\"\\n Execute SQL：\").append(SqlUtils.sqlFormat(originalSql,format)).append(\"\\n\");\n  if (this.isWriteInLog()) {\n    if (this.getMaxTime() >= 1 && timing > this.getMaxTime()) {\n      logger.error(formatSql.toString());\n    }\n else {\n      logger.debug(formatSql.toString());\n    }\n  }\n else {\n    System.err.println(formatSql.toString());\n    if (this.getMaxTime() >= 1 && timing > this.getMaxTime()) {\n      throw new MybatisPlusException(\" The SQL execution time is too large, please optimize ! \");\n    }\n  }\n  return result;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 481,
+      "astHeight" : 19
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4299,
+        "startLineNumber" : 77,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public Object intercept(Invocation invocation) throws Throwable {\n  Statement statement;\n  Object firstArg=invocation.getArgs()[0];\n  if (Proxy.isProxyClass(firstArg.getClass())) {\n    statement=(Statement)SystemMetaObject.forObject(firstArg).getValue(\"h.statement\");\n  }\n else {\n    statement=(Statement)firstArg;\n  }\n  MetaObject stmtMetaObj=SystemMetaObject.forObject(statement);\n  try {\n    statement=(Statement)stmtMetaObj.getValue(\"stmt.statement\");\n  }\n catch (  Exception e) {\n  }\n  if (stmtMetaObj.hasGetter(\"delegate\")) {\n    try {\n      statement=(Statement)stmtMetaObj.getValue(\"delegate\");\n    }\n catch (    Exception e) {\n    }\n  }\n  String originalSql=null;\n  String stmtClassName=statement.getClass().getName();\n  if (DruidPooledPreparedStatement.equals(stmtClassName)) {\n    try {\n      if (druidGetSQLMethod == null) {\n        Class<?> clazz=Class.forName(DruidPooledPreparedStatement);\n        druidGetSQLMethod=clazz.getMethod(\"getSql\");\n      }\n      Object stmtSql=druidGetSQLMethod.invoke(statement);\n      if (stmtSql != null && stmtSql instanceof String) {\n        originalSql=(String)stmtSql;\n      }\n    }\n catch (    Exception ignored) {\n    }\n  }\n else   if (T4CPreparedStatement.equals(stmtClassName) || OraclePreparedStatementWrapper.equals(stmtClassName)) {\n    try {\n      if (oracleGetOriginalSqlMethod != null) {\n        Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n        if (stmtSql != null && stmtSql instanceof String) {\n          originalSql=(String)stmtSql;\n        }\n      }\n else {\n        Class<?> clazz=Class.forName(stmtClassName);\n        oracleGetOriginalSqlMethod=getMethodRegular(clazz,\"getOriginalSql\");\n        if (oracleGetOriginalSqlMethod != null) {\n          oracleGetOriginalSqlMethod.setAccessible(true);\n          if (oracleGetOriginalSqlMethod != null) {\n            Object stmtSql=oracleGetOriginalSqlMethod.invoke(statement);\n            if (stmtSql != null && stmtSql instanceof String) {\n              originalSql=(String)stmtSql;\n            }\n          }\n        }\n      }\n    }\n catch (    Exception e) {\n    }\n  }\n  if (originalSql == null) {\n    originalSql=statement.toString();\n  }\n  int index=originalSql.indexOf(':');\n  if (index > 0) {\n    originalSql=originalSql.substring(index + 1,originalSql.length());\n  }\n  long start=SystemClock.now();\n  Object result=invocation.proceed();\n  long timing=SystemClock.now() - start;\n  Object target=PluginUtils.realTarget(invocation.getTarget());\n  MetaObject metaObject=SystemMetaObject.forObject(target);\n  MappedStatement ms=(MappedStatement)metaObject.getValue(\"delegate.mappedStatement\");\n  StringBuilder formatSql=new StringBuilder();\n  formatSql.append(\" Time：\").append(timing);\n  formatSql.append(\" ms - ID：\").append(ms.getId());\n  formatSql.append(\"\\n Execute SQL：\").append(SqlUtils.sqlFormat(originalSql,format)).append(\"\\n\");\n  if (this.isWriteInLog()) {\n    if (this.getMaxTime() >= 1 && timing > this.getMaxTime()) {\n      logger.error(formatSql.toString());\n    }\n else {\n      logger.debug(formatSql.toString());\n    }\n  }\n else {\n    System.err.println(formatSql.toString());\n    if (this.getMaxTime() >= 1 && timing > this.getMaxTime()) {\n      throw new MybatisPlusException(\" The SQL execution time is too large, please optimize ! \");\n    }\n  }\n  return result;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 494,
+      "astHeight" : 20
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 35,
+        "startLineNumber" : 140,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 140,
+        "endColumnNumber" : 47
+      },
+      "nodeContext" : "originalSql=statement.toString();\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "java.sql.Statement"
+  } ],
+  "positionList" : [ {
+    "charLength" : 9,
+    "startLineNumber" : 86,
+    "startColumnNumber" : 60,
+    "endLineNumber" : 86,
+    "endColumnNumber" : 69
+  }, {
+    "charLength" : 9,
+    "startLineNumber" : 101,
+    "startColumnNumber" : 31,
+    "endLineNumber" : 101,
+    "endColumnNumber" : 40
+  }, {
+    "charLength" : 9,
+    "startLineNumber" : 108,
+    "startColumnNumber" : 58,
+    "endLineNumber" : 108,
+    "endColumnNumber" : 67
+  }, {
+    "charLength" : 9,
+    "startLineNumber" : 118,
+    "startColumnNumber" : 71,
+    "endLineNumber" : 118,
+    "endColumnNumber" : 80
+  }, {
+    "charLength" : 9,
+    "startLineNumber" : 128,
+    "startColumnNumber" : 79,
+    "endLineNumber" : 128,
+    "endColumnNumber" : 88
+  }, {
+    "charLength" : 9,
+    "startLineNumber" : 140,
+    "startColumnNumber" : 26,
+    "endLineNumber" : 140,
+    "endColumnNumber" : 35
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 5,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 7
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 7
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 3,
+    "layout" : 6
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 4,
+    "layout" : 6
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 5,
+    "layout" : 7
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 0,
+    "layout" : 10
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 1,
+    "layout" : 10
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 2,
+    "layout" : 9
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 5,
+    "layout" : 10
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 0,
+    "layout" : 14
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 1,
+    "layout" : 14
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 2,
+    "layout" : 13
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 3,
+    "layout" : 8
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 5,
+    "layout" : 14
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 3,
+    "layout" : 5
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 4,
+    "layout" : 5
+  } ]
+}

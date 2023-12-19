@@ -1,0 +1,126 @@
+{
+  "id" : 25,
+  "expression" : "consumer.receive(5,TimeUnit.SECONDS)",
+  "projectName" : "apache@pulsar",
+  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
+  "filePath" : "/pulsar-broker/src/test/java/org/apache/pulsar/client/impl/MessageChunkingTest.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "consumer.receive(5,TimeUnit.SECONDS)",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 37,
+      "startLineNumber" : 130,
+      "startColumnNumber" : 18,
+      "endLineNumber" : 130,
+      "endColumnNumber" : 55
+    },
+    "astNodeNumber" : 7,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 43,
+        "startLineNumber" : 130,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 130,
+        "endColumnNumber" : 55
+      },
+      "nodeContext" : "msg=consumer.receive(5,TimeUnit.SECONDS)",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 44,
+        "startLineNumber" : 130,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 130,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "msg=consumer.receive(5,TimeUnit.SECONDS);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 444,
+        "startLineNumber" : 129,
+        "startColumnNumber" : 48,
+        "endLineNumber" : 136,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  msg=consumer.receive(5,TimeUnit.SECONDS);\n  String receivedMessage=new String(msg.getData());\n  log.info(\"[{}] - Published [{}] Received message: [{}]\",i,publishedMessages.get(i),receivedMessage);\n  String expectedMessage=publishedMessages.get(i);\n  testMessageOrderAndDuplicates(messageSet,receivedMessage,expectedMessage);\n  msgIds.add(msg.getMessageId());\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 55,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 484,
+        "startLineNumber" : 129,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 136,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "for (int i=0; i < totalMessages; i++) {\n  msg=consumer.receive(5,TimeUnit.SECONDS);\n  String receivedMessage=new String(msg.getData());\n  log.info(\"[{}] - Published [{}] Received message: [{}]\",i,publishedMessages.get(i),receivedMessage);\n  String expectedMessage=publishedMessages.get(i);\n  testMessageOrderAndDuplicates(messageSet,receivedMessage,expectedMessage);\n  msgIds.add(msg.getMessageId());\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 66,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2674,
+        "startLineNumber" : 101,
+        "startColumnNumber" : 77,
+        "endLineNumber" : 163,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  log.info(\"-- Starting {} test --\",methodName);\n  this.conf.setMaxMessageSize(5);\n  final int totalMessages=5;\n  final String topicName=\"persistent://my-property/my-ns/my-topic1\";\n  Consumer<byte[]> consumer=pulsarClient.newConsumer().topic(topicName).subscriptionName(\"my-subscriber-name\").isAckReceiptEnabled(ackReceiptEnabled).acknowledgmentGroupTime(0,TimeUnit.SECONDS).subscribe();\n  ProducerBuilder<byte[]> producerBuilder=pulsarClient.newProducer().topic(topicName);\n  Producer<byte[]> producer=producerBuilder.compressionType(CompressionType.LZ4).enableChunking(true).enableBatching(false).create();\n  PersistentTopic topic=(PersistentTopic)pulsar.getBrokerService().getTopicIfExists(topicName).get().get();\n  List<String> publishedMessages=Lists.newArrayList();\n  for (int i=0; i < totalMessages; i++) {\n    String message=createMessagePayload(i * 10);\n    publishedMessages.add(message);\n    producer.send(message.getBytes());\n  }\n  Message<byte[]> msg=null;\n  Set<String> messageSet=Sets.newHashSet();\n  List<MessageId> msgIds=Lists.newArrayList();\n  for (int i=0; i < totalMessages; i++) {\n    msg=consumer.receive(5,TimeUnit.SECONDS);\n    String receivedMessage=new String(msg.getData());\n    log.info(\"[{}] - Published [{}] Received message: [{}]\",i,publishedMessages.get(i),receivedMessage);\n    String expectedMessage=publishedMessages.get(i);\n    testMessageOrderAndDuplicates(messageSet,receivedMessage,expectedMessage);\n    msgIds.add(msg.getMessageId());\n  }\n  pulsar.getBrokerService().updateRates();\n  PublisherStats producerStats=topic.getStats(false,false).publishers.get(0);\n  assertTrue(producerStats.getChunkedMessageRate() > 0);\n  ManagedCursorImpl mcursor=(ManagedCursorImpl)topic.getManagedLedger().getCursors().iterator().next();\n  PositionImpl readPosition=(PositionImpl)mcursor.getReadPosition();\n  for (  MessageId msgId : msgIds) {\n    consumer.acknowledge(msgId);\n  }\n  retryStrategically((test) -> {\n    return mcursor.getMarkDeletedPosition().getNext().equals(readPosition);\n  }\n,5,200);\n  assertEquals(readPosition,mcursor.getMarkDeletedPosition().getNext());\n  assertEquals(readPosition.getEntryId(),((ConsumerImpl)consumer).getAvailablePermits());\n  consumer.close();\n  producer.close();\n  log.info(\"-- Exiting {} test --\",methodName);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 378,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 2793,
+        "startLineNumber" : 100,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 163,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test(dataProvider=\"ackReceiptEnabled\") public void testLargeMessage(boolean ackReceiptEnabled) throws Exception {\n  log.info(\"-- Starting {} test --\",methodName);\n  this.conf.setMaxMessageSize(5);\n  final int totalMessages=5;\n  final String topicName=\"persistent://my-property/my-ns/my-topic1\";\n  Consumer<byte[]> consumer=pulsarClient.newConsumer().topic(topicName).subscriptionName(\"my-subscriber-name\").isAckReceiptEnabled(ackReceiptEnabled).acknowledgmentGroupTime(0,TimeUnit.SECONDS).subscribe();\n  ProducerBuilder<byte[]> producerBuilder=pulsarClient.newProducer().topic(topicName);\n  Producer<byte[]> producer=producerBuilder.compressionType(CompressionType.LZ4).enableChunking(true).enableBatching(false).create();\n  PersistentTopic topic=(PersistentTopic)pulsar.getBrokerService().getTopicIfExists(topicName).get().get();\n  List<String> publishedMessages=Lists.newArrayList();\n  for (int i=0; i < totalMessages; i++) {\n    String message=createMessagePayload(i * 10);\n    publishedMessages.add(message);\n    producer.send(message.getBytes());\n  }\n  Message<byte[]> msg=null;\n  Set<String> messageSet=Sets.newHashSet();\n  List<MessageId> msgIds=Lists.newArrayList();\n  for (int i=0; i < totalMessages; i++) {\n    msg=consumer.receive(5,TimeUnit.SECONDS);\n    String receivedMessage=new String(msg.getData());\n    log.info(\"[{}] - Published [{}] Received message: [{}]\",i,publishedMessages.get(i),receivedMessage);\n    String expectedMessage=publishedMessages.get(i);\n    testMessageOrderAndDuplicates(messageSet,receivedMessage,expectedMessage);\n    msgIds.add(msg.getMessageId());\n  }\n  pulsar.getBrokerService().updateRates();\n  PublisherStats producerStats=topic.getStats(false,false).publishers.get(0);\n  assertTrue(producerStats.getChunkedMessageRate() > 0);\n  ManagedCursorImpl mcursor=(ManagedCursorImpl)topic.getManagedLedger().getCursors().iterator().next();\n  PositionImpl readPosition=(PositionImpl)mcursor.getReadPosition();\n  for (  MessageId msgId : msgIds) {\n    consumer.acknowledge(msgId);\n  }\n  retryStrategically((test) -> {\n    return mcursor.getMarkDeletedPosition().getNext().equals(readPosition);\n  }\n,5,200);\n  assertEquals(readPosition,mcursor.getMarkDeletedPosition().getNext());\n  assertEquals(readPosition.getEntryId(),((ConsumerImpl)consumer).getAvailablePermits());\n  consumer.close();\n  producer.close();\n  log.info(\"-- Exiting {} test --\",methodName);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 392,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 44,
+        "startLineNumber" : 130,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 130,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "msg=consumer.receive(5,TimeUnit.SECONDS);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    },
+    "tokenLength" : 5,
+    "type" : "org.apache.pulsar.client.api.Message<byte[]>"
+  } ],
+  "positionList" : [ {
+    "charLength" : 37,
+    "startLineNumber" : 130,
+    "startColumnNumber" : 18,
+    "endLineNumber" : 130,
+    "endColumnNumber" : 55
+  } ],
+  "layoutRelationDataList" : [ ]
+}

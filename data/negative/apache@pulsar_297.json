@@ -1,0 +1,113 @@
+{
+  "id" : 297,
+  "expression" : "pulsar",
+  "projectName" : "apache@pulsar",
+  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
+  "filePath" : "/pulsar-broker/src/main/java/org/apache/pulsar/broker/loadbalance/impl/BundleSplitterTask.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "pulsar",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 6,
+      "startLineNumber" : 66,
+      "startColumnNumber" : 42,
+      "endLineNumber" : 66,
+      "endColumnNumber" : 48
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 25,
+        "startLineNumber" : 66,
+        "startColumnNumber" : 42,
+        "endLineNumber" : 66,
+        "endColumnNumber" : 67
+      },
+      "nodeContext" : "pulsar.getConfiguration()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 32,
+        "startLineNumber" : 66,
+        "startColumnNumber" : 35,
+        "endLineNumber" : 66,
+        "endColumnNumber" : 67
+      },
+      "nodeContext" : "conf=pulsar.getConfiguration()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 60,
+        "startLineNumber" : 66,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 66,
+        "endColumnNumber" : 68
+      },
+      "nodeContext" : "final ServiceConfiguration conf=pulsar.getConfiguration();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2603,
+        "startLineNumber" : 64,
+        "startColumnNumber" : 95,
+        "endLineNumber" : 105,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  bundleCache.clear();\n  final ServiceConfiguration conf=pulsar.getConfiguration();\n  int maxBundleCount=conf.getLoadBalancerNamespaceMaximumBundles();\n  long maxBundleTopics=conf.getLoadBalancerNamespaceBundleMaxTopics();\n  long maxBundleSessions=conf.getLoadBalancerNamespaceBundleMaxSessions();\n  long maxBundleMsgRate=conf.getLoadBalancerNamespaceBundleMaxMsgRate();\n  long maxBundleBandwidth=conf.getLoadBalancerNamespaceBundleMaxBandwidthMbytes() * LoadManagerShared.MIBI;\n  loadData.getBrokerData().forEach((broker,brokerData) -> {\n    LocalBrokerData localData=brokerData.getLocalData();\n    for (    final Map.Entry<String,NamespaceBundleStats> entry : localData.getLastStats().entrySet()) {\n      final String bundle=entry.getKey();\n      final NamespaceBundleStats stats=entry.getValue();\n      double totalMessageRate=0;\n      double totalMessageThroughput=0;\n      if (loadData.getBundleData().containsKey(bundle)) {\n        final TimeAverageMessageData longTermData=loadData.getBundleData().get(bundle).getLongTermData();\n        totalMessageRate=longTermData.totalMsgRate();\n        totalMessageThroughput=longTermData.totalMsgThroughput();\n      }\n      if (stats.topics > maxBundleTopics || stats.consumerCount + stats.producerCount > maxBundleSessions || totalMessageRate > maxBundleMsgRate || totalMessageThroughput > maxBundleBandwidth) {\n        final String namespace=LoadManagerShared.getNamespaceNameFromBundleName(bundle);\n        try {\n          final int bundleCount=pulsar.getNamespaceService().getBundleCount(NamespaceName.get(namespace));\n          if (bundleCount < maxBundleCount) {\n            bundleCache.add(bundle);\n          }\n else {\n            log.warn(\"Could not split namespace bundle {} because namespace {} has too many bundles: {}\",bundle,namespace,bundleCount);\n          }\n        }\n catch (        Exception e) {\n          log.warn(\"Error while getting bundle count for namespace {}\",namespace,e);\n        }\n      }\n    }\n  }\n);\n  return bundleCache;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 239,
+      "astHeight" : 16
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3204,
+        "startLineNumber" : 52,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 105,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Determines which bundles should be split based on various thresholds.\n * @param loadData Load data to base decisions on (does not have benefit of preallocated data since this may not be the leader broker).\n * @param pulsar Service to use.\n * @return All bundles who have exceeded configured thresholds in number of topics, number of sessions, totalmessage rates, or total throughput.\n */\n@Override public Set<String> findBundlesToSplit(final LoadData loadData,final PulsarService pulsar){\n  bundleCache.clear();\n  final ServiceConfiguration conf=pulsar.getConfiguration();\n  int maxBundleCount=conf.getLoadBalancerNamespaceMaximumBundles();\n  long maxBundleTopics=conf.getLoadBalancerNamespaceBundleMaxTopics();\n  long maxBundleSessions=conf.getLoadBalancerNamespaceBundleMaxSessions();\n  long maxBundleMsgRate=conf.getLoadBalancerNamespaceBundleMaxMsgRate();\n  long maxBundleBandwidth=conf.getLoadBalancerNamespaceBundleMaxBandwidthMbytes() * LoadManagerShared.MIBI;\n  loadData.getBrokerData().forEach((broker,brokerData) -> {\n    LocalBrokerData localData=brokerData.getLocalData();\n    for (    final Map.Entry<String,NamespaceBundleStats> entry : localData.getLastStats().entrySet()) {\n      final String bundle=entry.getKey();\n      final NamespaceBundleStats stats=entry.getValue();\n      double totalMessageRate=0;\n      double totalMessageThroughput=0;\n      if (loadData.getBundleData().containsKey(bundle)) {\n        final TimeAverageMessageData longTermData=loadData.getBundleData().get(bundle).getLongTermData();\n        totalMessageRate=longTermData.totalMsgRate();\n        totalMessageThroughput=longTermData.totalMsgThroughput();\n      }\n      if (stats.topics > maxBundleTopics || stats.consumerCount + stats.producerCount > maxBundleSessions || totalMessageRate > maxBundleMsgRate || totalMessageThroughput > maxBundleBandwidth) {\n        final String namespace=LoadManagerShared.getNamespaceNameFromBundleName(bundle);\n        try {\n          final int bundleCount=pulsar.getNamespaceService().getBundleCount(NamespaceName.get(namespace));\n          if (bundleCount < maxBundleCount) {\n            bundleCache.add(bundle);\n          }\n else {\n            log.warn(\"Could not split namespace bundle {} because namespace {} has too many bundles: {}\",bundle,namespace,bundleCount);\n          }\n        }\n catch (        Exception e) {\n          log.warn(\"Error while getting bundle count for namespace {}\",namespace,e);\n        }\n      }\n    }\n  }\n);\n  return bundleCache;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 260,
+      "astHeight" : 17
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 60,
+        "startLineNumber" : 66,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 66,
+        "endColumnNumber" : 68
+      },
+      "nodeContext" : "final ServiceConfiguration conf=pulsar.getConfiguration();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.pulsar.broker.PulsarService"
+  } ],
+  "positionList" : [ {
+    "charLength" : 6,
+    "startLineNumber" : 66,
+    "startColumnNumber" : 42,
+    "endLineNumber" : 66,
+    "endColumnNumber" : 48
+  } ],
+  "layoutRelationDataList" : [ ]
+}

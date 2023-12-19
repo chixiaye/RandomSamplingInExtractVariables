@@ -1,0 +1,100 @@
+{
+  "id" : 336,
+  "expression" : "Lists.newArrayList(spanMap.values())",
+  "projectName" : "pinpoint-apm@pinpoint",
+  "commitID" : "cd51da314be7fe261d7dc630dd7c51ce6bb3cc0c",
+  "filePath" : "/web/src/main/java/com/navercorp/pinpoint/web/mapper/SpanMapper.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "Lists.newArrayList(spanMap.values())",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 36,
+      "startLineNumber" : 141,
+      "startColumnNumber" : 32,
+      "endLineNumber" : 141,
+      "endColumnNumber" : 68
+    },
+    "astNodeNumber" : 6,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 47,
+        "startLineNumber" : 141,
+        "startColumnNumber" : 21,
+        "endLineNumber" : 141,
+        "endColumnNumber" : 68
+      },
+      "nodeContext" : "spanList=Lists.newArrayList(spanMap.values())",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 61,
+        "startLineNumber" : 141,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 141,
+        "endColumnNumber" : 69
+      },
+      "nodeContext" : "List<SpanBo> spanList=Lists.newArrayList(spanMap.values());\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 14,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3605,
+        "startLineNumber" : 73,
+        "startColumnNumber" : 75,
+        "endLineNumber" : 149,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (result.isEmpty()) {\n    return Collections.emptyList();\n  }\n  byte[] rowKey=result.getRow();\n  final TransactionId transactionId=this.rowKeyDecoder.decodeRowKey(rowKey);\n  final Cell[] rawCells=result.rawCells();\n  Map<AgentKey,SpanBo> spanMap=new LinkedHashMap<>();\n  ListMultimap<AgentKey,SpanEventBo> spanEventBoListMap=ArrayListMultimap.create();\n  ListMultimap<Long,AnnotationBo> annotationBoListMap=ArrayListMultimap.create();\n  final SpanDecodingContext decodingContext=new SpanDecodingContext();\n  decodingContext.setTransactionId(transactionId);\n  for (  Cell cell : rawCells) {\n    decodingContext.setCollectorAcceptedTime(cell.getTimestamp());\n    if (CellUtil.matchingFamily(cell,HBaseTables.TRACES_CF_SPAN)) {\n      Buffer qualifierBuffer=new OffsetFixedBuffer(cell.getQualifierArray(),cell.getQualifierOffset(),cell.getQualifierLength());\n      Buffer valueBuffer=new OffsetFixedBuffer(cell.getValueArray(),cell.getValueOffset(),cell.getValueLength());\n      final SpanBo spanBo=spanDecoder.decodeSpanBo(qualifierBuffer,valueBuffer,decodingContext);\n      AgentKey agentKey=newAgentKey(spanBo);\n      spanMap.put(agentKey,spanBo);\n    }\n else     if (CellUtil.matchingFamily(cell,HBaseTables.TRACES_CF_TERMINALSPAN)) {\n      final Buffer qualifier=new OffsetFixedBuffer(cell.getQualifierArray(),cell.getQualifierOffset(),cell.getQualifierLength());\n      final Buffer valueBuffer=new OffsetFixedBuffer(cell.getValueArray(),cell.getValueOffset(),cell.getValueLength());\n      SpanEventBo spanEventBo=spanDecoder.decodeSpanEventBo(qualifier,valueBuffer,decodingContext);\n      AgentKey agentKey=newAgentKey(decodingContext);\n      spanEventBoListMap.put(agentKey,spanEventBo);\n    }\n else     if (CellUtil.matchingFamily(cell,HBaseTables.TRACES_CF_ANNOTATION)) {\n      final Buffer qualifier=new OffsetFixedBuffer(cell.getQualifierArray(),cell.getQualifierOffset(),cell.getQualifierLength());\n      final Buffer valueBuffer=new OffsetFixedBuffer(cell.getValueArray(),cell.getValueOffset(),cell.getValueLength());\n      List<AnnotationBo> annotationBoList=annotationBoDecoder.decode(qualifier,valueBuffer,decodingContext);\n      if (CollectionUtils.isNotEmpty(annotationBoList)) {\n        long spanId=decodingContext.getSpanId();\n        annotationBoListMap.putAll(spanId,annotationBoList);\n      }\n    }\n    spanDecoder.next(decodingContext);\n  }\n  decodingContext.finish();\n  for (  Map.Entry<AgentKey,SpanEventBo> spanBoEntry : spanEventBoListMap.entries()) {\n    final AgentKey agentKey=spanBoEntry.getKey();\n    SpanBo spanBo=spanMap.get(agentKey);\n    if (spanBo != null) {\n      SpanEventBo value=spanBoEntry.getValue();\n      spanBo.addSpanEvent(value);\n    }\n else {\n      if (logger.isInfoEnabled()) {\n        logger.info(\"Span not exist spanId:{} spanEvent:{}\",spanBoEntry.getKey(),spanBoEntry.getValue());\n      }\n    }\n  }\n  List<SpanBo> spanList=Lists.newArrayList(spanMap.values());\n  if (!annotationBoListMap.isEmpty()) {\n    addAnnotation(spanList,annotationBoListMap);\n  }\n  return spanList;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 432,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3690,
+        "startLineNumber" : 72,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 149,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public List<SpanBo> mapRow(Result result,int rowNum) throws Exception {\n  if (result.isEmpty()) {\n    return Collections.emptyList();\n  }\n  byte[] rowKey=result.getRow();\n  final TransactionId transactionId=this.rowKeyDecoder.decodeRowKey(rowKey);\n  final Cell[] rawCells=result.rawCells();\n  Map<AgentKey,SpanBo> spanMap=new LinkedHashMap<>();\n  ListMultimap<AgentKey,SpanEventBo> spanEventBoListMap=ArrayListMultimap.create();\n  ListMultimap<Long,AnnotationBo> annotationBoListMap=ArrayListMultimap.create();\n  final SpanDecodingContext decodingContext=new SpanDecodingContext();\n  decodingContext.setTransactionId(transactionId);\n  for (  Cell cell : rawCells) {\n    decodingContext.setCollectorAcceptedTime(cell.getTimestamp());\n    if (CellUtil.matchingFamily(cell,HBaseTables.TRACES_CF_SPAN)) {\n      Buffer qualifierBuffer=new OffsetFixedBuffer(cell.getQualifierArray(),cell.getQualifierOffset(),cell.getQualifierLength());\n      Buffer valueBuffer=new OffsetFixedBuffer(cell.getValueArray(),cell.getValueOffset(),cell.getValueLength());\n      final SpanBo spanBo=spanDecoder.decodeSpanBo(qualifierBuffer,valueBuffer,decodingContext);\n      AgentKey agentKey=newAgentKey(spanBo);\n      spanMap.put(agentKey,spanBo);\n    }\n else     if (CellUtil.matchingFamily(cell,HBaseTables.TRACES_CF_TERMINALSPAN)) {\n      final Buffer qualifier=new OffsetFixedBuffer(cell.getQualifierArray(),cell.getQualifierOffset(),cell.getQualifierLength());\n      final Buffer valueBuffer=new OffsetFixedBuffer(cell.getValueArray(),cell.getValueOffset(),cell.getValueLength());\n      SpanEventBo spanEventBo=spanDecoder.decodeSpanEventBo(qualifier,valueBuffer,decodingContext);\n      AgentKey agentKey=newAgentKey(decodingContext);\n      spanEventBoListMap.put(agentKey,spanEventBo);\n    }\n else     if (CellUtil.matchingFamily(cell,HBaseTables.TRACES_CF_ANNOTATION)) {\n      final Buffer qualifier=new OffsetFixedBuffer(cell.getQualifierArray(),cell.getQualifierOffset(),cell.getQualifierLength());\n      final Buffer valueBuffer=new OffsetFixedBuffer(cell.getValueArray(),cell.getValueOffset(),cell.getValueLength());\n      List<AnnotationBo> annotationBoList=annotationBoDecoder.decode(qualifier,valueBuffer,decodingContext);\n      if (CollectionUtils.isNotEmpty(annotationBoList)) {\n        long spanId=decodingContext.getSpanId();\n        annotationBoListMap.putAll(spanId,annotationBoList);\n      }\n    }\n    spanDecoder.next(decodingContext);\n  }\n  decodingContext.finish();\n  for (  Map.Entry<AgentKey,SpanEventBo> spanBoEntry : spanEventBoListMap.entries()) {\n    final AgentKey agentKey=spanBoEntry.getKey();\n    SpanBo spanBo=spanMap.get(agentKey);\n    if (spanBo != null) {\n      SpanEventBo value=spanBoEntry.getValue();\n      spanBo.addSpanEvent(value);\n    }\n else {\n      if (logger.isInfoEnabled()) {\n        logger.info(\"Span not exist spanId:{} spanEvent:{}\",spanBoEntry.getKey(),spanBoEntry.getValue());\n      }\n    }\n  }\n  List<SpanBo> spanList=Lists.newArrayList(spanMap.values());\n  if (!annotationBoListMap.isEmpty()) {\n    addAnnotation(spanList,annotationBoListMap);\n  }\n  return spanList;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 451,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 61,
+        "startLineNumber" : 141,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 141,
+        "endColumnNumber" : 69
+      },
+      "nodeContext" : "List<SpanBo> spanList=Lists.newArrayList(spanMap.values());\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 14,
+      "astHeight" : 5
+    },
+    "tokenLength" : 4,
+    "type" : "java.util.ArrayList<com.navercorp.pinpoint.common.server.bo.SpanBo>"
+  } ],
+  "positionList" : [ {
+    "charLength" : 36,
+    "startLineNumber" : 141,
+    "startColumnNumber" : 32,
+    "endLineNumber" : 141,
+    "endColumnNumber" : 68
+  } ],
+  "layoutRelationDataList" : [ ]
+}

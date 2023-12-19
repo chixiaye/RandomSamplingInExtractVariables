@@ -1,0 +1,126 @@
+{
+  "id" : 264,
+  "expression" : "new DatagramSocket()",
+  "projectName" : "apache@zookeeper",
+  "commitID" : "c6639c9842973a7954c8baa412d6825cb833d51f",
+  "filePath" : "/src/java/main/org/apache/zookeeper/server/quorum/LeaderElection.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "new DatagramSocket()",
+    "nodeType" : "ClassInstanceCreation",
+    "nodePosition" : {
+      "charLength" : 20,
+      "startLineNumber" : 121,
+      "startColumnNumber" : 16,
+      "endLineNumber" : 121,
+      "endColumnNumber" : 36
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 24,
+        "startLineNumber" : 121,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 121,
+        "endColumnNumber" : 36
+      },
+      "nodeContext" : "s=new DatagramSocket()",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 5,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 25,
+        "startLineNumber" : 121,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 121,
+        "endColumnNumber" : 37
+      },
+      "nodeContext" : "s=new DatagramSocket();\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 82,
+        "startLineNumber" : 120,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  s=new DatagramSocket();\n  s.setSoTimeout(200);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 12,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 187,
+        "startLineNumber" : 120,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 126,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "try {\n  s=new DatagramSocket();\n  s.setSoTimeout(200);\n}\n catch (SocketException e1) {\n  e1.printStackTrace();\n  System.exit(4);\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 28,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3758,
+        "startLineNumber" : 111,
+        "startColumnNumber" : 60,
+        "endLineNumber" : 192,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  self.setCurrentVote(new Vote(self.getId(),self.getLastLoggedZxid()));\n  byte requestBytes[]=new byte[4];\n  ByteBuffer requestBuffer=ByteBuffer.wrap(requestBytes);\n  byte responseBytes[]=new byte[28];\n  ByteBuffer responseBuffer=ByteBuffer.wrap(responseBytes);\n  DatagramSocket s=null;\n  try {\n    s=new DatagramSocket();\n    s.setSoTimeout(200);\n  }\n catch (  SocketException e1) {\n    e1.printStackTrace();\n    System.exit(4);\n  }\n  DatagramPacket requestPacket=new DatagramPacket(requestBytes,requestBytes.length);\n  DatagramPacket responsePacket=new DatagramPacket(responseBytes,responseBytes.length);\n  HashMap<InetSocketAddress,Vote> votes=new HashMap<InetSocketAddress,Vote>(self.quorumPeers.size());\n  int xid=new Random().nextInt();\n  while (self.running) {\n    votes.clear();\n    requestBuffer.clear();\n    requestBuffer.putInt(xid);\n    requestPacket.setLength(4);\n    HashSet<Long> heardFrom=new HashSet<Long>();\n    for (    QuorumServer server : self.quorumPeers.values()) {\n      requestPacket.setSocketAddress(server.addr);\n      LOG.info(\"Server address: \" + server.addr);\n      try {\n        s.send(requestPacket);\n        responsePacket.setLength(responseBytes.length);\n        s.receive(responsePacket);\n        if (responsePacket.getLength() != responseBytes.length) {\n          LOG.error(\"Got a short response: \" + responsePacket.getLength());\n          continue;\n        }\n        responseBuffer.clear();\n        int recvedXid=responseBuffer.getInt();\n        if (recvedXid != xid) {\n          LOG.error(\"Got bad xid: expected \" + xid + \" got \"+ recvedXid);\n          continue;\n        }\n        long peerId=responseBuffer.getLong();\n        heardFrom.add(peerId);\n        Vote vote=new Vote(responseBuffer.getLong(),responseBuffer.getLong());\n        InetSocketAddress addr=(InetSocketAddress)responsePacket.getSocketAddress();\n        votes.put(addr,vote);\n      }\n catch (      IOException e) {\n        LOG.warn(\"Ignoring exception while looking for leader\",e);\n      }\n    }\n    ElectionResult result=countVotes(votes,heardFrom);\n    if (result.winner.id >= 0) {\n      self.setCurrentVote(result.vote);\n      if (result.winningCount > (self.quorumPeers.size() / 2)) {\n        self.setCurrentVote(result.winner);\n        s.close();\n        Vote current=self.getCurrentVote();\n        self.setPeerState((current.id == self.getId()) ? ServerState.LEADING : ServerState.FOLLOWING);\n        if (self.getPeerState() == ServerState.FOLLOWING) {\n          Thread.sleep(100);\n        }\n        return current;\n      }\n    }\n    Thread.sleep(1000);\n  }\n  return null;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 425,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3814,
+        "startLineNumber" : 111,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 192,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "public Vote lookForLeader() throws InterruptedException {\n  self.setCurrentVote(new Vote(self.getId(),self.getLastLoggedZxid()));\n  byte requestBytes[]=new byte[4];\n  ByteBuffer requestBuffer=ByteBuffer.wrap(requestBytes);\n  byte responseBytes[]=new byte[28];\n  ByteBuffer responseBuffer=ByteBuffer.wrap(responseBytes);\n  DatagramSocket s=null;\n  try {\n    s=new DatagramSocket();\n    s.setSoTimeout(200);\n  }\n catch (  SocketException e1) {\n    e1.printStackTrace();\n    System.exit(4);\n  }\n  DatagramPacket requestPacket=new DatagramPacket(requestBytes,requestBytes.length);\n  DatagramPacket responsePacket=new DatagramPacket(responseBytes,responseBytes.length);\n  HashMap<InetSocketAddress,Vote> votes=new HashMap<InetSocketAddress,Vote>(self.quorumPeers.size());\n  int xid=new Random().nextInt();\n  while (self.running) {\n    votes.clear();\n    requestBuffer.clear();\n    requestBuffer.putInt(xid);\n    requestPacket.setLength(4);\n    HashSet<Long> heardFrom=new HashSet<Long>();\n    for (    QuorumServer server : self.quorumPeers.values()) {\n      requestPacket.setSocketAddress(server.addr);\n      LOG.info(\"Server address: \" + server.addr);\n      try {\n        s.send(requestPacket);\n        responsePacket.setLength(responseBytes.length);\n        s.receive(responsePacket);\n        if (responsePacket.getLength() != responseBytes.length) {\n          LOG.error(\"Got a short response: \" + responsePacket.getLength());\n          continue;\n        }\n        responseBuffer.clear();\n        int recvedXid=responseBuffer.getInt();\n        if (recvedXid != xid) {\n          LOG.error(\"Got bad xid: expected \" + xid + \" got \"+ recvedXid);\n          continue;\n        }\n        long peerId=responseBuffer.getLong();\n        heardFrom.add(peerId);\n        Vote vote=new Vote(responseBuffer.getLong(),responseBuffer.getLong());\n        InetSocketAddress addr=(InetSocketAddress)responsePacket.getSocketAddress();\n        votes.put(addr,vote);\n      }\n catch (      IOException e) {\n        LOG.warn(\"Ignoring exception while looking for leader\",e);\n      }\n    }\n    ElectionResult result=countVotes(votes,heardFrom);\n    if (result.winner.id >= 0) {\n      self.setCurrentVote(result.vote);\n      if (result.winningCount > (self.quorumPeers.size() / 2)) {\n        self.setCurrentVote(result.winner);\n        s.close();\n        Vote current=self.getCurrentVote();\n        self.setPeerState((current.id == self.getId()) ? ServerState.LEADING : ServerState.FOLLOWING);\n        if (self.getPeerState() == ServerState.FOLLOWING) {\n          Thread.sleep(100);\n        }\n        return current;\n      }\n    }\n    Thread.sleep(1000);\n  }\n  return null;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 432,
+      "astHeight" : 15
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 25,
+        "startLineNumber" : 121,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 121,
+        "endColumnNumber" : 37
+      },
+      "nodeContext" : "s=new DatagramSocket();\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "java.net.DatagramSocket"
+  } ],
+  "positionList" : [ {
+    "charLength" : 20,
+    "startLineNumber" : 121,
+    "startColumnNumber" : 16,
+    "endLineNumber" : 121,
+    "endColumnNumber" : 36
+  } ],
+  "layoutRelationDataList" : [ ]
+}

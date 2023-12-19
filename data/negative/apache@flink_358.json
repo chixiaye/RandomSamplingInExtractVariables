@@ -1,0 +1,139 @@
+{
+  "id" : 358,
+  "expression" : "i < 256 && fis.available() > 0",
+  "projectName" : "apache@flink",
+  "commitID" : "f8cb19e70ca7da6423dfb01b97e05c4d520c9fde",
+  "filePath" : "/flink-runtime/src/test/java/org/apache/flink/runtime/execution/librarycache/BlobLibraryCacheRecoveryITCase.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "i < 256 && fis.available() > 0",
+    "nodeType" : "InfixExpression",
+    "nodePosition" : {
+      "charLength" : 30,
+      "startLineNumber" : 160,
+      "startColumnNumber" : 32,
+      "endLineNumber" : 160,
+      "endColumnNumber" : 62
+    },
+    "astNodeNumber" : 9,
+    "astHeight" : 4,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 139,
+        "startLineNumber" : 160,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 162,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "for (int i=0; i < 256 && fis.available() > 0; i++) {\n  assertEquals(expected2[i],(byte)fis.read());\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 29,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 222,
+        "startLineNumber" : 159,
+        "startColumnNumber" : 63,
+        "endLineNumber" : 165,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  for (int i=0; i < 256 && fis.available() > 0; i++) {\n    assertEquals(expected2[i],(byte)fis.read());\n  }\n  assertEquals(0,fis.available());\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 37,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 273,
+        "startLineNumber" : 159,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 165,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "try (FileInputStream fis=new FileInputStream(f)){\n  for (int i=0; i < 256 && fis.available() > 0; i++) {\n    assertEquals(expected2[i],(byte)fis.read());\n  }\n  assertEquals(0,fis.available());\n}\n ",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 47,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 4243,
+        "startLineNumber" : 78,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 180,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  blobStoreService=BlobUtils.createBlobStoreFromConfig(config);\n  final BlobLibraryCacheManager.ClassLoaderFactory classLoaderFactory=BlobLibraryCacheManager.defaultClassLoaderFactory(FlinkUserCodeClassLoaders.ResolveOrder.CHILD_FIRST,new String[0],null,true);\n  for (int i=0; i < server.length; i++) {\n    server[i]=new BlobServer(config,temporaryFolder.newFolder(),blobStoreService);\n    server[i].start();\n    serverAddress[i]=new InetSocketAddress(\"localhost\",server[i].getPort());\n    libServer[i]=new BlobLibraryCacheManager(server[i],classLoaderFactory);\n  }\n  byte[] expected=new byte[1024];\n  rand.nextBytes(expected);\n  ArrayList<PermanentBlobKey> keys=new ArrayList<>(2);\n  JobID jobId=new JobID();\n  keys.add(server[0].putPermanent(jobId,expected));\n  byte[] expected2=Arrays.copyOfRange(expected,32,288);\n  keys.add(server[0].putPermanent(jobId,expected2));\n  cache=new PermanentBlobCache(config,temporaryFolder.newFolder(),blobStoreService,serverAddress[0]);\n  final LibraryCacheManager.ClassLoaderLease classLoaderLease=libServer[0].registerClassLoaderLease(jobId);\n  classLoaderLease.getOrResolveClassLoader(keys,Collections.emptyList());\n  File f=cache.getFile(jobId,keys.get(0));\n  assertEquals(expected.length,f.length());\n  try (FileInputStream fis=new FileInputStream(f)){\n    for (int i=0; i < expected.length && fis.available() > 0; i++) {\n      assertEquals(expected[i],(byte)fis.read());\n    }\n    assertEquals(0,fis.available());\n  }\n   cache.close();\n  cache=new PermanentBlobCache(config,temporaryFolder.newFolder(),blobStoreService,serverAddress[1]);\n  f=cache.getFile(jobId,keys.get(0));\n  assertEquals(expected.length,f.length());\n  try (FileInputStream fis=new FileInputStream(f)){\n    for (int i=0; i < expected.length && fis.available() > 0; i++) {\n      assertEquals(expected[i],(byte)fis.read());\n    }\n    assertEquals(0,fis.available());\n  }\n   f=cache.getFile(jobId,keys.get(1));\n  assertEquals(expected2.length,f.length());\n  try (FileInputStream fis=new FileInputStream(f)){\n    for (int i=0; i < 256 && fis.available() > 0; i++) {\n      assertEquals(expected2[i],(byte)fis.read());\n    }\n    assertEquals(0,fis.available());\n  }\n   server[1].globalCleanupAsync(jobId,executorService).join();\n  final String clusterId=config.getString(HighAvailabilityOptions.HA_CLUSTER_ID);\n  String haBlobStorePath=config.getString(HighAvailabilityOptions.HA_STORAGE_PATH);\n  File haBlobStoreDir=new File(haBlobStorePath,clusterId);\n  File[] recoveryFiles=haBlobStoreDir.listFiles();\n  assertNotNull(\"HA storage directory does not exist\",recoveryFiles);\n  assertEquals(\"Unclean state backend: \" + Arrays.toString(recoveryFiles),0,recoveryFiles.length);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 494,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 4842,
+        "startLineNumber" : 78,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 201,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "try {\n  blobStoreService=BlobUtils.createBlobStoreFromConfig(config);\n  final BlobLibraryCacheManager.ClassLoaderFactory classLoaderFactory=BlobLibraryCacheManager.defaultClassLoaderFactory(FlinkUserCodeClassLoaders.ResolveOrder.CHILD_FIRST,new String[0],null,true);\n  for (int i=0; i < server.length; i++) {\n    server[i]=new BlobServer(config,temporaryFolder.newFolder(),blobStoreService);\n    server[i].start();\n    serverAddress[i]=new InetSocketAddress(\"localhost\",server[i].getPort());\n    libServer[i]=new BlobLibraryCacheManager(server[i],classLoaderFactory);\n  }\n  byte[] expected=new byte[1024];\n  rand.nextBytes(expected);\n  ArrayList<PermanentBlobKey> keys=new ArrayList<>(2);\n  JobID jobId=new JobID();\n  keys.add(server[0].putPermanent(jobId,expected));\n  byte[] expected2=Arrays.copyOfRange(expected,32,288);\n  keys.add(server[0].putPermanent(jobId,expected2));\n  cache=new PermanentBlobCache(config,temporaryFolder.newFolder(),blobStoreService,serverAddress[0]);\n  final LibraryCacheManager.ClassLoaderLease classLoaderLease=libServer[0].registerClassLoaderLease(jobId);\n  classLoaderLease.getOrResolveClassLoader(keys,Collections.emptyList());\n  File f=cache.getFile(jobId,keys.get(0));\n  assertEquals(expected.length,f.length());\n  try (FileInputStream fis=new FileInputStream(f)){\n    for (int i=0; i < expected.length && fis.available() > 0; i++) {\n      assertEquals(expected[i],(byte)fis.read());\n    }\n    assertEquals(0,fis.available());\n  }\n   cache.close();\n  cache=new PermanentBlobCache(config,temporaryFolder.newFolder(),blobStoreService,serverAddress[1]);\n  f=cache.getFile(jobId,keys.get(0));\n  assertEquals(expected.length,f.length());\n  try (FileInputStream fis=new FileInputStream(f)){\n    for (int i=0; i < expected.length && fis.available() > 0; i++) {\n      assertEquals(expected[i],(byte)fis.read());\n    }\n    assertEquals(0,fis.available());\n  }\n   f=cache.getFile(jobId,keys.get(1));\n  assertEquals(expected2.length,f.length());\n  try (FileInputStream fis=new FileInputStream(f)){\n    for (int i=0; i < 256 && fis.available() > 0; i++) {\n      assertEquals(expected2[i],(byte)fis.read());\n    }\n    assertEquals(0,fis.available());\n  }\n   server[1].globalCleanupAsync(jobId,executorService).join();\n  final String clusterId=config.getString(HighAvailabilityOptions.HA_CLUSTER_ID);\n  String haBlobStorePath=config.getString(HighAvailabilityOptions.HA_STORAGE_PATH);\n  File haBlobStoreDir=new File(haBlobStorePath,clusterId);\n  File[] recoveryFiles=haBlobStoreDir.listFiles();\n  assertNotNull(\"HA storage directory does not exist\",recoveryFiles);\n  assertEquals(\"Unclean state backend: \" + Arrays.toString(recoveryFiles),0,recoveryFiles.length);\n}\n  finally {\n  assertThat(executorService.shutdownNow(),IsEmptyCollection.empty());\n  for (  BlobLibraryCacheManager s : libServer) {\n    if (s != null) {\n      s.shutdown();\n    }\n  }\n  for (  BlobServer s : server) {\n    if (s != null) {\n      s.close();\n    }\n  }\n  if (cache != null) {\n    cache.close();\n  }\n  if (blobStoreService != null) {\n    blobStoreService.closeAndCleanupAllData();\n  }\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 555,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5609,
+        "startLineNumber" : 61,
+        "startColumnNumber" : 67,
+        "endLineNumber" : 202,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  Random rand=new Random();\n  BlobServer[] server=new BlobServer[2];\n  InetSocketAddress[] serverAddress=new InetSocketAddress[2];\n  BlobLibraryCacheManager[] libServer=new BlobLibraryCacheManager[2];\n  PermanentBlobCache cache=null;\n  BlobStoreService blobStoreService=null;\n  Configuration config=new Configuration();\n  config.setString(HighAvailabilityOptions.HA_MODE,\"ZOOKEEPER\");\n  config.setString(HighAvailabilityOptions.HA_STORAGE_PATH,temporaryFolder.newFolder().getAbsolutePath());\n  config.setLong(BlobServerOptions.CLEANUP_INTERVAL,3_600L);\n  final ExecutorService executorService=Executors.newSingleThreadExecutor();\n  try {\n    blobStoreService=BlobUtils.createBlobStoreFromConfig(config);\n    final BlobLibraryCacheManager.ClassLoaderFactory classLoaderFactory=BlobLibraryCacheManager.defaultClassLoaderFactory(FlinkUserCodeClassLoaders.ResolveOrder.CHILD_FIRST,new String[0],null,true);\n    for (int i=0; i < server.length; i++) {\n      server[i]=new BlobServer(config,temporaryFolder.newFolder(),blobStoreService);\n      server[i].start();\n      serverAddress[i]=new InetSocketAddress(\"localhost\",server[i].getPort());\n      libServer[i]=new BlobLibraryCacheManager(server[i],classLoaderFactory);\n    }\n    byte[] expected=new byte[1024];\n    rand.nextBytes(expected);\n    ArrayList<PermanentBlobKey> keys=new ArrayList<>(2);\n    JobID jobId=new JobID();\n    keys.add(server[0].putPermanent(jobId,expected));\n    byte[] expected2=Arrays.copyOfRange(expected,32,288);\n    keys.add(server[0].putPermanent(jobId,expected2));\n    cache=new PermanentBlobCache(config,temporaryFolder.newFolder(),blobStoreService,serverAddress[0]);\n    final LibraryCacheManager.ClassLoaderLease classLoaderLease=libServer[0].registerClassLoaderLease(jobId);\n    classLoaderLease.getOrResolveClassLoader(keys,Collections.emptyList());\n    File f=cache.getFile(jobId,keys.get(0));\n    assertEquals(expected.length,f.length());\n    try (FileInputStream fis=new FileInputStream(f)){\n      for (int i=0; i < expected.length && fis.available() > 0; i++) {\n        assertEquals(expected[i],(byte)fis.read());\n      }\n      assertEquals(0,fis.available());\n    }\n     cache.close();\n    cache=new PermanentBlobCache(config,temporaryFolder.newFolder(),blobStoreService,serverAddress[1]);\n    f=cache.getFile(jobId,keys.get(0));\n    assertEquals(expected.length,f.length());\n    try (FileInputStream fis=new FileInputStream(f)){\n      for (int i=0; i < expected.length && fis.available() > 0; i++) {\n        assertEquals(expected[i],(byte)fis.read());\n      }\n      assertEquals(0,fis.available());\n    }\n     f=cache.getFile(jobId,keys.get(1));\n    assertEquals(expected2.length,f.length());\n    try (FileInputStream fis=new FileInputStream(f)){\n      for (int i=0; i < 256 && fis.available() > 0; i++) {\n        assertEquals(expected2[i],(byte)fis.read());\n      }\n      assertEquals(0,fis.available());\n    }\n     server[1].globalCleanupAsync(jobId,executorService).join();\n    final String clusterId=config.getString(HighAvailabilityOptions.HA_CLUSTER_ID);\n    String haBlobStorePath=config.getString(HighAvailabilityOptions.HA_STORAGE_PATH);\n    File haBlobStoreDir=new File(haBlobStorePath,clusterId);\n    File[] recoveryFiles=haBlobStoreDir.listFiles();\n    assertNotNull(\"HA storage directory does not exist\",recoveryFiles);\n    assertEquals(\"Unclean state backend: \" + Arrays.toString(recoveryFiles),0,recoveryFiles.length);\n  }\n  finally {\n    assertThat(executorService.shutdownNow(),IsEmptyCollection.empty());\n    for (    BlobLibraryCacheManager s : libServer) {\n      if (s != null) {\n        s.shutdown();\n      }\n    }\n    for (    BlobServer s : server) {\n      if (s != null) {\n        s.close();\n      }\n    }\n    if (cache != null) {\n      cache.close();\n    }\n    if (blobStoreService != null) {\n      blobStoreService.closeAndCleanupAllData();\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 660,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 5848,
+        "startLineNumber" : 56,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 202,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Tests that with  {@link HighAvailabilityMode#ZOOKEEPER} distributed JARs are recoverable fromany participating BlobLibraryCacheManager.\n */\n@Test public void testRecoveryRegisterAndDownload() throws Exception {\n  Random rand=new Random();\n  BlobServer[] server=new BlobServer[2];\n  InetSocketAddress[] serverAddress=new InetSocketAddress[2];\n  BlobLibraryCacheManager[] libServer=new BlobLibraryCacheManager[2];\n  PermanentBlobCache cache=null;\n  BlobStoreService blobStoreService=null;\n  Configuration config=new Configuration();\n  config.setString(HighAvailabilityOptions.HA_MODE,\"ZOOKEEPER\");\n  config.setString(HighAvailabilityOptions.HA_STORAGE_PATH,temporaryFolder.newFolder().getAbsolutePath());\n  config.setLong(BlobServerOptions.CLEANUP_INTERVAL,3_600L);\n  final ExecutorService executorService=Executors.newSingleThreadExecutor();\n  try {\n    blobStoreService=BlobUtils.createBlobStoreFromConfig(config);\n    final BlobLibraryCacheManager.ClassLoaderFactory classLoaderFactory=BlobLibraryCacheManager.defaultClassLoaderFactory(FlinkUserCodeClassLoaders.ResolveOrder.CHILD_FIRST,new String[0],null,true);\n    for (int i=0; i < server.length; i++) {\n      server[i]=new BlobServer(config,temporaryFolder.newFolder(),blobStoreService);\n      server[i].start();\n      serverAddress[i]=new InetSocketAddress(\"localhost\",server[i].getPort());\n      libServer[i]=new BlobLibraryCacheManager(server[i],classLoaderFactory);\n    }\n    byte[] expected=new byte[1024];\n    rand.nextBytes(expected);\n    ArrayList<PermanentBlobKey> keys=new ArrayList<>(2);\n    JobID jobId=new JobID();\n    keys.add(server[0].putPermanent(jobId,expected));\n    byte[] expected2=Arrays.copyOfRange(expected,32,288);\n    keys.add(server[0].putPermanent(jobId,expected2));\n    cache=new PermanentBlobCache(config,temporaryFolder.newFolder(),blobStoreService,serverAddress[0]);\n    final LibraryCacheManager.ClassLoaderLease classLoaderLease=libServer[0].registerClassLoaderLease(jobId);\n    classLoaderLease.getOrResolveClassLoader(keys,Collections.emptyList());\n    File f=cache.getFile(jobId,keys.get(0));\n    assertEquals(expected.length,f.length());\n    try (FileInputStream fis=new FileInputStream(f)){\n      for (int i=0; i < expected.length && fis.available() > 0; i++) {\n        assertEquals(expected[i],(byte)fis.read());\n      }\n      assertEquals(0,fis.available());\n    }\n     cache.close();\n    cache=new PermanentBlobCache(config,temporaryFolder.newFolder(),blobStoreService,serverAddress[1]);\n    f=cache.getFile(jobId,keys.get(0));\n    assertEquals(expected.length,f.length());\n    try (FileInputStream fis=new FileInputStream(f)){\n      for (int i=0; i < expected.length && fis.available() > 0; i++) {\n        assertEquals(expected[i],(byte)fis.read());\n      }\n      assertEquals(0,fis.available());\n    }\n     f=cache.getFile(jobId,keys.get(1));\n    assertEquals(expected2.length,f.length());\n    try (FileInputStream fis=new FileInputStream(f)){\n      for (int i=0; i < 256 && fis.available() > 0; i++) {\n        assertEquals(expected2[i],(byte)fis.read());\n      }\n      assertEquals(0,fis.available());\n    }\n     server[1].globalCleanupAsync(jobId,executorService).join();\n    final String clusterId=config.getString(HighAvailabilityOptions.HA_CLUSTER_ID);\n    String haBlobStorePath=config.getString(HighAvailabilityOptions.HA_STORAGE_PATH);\n    File haBlobStoreDir=new File(haBlobStorePath,clusterId);\n    File[] recoveryFiles=haBlobStoreDir.listFiles();\n    assertNotNull(\"HA storage directory does not exist\",recoveryFiles);\n    assertEquals(\"Unclean state backend: \" + Arrays.toString(recoveryFiles),0,recoveryFiles.length);\n  }\n  finally {\n    assertThat(executorService.shutdownNow(),IsEmptyCollection.empty());\n    for (    BlobLibraryCacheManager s : libServer) {\n      if (s != null) {\n        s.shutdown();\n      }\n    }\n    for (    BlobServer s : server) {\n      if (s != null) {\n        s.close();\n      }\n    }\n    if (cache != null) {\n      cache.close();\n    }\n    if (blobStoreService != null) {\n      blobStoreService.closeAndCleanupAllData();\n    }\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 669,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 139,
+        "startLineNumber" : 160,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 162,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "for (int i=0; i < 256 && fis.available() > 0; i++) {\n  assertEquals(expected2[i],(byte)fis.read());\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 29,
+      "astHeight" : 7
+    },
+    "tokenLength" : 8,
+    "type" : "boolean"
+  } ],
+  "positionList" : [ {
+    "charLength" : 30,
+    "startLineNumber" : 160,
+    "startColumnNumber" : 32,
+    "endLineNumber" : 160,
+    "endColumnNumber" : 62
+  } ],
+  "layoutRelationDataList" : [ ]
+}

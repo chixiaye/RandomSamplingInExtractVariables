@@ -1,0 +1,126 @@
+{
+  "id" : 102,
+  "expression" : "brokerUrl.toString()",
+  "projectName" : "apache@pulsar",
+  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
+  "filePath" : "/pulsar-proxy/src/test/java/org/apache/pulsar/proxy/server/ProxyWithJwtAuthorizationTest.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "brokerUrl.toString()",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 20,
+      "startLineNumber" : 146,
+      "startColumnNumber" : 95,
+      "endLineNumber" : 146,
+      "endColumnNumber" : 115
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 54,
+        "startLineNumber" : 146,
+        "startColumnNumber" : 62,
+        "endLineNumber" : 146,
+        "endColumnNumber" : 116
+      },
+      "nodeContext" : "ClusterData.builder().serviceUrl(brokerUrl.toString())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 8,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 62,
+        "startLineNumber" : 146,
+        "startColumnNumber" : 62,
+        "endLineNumber" : 146,
+        "endColumnNumber" : 124
+      },
+      "nodeContext" : "ClusterData.builder().serviceUrl(brokerUrl.toString()).build()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 117,
+        "startLineNumber" : 146,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 146,
+        "endColumnNumber" : 125
+      },
+      "nodeContext" : "admin.clusters().createCluster(\"proxy-authorization\",ClusterData.builder().serviceUrl(brokerUrl.toString()).build())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 16,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 118,
+        "startLineNumber" : 146,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 146,
+        "endColumnNumber" : 126
+      },
+      "nodeContext" : "admin.clusters().createCluster(\"proxy-authorization\",ClusterData.builder().serviceUrl(brokerUrl.toString()).build());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 17,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3213,
+        "startLineNumber" : 137,
+        "startColumnNumber" : 58,
+        "endLineNumber" : 203,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  log.info(\"-- Starting {} test --\",methodName);\n  startProxy();\n  createAdminClient();\n  PulsarClient proxyClient=createPulsarClient(proxyService.getServiceUrl(),PulsarClient.builder());\n  String namespaceName=\"my-property/proxy-authorization/my-ns\";\n  admin.clusters().createCluster(\"proxy-authorization\",ClusterData.builder().serviceUrl(brokerUrl.toString()).build());\n  admin.tenants().createTenant(\"my-property\",new TenantInfoImpl(Sets.newHashSet(\"appid1\",\"appid2\"),Sets.newHashSet(\"proxy-authorization\")));\n  admin.namespaces().createNamespace(namespaceName);\n  Consumer<byte[]> consumer;\n  try {\n    consumer=proxyClient.newConsumer().topic(\"persistent://my-property/proxy-authorization/my-ns/my-topic1\").subscriptionName(\"my-subscriber-name\").subscribe();\n    Assert.fail(\"should have failed with authorization error\");\n  }\n catch (  Exception ex) {\n    admin.namespaces().grantPermissionOnNamespace(namespaceName,CLIENT_ROLE,Sets.newHashSet(AuthAction.consume));\n    log.info(\"-- Admin permissions {} ---\",admin.namespaces().getPermissions(namespaceName));\n    consumer=proxyClient.newConsumer().topic(\"persistent://my-property/proxy-authorization/my-ns/my-topic1\").subscriptionName(\"my-subscriber-name\").subscribe();\n  }\n  Producer<byte[]> producer;\n  try {\n    producer=proxyClient.newProducer(Schema.BYTES).topic(\"persistent://my-property/proxy-authorization/my-ns/my-topic1\").create();\n    Assert.fail(\"should have failed with authorization error\");\n  }\n catch (  Exception ex) {\n    admin.namespaces().grantPermissionOnNamespace(namespaceName,CLIENT_ROLE,Sets.newHashSet(AuthAction.produce,AuthAction.consume));\n    log.info(\"-- Admin permissions {} ---\",admin.namespaces().getPermissions(namespaceName));\n    producer=proxyClient.newProducer(Schema.BYTES).topic(\"persistent://my-property/proxy-authorization/my-ns/my-topic1\").create();\n  }\n  final int msgs=10;\n  for (int i=0; i < msgs; i++) {\n    String message=\"my-message-\" + i;\n    producer.send(message.getBytes());\n  }\n  Message<byte[]> msg=null;\n  Set<String> messageSet=Sets.newHashSet();\n  int count=0;\n  for (int i=0; i < 10; i++) {\n    msg=consumer.receive(5,TimeUnit.SECONDS);\n    String receivedMessage=new String(msg.getData());\n    log.debug(\"Received message: [{}]\",receivedMessage);\n    String expectedMessage=\"my-message-\" + i;\n    testMessageOrderAndDuplicates(messageSet,receivedMessage,expectedMessage);\n    count++;\n  }\n  Assert.assertEquals(msgs,count);\n  consumer.acknowledgeCumulative(msg);\n  consumer.close();\n  log.info(\"-- Exiting {} test --\",methodName);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 364,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3742,
+        "startLineNumber" : 124,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 203,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * <pre> It verifies jwt + Authentication + Authorization (client -> proxy -> broker). 1. client connects to proxy over jwt and pass auth-data 2. proxy authenticate client and retrieve client-role and send it to broker as originalPrincipal over jwt 3. client creates producer/consumer via proxy 4. broker authorize producer/consumer create request using originalPrincipal </pre>\n */\n@Test public void testProxyAuthorization() throws Exception {\n  log.info(\"-- Starting {} test --\",methodName);\n  startProxy();\n  createAdminClient();\n  PulsarClient proxyClient=createPulsarClient(proxyService.getServiceUrl(),PulsarClient.builder());\n  String namespaceName=\"my-property/proxy-authorization/my-ns\";\n  admin.clusters().createCluster(\"proxy-authorization\",ClusterData.builder().serviceUrl(brokerUrl.toString()).build());\n  admin.tenants().createTenant(\"my-property\",new TenantInfoImpl(Sets.newHashSet(\"appid1\",\"appid2\"),Sets.newHashSet(\"proxy-authorization\")));\n  admin.namespaces().createNamespace(namespaceName);\n  Consumer<byte[]> consumer;\n  try {\n    consumer=proxyClient.newConsumer().topic(\"persistent://my-property/proxy-authorization/my-ns/my-topic1\").subscriptionName(\"my-subscriber-name\").subscribe();\n    Assert.fail(\"should have failed with authorization error\");\n  }\n catch (  Exception ex) {\n    admin.namespaces().grantPermissionOnNamespace(namespaceName,CLIENT_ROLE,Sets.newHashSet(AuthAction.consume));\n    log.info(\"-- Admin permissions {} ---\",admin.namespaces().getPermissions(namespaceName));\n    consumer=proxyClient.newConsumer().topic(\"persistent://my-property/proxy-authorization/my-ns/my-topic1\").subscriptionName(\"my-subscriber-name\").subscribe();\n  }\n  Producer<byte[]> producer;\n  try {\n    producer=proxyClient.newProducer(Schema.BYTES).topic(\"persistent://my-property/proxy-authorization/my-ns/my-topic1\").create();\n    Assert.fail(\"should have failed with authorization error\");\n  }\n catch (  Exception ex) {\n    admin.namespaces().grantPermissionOnNamespace(namespaceName,CLIENT_ROLE,Sets.newHashSet(AuthAction.produce,AuthAction.consume));\n    log.info(\"-- Admin permissions {} ---\",admin.namespaces().getPermissions(namespaceName));\n    producer=proxyClient.newProducer(Schema.BYTES).topic(\"persistent://my-property/proxy-authorization/my-ns/my-topic1\").create();\n  }\n  final int msgs=10;\n  for (int i=0; i < msgs; i++) {\n    String message=\"my-message-\" + i;\n    producer.send(message.getBytes());\n  }\n  Message<byte[]> msg=null;\n  Set<String> messageSet=Sets.newHashSet();\n  int count=0;\n  for (int i=0; i < 10; i++) {\n    msg=consumer.receive(5,TimeUnit.SECONDS);\n    String receivedMessage=new String(msg.getData());\n    log.debug(\"Received message: [{}]\",receivedMessage);\n    String expectedMessage=\"my-message-\" + i;\n    testMessageOrderAndDuplicates(messageSet,receivedMessage,expectedMessage);\n    count++;\n  }\n  Assert.assertEquals(msgs,count);\n  consumer.acknowledgeCumulative(msg);\n  consumer.close();\n  log.info(\"-- Exiting {} test --\",methodName);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 373,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 118,
+        "startLineNumber" : 146,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 146,
+        "endColumnNumber" : 126
+      },
+      "nodeContext" : "admin.clusters().createCluster(\"proxy-authorization\",ClusterData.builder().serviceUrl(brokerUrl.toString()).build());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 17,
+      "astHeight" : 6
+    },
+    "tokenLength" : 2,
+    "type" : "java.lang.String"
+  } ],
+  "positionList" : [ {
+    "charLength" : 20,
+    "startLineNumber" : 146,
+    "startColumnNumber" : 95,
+    "endLineNumber" : 146,
+    "endColumnNumber" : 115
+  } ],
+  "layoutRelationDataList" : [ ]
+}

@@ -1,0 +1,126 @@
+{
+  "id" : 21,
+  "expression" : "reOrderSwitchCases(blocksMap,fallThroughCases)",
+  "projectName" : "skylot@jadx",
+  "commitID" : "eb2a1734d3e02c19814f628e10bf80de5fb19772",
+  "filePath" : "/jadx-core/src/main/java/jadx/core/dex/visitors/regions/RegionMaker.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "reOrderSwitchCases(blocksMap,fallThroughCases)",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 47,
+      "startLineNumber" : 789,
+      "startColumnNumber" : 15,
+      "endLineNumber" : 789,
+      "endColumnNumber" : 62
+    },
+    "astNodeNumber" : 4,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 59,
+        "startLineNumber" : 789,
+        "startColumnNumber" : 3,
+        "endLineNumber" : 789,
+        "endColumnNumber" : 62
+      },
+      "nodeContext" : "blocksMap=reOrderSwitchCases(blocksMap,fallThroughCases)",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 60,
+        "startLineNumber" : 789,
+        "startColumnNumber" : 3,
+        "endLineNumber" : 789,
+        "endColumnNumber" : 63
+      },
+      "nodeContext" : "blocksMap=reOrderSwitchCases(blocksMap,fallThroughCases);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 311,
+        "startLineNumber" : 787,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 794,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  LOG.debug(\"Fixing incorrect switch cases order, method: {}\",mth);\n  blocksMap=reOrderSwitchCases(blocksMap,fallThroughCases);\n  if (isBadCasesOrder(blocksMap,fallThroughCases)) {\n    LOG.error(\"Can't fix incorrect switch cases order, method: {}\",mth);\n    mth.add(AFlag.INCONSISTENT_CODE);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 33,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 396,
+        "startLineNumber" : 786,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 794,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "if (!fallThroughCases.isEmpty() && isBadCasesOrder(blocksMap,fallThroughCases)) {\n  LOG.debug(\"Fixing incorrect switch cases order, method: {}\",mth);\n  blocksMap=reOrderSwitchCases(blocksMap,fallThroughCases);\n  if (isBadCasesOrder(blocksMap,fallThroughCases)) {\n    LOG.error(\"Can't fix incorrect switch cases order, method: {}\",mth);\n    mth.add(AFlag.INCONSISTENT_CODE);\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 43,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4496,
+        "startLineNumber" : 731,
+        "startColumnNumber" : 109,
+        "endLineNumber" : 875,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  SwitchRegion sw=new SwitchRegion(currentRegion,block);\n  currentRegion.getSubBlocks().add(sw);\n  int len=insn.getTargets().length;\n  Map<BlockNode,List<Object>> blocksMap=new LinkedHashMap<>(len);\n  for (int i=0; i < len; i++) {\n    Object key=insn.getKeys()[i];\n    BlockNode targ=insn.getTargetBlocks()[i];\n    List<Object> keys=blocksMap.computeIfAbsent(targ,k -> new ArrayList<>(2));\n    keys.add(key);\n  }\n  BlockNode defCase=insn.getDefTargetBlock();\n  if (defCase != null) {\n    blocksMap.remove(defCase);\n  }\n  LoopInfo loop=mth.getLoopForBlock(block);\n  Map<BlockNode,BlockNode> fallThroughCases=new LinkedHashMap<>();\n  List<BlockNode> basicBlocks=mth.getBasicBlocks();\n  BitSet outs=new BitSet(basicBlocks.size());\n  outs.or(block.getDomFrontier());\n  for (  BlockNode s : block.getCleanSuccessors()) {\n    BitSet df=s.getDomFrontier();\n    if (df.cardinality() > 1) {\n      if (df.cardinality() > 2) {\n        LOG.debug(\"Unexpected case pattern, block: {}, mth: {}\",s,mth);\n      }\n else {\n        BlockNode first=basicBlocks.get(df.nextSetBit(0));\n        BlockNode second=basicBlocks.get(df.nextSetBit(first.getId() + 1));\n        if (second.getDomFrontier().get(first.getId())) {\n          fallThroughCases.put(s,second);\n          df=new BitSet(df.size());\n          df.set(first.getId());\n        }\n else         if (first.getDomFrontier().get(second.getId())) {\n          fallThroughCases.put(s,first);\n          df=new BitSet(df.size());\n          df.set(second.getId());\n        }\n      }\n    }\n    outs.or(df);\n  }\n  outs.clear(block.getId());\n  if (loop != null) {\n    outs.clear(loop.getStart().getId());\n  }\n  stack.push(sw);\n  stack.addExits(BlockUtils.bitSetToBlocks(mth,outs));\n  if (!fallThroughCases.isEmpty() && isBadCasesOrder(blocksMap,fallThroughCases)) {\n    LOG.debug(\"Fixing incorrect switch cases order, method: {}\",mth);\n    blocksMap=reOrderSwitchCases(blocksMap,fallThroughCases);\n    if (isBadCasesOrder(blocksMap,fallThroughCases)) {\n      LOG.error(\"Can't fix incorrect switch cases order, method: {}\",mth);\n      mth.add(AFlag.INCONSISTENT_CODE);\n    }\n  }\n  if (outs.cardinality() > 1) {\n    BlockUtils.cleanBitSet(mth,outs);\n  }\n  if (outs.cardinality() > 1) {\n    for (int i=outs.nextSetBit(0); i >= 0; i=outs.nextSetBit(i + 1)) {\n      BlockNode b=basicBlocks.get(i);\n      outs.andNot(b.getDomFrontier());\n      if (b.contains(AFlag.LOOP_START)) {\n        outs.clear(b.getId());\n      }\n else {\n        for (        BlockNode s : b.getCleanSuccessors()) {\n          outs.clear(s.getId());\n        }\n      }\n    }\n  }\n  if (loop != null && outs.cardinality() > 1) {\n    outs.clear(loop.getEnd().getId());\n  }\n  if (outs.cardinality() == 0) {\n    for (    BlockNode maybeOut : block.getSuccessors()) {\n      boolean allReached=true;\n      for (      BlockNode s : block.getSuccessors()) {\n        if (!isPathExists(s,maybeOut)) {\n          allReached=false;\n          break;\n        }\n      }\n      if (allReached) {\n        outs.set(maybeOut.getId());\n        break;\n      }\n    }\n  }\n  BlockNode out=null;\n  if (outs.cardinality() == 1) {\n    out=basicBlocks.get(outs.nextSetBit(0));\n    stack.addExit(out);\n  }\n else   if (loop == null && outs.cardinality() > 1) {\n    LOG.warn(\"Can't detect out node for switch block: {} in {}\",block,mth);\n  }\n  if (loop != null) {\n    BlockNode end=loop.getEnd();\n    if (out != end && out != null) {\n      insertContinueInSwitch(block,out,end);\n    }\n  }\n  if (!stack.containsExit(defCase)) {\n    sw.setDefaultCase(makeRegion(defCase,stack));\n  }\n  for (  Entry<BlockNode,List<Object>> entry : blocksMap.entrySet()) {\n    BlockNode caseBlock=entry.getKey();\n    if (stack.containsExit(caseBlock)) {\n      sw.addCase(entry.getValue(),new Region(stack.peekRegion()));\n    }\n else {\n      BlockNode next=fallThroughCases.get(caseBlock);\n      stack.addExit(next);\n      Region caseRegion=makeRegion(caseBlock,stack);\n      stack.removeExit(next);\n      if (next != null) {\n        next.add(AFlag.FALL_THROUGH);\n        caseRegion.add(AFlag.FALL_THROUGH);\n      }\n      sw.addCase(entry.getValue(),caseRegion);\n    }\n  }\n  stack.pop();\n  return out;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 743,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4604,
+        "startLineNumber" : 731,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 875,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "private BlockNode processSwitch(IRegion currentRegion,BlockNode block,SwitchNode insn,RegionStack stack){\n  SwitchRegion sw=new SwitchRegion(currentRegion,block);\n  currentRegion.getSubBlocks().add(sw);\n  int len=insn.getTargets().length;\n  Map<BlockNode,List<Object>> blocksMap=new LinkedHashMap<>(len);\n  for (int i=0; i < len; i++) {\n    Object key=insn.getKeys()[i];\n    BlockNode targ=insn.getTargetBlocks()[i];\n    List<Object> keys=blocksMap.computeIfAbsent(targ,k -> new ArrayList<>(2));\n    keys.add(key);\n  }\n  BlockNode defCase=insn.getDefTargetBlock();\n  if (defCase != null) {\n    blocksMap.remove(defCase);\n  }\n  LoopInfo loop=mth.getLoopForBlock(block);\n  Map<BlockNode,BlockNode> fallThroughCases=new LinkedHashMap<>();\n  List<BlockNode> basicBlocks=mth.getBasicBlocks();\n  BitSet outs=new BitSet(basicBlocks.size());\n  outs.or(block.getDomFrontier());\n  for (  BlockNode s : block.getCleanSuccessors()) {\n    BitSet df=s.getDomFrontier();\n    if (df.cardinality() > 1) {\n      if (df.cardinality() > 2) {\n        LOG.debug(\"Unexpected case pattern, block: {}, mth: {}\",s,mth);\n      }\n else {\n        BlockNode first=basicBlocks.get(df.nextSetBit(0));\n        BlockNode second=basicBlocks.get(df.nextSetBit(first.getId() + 1));\n        if (second.getDomFrontier().get(first.getId())) {\n          fallThroughCases.put(s,second);\n          df=new BitSet(df.size());\n          df.set(first.getId());\n        }\n else         if (first.getDomFrontier().get(second.getId())) {\n          fallThroughCases.put(s,first);\n          df=new BitSet(df.size());\n          df.set(second.getId());\n        }\n      }\n    }\n    outs.or(df);\n  }\n  outs.clear(block.getId());\n  if (loop != null) {\n    outs.clear(loop.getStart().getId());\n  }\n  stack.push(sw);\n  stack.addExits(BlockUtils.bitSetToBlocks(mth,outs));\n  if (!fallThroughCases.isEmpty() && isBadCasesOrder(blocksMap,fallThroughCases)) {\n    LOG.debug(\"Fixing incorrect switch cases order, method: {}\",mth);\n    blocksMap=reOrderSwitchCases(blocksMap,fallThroughCases);\n    if (isBadCasesOrder(blocksMap,fallThroughCases)) {\n      LOG.error(\"Can't fix incorrect switch cases order, method: {}\",mth);\n      mth.add(AFlag.INCONSISTENT_CODE);\n    }\n  }\n  if (outs.cardinality() > 1) {\n    BlockUtils.cleanBitSet(mth,outs);\n  }\n  if (outs.cardinality() > 1) {\n    for (int i=outs.nextSetBit(0); i >= 0; i=outs.nextSetBit(i + 1)) {\n      BlockNode b=basicBlocks.get(i);\n      outs.andNot(b.getDomFrontier());\n      if (b.contains(AFlag.LOOP_START)) {\n        outs.clear(b.getId());\n      }\n else {\n        for (        BlockNode s : b.getCleanSuccessors()) {\n          outs.clear(s.getId());\n        }\n      }\n    }\n  }\n  if (loop != null && outs.cardinality() > 1) {\n    outs.clear(loop.getEnd().getId());\n  }\n  if (outs.cardinality() == 0) {\n    for (    BlockNode maybeOut : block.getSuccessors()) {\n      boolean allReached=true;\n      for (      BlockNode s : block.getSuccessors()) {\n        if (!isPathExists(s,maybeOut)) {\n          allReached=false;\n          break;\n        }\n      }\n      if (allReached) {\n        outs.set(maybeOut.getId());\n        break;\n      }\n    }\n  }\n  BlockNode out=null;\n  if (outs.cardinality() == 1) {\n    out=basicBlocks.get(outs.nextSetBit(0));\n    stack.addExit(out);\n  }\n else   if (loop == null && outs.cardinality() > 1) {\n    LOG.warn(\"Can't detect out node for switch block: {} in {}\",block,mth);\n  }\n  if (loop != null) {\n    BlockNode end=loop.getEnd();\n    if (out != end && out != null) {\n      insertContinueInSwitch(block,out,end);\n    }\n  }\n  if (!stack.containsExit(defCase)) {\n    sw.setDefaultCase(makeRegion(defCase,stack));\n  }\n  for (  Entry<BlockNode,List<Object>> entry : blocksMap.entrySet()) {\n    BlockNode caseBlock=entry.getKey();\n    if (stack.containsExit(caseBlock)) {\n      sw.addCase(entry.getValue(),new Region(stack.peekRegion()));\n    }\n else {\n      BlockNode next=fallThroughCases.get(caseBlock);\n      stack.addExit(next);\n      Region caseRegion=makeRegion(caseBlock,stack);\n      stack.removeExit(next);\n      if (next != null) {\n        next.add(AFlag.FALL_THROUGH);\n        caseRegion.add(AFlag.FALL_THROUGH);\n      }\n      sw.addCase(entry.getValue(),caseRegion);\n    }\n  }\n  stack.pop();\n  return out;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 764,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 60,
+        "startLineNumber" : 789,
+        "startColumnNumber" : 3,
+        "endLineNumber" : 789,
+        "endColumnNumber" : 63
+      },
+      "nodeContext" : "blocksMap=reOrderSwitchCases(blocksMap,fallThroughCases);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    },
+    "tokenLength" : 3,
+    "type" : "java.util.Map<jadx.core.dex.nodes.BlockNode,java.util.List<java.lang.Object>>"
+  } ],
+  "positionList" : [ {
+    "charLength" : 47,
+    "startLineNumber" : 789,
+    "startColumnNumber" : 15,
+    "endLineNumber" : 789,
+    "endColumnNumber" : 62
+  } ],
+  "layoutRelationDataList" : [ ]
+}

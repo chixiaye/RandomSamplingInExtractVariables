@@ -1,0 +1,100 @@
+{
+  "id" : 206,
+  "expression" : "bodyLength > 0",
+  "projectName" : "seata@seata",
+  "commitID" : "42d41623178ab076b11b27a0f049ac3ed7f1a9dc",
+  "filePath" : "/core/src/main/java/io/seata/core/rpc/netty/MessageCodecHandler.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "bodyLength > 0",
+    "nodeType" : "InfixExpression",
+    "nodePosition" : {
+      "charLength" : 14,
+      "startLineNumber" : 159,
+      "startColumnNumber" : 12,
+      "endLineNumber" : 159,
+      "endColumnNumber" : 26
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 49,
+        "startLineNumber" : 159,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 159,
+        "endColumnNumber" : 61
+      },
+      "nodeContext" : "bodyLength > 0 && in.readableBytes() < bodyLength",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 121,
+        "startLineNumber" : 159,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 162,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (bodyLength > 0 && in.readableBytes() < bodyLength) {\n  in.resetReaderIndex();\n  return;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 16,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2497,
+        "startLineNumber" : 120,
+        "startColumnNumber" : 100,
+        "endLineNumber" : 194,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (in.readableBytes() < HEAD_LENGTH) {\n    return;\n  }\n  in.markReaderIndex();\n  short protocol=in.readShort();\n  if (protocol != MAGIC) {\n    String emsg=\"decode error,Unknown protocol: \" + protocol + \",will close channel:\"+ ctx.channel();\n    LOGGER.error(emsg);\n    ctx.channel().close();\n    return;\n  }\n  int flag=(int)in.readShort();\n  boolean isHeartbeat=(FLAG_HEARTBEAT & flag) > 0;\n  boolean isRequest=(FLAG_REQUEST & flag) > 0;\n  boolean isSeataCodec=(FLAG_SEATA_CODEC & flag) > 0;\n  short bodyLength=0;\n  short typeCode=0;\n  if (!isSeataCodec) {\n    bodyLength=in.readShort();\n  }\n else {\n    typeCode=in.readShort();\n  }\n  long msgId=in.readLong();\n  if (isHeartbeat) {\n    RpcMessage rpcMessage=new RpcMessage();\n    rpcMessage.setId(msgId);\n    rpcMessage.setAsync(true);\n    rpcMessage.setHeartbeat(isHeartbeat);\n    rpcMessage.setRequest(isRequest);\n    if (isRequest) {\n      rpcMessage.setBody(HeartbeatMessage.PING);\n    }\n else {\n      rpcMessage.setBody(HeartbeatMessage.PONG);\n    }\n    out.add(rpcMessage);\n    return;\n  }\n  if (bodyLength > 0 && in.readableBytes() < bodyLength) {\n    in.resetReaderIndex();\n    return;\n  }\n  RpcMessage rpcMessage=new RpcMessage();\n  rpcMessage.setId(msgId);\n  rpcMessage.setAsync((FLAG_ASYNC & flag) > 0);\n  rpcMessage.setHeartbeat(false);\n  rpcMessage.setRequest(isRequest);\n  try {\n    if (isSeataCodec) {\n      MessageCodec msgCodec=AbstractMessage.getMsgInstanceByCode(typeCode);\n      if (!msgCodec.decode(in)) {\n        in.resetReaderIndex();\n        return;\n      }\n      rpcMessage.setBody(msgCodec);\n    }\n else {\n      byte[] body=new byte[bodyLength];\n      in.readBytes(body);\n      Object bodyObject=hessianDeserialize(body);\n      rpcMessage.setBody(bodyObject);\n    }\n  }\n catch (  Exception e) {\n    LOGGER.error(\"decode error\",\"\",e);\n    throw e;\n  }\n  out.add(rpcMessage);\n  if (LOGGER.isDebugEnabled()) {\n    LOGGER.debug(\"Receive:\" + rpcMessage.getBody() + \",messageId:\"+ msgId);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 323,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 2607,
+        "startLineNumber" : 119,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 194,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override protected void decode(ChannelHandlerContext ctx,ByteBuf in,List<Object> out) throws Exception {\n  if (in.readableBytes() < HEAD_LENGTH) {\n    return;\n  }\n  in.markReaderIndex();\n  short protocol=in.readShort();\n  if (protocol != MAGIC) {\n    String emsg=\"decode error,Unknown protocol: \" + protocol + \",will close channel:\"+ ctx.channel();\n    LOGGER.error(emsg);\n    ctx.channel().close();\n    return;\n  }\n  int flag=(int)in.readShort();\n  boolean isHeartbeat=(FLAG_HEARTBEAT & flag) > 0;\n  boolean isRequest=(FLAG_REQUEST & flag) > 0;\n  boolean isSeataCodec=(FLAG_SEATA_CODEC & flag) > 0;\n  short bodyLength=0;\n  short typeCode=0;\n  if (!isSeataCodec) {\n    bodyLength=in.readShort();\n  }\n else {\n    typeCode=in.readShort();\n  }\n  long msgId=in.readLong();\n  if (isHeartbeat) {\n    RpcMessage rpcMessage=new RpcMessage();\n    rpcMessage.setId(msgId);\n    rpcMessage.setAsync(true);\n    rpcMessage.setHeartbeat(isHeartbeat);\n    rpcMessage.setRequest(isRequest);\n    if (isRequest) {\n      rpcMessage.setBody(HeartbeatMessage.PING);\n    }\n else {\n      rpcMessage.setBody(HeartbeatMessage.PONG);\n    }\n    out.add(rpcMessage);\n    return;\n  }\n  if (bodyLength > 0 && in.readableBytes() < bodyLength) {\n    in.resetReaderIndex();\n    return;\n  }\n  RpcMessage rpcMessage=new RpcMessage();\n  rpcMessage.setId(msgId);\n  rpcMessage.setAsync((FLAG_ASYNC & flag) > 0);\n  rpcMessage.setHeartbeat(false);\n  rpcMessage.setRequest(isRequest);\n  try {\n    if (isSeataCodec) {\n      MessageCodec msgCodec=AbstractMessage.getMsgInstanceByCode(typeCode);\n      if (!msgCodec.decode(in)) {\n        in.resetReaderIndex();\n        return;\n      }\n      rpcMessage.setBody(msgCodec);\n    }\n else {\n      byte[] body=new byte[bodyLength];\n      in.readBytes(body);\n      Object bodyObject=hessianDeserialize(body);\n      rpcMessage.setBody(bodyObject);\n    }\n  }\n catch (  Exception e) {\n    LOGGER.error(\"decode error\",\"\",e);\n    throw e;\n  }\n  out.add(rpcMessage);\n  if (LOGGER.isDebugEnabled()) {\n    LOGGER.debug(\"Receive:\" + rpcMessage.getBody() + \",messageId:\"+ msgId);\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 346,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 49,
+        "startLineNumber" : 159,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 159,
+        "endColumnNumber" : 61
+      },
+      "nodeContext" : "bodyLength > 0 && in.readableBytes() < bodyLength",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    },
+    "tokenLength" : 3,
+    "type" : "boolean"
+  } ],
+  "positionList" : [ {
+    "charLength" : 14,
+    "startLineNumber" : 159,
+    "startColumnNumber" : 12,
+    "endLineNumber" : 159,
+    "endColumnNumber" : 26
+  } ],
+  "layoutRelationDataList" : [ ]
+}

@@ -1,0 +1,165 @@
+{
+  "id" : 350,
+  "expression" : "scramCredential.serverKey()",
+  "projectName" : "apache@kafka",
+  "commitID" : "539f006e65d9060cd46a4052d1b70f2312d8ca34",
+  "filePath" : "/clients/src/main/java/org/apache/kafka/common/security/scram/internals/ScramSaslServer.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "scramCredential.serverKey()",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 27,
+      "startLineNumber" : 153,
+      "startColumnNumber" : 43,
+      "endLineNumber" : 153,
+      "endColumnNumber" : 70
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 39,
+        "startLineNumber" : 153,
+        "startColumnNumber" : 31,
+        "endLineNumber" : 153,
+        "endColumnNumber" : 70
+      },
+      "nodeContext" : "serverKey=scramCredential.serverKey()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 47,
+        "startLineNumber" : 153,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 153,
+        "endColumnNumber" : 71
+      },
+      "nodeContext" : "byte[] serverKey=scramCredential.serverKey();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 669,
+        "startLineNumber" : 150,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 159,
+        "endColumnNumber" : 21
+      },
+      "nodeContext" : "{\n  ClientFinalMessage clientFinalMessage=new ClientFinalMessage(response);\n  verifyClientProof(clientFinalMessage);\n  byte[] serverKey=scramCredential.serverKey();\n  byte[] serverSignature=formatter.serverSignature(serverKey,clientFirstMessage,serverFirstMessage,clientFinalMessage);\n  ServerFinalMessage serverFinalMessage=new ServerFinalMessage(null,serverSignature);\n  clearCredentials();\n  setState(State.COMPLETE);\n  return serverFinalMessage.toBytes();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 59,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.SwitchStatement,statements]",
+      "nodePosition" : {
+        "charLength" : 834,
+        "startLineNumber" : 150,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 21
+      },
+      "nodeContext" : "try {\n  ClientFinalMessage clientFinalMessage=new ClientFinalMessage(response);\n  verifyClientProof(clientFinalMessage);\n  byte[] serverKey=scramCredential.serverKey();\n  byte[] serverSignature=formatter.serverSignature(serverKey,clientFirstMessage,serverFirstMessage,clientFinalMessage);\n  ServerFinalMessage serverFinalMessage=new ServerFinalMessage(null,serverSignature);\n  clearCredentials();\n  setState(State.COMPLETE);\n  return serverFinalMessage.toBytes();\n}\n catch (InvalidKeyException e) {\n  throw new SaslException(\"Authentication failed: Invalid client final message\",e);\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 72,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 4628,
+        "startLineNumber" : 100,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 165,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "switch (state) {\ncase RECEIVE_CLIENT_FIRST_MESSAGE:  this.clientFirstMessage=new ClientFirstMessage(response);\nthis.scramExtensions=clientFirstMessage.extensions();\nif (!SUPPORTED_EXTENSIONS.containsAll(scramExtensions.map().keySet())) {\nlog.debug(\"Unsupported extensions will be ignored, supported {}, provided {}\",SUPPORTED_EXTENSIONS,scramExtensions.map().keySet());\n}\nString serverNonce=formatter.secureRandomString();\ntry {\nString saslName=clientFirstMessage.saslName();\nthis.username=ScramFormatter.username(saslName);\nNameCallback nameCallback=new NameCallback(\"username\",username);\nScramCredentialCallback credentialCallback;\nif (scramExtensions.tokenAuthenticated()) {\nDelegationTokenCredentialCallback tokenCallback=new DelegationTokenCredentialCallback();\ncredentialCallback=tokenCallback;\ncallbackHandler.handle(new Callback[]{nameCallback,tokenCallback});\nif (tokenCallback.tokenOwner() == null) throw new SaslException(\"Token Authentication failed: Invalid tokenId : \" + username);\nthis.authorizationId=tokenCallback.tokenOwner();\nthis.tokenExpiryTimestamp=tokenCallback.tokenExpiryTimestamp();\n}\n else {\ncredentialCallback=new ScramCredentialCallback();\ncallbackHandler.handle(new Callback[]{nameCallback,credentialCallback});\nthis.authorizationId=username;\nthis.tokenExpiryTimestamp=null;\n}\nthis.scramCredential=credentialCallback.scramCredential();\nif (scramCredential == null) throw new SaslException(\"Authentication failed: Invalid user credentials\");\nString authorizationIdFromClient=clientFirstMessage.authorizationId();\nif (!authorizationIdFromClient.isEmpty() && !authorizationIdFromClient.equals(username)) throw new SaslAuthenticationException(\"Authentication failed: Client requested an authorization id that is different from username\");\nif (scramCredential.iterations() < mechanism.minIterations()) throw new SaslException(\"Iterations \" + scramCredential.iterations() + \" is less than the minimum \"+ mechanism.minIterations()+ \" for \"+ mechanism);\nthis.serverFirstMessage=new ServerFirstMessage(clientFirstMessage.nonce(),serverNonce,scramCredential.salt(),scramCredential.iterations());\nsetState(State.RECEIVE_CLIENT_FINAL_MESSAGE);\nreturn serverFirstMessage.toBytes();\n}\n catch (SaslException|AuthenticationException e) {\nthrow e;\n}\ncatch (Throwable e) {\nthrow new SaslException(\"Authentication failed: Credentials could not be obtained\",e);\n}\ncase RECEIVE_CLIENT_FINAL_MESSAGE:try {\nClientFinalMessage clientFinalMessage=new ClientFinalMessage(response);\nverifyClientProof(clientFinalMessage);\nbyte[] serverKey=scramCredential.serverKey();\nbyte[] serverSignature=formatter.serverSignature(serverKey,clientFirstMessage,serverFirstMessage,clientFinalMessage);\nServerFinalMessage serverFinalMessage=new ServerFinalMessage(null,serverSignature);\nclearCredentials();\nsetState(State.COMPLETE);\nreturn serverFinalMessage.toBytes();\n}\n catch (InvalidKeyException e) {\nthrow new SaslException(\"Authentication failed: Invalid client final message\",e);\n}\ndefault:throw new IllegalSaslStateException(\"Unexpected challenge in Sasl server state \" + state);\n}\n",
+      "nodeType" : "SwitchStatement",
+      "astNodeNumber" : 371,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 4652,
+        "startLineNumber" : 99,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 166,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\nswitch (state) {\ncase RECEIVE_CLIENT_FIRST_MESSAGE:    this.clientFirstMessage=new ClientFirstMessage(response);\n  this.scramExtensions=clientFirstMessage.extensions();\nif (!SUPPORTED_EXTENSIONS.containsAll(scramExtensions.map().keySet())) {\n  log.debug(\"Unsupported extensions will be ignored, supported {}, provided {}\",SUPPORTED_EXTENSIONS,scramExtensions.map().keySet());\n}\nString serverNonce=formatter.secureRandomString();\ntry {\nString saslName=clientFirstMessage.saslName();\nthis.username=ScramFormatter.username(saslName);\nNameCallback nameCallback=new NameCallback(\"username\",username);\nScramCredentialCallback credentialCallback;\nif (scramExtensions.tokenAuthenticated()) {\nDelegationTokenCredentialCallback tokenCallback=new DelegationTokenCredentialCallback();\ncredentialCallback=tokenCallback;\ncallbackHandler.handle(new Callback[]{nameCallback,tokenCallback});\nif (tokenCallback.tokenOwner() == null) throw new SaslException(\"Token Authentication failed: Invalid tokenId : \" + username);\nthis.authorizationId=tokenCallback.tokenOwner();\nthis.tokenExpiryTimestamp=tokenCallback.tokenExpiryTimestamp();\n}\n else {\ncredentialCallback=new ScramCredentialCallback();\ncallbackHandler.handle(new Callback[]{nameCallback,credentialCallback});\nthis.authorizationId=username;\nthis.tokenExpiryTimestamp=null;\n}\nthis.scramCredential=credentialCallback.scramCredential();\nif (scramCredential == null) throw new SaslException(\"Authentication failed: Invalid user credentials\");\nString authorizationIdFromClient=clientFirstMessage.authorizationId();\nif (!authorizationIdFromClient.isEmpty() && !authorizationIdFromClient.equals(username)) throw new SaslAuthenticationException(\"Authentication failed: Client requested an authorization id that is different from username\");\nif (scramCredential.iterations() < mechanism.minIterations()) throw new SaslException(\"Iterations \" + scramCredential.iterations() + \" is less than the minimum \"+ mechanism.minIterations()+ \" for \"+ mechanism);\nthis.serverFirstMessage=new ServerFirstMessage(clientFirstMessage.nonce(),serverNonce,scramCredential.salt(),scramCredential.iterations());\nsetState(State.RECEIVE_CLIENT_FINAL_MESSAGE);\nreturn serverFirstMessage.toBytes();\n}\n catch (SaslException|AuthenticationException e) {\nthrow e;\n}\ncatch (Throwable e) {\nthrow new SaslException(\"Authentication failed: Credentials could not be obtained\",e);\n}\ncase RECEIVE_CLIENT_FINAL_MESSAGE:try {\nClientFinalMessage clientFinalMessage=new ClientFinalMessage(response);\nverifyClientProof(clientFinalMessage);\nbyte[] serverKey=scramCredential.serverKey();\nbyte[] serverSignature=formatter.serverSignature(serverKey,clientFirstMessage,serverFirstMessage,clientFinalMessage);\nServerFinalMessage serverFinalMessage=new ServerFinalMessage(null,serverSignature);\nclearCredentials();\nsetState(State.COMPLETE);\nreturn serverFinalMessage.toBytes();\n}\n catch (InvalidKeyException e) {\nthrow new SaslException(\"Authentication failed: Invalid client final message\",e);\n}\ndefault:throw new IllegalSaslStateException(\"Unexpected challenge in Sasl server state \" + state);\n}\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 372,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 4807,
+        "startLineNumber" : 99,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 170,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "try {\nswitch (state) {\ncase RECEIVE_CLIENT_FIRST_MESSAGE:    this.clientFirstMessage=new ClientFirstMessage(response);\n  this.scramExtensions=clientFirstMessage.extensions();\nif (!SUPPORTED_EXTENSIONS.containsAll(scramExtensions.map().keySet())) {\n  log.debug(\"Unsupported extensions will be ignored, supported {}, provided {}\",SUPPORTED_EXTENSIONS,scramExtensions.map().keySet());\n}\nString serverNonce=formatter.secureRandomString();\ntry {\nString saslName=clientFirstMessage.saslName();\nthis.username=ScramFormatter.username(saslName);\nNameCallback nameCallback=new NameCallback(\"username\",username);\nScramCredentialCallback credentialCallback;\nif (scramExtensions.tokenAuthenticated()) {\nDelegationTokenCredentialCallback tokenCallback=new DelegationTokenCredentialCallback();\ncredentialCallback=tokenCallback;\ncallbackHandler.handle(new Callback[]{nameCallback,tokenCallback});\nif (tokenCallback.tokenOwner() == null) throw new SaslException(\"Token Authentication failed: Invalid tokenId : \" + username);\nthis.authorizationId=tokenCallback.tokenOwner();\nthis.tokenExpiryTimestamp=tokenCallback.tokenExpiryTimestamp();\n}\n else {\ncredentialCallback=new ScramCredentialCallback();\ncallbackHandler.handle(new Callback[]{nameCallback,credentialCallback});\nthis.authorizationId=username;\nthis.tokenExpiryTimestamp=null;\n}\nthis.scramCredential=credentialCallback.scramCredential();\nif (scramCredential == null) throw new SaslException(\"Authentication failed: Invalid user credentials\");\nString authorizationIdFromClient=clientFirstMessage.authorizationId();\nif (!authorizationIdFromClient.isEmpty() && !authorizationIdFromClient.equals(username)) throw new SaslAuthenticationException(\"Authentication failed: Client requested an authorization id that is different from username\");\nif (scramCredential.iterations() < mechanism.minIterations()) throw new SaslException(\"Iterations \" + scramCredential.iterations() + \" is less than the minimum \"+ mechanism.minIterations()+ \" for \"+ mechanism);\nthis.serverFirstMessage=new ServerFirstMessage(clientFirstMessage.nonce(),serverNonce,scramCredential.salt(),scramCredential.iterations());\nsetState(State.RECEIVE_CLIENT_FINAL_MESSAGE);\nreturn serverFirstMessage.toBytes();\n}\n catch (SaslException|AuthenticationException e) {\nthrow e;\n}\ncatch (Throwable e) {\nthrow new SaslException(\"Authentication failed: Credentials could not be obtained\",e);\n}\ncase RECEIVE_CLIENT_FINAL_MESSAGE:try {\nClientFinalMessage clientFinalMessage=new ClientFinalMessage(response);\nverifyClientProof(clientFinalMessage);\nbyte[] serverKey=scramCredential.serverKey();\nbyte[] serverSignature=formatter.serverSignature(serverKey,clientFirstMessage,serverFirstMessage,clientFinalMessage);\nServerFinalMessage serverFinalMessage=new ServerFinalMessage(null,serverSignature);\nclearCredentials();\nsetState(State.COMPLETE);\nreturn serverFinalMessage.toBytes();\n}\n catch (InvalidKeyException e) {\nthrow new SaslException(\"Authentication failed: Invalid client final message\",e);\n}\ndefault:throw new IllegalSaslStateException(\"Unexpected challenge in Sasl server state \" + state);\n}\n}\n catch (SaslException|AuthenticationException e) {\nclearCredentials();\nsetState(State.FAILED);\nthrow e;\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 393,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4823,
+        "startLineNumber" : 98,
+        "startColumnNumber" : 102,
+        "endLineNumber" : 171,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  try {\nswitch (state) {\ncase RECEIVE_CLIENT_FIRST_MESSAGE:      this.clientFirstMessage=new ClientFirstMessage(response);\n    this.scramExtensions=clientFirstMessage.extensions();\n  if (!SUPPORTED_EXTENSIONS.containsAll(scramExtensions.map().keySet())) {\n    log.debug(\"Unsupported extensions will be ignored, supported {}, provided {}\",SUPPORTED_EXTENSIONS,scramExtensions.map().keySet());\n  }\nString serverNonce=formatter.secureRandomString();\ntry {\nString saslName=clientFirstMessage.saslName();\nthis.username=ScramFormatter.username(saslName);\nNameCallback nameCallback=new NameCallback(\"username\",username);\nScramCredentialCallback credentialCallback;\nif (scramExtensions.tokenAuthenticated()) {\n  DelegationTokenCredentialCallback tokenCallback=new DelegationTokenCredentialCallback();\n  credentialCallback=tokenCallback;\n  callbackHandler.handle(new Callback[]{nameCallback,tokenCallback});\n  if (tokenCallback.tokenOwner() == null)   throw new SaslException(\"Token Authentication failed: Invalid tokenId : \" + username);\n  this.authorizationId=tokenCallback.tokenOwner();\n  this.tokenExpiryTimestamp=tokenCallback.tokenExpiryTimestamp();\n}\n else {\n  credentialCallback=new ScramCredentialCallback();\n  callbackHandler.handle(new Callback[]{nameCallback,credentialCallback});\n  this.authorizationId=username;\n  this.tokenExpiryTimestamp=null;\n}\nthis.scramCredential=credentialCallback.scramCredential();\nif (scramCredential == null) throw new SaslException(\"Authentication failed: Invalid user credentials\");\nString authorizationIdFromClient=clientFirstMessage.authorizationId();\nif (!authorizationIdFromClient.isEmpty() && !authorizationIdFromClient.equals(username)) throw new SaslAuthenticationException(\"Authentication failed: Client requested an authorization id that is different from username\");\nif (scramCredential.iterations() < mechanism.minIterations()) throw new SaslException(\"Iterations \" + scramCredential.iterations() + \" is less than the minimum \"+ mechanism.minIterations()+ \" for \"+ mechanism);\nthis.serverFirstMessage=new ServerFirstMessage(clientFirstMessage.nonce(),serverNonce,scramCredential.salt(),scramCredential.iterations());\nsetState(State.RECEIVE_CLIENT_FINAL_MESSAGE);\nreturn serverFirstMessage.toBytes();\n}\n catch (SaslException|AuthenticationException e) {\nthrow e;\n}\ncatch (Throwable e) {\nthrow new SaslException(\"Authentication failed: Credentials could not be obtained\",e);\n}\ncase RECEIVE_CLIENT_FINAL_MESSAGE:try {\nClientFinalMessage clientFinalMessage=new ClientFinalMessage(response);\nverifyClientProof(clientFinalMessage);\nbyte[] serverKey=scramCredential.serverKey();\nbyte[] serverSignature=formatter.serverSignature(serverKey,clientFirstMessage,serverFirstMessage,clientFinalMessage);\nServerFinalMessage serverFinalMessage=new ServerFinalMessage(null,serverSignature);\nclearCredentials();\nsetState(State.COMPLETE);\nreturn serverFinalMessage.toBytes();\n}\n catch (InvalidKeyException e) {\nthrow new SaslException(\"Authentication failed: Invalid client final message\",e);\n}\ndefault:throw new IllegalSaslStateException(\"Unexpected challenge in Sasl server state \" + state);\n}\n}\n catch (SaslException|AuthenticationException e) {\nclearCredentials();\nsetState(State.FAILED);\nthrow e;\n}\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 394,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 5481,
+        "startLineNumber" : 88,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 171,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * @throws SaslAuthenticationException if the requested authorization id is not the same as username.<p> <b>Note:</b> This method may throw  {@link SaslAuthenticationException} to provide custom error messagesto clients. But care should be taken to avoid including any information in the exception message that should not be leaked to unauthenticated clients. It may be safer to throw  {@link SaslException} inmost cases so that a standard error message is returned to clients. </p>\n */\n@Override public byte[] evaluateResponse(byte[] response) throws SaslException, SaslAuthenticationException {\n  try {\nswitch (state) {\ncase RECEIVE_CLIENT_FIRST_MESSAGE:      this.clientFirstMessage=new ClientFirstMessage(response);\n    this.scramExtensions=clientFirstMessage.extensions();\n  if (!SUPPORTED_EXTENSIONS.containsAll(scramExtensions.map().keySet())) {\n    log.debug(\"Unsupported extensions will be ignored, supported {}, provided {}\",SUPPORTED_EXTENSIONS,scramExtensions.map().keySet());\n  }\nString serverNonce=formatter.secureRandomString();\ntry {\nString saslName=clientFirstMessage.saslName();\nthis.username=ScramFormatter.username(saslName);\nNameCallback nameCallback=new NameCallback(\"username\",username);\nScramCredentialCallback credentialCallback;\nif (scramExtensions.tokenAuthenticated()) {\n  DelegationTokenCredentialCallback tokenCallback=new DelegationTokenCredentialCallback();\n  credentialCallback=tokenCallback;\n  callbackHandler.handle(new Callback[]{nameCallback,tokenCallback});\n  if (tokenCallback.tokenOwner() == null)   throw new SaslException(\"Token Authentication failed: Invalid tokenId : \" + username);\n  this.authorizationId=tokenCallback.tokenOwner();\n  this.tokenExpiryTimestamp=tokenCallback.tokenExpiryTimestamp();\n}\n else {\n  credentialCallback=new ScramCredentialCallback();\n  callbackHandler.handle(new Callback[]{nameCallback,credentialCallback});\n  this.authorizationId=username;\n  this.tokenExpiryTimestamp=null;\n}\nthis.scramCredential=credentialCallback.scramCredential();\nif (scramCredential == null) throw new SaslException(\"Authentication failed: Invalid user credentials\");\nString authorizationIdFromClient=clientFirstMessage.authorizationId();\nif (!authorizationIdFromClient.isEmpty() && !authorizationIdFromClient.equals(username)) throw new SaslAuthenticationException(\"Authentication failed: Client requested an authorization id that is different from username\");\nif (scramCredential.iterations() < mechanism.minIterations()) throw new SaslException(\"Iterations \" + scramCredential.iterations() + \" is less than the minimum \"+ mechanism.minIterations()+ \" for \"+ mechanism);\nthis.serverFirstMessage=new ServerFirstMessage(clientFirstMessage.nonce(),serverNonce,scramCredential.salt(),scramCredential.iterations());\nsetState(State.RECEIVE_CLIENT_FINAL_MESSAGE);\nreturn serverFirstMessage.toBytes();\n}\n catch (SaslException|AuthenticationException e) {\nthrow e;\n}\ncatch (Throwable e) {\nthrow new SaslException(\"Authentication failed: Credentials could not be obtained\",e);\n}\ncase RECEIVE_CLIENT_FINAL_MESSAGE:try {\nClientFinalMessage clientFinalMessage=new ClientFinalMessage(response);\nverifyClientProof(clientFinalMessage);\nbyte[] serverKey=scramCredential.serverKey();\nbyte[] serverSignature=formatter.serverSignature(serverKey,clientFirstMessage,serverFirstMessage,clientFinalMessage);\nServerFinalMessage serverFinalMessage=new ServerFinalMessage(null,serverSignature);\nclearCredentials();\nsetState(State.COMPLETE);\nreturn serverFinalMessage.toBytes();\n}\n catch (InvalidKeyException e) {\nthrow new SaslException(\"Authentication failed: Invalid client final message\",e);\n}\ndefault:throw new IllegalSaslStateException(\"Unexpected challenge in Sasl server state \" + state);\n}\n}\n catch (SaslException|AuthenticationException e) {\nclearCredentials();\nsetState(State.FAILED);\nthrow e;\n}\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 412,
+      "astHeight" : 15
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 47,
+        "startLineNumber" : 153,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 153,
+        "endColumnNumber" : 71
+      },
+      "nodeContext" : "byte[] serverKey=scramCredential.serverKey();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    },
+    "tokenLength" : 2,
+    "type" : "byte[]"
+  } ],
+  "positionList" : [ {
+    "charLength" : 27,
+    "startLineNumber" : 153,
+    "startColumnNumber" : 43,
+    "endLineNumber" : 153,
+    "endColumnNumber" : 70
+  } ],
+  "layoutRelationDataList" : [ ]
+}

@@ -1,0 +1,273 @@
+{
+  "id" : 473,
+  "expression" : "skewedSample(rnd,NUM_CHANNELS - 1)",
+  "projectName" : "apache@flink",
+  "commitID" : "f8cb19e70ca7da6423dfb01b97e05c4d520c9fde",
+  "filePath" : "/flink-runtime/src/test/java/org/apache/flink/runtime/io/disk/iomanager/IOManagerITCase.java",
+  "occurrences" : 2,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "skewedSample(rnd,NUM_CHANNELS - 1)",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 35,
+      "startLineNumber" : 116,
+      "startColumnNumber" : 26,
+      "endLineNumber" : 116,
+      "endColumnNumber" : 61
+    },
+    "astNodeNumber" : 6,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 45,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 61
+      },
+      "nodeContext" : "channel=skewedSample(rnd,NUM_CHANNELS - 1)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 50,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 62
+      },
+      "nodeContext" : "int channel=skewedSample(rnd,NUM_CHANNELS - 1);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 181,
+        "startLineNumber" : 115,
+        "startColumnNumber" : 56,
+        "endLineNumber" : 120,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  int channel=skewedSample(rnd,NUM_CHANNELS - 1);\n  val.value=String.valueOf(writingCounters[channel]++);\n  val.write(outs[channel]);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 30,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 229,
+        "startLineNumber" : 115,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 120,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "for (int i=0; i < NUMBERS_TO_BE_WRITTEN; i++) {\n  int channel=skewedSample(rnd,NUM_CHANNELS - 1);\n  val.value=String.valueOf(writingCounters[channel]++);\n  val.write(outs[channel]);\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 41,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5552,
+        "startLineNumber" : 85,
+        "startColumnNumber" : 56,
+        "endLineNumber" : 227,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final Random rnd=new Random(SEED);\n  final AbstractInvokable memOwner=new DummyInvokable();\n  FileIOChannel.ID[] ids=new FileIOChannel.ID[NUM_CHANNELS];\n  BlockChannelWriter<MemorySegment>[] writers=new BlockChannelWriter[NUM_CHANNELS];\n  BlockChannelReader<MemorySegment>[] readers=new BlockChannelReader[NUM_CHANNELS];\n  ChannelWriterOutputView[] outs=new ChannelWriterOutputView[NUM_CHANNELS];\n  ChannelReaderInputView[] ins=new ChannelReaderInputView[NUM_CHANNELS];\n  int[] writingCounters=new int[NUM_CHANNELS];\n  int[] readingCounters=new int[NUM_CHANNELS];\n  for (int i=0; i < NUM_CHANNELS; i++) {\n    ids[i]=this.ioManager.createChannel();\n    writers[i]=this.ioManager.createBlockChannelWriter(ids[i]);\n    List<MemorySegment> memSegs=this.memoryManager.allocatePages(memOwner,rnd.nextInt(MAXIMUM_NUMBER_OF_SEGMENTS_PER_CHANNEL - 1) + 1);\n    outs[i]=new ChannelWriterOutputView(writers[i],memSegs,this.memoryManager.getPageSize());\n  }\n  Value val=new Value();\n  for (int i=0; i < NUMBERS_TO_BE_WRITTEN; i++) {\n    int channel=skewedSample(rnd,NUM_CHANNELS - 1);\n    val.value=String.valueOf(writingCounters[channel]++);\n    val.write(outs[channel]);\n  }\n  for (int i=0; i < NUM_CHANNELS; i++) {\n    this.memoryManager.release(outs[i].close());\n  }\n  outs=null;\n  writers=null;\n  for (int i=0; i < NUM_CHANNELS; i++) {\n    List<MemorySegment> memSegs=this.memoryManager.allocatePages(memOwner,rnd.nextInt(MAXIMUM_NUMBER_OF_SEGMENTS_PER_CHANNEL - 1) + 1);\n    final BlockChannelReader<MemorySegment> reader=this.ioManager.createBlockChannelReader(ids[i]);\n    final ChannelReaderInputView in=new ChannelReaderInputView(reader,memSegs,false);\n    int nextVal=0;\n    try {\n      while (true) {\n        val.read(in);\n        int intValue=0;\n        try {\n          intValue=Integer.parseInt(val.value);\n        }\n catch (        NumberFormatException nfex) {\n          Assert.fail(\"Invalid value read from reader. Valid decimal number expected.\");\n        }\n        Assert.assertEquals(\"Written and read values do not match during sequential read.\",nextVal,intValue);\n        nextVal++;\n      }\n    }\n catch (    EOFException eofex) {\n    }\n    Assert.assertEquals(\"NUmber of written numbers differs from number of read numbers.\",writingCounters[i],nextVal);\n    this.memoryManager.release(in.close());\n  }\n  for (int i=0; i < NUM_CHANNELS; i++) {\n    List<MemorySegment> memSegs=this.memoryManager.allocatePages(memOwner,rnd.nextInt(MAXIMUM_NUMBER_OF_SEGMENTS_PER_CHANNEL - 1) + 1);\n    readers[i]=this.ioManager.createBlockChannelReader(ids[i]);\n    ins[i]=new ChannelReaderInputView(readers[i],memSegs,false);\n  }\n  for (int i=0; i < NUMBERS_TO_BE_WRITTEN; i++) {\n    while (true) {\n      final int channel=skewedSample(rnd,NUM_CHANNELS - 1);\n      if (ins[channel] != null) {\n        try {\n          val.read(ins[channel]);\n          int intValue;\n          try {\n            intValue=Integer.parseInt(val.value);\n          }\n catch (          NumberFormatException nfex) {\n            Assert.fail(\"Invalid value read from reader. Valid decimal number expected.\");\n            return;\n          }\n          Assert.assertEquals(\"Written and read values do not match.\",readingCounters[channel]++,intValue);\n          break;\n        }\n catch (        EOFException eofex) {\n          this.memoryManager.release(ins[channel].close());\n          ins[channel]=null;\n        }\n      }\n    }\n  }\n  for (int i=0; i < NUM_CHANNELS; i++) {\n    if (ins[i] != null) {\n      this.memoryManager.release(ins[i].close());\n    }\n    readers[i].closeAndDelete();\n  }\n  ins=null;\n  readers=null;\n  for (int i=0; i < NUM_CHANNELS; i++) {\n    File f=new File(ids[i].getPath());\n    Assert.assertFalse(\"Channel file has not been deleted.\",f.exists());\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 650,
+      "astHeight" : 16
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 5885,
+        "startLineNumber" : 78,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 227,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * This test instantiates multiple channels and writes to them in parallel and re-reads the data in parallel. It is designed to check the ability of the IO manager to correctly handle multiple threads.\n */\n@Test @SuppressWarnings(\"unchecked\") public void parallelChannelsTest() throws Exception {\n  final Random rnd=new Random(SEED);\n  final AbstractInvokable memOwner=new DummyInvokable();\n  FileIOChannel.ID[] ids=new FileIOChannel.ID[NUM_CHANNELS];\n  BlockChannelWriter<MemorySegment>[] writers=new BlockChannelWriter[NUM_CHANNELS];\n  BlockChannelReader<MemorySegment>[] readers=new BlockChannelReader[NUM_CHANNELS];\n  ChannelWriterOutputView[] outs=new ChannelWriterOutputView[NUM_CHANNELS];\n  ChannelReaderInputView[] ins=new ChannelReaderInputView[NUM_CHANNELS];\n  int[] writingCounters=new int[NUM_CHANNELS];\n  int[] readingCounters=new int[NUM_CHANNELS];\n  for (int i=0; i < NUM_CHANNELS; i++) {\n    ids[i]=this.ioManager.createChannel();\n    writers[i]=this.ioManager.createBlockChannelWriter(ids[i]);\n    List<MemorySegment> memSegs=this.memoryManager.allocatePages(memOwner,rnd.nextInt(MAXIMUM_NUMBER_OF_SEGMENTS_PER_CHANNEL - 1) + 1);\n    outs[i]=new ChannelWriterOutputView(writers[i],memSegs,this.memoryManager.getPageSize());\n  }\n  Value val=new Value();\n  for (int i=0; i < NUMBERS_TO_BE_WRITTEN; i++) {\n    int channel=skewedSample(rnd,NUM_CHANNELS - 1);\n    val.value=String.valueOf(writingCounters[channel]++);\n    val.write(outs[channel]);\n  }\n  for (int i=0; i < NUM_CHANNELS; i++) {\n    this.memoryManager.release(outs[i].close());\n  }\n  outs=null;\n  writers=null;\n  for (int i=0; i < NUM_CHANNELS; i++) {\n    List<MemorySegment> memSegs=this.memoryManager.allocatePages(memOwner,rnd.nextInt(MAXIMUM_NUMBER_OF_SEGMENTS_PER_CHANNEL - 1) + 1);\n    final BlockChannelReader<MemorySegment> reader=this.ioManager.createBlockChannelReader(ids[i]);\n    final ChannelReaderInputView in=new ChannelReaderInputView(reader,memSegs,false);\n    int nextVal=0;\n    try {\n      while (true) {\n        val.read(in);\n        int intValue=0;\n        try {\n          intValue=Integer.parseInt(val.value);\n        }\n catch (        NumberFormatException nfex) {\n          Assert.fail(\"Invalid value read from reader. Valid decimal number expected.\");\n        }\n        Assert.assertEquals(\"Written and read values do not match during sequential read.\",nextVal,intValue);\n        nextVal++;\n      }\n    }\n catch (    EOFException eofex) {\n    }\n    Assert.assertEquals(\"NUmber of written numbers differs from number of read numbers.\",writingCounters[i],nextVal);\n    this.memoryManager.release(in.close());\n  }\n  for (int i=0; i < NUM_CHANNELS; i++) {\n    List<MemorySegment> memSegs=this.memoryManager.allocatePages(memOwner,rnd.nextInt(MAXIMUM_NUMBER_OF_SEGMENTS_PER_CHANNEL - 1) + 1);\n    readers[i]=this.ioManager.createBlockChannelReader(ids[i]);\n    ins[i]=new ChannelReaderInputView(readers[i],memSegs,false);\n  }\n  for (int i=0; i < NUMBERS_TO_BE_WRITTEN; i++) {\n    while (true) {\n      final int channel=skewedSample(rnd,NUM_CHANNELS - 1);\n      if (ins[channel] != null) {\n        try {\n          val.read(ins[channel]);\n          int intValue;\n          try {\n            intValue=Integer.parseInt(val.value);\n          }\n catch (          NumberFormatException nfex) {\n            Assert.fail(\"Invalid value read from reader. Valid decimal number expected.\");\n            return;\n          }\n          Assert.assertEquals(\"Written and read values do not match.\",readingCounters[channel]++,intValue);\n          break;\n        }\n catch (        EOFException eofex) {\n          this.memoryManager.release(ins[channel].close());\n          ins[channel]=null;\n        }\n      }\n    }\n  }\n  for (int i=0; i < NUM_CHANNELS; i++) {\n    if (ins[i] != null) {\n      this.memoryManager.release(ins[i].close());\n    }\n    readers[i].closeAndDelete();\n  }\n  ins=null;\n  readers=null;\n  for (int i=0; i < NUM_CHANNELS; i++) {\n    File f=new File(ids[i].getPath());\n    Assert.assertFalse(\"Channel file has not been deleted.\",f.exists());\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 662,
+      "astHeight" : 17
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 50,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 62
+      },
+      "nodeContext" : "int channel=skewedSample(rnd,NUM_CHANNELS - 1);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    },
+    "tokenLength" : 6,
+    "type" : "int"
+  }, {
+    "nodeContext" : "skewedSample(rnd,NUM_CHANNELS - 1)",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 35,
+      "startLineNumber" : 184,
+      "startColumnNumber" : 36,
+      "endLineNumber" : 184,
+      "endColumnNumber" : 71
+    },
+    "astNodeNumber" : 6,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 45,
+        "startLineNumber" : 184,
+        "startColumnNumber" : 26,
+        "endLineNumber" : 184,
+        "endColumnNumber" : 71
+      },
+      "nodeContext" : "channel=skewedSample(rnd,NUM_CHANNELS - 1)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 56,
+        "startLineNumber" : 184,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 184,
+        "endColumnNumber" : 72
+      },
+      "nodeContext" : "final int channel=skewedSample(rnd,NUM_CHANNELS - 1);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.WhileStatement,body]",
+      "nodePosition" : {
+        "charLength" : 1075,
+        "startLineNumber" : 183,
+        "startColumnNumber" : 25,
+        "endLineNumber" : 208,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  final int channel=skewedSample(rnd,NUM_CHANNELS - 1);\n  if (ins[channel] != null) {\n    try {\n      val.read(ins[channel]);\n      int intValue;\n      try {\n        intValue=Integer.parseInt(val.value);\n      }\n catch (      NumberFormatException nfex) {\n        Assert.fail(\"Invalid value read from reader. Valid decimal number expected.\");\n        return;\n      }\n      Assert.assertEquals(\"Written and read values do not match.\",readingCounters[channel]++,intValue);\n      break;\n    }\n catch (    EOFException eofex) {\n      this.memoryManager.release(ins[channel].close());\n      ins[channel]=null;\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 89,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1088,
+        "startLineNumber" : 183,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 208,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "while (true) {\n  final int channel=skewedSample(rnd,NUM_CHANNELS - 1);\n  if (ins[channel] != null) {\n    try {\n      val.read(ins[channel]);\n      int intValue;\n      try {\n        intValue=Integer.parseInt(val.value);\n      }\n catch (      NumberFormatException nfex) {\n        Assert.fail(\"Invalid value read from reader. Valid decimal number expected.\");\n        return;\n      }\n      Assert.assertEquals(\"Written and read values do not match.\",readingCounters[channel]++,intValue);\n      break;\n    }\n catch (    EOFException eofex) {\n      this.memoryManager.release(ins[channel].close());\n      ins[channel]=null;\n    }\n  }\n}\n",
+      "nodeType" : "WhileStatement",
+      "astNodeNumber" : 91,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 1113,
+        "startLineNumber" : 181,
+        "startColumnNumber" : 56,
+        "endLineNumber" : 209,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  while (true) {\n    final int channel=skewedSample(rnd,NUM_CHANNELS - 1);\n    if (ins[channel] != null) {\n      try {\n        val.read(ins[channel]);\n        int intValue;\n        try {\n          intValue=Integer.parseInt(val.value);\n        }\n catch (        NumberFormatException nfex) {\n          Assert.fail(\"Invalid value read from reader. Valid decimal number expected.\");\n          return;\n        }\n        Assert.assertEquals(\"Written and read values do not match.\",readingCounters[channel]++,intValue);\n        break;\n      }\n catch (      EOFException eofex) {\n        this.memoryManager.release(ins[channel].close());\n        ins[channel]=null;\n      }\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 92,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1161,
+        "startLineNumber" : 181,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 209,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "for (int i=0; i < NUMBERS_TO_BE_WRITTEN; i++) {\n  while (true) {\n    final int channel=skewedSample(rnd,NUM_CHANNELS - 1);\n    if (ins[channel] != null) {\n      try {\n        val.read(ins[channel]);\n        int intValue;\n        try {\n          intValue=Integer.parseInt(val.value);\n        }\n catch (        NumberFormatException nfex) {\n          Assert.fail(\"Invalid value read from reader. Valid decimal number expected.\");\n          return;\n        }\n        Assert.assertEquals(\"Written and read values do not match.\",readingCounters[channel]++,intValue);\n        break;\n      }\n catch (      EOFException eofex) {\n        this.memoryManager.release(ins[channel].close());\n        ins[channel]=null;\n      }\n    }\n  }\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 103,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5552,
+        "startLineNumber" : 85,
+        "startColumnNumber" : 56,
+        "endLineNumber" : 227,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final Random rnd=new Random(SEED);\n  final AbstractInvokable memOwner=new DummyInvokable();\n  FileIOChannel.ID[] ids=new FileIOChannel.ID[NUM_CHANNELS];\n  BlockChannelWriter<MemorySegment>[] writers=new BlockChannelWriter[NUM_CHANNELS];\n  BlockChannelReader<MemorySegment>[] readers=new BlockChannelReader[NUM_CHANNELS];\n  ChannelWriterOutputView[] outs=new ChannelWriterOutputView[NUM_CHANNELS];\n  ChannelReaderInputView[] ins=new ChannelReaderInputView[NUM_CHANNELS];\n  int[] writingCounters=new int[NUM_CHANNELS];\n  int[] readingCounters=new int[NUM_CHANNELS];\n  for (int i=0; i < NUM_CHANNELS; i++) {\n    ids[i]=this.ioManager.createChannel();\n    writers[i]=this.ioManager.createBlockChannelWriter(ids[i]);\n    List<MemorySegment> memSegs=this.memoryManager.allocatePages(memOwner,rnd.nextInt(MAXIMUM_NUMBER_OF_SEGMENTS_PER_CHANNEL - 1) + 1);\n    outs[i]=new ChannelWriterOutputView(writers[i],memSegs,this.memoryManager.getPageSize());\n  }\n  Value val=new Value();\n  for (int i=0; i < NUMBERS_TO_BE_WRITTEN; i++) {\n    int channel=skewedSample(rnd,NUM_CHANNELS - 1);\n    val.value=String.valueOf(writingCounters[channel]++);\n    val.write(outs[channel]);\n  }\n  for (int i=0; i < NUM_CHANNELS; i++) {\n    this.memoryManager.release(outs[i].close());\n  }\n  outs=null;\n  writers=null;\n  for (int i=0; i < NUM_CHANNELS; i++) {\n    List<MemorySegment> memSegs=this.memoryManager.allocatePages(memOwner,rnd.nextInt(MAXIMUM_NUMBER_OF_SEGMENTS_PER_CHANNEL - 1) + 1);\n    final BlockChannelReader<MemorySegment> reader=this.ioManager.createBlockChannelReader(ids[i]);\n    final ChannelReaderInputView in=new ChannelReaderInputView(reader,memSegs,false);\n    int nextVal=0;\n    try {\n      while (true) {\n        val.read(in);\n        int intValue=0;\n        try {\n          intValue=Integer.parseInt(val.value);\n        }\n catch (        NumberFormatException nfex) {\n          Assert.fail(\"Invalid value read from reader. Valid decimal number expected.\");\n        }\n        Assert.assertEquals(\"Written and read values do not match during sequential read.\",nextVal,intValue);\n        nextVal++;\n      }\n    }\n catch (    EOFException eofex) {\n    }\n    Assert.assertEquals(\"NUmber of written numbers differs from number of read numbers.\",writingCounters[i],nextVal);\n    this.memoryManager.release(in.close());\n  }\n  for (int i=0; i < NUM_CHANNELS; i++) {\n    List<MemorySegment> memSegs=this.memoryManager.allocatePages(memOwner,rnd.nextInt(MAXIMUM_NUMBER_OF_SEGMENTS_PER_CHANNEL - 1) + 1);\n    readers[i]=this.ioManager.createBlockChannelReader(ids[i]);\n    ins[i]=new ChannelReaderInputView(readers[i],memSegs,false);\n  }\n  for (int i=0; i < NUMBERS_TO_BE_WRITTEN; i++) {\n    while (true) {\n      final int channel=skewedSample(rnd,NUM_CHANNELS - 1);\n      if (ins[channel] != null) {\n        try {\n          val.read(ins[channel]);\n          int intValue;\n          try {\n            intValue=Integer.parseInt(val.value);\n          }\n catch (          NumberFormatException nfex) {\n            Assert.fail(\"Invalid value read from reader. Valid decimal number expected.\");\n            return;\n          }\n          Assert.assertEquals(\"Written and read values do not match.\",readingCounters[channel]++,intValue);\n          break;\n        }\n catch (        EOFException eofex) {\n          this.memoryManager.release(ins[channel].close());\n          ins[channel]=null;\n        }\n      }\n    }\n  }\n  for (int i=0; i < NUM_CHANNELS; i++) {\n    if (ins[i] != null) {\n      this.memoryManager.release(ins[i].close());\n    }\n    readers[i].closeAndDelete();\n  }\n  ins=null;\n  readers=null;\n  for (int i=0; i < NUM_CHANNELS; i++) {\n    File f=new File(ids[i].getPath());\n    Assert.assertFalse(\"Channel file has not been deleted.\",f.exists());\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 650,
+      "astHeight" : 16
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 5885,
+        "startLineNumber" : 78,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 227,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * This test instantiates multiple channels and writes to them in parallel and re-reads the data in parallel. It is designed to check the ability of the IO manager to correctly handle multiple threads.\n */\n@Test @SuppressWarnings(\"unchecked\") public void parallelChannelsTest() throws Exception {\n  final Random rnd=new Random(SEED);\n  final AbstractInvokable memOwner=new DummyInvokable();\n  FileIOChannel.ID[] ids=new FileIOChannel.ID[NUM_CHANNELS];\n  BlockChannelWriter<MemorySegment>[] writers=new BlockChannelWriter[NUM_CHANNELS];\n  BlockChannelReader<MemorySegment>[] readers=new BlockChannelReader[NUM_CHANNELS];\n  ChannelWriterOutputView[] outs=new ChannelWriterOutputView[NUM_CHANNELS];\n  ChannelReaderInputView[] ins=new ChannelReaderInputView[NUM_CHANNELS];\n  int[] writingCounters=new int[NUM_CHANNELS];\n  int[] readingCounters=new int[NUM_CHANNELS];\n  for (int i=0; i < NUM_CHANNELS; i++) {\n    ids[i]=this.ioManager.createChannel();\n    writers[i]=this.ioManager.createBlockChannelWriter(ids[i]);\n    List<MemorySegment> memSegs=this.memoryManager.allocatePages(memOwner,rnd.nextInt(MAXIMUM_NUMBER_OF_SEGMENTS_PER_CHANNEL - 1) + 1);\n    outs[i]=new ChannelWriterOutputView(writers[i],memSegs,this.memoryManager.getPageSize());\n  }\n  Value val=new Value();\n  for (int i=0; i < NUMBERS_TO_BE_WRITTEN; i++) {\n    int channel=skewedSample(rnd,NUM_CHANNELS - 1);\n    val.value=String.valueOf(writingCounters[channel]++);\n    val.write(outs[channel]);\n  }\n  for (int i=0; i < NUM_CHANNELS; i++) {\n    this.memoryManager.release(outs[i].close());\n  }\n  outs=null;\n  writers=null;\n  for (int i=0; i < NUM_CHANNELS; i++) {\n    List<MemorySegment> memSegs=this.memoryManager.allocatePages(memOwner,rnd.nextInt(MAXIMUM_NUMBER_OF_SEGMENTS_PER_CHANNEL - 1) + 1);\n    final BlockChannelReader<MemorySegment> reader=this.ioManager.createBlockChannelReader(ids[i]);\n    final ChannelReaderInputView in=new ChannelReaderInputView(reader,memSegs,false);\n    int nextVal=0;\n    try {\n      while (true) {\n        val.read(in);\n        int intValue=0;\n        try {\n          intValue=Integer.parseInt(val.value);\n        }\n catch (        NumberFormatException nfex) {\n          Assert.fail(\"Invalid value read from reader. Valid decimal number expected.\");\n        }\n        Assert.assertEquals(\"Written and read values do not match during sequential read.\",nextVal,intValue);\n        nextVal++;\n      }\n    }\n catch (    EOFException eofex) {\n    }\n    Assert.assertEquals(\"NUmber of written numbers differs from number of read numbers.\",writingCounters[i],nextVal);\n    this.memoryManager.release(in.close());\n  }\n  for (int i=0; i < NUM_CHANNELS; i++) {\n    List<MemorySegment> memSegs=this.memoryManager.allocatePages(memOwner,rnd.nextInt(MAXIMUM_NUMBER_OF_SEGMENTS_PER_CHANNEL - 1) + 1);\n    readers[i]=this.ioManager.createBlockChannelReader(ids[i]);\n    ins[i]=new ChannelReaderInputView(readers[i],memSegs,false);\n  }\n  for (int i=0; i < NUMBERS_TO_BE_WRITTEN; i++) {\n    while (true) {\n      final int channel=skewedSample(rnd,NUM_CHANNELS - 1);\n      if (ins[channel] != null) {\n        try {\n          val.read(ins[channel]);\n          int intValue;\n          try {\n            intValue=Integer.parseInt(val.value);\n          }\n catch (          NumberFormatException nfex) {\n            Assert.fail(\"Invalid value read from reader. Valid decimal number expected.\");\n            return;\n          }\n          Assert.assertEquals(\"Written and read values do not match.\",readingCounters[channel]++,intValue);\n          break;\n        }\n catch (        EOFException eofex) {\n          this.memoryManager.release(ins[channel].close());\n          ins[channel]=null;\n        }\n      }\n    }\n  }\n  for (int i=0; i < NUM_CHANNELS; i++) {\n    if (ins[i] != null) {\n      this.memoryManager.release(ins[i].close());\n    }\n    readers[i].closeAndDelete();\n  }\n  ins=null;\n  readers=null;\n  for (int i=0; i < NUM_CHANNELS; i++) {\n    File f=new File(ids[i].getPath());\n    Assert.assertFalse(\"Channel file has not been deleted.\",f.exists());\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 662,
+      "astHeight" : 17
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 56,
+        "startLineNumber" : 184,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 184,
+        "endColumnNumber" : 72
+      },
+      "nodeContext" : "final int channel=skewedSample(rnd,NUM_CHANNELS - 1);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 5
+    },
+    "tokenLength" : 6,
+    "type" : "int"
+  } ],
+  "positionList" : [ {
+    "charLength" : 35,
+    "startLineNumber" : 116,
+    "startColumnNumber" : 26,
+    "endLineNumber" : 116,
+    "endColumnNumber" : 61
+  }, {
+    "charLength" : 35,
+    "startLineNumber" : 184,
+    "startColumnNumber" : 36,
+    "endLineNumber" : 184,
+    "endColumnNumber" : 71
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 6
+  } ]
+}

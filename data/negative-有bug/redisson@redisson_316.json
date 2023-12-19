@@ -1,0 +1,113 @@
+{
+  "id" : 316,
+  "expression" : "false",
+  "projectName" : "redisson@redisson",
+  "commitID" : "62b5e68c05b7475e1e0f98b4161aacb35d376b97",
+  "filePath" : "/redisson/src/test/java/org/redisson/RedissonFairLockTest.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "false",
+    "nodeType" : "BooleanLiteral",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 69,
+      "startColumnNumber" : 65,
+      "endLineNumber" : 69,
+      "endColumnNumber" : 70
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 24,
+        "startLineNumber" : 69,
+        "startColumnNumber" : 47,
+        "endLineNumber" : 69,
+        "endColumnNumber" : 71
+      },
+      "nodeContext" : "new AtomicBoolean(false)",
+      "nodeType" : "ClassInstanceCreation",
+      "astNodeNumber" : 4,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 49,
+        "startLineNumber" : 69,
+        "startColumnNumber" : 22,
+        "endLineNumber" : 69,
+        "endColumnNumber" : 71
+      },
+      "nodeContext" : "lastThreadTryingToLock=new AtomicBoolean(false)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 64,
+        "startLineNumber" : 69,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 69,
+        "endColumnNumber" : 72
+      },
+      "nodeContext" : "AtomicBoolean lastThreadTryingToLock=new AtomicBoolean(false);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4677,
+        "startLineNumber" : 66,
+        "startColumnNumber" : 56,
+        "endLineNumber" : 157,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  int leaseTimeSeconds=30;\n  RLock lock=redisson.getFairLock(\"test-fair-lock\");\n  AtomicBoolean lastThreadTryingToLock=new AtomicBoolean(false);\n  ExecutorService executor=Executors.newFixedThreadPool(3);\n  for (int i=0; i < 50; i++) {\n    final int finalI=i;\n    executor.submit(() -> {\n      log.info(\"running \" + finalI + \" in thread \"+ Thread.currentThread().getId());\n      try {\n        if (lock.tryLock(500,leaseTimeSeconds * 1000,TimeUnit.MILLISECONDS)) {\n          log.info(\"Lock taken by thread \" + Thread.currentThread().getId());\n          Thread.sleep(10000);\n          try {\n            lock.unlock();\n            log.info(\"Lock released by thread \" + Thread.currentThread().getId());\n          }\n catch (          Exception ignored) {\n          }\n        }\n      }\n catch (      InterruptedException ex) {\n        log.warn(\"Interrupted \" + Thread.currentThread().getId());\n      }\ncatch (      Exception ex) {\n        log.error(ex.getMessage(),ex);\n      }\n    }\n);\n    if (i < 3) {\n      Thread.sleep(50);\n    }\n  }\n  executor.submit(() -> {\n    log.info(\"Final thread trying to take the lock with thread id: \" + Thread.currentThread().getId());\n    try {\n      lastThreadTryingToLock.set(true);\n      if (lock.tryLock(30000,30000,TimeUnit.MILLISECONDS)) {\n        log.info(\"Lock taken by final thread \" + Thread.currentThread().getId());\n        Thread.sleep(1000);\n        lock.unlock();\n        log.info(\"Lock released by final thread \" + Thread.currentThread().getId());\n      }\n    }\n catch (    InterruptedException ex) {\n      log.warn(\"Interrupted \" + Thread.currentThread().getId());\n    }\ncatch (    Exception ex) {\n      log.error(ex.getMessage(),ex);\n    }\n  }\n);\n  while (!lastThreadTryingToLock.get()) {\n    Thread.sleep(100);\n  }\n  executor.shutdownNow();\n  try {\n    lock.forceUnlock();\n  }\n catch (  Exception e) {\n    log.error(e.getMessage(),e);\n  }\n  if (lock.isLocked()) {\n    Assert.fail(\"Lock should have been unlocked by now\");\n  }\n  List<Long> queue=redisson.getScript(LongCodec.INSTANCE).eval(RScript.Mode.READ_ONLY,\"local result = {}; \" + \"local timeouts = redis.call('zrange', KEYS[1], 0, 99, 'WITHSCORES'); \" + \"for i=1,#timeouts,2 do \"+ \"table.insert(result, timeouts[i+1]); \"+ \"end; \"+ \"return result; \",RScript.ReturnType.MULTI,Collections.singletonList(\"redisson_lock_timeout:{test-fair-lock}\"));\n  int i=0;\n  for (  Long timeout : queue) {\n    long epiry=((timeout - new Date().getTime()) / 1000);\n    log.info(\"Item \" + (i++) + \" expires in \"+ epiry+ \" seconds\");\n    if (epiry > leaseTimeSeconds + 5) {\n      Assert.fail(\"It would take more than \" + leaseTimeSeconds + \"s to get the lock!\");\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 396,
+      "astHeight" : 19
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4739,
+        "startLineNumber" : 65,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 157,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test public void testWaitTimeoutDrift() throws Exception {\n  int leaseTimeSeconds=30;\n  RLock lock=redisson.getFairLock(\"test-fair-lock\");\n  AtomicBoolean lastThreadTryingToLock=new AtomicBoolean(false);\n  ExecutorService executor=Executors.newFixedThreadPool(3);\n  for (int i=0; i < 50; i++) {\n    final int finalI=i;\n    executor.submit(() -> {\n      log.info(\"running \" + finalI + \" in thread \"+ Thread.currentThread().getId());\n      try {\n        if (lock.tryLock(500,leaseTimeSeconds * 1000,TimeUnit.MILLISECONDS)) {\n          log.info(\"Lock taken by thread \" + Thread.currentThread().getId());\n          Thread.sleep(10000);\n          try {\n            lock.unlock();\n            log.info(\"Lock released by thread \" + Thread.currentThread().getId());\n          }\n catch (          Exception ignored) {\n          }\n        }\n      }\n catch (      InterruptedException ex) {\n        log.warn(\"Interrupted \" + Thread.currentThread().getId());\n      }\ncatch (      Exception ex) {\n        log.error(ex.getMessage(),ex);\n      }\n    }\n);\n    if (i < 3) {\n      Thread.sleep(50);\n    }\n  }\n  executor.submit(() -> {\n    log.info(\"Final thread trying to take the lock with thread id: \" + Thread.currentThread().getId());\n    try {\n      lastThreadTryingToLock.set(true);\n      if (lock.tryLock(30000,30000,TimeUnit.MILLISECONDS)) {\n        log.info(\"Lock taken by final thread \" + Thread.currentThread().getId());\n        Thread.sleep(1000);\n        lock.unlock();\n        log.info(\"Lock released by final thread \" + Thread.currentThread().getId());\n      }\n    }\n catch (    InterruptedException ex) {\n      log.warn(\"Interrupted \" + Thread.currentThread().getId());\n    }\ncatch (    Exception ex) {\n      log.error(ex.getMessage(),ex);\n    }\n  }\n);\n  while (!lastThreadTryingToLock.get()) {\n    Thread.sleep(100);\n  }\n  executor.shutdownNow();\n  try {\n    lock.forceUnlock();\n  }\n catch (  Exception e) {\n    log.error(e.getMessage(),e);\n  }\n  if (lock.isLocked()) {\n    Assert.fail(\"Lock should have been unlocked by now\");\n  }\n  List<Long> queue=redisson.getScript(LongCodec.INSTANCE).eval(RScript.Mode.READ_ONLY,\"local result = {}; \" + \"local timeouts = redis.call('zrange', KEYS[1], 0, 99, 'WITHSCORES'); \" + \"for i=1,#timeouts,2 do \"+ \"table.insert(result, timeouts[i+1]); \"+ \"end; \"+ \"return result; \",RScript.ReturnType.MULTI,Collections.singletonList(\"redisson_lock_timeout:{test-fair-lock}\"));\n  int i=0;\n  for (  Long timeout : queue) {\n    long epiry=((timeout - new Date().getTime()) / 1000);\n    log.info(\"Item \" + (i++) + \" expires in \"+ epiry+ \" seconds\");\n    if (epiry > leaseTimeSeconds + 5) {\n      Assert.fail(\"It would take more than \" + leaseTimeSeconds + \"s to get the lock!\");\n    }\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 404,
+      "astHeight" : 20
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 64,
+        "startLineNumber" : 69,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 69,
+        "endColumnNumber" : 72
+      },
+      "nodeContext" : "AtomicBoolean lastThreadTryingToLock=new AtomicBoolean(false);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "boolean"
+  } ],
+  "positionList" : [ {
+    "charLength" : 5,
+    "startLineNumber" : 69,
+    "startColumnNumber" : 65,
+    "endLineNumber" : 69,
+    "endColumnNumber" : 70
+  } ],
+  "layoutRelationDataList" : [ ]
+}

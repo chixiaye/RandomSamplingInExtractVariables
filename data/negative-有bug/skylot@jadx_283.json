@@ -1,0 +1,100 @@
+{
+  "id" : 283,
+  "expression" : "len.getType() != InsnType.ARRAY_LENGTH",
+  "projectName" : "skylot@jadx",
+  "commitID" : "eb2a1734d3e02c19814f628e10bf80de5fb19772",
+  "filePath" : "/jadx-core/src/main/java/jadx/core/dex/visitors/regions/LoopRegionVisitor.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "len.getType() != InsnType.ARRAY_LENGTH",
+    "nodeType" : "InfixExpression",
+    "nodePosition" : {
+      "charLength" : 38,
+      "startLineNumber" : 178,
+      "startColumnNumber" : 21,
+      "endLineNumber" : 178,
+      "endColumnNumber" : 59
+    },
+    "astNodeNumber" : 7,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 53,
+        "startLineNumber" : 178,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 178,
+        "endColumnNumber" : 59
+      },
+      "nodeContext" : "len == null || len.getType() != InsnType.ARRAY_LENGTH",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 11,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 80,
+        "startLineNumber" : 178,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 180,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "if (len == null || len.getType() != InsnType.ARRAY_LENGTH) {\n  return null;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2301,
+        "startLineNumber" : 129,
+        "startColumnNumber" : 66,
+        "endLineNumber" : 209,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  if (!(incrInsn instanceof ArithNode)) {\n    return null;\n  }\n  ArithNode arithNode=(ArithNode)incrInsn;\n  if (arithNode.getOp() != ArithOp.ADD) {\n    return null;\n  }\n  InsnArg lit=incrInsn.getArg(1);\n  if (!lit.isLiteral() || ((LiteralArg)lit).getLiteral() != 1) {\n    return null;\n  }\n  if (initInsn.getType() != InsnType.CONST || !initInsn.getArg(0).isLiteral() || ((LiteralArg)initInsn.getArg(0)).getLiteral() != 0) {\n    return null;\n  }\n  InsnArg condArg=incrInsn.getArg(0);\n  if (!condArg.isRegister()) {\n    return null;\n  }\n  SSAVar sVar=((RegisterArg)condArg).getSVar();\n  List<RegisterArg> args=sVar.getUseList();\n  if (args.size() != 3 || args.get(2) != condArg) {\n    return null;\n  }\n  condArg=args.get(0);\n  RegisterArg arrIndex=args.get(1);\n  InsnNode arrGetInsn=arrIndex.getParentInsn();\n  if (arrGetInsn == null || arrGetInsn.getType() != InsnType.AGET) {\n    return null;\n  }\n  if (!condition.isCompare()) {\n    return null;\n  }\n  Compare compare=condition.getCompare();\n  if (compare.getOp() != IfOp.LT || compare.getA() != condArg) {\n    return null;\n  }\n  InsnNode len;\n  InsnArg bCondArg=compare.getB();\n  if (bCondArg.isInsnWrap()) {\n    len=((InsnWrapArg)bCondArg).getWrapInsn();\n  }\n else   if (bCondArg.isRegister()) {\n    len=((RegisterArg)bCondArg).getAssignInsn();\n  }\n else {\n    return null;\n  }\n  if (len == null || len.getType() != InsnType.ARRAY_LENGTH) {\n    return null;\n  }\n  InsnArg arrayArg=len.getArg(0);\n  if (!arrayArg.equals(arrGetInsn.getArg(0))) {\n    return null;\n  }\n  RegisterArg iterVar=arrGetInsn.getResult();\n  if (iterVar == null) {\n    return null;\n  }\n  if (!usedOnlyInLoop(mth,loopRegion,iterVar)) {\n    return null;\n  }\n  len.add(AFlag.SKIP);\n  arrGetInsn.add(AFlag.SKIP);\n  InstructionRemover.unbindInsn(mth,len);\n  CodeShrinker.shrinkMethod(mth);\n  if (arrGetInsn.contains(AFlag.WRAPPED)) {\n    InsnArg wrapArg=BlockUtils.searchWrappedInsnParent(mth,arrGetInsn);\n    if (wrapArg != null && wrapArg.getParentInsn() != null) {\n      wrapArg.getParentInsn().replaceArg(wrapArg,iterVar);\n    }\n else {\n      LOG.debug(\" checkArrayForEach: Wrapped insn not found: {}, mth: {}\",arrGetInsn,mth);\n    }\n  }\n  return new ForEachLoop(iterVar,len.getArg(0));\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 404,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 2486,
+        "startLineNumber" : 128,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 209,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "private static LoopType checkArrayForEach(MethodNode mth,LoopRegion loopRegion,InsnNode initInsn,InsnNode incrInsn,IfCondition condition){\n  if (!(incrInsn instanceof ArithNode)) {\n    return null;\n  }\n  ArithNode arithNode=(ArithNode)incrInsn;\n  if (arithNode.getOp() != ArithOp.ADD) {\n    return null;\n  }\n  InsnArg lit=incrInsn.getArg(1);\n  if (!lit.isLiteral() || ((LiteralArg)lit).getLiteral() != 1) {\n    return null;\n  }\n  if (initInsn.getType() != InsnType.CONST || !initInsn.getArg(0).isLiteral() || ((LiteralArg)initInsn.getArg(0)).getLiteral() != 0) {\n    return null;\n  }\n  InsnArg condArg=incrInsn.getArg(0);\n  if (!condArg.isRegister()) {\n    return null;\n  }\n  SSAVar sVar=((RegisterArg)condArg).getSVar();\n  List<RegisterArg> args=sVar.getUseList();\n  if (args.size() != 3 || args.get(2) != condArg) {\n    return null;\n  }\n  condArg=args.get(0);\n  RegisterArg arrIndex=args.get(1);\n  InsnNode arrGetInsn=arrIndex.getParentInsn();\n  if (arrGetInsn == null || arrGetInsn.getType() != InsnType.AGET) {\n    return null;\n  }\n  if (!condition.isCompare()) {\n    return null;\n  }\n  Compare compare=condition.getCompare();\n  if (compare.getOp() != IfOp.LT || compare.getA() != condArg) {\n    return null;\n  }\n  InsnNode len;\n  InsnArg bCondArg=compare.getB();\n  if (bCondArg.isInsnWrap()) {\n    len=((InsnWrapArg)bCondArg).getWrapInsn();\n  }\n else   if (bCondArg.isRegister()) {\n    len=((RegisterArg)bCondArg).getAssignInsn();\n  }\n else {\n    return null;\n  }\n  if (len == null || len.getType() != InsnType.ARRAY_LENGTH) {\n    return null;\n  }\n  InsnArg arrayArg=len.getArg(0);\n  if (!arrayArg.equals(arrGetInsn.getArg(0))) {\n    return null;\n  }\n  RegisterArg iterVar=arrGetInsn.getResult();\n  if (iterVar == null) {\n    return null;\n  }\n  if (!usedOnlyInLoop(mth,loopRegion,iterVar)) {\n    return null;\n  }\n  len.add(AFlag.SKIP);\n  arrGetInsn.add(AFlag.SKIP);\n  InstructionRemover.unbindInsn(mth,len);\n  CodeShrinker.shrinkMethod(mth);\n  if (arrGetInsn.contains(AFlag.WRAPPED)) {\n    InsnArg wrapArg=BlockUtils.searchWrappedInsnParent(mth,arrGetInsn);\n    if (wrapArg != null && wrapArg.getParentInsn() != null) {\n      wrapArg.getParentInsn().replaceArg(wrapArg,iterVar);\n    }\n else {\n      LOG.debug(\" checkArrayForEach: Wrapped insn not found: {}, mth: {}\",arrGetInsn,mth);\n    }\n  }\n  return new ForEachLoop(iterVar,len.getArg(0));\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 430,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 53,
+        "startLineNumber" : 178,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 178,
+        "endColumnNumber" : 59
+      },
+      "nodeContext" : "len == null || len.getType() != InsnType.ARRAY_LENGTH",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 11,
+      "astHeight" : 4
+    },
+    "tokenLength" : 6,
+    "type" : "boolean"
+  } ],
+  "positionList" : [ {
+    "charLength" : 38,
+    "startLineNumber" : 178,
+    "startColumnNumber" : 21,
+    "endLineNumber" : 178,
+    "endColumnNumber" : 59
+  } ],
+  "layoutRelationDataList" : [ ]
+}

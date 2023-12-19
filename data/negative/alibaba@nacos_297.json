@@ -1,0 +1,100 @@
+{
+  "id" : 297,
+  "expression" : "KeyBuilder.isDatumCacheFile(file.getName())",
+  "projectName" : "alibaba@nacos",
+  "commitID" : "4e7346db1d6657ffe07c96bebd2d348229c2812f",
+  "filePath" : "/naming/src/main/java/com/alibaba/nacos/naming/consistency/persistent/raft/RaftStore.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "KeyBuilder.isDatumCacheFile(file.getName())",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 43,
+      "startLineNumber" : 149,
+      "startColumnNumber" : 13,
+      "endLineNumber" : 149,
+      "endColumnNumber" : 56
+    },
+    "astNodeNumber" : 6,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 44,
+        "startLineNumber" : 149,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 149,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "!KeyBuilder.isDatumCacheFile(file.getName())",
+      "nodeType" : "PrefixExpression",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 86,
+        "startLineNumber" : 149,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 151,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (!KeyBuilder.isDatumCacheFile(file.getName())) {\n  return null;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3866,
+        "startLineNumber" : 148,
+        "startColumnNumber" : 91,
+        "endLineNumber" : 234,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (!KeyBuilder.isDatumCacheFile(file.getName())) {\n    return null;\n  }\n  ByteBuffer buffer;\n  try (FileChannel fc=new FileInputStream(file).getChannel()){\n    buffer=ByteBuffer.allocate((int)file.length());\n    fc.read(buffer);\n    String json=new String(buffer.array(),StandardCharsets.UTF_8);\n    if (StringUtils.isBlank(json)) {\n      return null;\n    }\n    final String fileName=file.getName();\n    if (KeyBuilder.matchSwitchKey(fileName)) {\n      return JacksonUtils.toObj(json,new TypeReference<Datum<SwitchDomain>>(){\n      }\n);\n    }\n    if (KeyBuilder.matchServiceMetaKey(fileName)) {\n      Datum<Service> serviceDatum;\n      try {\n        serviceDatum=JacksonUtils.toObj(json.replace(\"\\\\\",\"\"),new TypeReference<Datum<Service>>(){\n        }\n);\n      }\n catch (      Exception e) {\n        JsonNode jsonObject=JacksonUtils.toObj(json);\n        serviceDatum=new Datum<>();\n        serviceDatum.timestamp.set(jsonObject.get(\"timestamp\").asLong());\n        serviceDatum.key=jsonObject.get(\"key\").asText();\n        serviceDatum.value=JacksonUtils.toObj(jsonObject.get(\"value\").toString(),Service.class);\n      }\n      if (StringUtils.isBlank(serviceDatum.value.getGroupName())) {\n        serviceDatum.value.setGroupName(Constants.DEFAULT_GROUP);\n      }\n      if (!serviceDatum.value.getName().contains(Constants.SERVICE_INFO_SPLITER)) {\n        serviceDatum.value.setName(Constants.DEFAULT_GROUP + Constants.SERVICE_INFO_SPLITER + serviceDatum.value.getName());\n      }\n      return serviceDatum;\n    }\n    if (KeyBuilder.matchInstanceListKey(fileName)) {\n      Datum<Instances> instancesDatum;\n      try {\n        instancesDatum=JacksonUtils.toObj(json,new TypeReference<Datum<Instances>>(){\n        }\n);\n      }\n catch (      Exception e) {\n        JsonNode jsonObject=JacksonUtils.toObj(json);\n        instancesDatum=new Datum<>();\n        instancesDatum.timestamp.set(jsonObject.get(\"timestamp\").asLong());\n        String key=jsonObject.get(\"key\").asText();\n        String serviceName=KeyBuilder.getServiceName(key);\n        key=key.substring(0,key.indexOf(serviceName)) + Constants.DEFAULT_GROUP + Constants.SERVICE_INFO_SPLITER+ serviceName;\n        instancesDatum.key=key;\n        instancesDatum.value=new Instances();\n        instancesDatum.value.setInstanceList(JacksonUtils.toObj(jsonObject.get(\"value\").toString(),new TypeReference<List<Instance>>(){\n        }\n));\n        if (!instancesDatum.value.getInstanceList().isEmpty()) {\n          for (          Instance instance : instancesDatum.value.getInstanceList()) {\n            instance.setEphemeral(false);\n          }\n        }\n      }\n      return instancesDatum;\n    }\n    return JacksonUtils.toObj(json,Datum.class);\n  }\n catch (  Exception e) {\n    Loggers.RAFT.warn(\"waning: failed to deserialize key: {}\",file.getName());\n    throw e;\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 448,
+      "astHeight" : 16
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3953,
+        "startLineNumber" : 148,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 234,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "private synchronized Datum readDatum(File file,String namespaceId) throws IOException {\n  if (!KeyBuilder.isDatumCacheFile(file.getName())) {\n    return null;\n  }\n  ByteBuffer buffer;\n  try (FileChannel fc=new FileInputStream(file).getChannel()){\n    buffer=ByteBuffer.allocate((int)file.length());\n    fc.read(buffer);\n    String json=new String(buffer.array(),StandardCharsets.UTF_8);\n    if (StringUtils.isBlank(json)) {\n      return null;\n    }\n    final String fileName=file.getName();\n    if (KeyBuilder.matchSwitchKey(fileName)) {\n      return JacksonUtils.toObj(json,new TypeReference<Datum<SwitchDomain>>(){\n      }\n);\n    }\n    if (KeyBuilder.matchServiceMetaKey(fileName)) {\n      Datum<Service> serviceDatum;\n      try {\n        serviceDatum=JacksonUtils.toObj(json.replace(\"\\\\\",\"\"),new TypeReference<Datum<Service>>(){\n        }\n);\n      }\n catch (      Exception e) {\n        JsonNode jsonObject=JacksonUtils.toObj(json);\n        serviceDatum=new Datum<>();\n        serviceDatum.timestamp.set(jsonObject.get(\"timestamp\").asLong());\n        serviceDatum.key=jsonObject.get(\"key\").asText();\n        serviceDatum.value=JacksonUtils.toObj(jsonObject.get(\"value\").toString(),Service.class);\n      }\n      if (StringUtils.isBlank(serviceDatum.value.getGroupName())) {\n        serviceDatum.value.setGroupName(Constants.DEFAULT_GROUP);\n      }\n      if (!serviceDatum.value.getName().contains(Constants.SERVICE_INFO_SPLITER)) {\n        serviceDatum.value.setName(Constants.DEFAULT_GROUP + Constants.SERVICE_INFO_SPLITER + serviceDatum.value.getName());\n      }\n      return serviceDatum;\n    }\n    if (KeyBuilder.matchInstanceListKey(fileName)) {\n      Datum<Instances> instancesDatum;\n      try {\n        instancesDatum=JacksonUtils.toObj(json,new TypeReference<Datum<Instances>>(){\n        }\n);\n      }\n catch (      Exception e) {\n        JsonNode jsonObject=JacksonUtils.toObj(json);\n        instancesDatum=new Datum<>();\n        instancesDatum.timestamp.set(jsonObject.get(\"timestamp\").asLong());\n        String key=jsonObject.get(\"key\").asText();\n        String serviceName=KeyBuilder.getServiceName(key);\n        key=key.substring(0,key.indexOf(serviceName)) + Constants.DEFAULT_GROUP + Constants.SERVICE_INFO_SPLITER+ serviceName;\n        instancesDatum.key=key;\n        instancesDatum.value=new Instances();\n        instancesDatum.value.setInstanceList(JacksonUtils.toObj(jsonObject.get(\"value\").toString(),new TypeReference<List<Instance>>(){\n        }\n));\n        if (!instancesDatum.value.getInstanceList().isEmpty()) {\n          for (          Instance instance : instancesDatum.value.getInstanceList()) {\n            instance.setEphemeral(false);\n          }\n        }\n      }\n      return instancesDatum;\n    }\n    return JacksonUtils.toObj(json,Datum.class);\n  }\n catch (  Exception e) {\n    Loggers.RAFT.warn(\"waning: failed to deserialize key: {}\",file.getName());\n    throw e;\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 464,
+      "astHeight" : 17
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 44,
+        "startLineNumber" : 149,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 149,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "!KeyBuilder.isDatumCacheFile(file.getName())",
+      "nodeType" : "PrefixExpression",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    },
+    "tokenLength" : 4,
+    "type" : "boolean"
+  } ],
+  "positionList" : [ {
+    "charLength" : 43,
+    "startLineNumber" : 149,
+    "startColumnNumber" : 13,
+    "endLineNumber" : 149,
+    "endColumnNumber" : 56
+  } ],
+  "layoutRelationDataList" : [ ]
+}

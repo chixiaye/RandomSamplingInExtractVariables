@@ -1,0 +1,87 @@
+{
+  "id" : 275,
+  "expression" : "index < sortedGlobal.length",
+  "projectName" : "apache@druid",
+  "commitID" : "f6662b4893a9b8cc8a0ebb77e63daddde882148d",
+  "filePath" : "/processing/src/main/java/org/apache/druid/segment/nested/GlobalDictionaryEncodedFieldColumnWriter.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "index < sortedGlobal.length",
+    "nodeType" : "InfixExpression",
+    "nodePosition" : {
+      "charLength" : 27,
+      "startLineNumber" : 197,
+      "startColumnNumber" : 24,
+      "endLineNumber" : 197,
+      "endColumnNumber" : 51
+    },
+    "astNodeNumber" : 5,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 372,
+        "startLineNumber" : 197,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 203,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "for (int index=0; index < sortedGlobal.length; index++) {\n  final int globalId=sortedGlobal[index];\n  sortedDictionaryWriter.write(globalId);\n  final int unsortedId=globalToUnsorted.get(globalId);\n  unsortedToSorted[unsortedId]=index;\n  bitmaps[index]=indexSpec.getBitmapSerdeFactory().getBitmapFactory().makeEmptyMutableBitmap();\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 54,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3693,
+        "startLineNumber" : 170,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 251,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  if (finalRowCount > cursorPosition) {\n    fillNull(finalRowCount);\n  }\n  final SegmentWriteOutMedium tmpWriteoutMedium=segmentWriteOutMedium.makeChildWriteOutMedium();\n  final FixedIndexedIntWriter sortedDictionaryWriter=new FixedIndexedIntWriter(tmpWriteoutMedium,true);\n  sortedDictionaryWriter.open();\n  GenericIndexedWriter<ImmutableBitmap> bitmapIndexWriter=new GenericIndexedWriter<>(tmpWriteoutMedium,columnName,indexSpec.getBitmapSerdeFactory().getObjectStrategy());\n  bitmapIndexWriter.open();\n  bitmapIndexWriter.setObjectsNotSorted();\n  final Int2IntOpenHashMap globalToUnsorted=localDictionary.getGlobalIdToLocalId();\n  final int[] unsortedToGlobal=new int[localDictionary.size()];\n  for (  int key : globalToUnsorted.keySet()) {\n    unsortedToGlobal[globalToUnsorted.get(key)]=key;\n  }\n  final int[] sortedGlobal=new int[unsortedToGlobal.length];\n  System.arraycopy(unsortedToGlobal,0,sortedGlobal,0,unsortedToGlobal.length);\n  IntArrays.unstableSort(sortedGlobal);\n  final int[] unsortedToSorted=new int[unsortedToGlobal.length];\n  final MutableBitmap[] bitmaps=new MutableBitmap[sortedGlobal.length];\n  for (int index=0; index < sortedGlobal.length; index++) {\n    final int globalId=sortedGlobal[index];\n    sortedDictionaryWriter.write(globalId);\n    final int unsortedId=globalToUnsorted.get(globalId);\n    unsortedToSorted[unsortedId]=index;\n    bitmaps[index]=indexSpec.getBitmapSerdeFactory().getBitmapFactory().makeEmptyMutableBitmap();\n  }\n  openColumnSerializer(tmpWriteoutMedium,sortedGlobal[sortedGlobal.length - 1]);\n  final IntIterator rows=intermediateValueWriter.getIterator();\n  int rowCount=0;\n  while (rows.hasNext()) {\n    final int unsortedLocalId=rows.nextInt();\n    final int sortedLocalId=unsortedToSorted[unsortedLocalId];\n    encodedValueSerializer.addValue(sortedLocalId);\n    bitmaps[sortedLocalId].add(rowCount++);\n  }\n  for (  MutableBitmap bitmap : bitmaps) {\n    bitmapIndexWriter.write(indexSpec.getBitmapSerdeFactory().getBitmapFactory().makeImmutableBitmap(bitmap));\n  }\n  final Serializer fieldSerializer=new Serializer(){\n    @Override public long getSerializedSize() throws IOException {\n      return 1 + Integer.BYTES + sortedDictionaryWriter.getSerializedSize()+ bitmapIndexWriter.getSerializedSize()+ getSerializedColumnSize();\n    }\n    @Override public void writeTo(    WritableByteChannel channel,    FileSmoosher smoosher) throws IOException {\n      Channels.writeFully(channel,ByteBuffer.wrap(new byte[]{version.asByte()}));\n      channel.write(ByteBuffer.wrap(Ints.toByteArray(flags)));\n      sortedDictionaryWriter.writeTo(channel,smoosher);\n      writeColumnTo(channel,smoosher);\n      bitmapIndexWriter.writeTo(channel,smoosher);\n    }\n  }\n;\n  final String fieldFileName=NestedDataColumnSerializer.getFieldFileName(columnName,fieldName);\n  final long size=fieldSerializer.getSerializedSize();\n  log.debug(\"Column [%s] serializing [%s] field of size [%d].\",columnName,fieldName,size);\n  try (SmooshedWriter smooshChannel=smoosher.addWithSmooshedWriter(fieldFileName,size)){\n    fieldSerializer.writeTo(smooshChannel,smoosher);\n  }\n  finally {\n    tmpWriteoutMedium.close();\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 437,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3777,
+        "startLineNumber" : 169,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 251,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "public void writeTo(int finalRowCount,FileSmoosher smoosher) throws IOException {\n  if (finalRowCount > cursorPosition) {\n    fillNull(finalRowCount);\n  }\n  final SegmentWriteOutMedium tmpWriteoutMedium=segmentWriteOutMedium.makeChildWriteOutMedium();\n  final FixedIndexedIntWriter sortedDictionaryWriter=new FixedIndexedIntWriter(tmpWriteoutMedium,true);\n  sortedDictionaryWriter.open();\n  GenericIndexedWriter<ImmutableBitmap> bitmapIndexWriter=new GenericIndexedWriter<>(tmpWriteoutMedium,columnName,indexSpec.getBitmapSerdeFactory().getObjectStrategy());\n  bitmapIndexWriter.open();\n  bitmapIndexWriter.setObjectsNotSorted();\n  final Int2IntOpenHashMap globalToUnsorted=localDictionary.getGlobalIdToLocalId();\n  final int[] unsortedToGlobal=new int[localDictionary.size()];\n  for (  int key : globalToUnsorted.keySet()) {\n    unsortedToGlobal[globalToUnsorted.get(key)]=key;\n  }\n  final int[] sortedGlobal=new int[unsortedToGlobal.length];\n  System.arraycopy(unsortedToGlobal,0,sortedGlobal,0,unsortedToGlobal.length);\n  IntArrays.unstableSort(sortedGlobal);\n  final int[] unsortedToSorted=new int[unsortedToGlobal.length];\n  final MutableBitmap[] bitmaps=new MutableBitmap[sortedGlobal.length];\n  for (int index=0; index < sortedGlobal.length; index++) {\n    final int globalId=sortedGlobal[index];\n    sortedDictionaryWriter.write(globalId);\n    final int unsortedId=globalToUnsorted.get(globalId);\n    unsortedToSorted[unsortedId]=index;\n    bitmaps[index]=indexSpec.getBitmapSerdeFactory().getBitmapFactory().makeEmptyMutableBitmap();\n  }\n  openColumnSerializer(tmpWriteoutMedium,sortedGlobal[sortedGlobal.length - 1]);\n  final IntIterator rows=intermediateValueWriter.getIterator();\n  int rowCount=0;\n  while (rows.hasNext()) {\n    final int unsortedLocalId=rows.nextInt();\n    final int sortedLocalId=unsortedToSorted[unsortedLocalId];\n    encodedValueSerializer.addValue(sortedLocalId);\n    bitmaps[sortedLocalId].add(rowCount++);\n  }\n  for (  MutableBitmap bitmap : bitmaps) {\n    bitmapIndexWriter.write(indexSpec.getBitmapSerdeFactory().getBitmapFactory().makeImmutableBitmap(bitmap));\n  }\n  final Serializer fieldSerializer=new Serializer(){\n    @Override public long getSerializedSize() throws IOException {\n      return 1 + Integer.BYTES + sortedDictionaryWriter.getSerializedSize()+ bitmapIndexWriter.getSerializedSize()+ getSerializedColumnSize();\n    }\n    @Override public void writeTo(    WritableByteChannel channel,    FileSmoosher smoosher) throws IOException {\n      Channels.writeFully(channel,ByteBuffer.wrap(new byte[]{version.asByte()}));\n      channel.write(ByteBuffer.wrap(Ints.toByteArray(flags)));\n      sortedDictionaryWriter.writeTo(channel,smoosher);\n      writeColumnTo(channel,smoosher);\n      bitmapIndexWriter.writeTo(channel,smoosher);\n    }\n  }\n;\n  final String fieldFileName=NestedDataColumnSerializer.getFieldFileName(columnName,fieldName);\n  final long size=fieldSerializer.getSerializedSize();\n  log.debug(\"Column [%s] serializing [%s] field of size [%d].\",columnName,fieldName,size);\n  try (SmooshedWriter smooshChannel=smoosher.addWithSmooshedWriter(fieldFileName,size)){\n    fieldSerializer.writeTo(smooshChannel,smoosher);\n  }\n  finally {\n    tmpWriteoutMedium.close();\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 450,
+      "astHeight" : 15
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 372,
+        "startLineNumber" : 197,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 203,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "for (int index=0; index < sortedGlobal.length; index++) {\n  final int globalId=sortedGlobal[index];\n  sortedDictionaryWriter.write(globalId);\n  final int unsortedId=globalToUnsorted.get(globalId);\n  unsortedToSorted[unsortedId]=index;\n  bitmaps[index]=indexSpec.getBitmapSerdeFactory().getBitmapFactory().makeEmptyMutableBitmap();\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 54,
+      "astHeight" : 8
+    },
+    "tokenLength" : 4,
+    "type" : "boolean"
+  } ],
+  "positionList" : [ {
+    "charLength" : 27,
+    "startLineNumber" : 197,
+    "startColumnNumber" : 24,
+    "endLineNumber" : 197,
+    "endColumnNumber" : 51
+  } ],
+  "layoutRelationDataList" : [ ]
+}

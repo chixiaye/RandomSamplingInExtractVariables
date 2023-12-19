@@ -1,0 +1,415 @@
+{
+  "id" : 322,
+  "expression" : "e",
+  "projectName" : "apache@pulsar",
+  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
+  "filePath" : "/pulsar-broker/src/test/java/org/apache/pulsar/client/impl/ReaderTest.java",
+  "occurrences" : 3,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "e",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 1,
+      "startLineNumber" : 380,
+      "startColumnNumber" : 54,
+      "endLineNumber" : 380,
+      "endColumnNumber" : 55
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 44,
+        "startLineNumber" : 380,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 380,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "log.error(\"Create key hash range failed\",e)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 5,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 45,
+        "startLineNumber" : 380,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 380,
+        "endColumnNumber" : 57
+      },
+      "nodeContext" : "log.error(\"Create key hash range failed\",e);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.CatchClause,body]",
+      "nodePosition" : {
+        "charLength" : 69,
+        "startLineNumber" : 379,
+        "startColumnNumber" : 45,
+        "endLineNumber" : 381,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  log.error(\"Create key hash range failed\",e);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TryStatement,catchClauses]",
+      "nodePosition" : {
+        "charLength" : 104,
+        "startLineNumber" : 379,
+        "startColumnNumber" : 10,
+        "endLineNumber" : 381,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "catch (IllegalArgumentException e) {\n  log.error(\"Create key hash range failed\",e);\n}\n",
+      "nodeType" : "CatchClause",
+      "astNodeNumber" : 12,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 421,
+        "startLineNumber" : 372,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 381,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "try {\n  pulsarClient.newReader().topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(0,10000),Range.of(8000,12000)).create();\n  fail(\"should failed with unexpected key hash range\");\n}\n catch (IllegalArgumentException e) {\n  log.error(\"Create key hash range failed\",e);\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 44,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3099,
+        "startLineNumber" : 368,
+        "startColumnNumber" : 60,
+        "endLineNumber" : 449,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final List<String> keys=Arrays.asList(\"0\",\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\");\n  final String topic=\"persistent://my-property/my-ns/testKeyHashRangeReader\";\n  try {\n    pulsarClient.newReader().topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(0,10000),Range.of(8000,12000)).create();\n    fail(\"should failed with unexpected key hash range\");\n  }\n catch (  IllegalArgumentException e) {\n    log.error(\"Create key hash range failed\",e);\n  }\n  try {\n    pulsarClient.newReader().topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(30000,20000)).create();\n    fail(\"should failed with unexpected key hash range\");\n  }\n catch (  IllegalArgumentException e) {\n    log.error(\"Create key hash range failed\",e);\n  }\n  try {\n    pulsarClient.newReader().topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(80000,90000)).create();\n    fail(\"should failed with unexpected key hash range\");\n  }\n catch (  IllegalArgumentException e) {\n    log.error(\"Create key hash range failed\",e);\n  }\n  @Cleanup Reader<String> reader=pulsarClient.newReader(Schema.STRING).topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(0,StickyKeyConsumerSelector.DEFAULT_RANGE_SIZE / 2)).create();\n  @Cleanup Producer<String> producer=pulsarClient.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();\n  int expectedMessages=0;\n  for (  String key : keys) {\n    int slot=Murmur3_32Hash.getInstance().makeHash(key.getBytes()) % StickyKeyConsumerSelector.DEFAULT_RANGE_SIZE;\n    if (slot <= StickyKeyConsumerSelector.DEFAULT_RANGE_SIZE / 2) {\n      expectedMessages++;\n    }\n    producer.newMessage().key(key).value(key).send();\n    log.info(\"Publish message to slot {}\",slot);\n  }\n  List<String> receivedMessages=new ArrayList<>();\n  Message<String> msg;\n  do {\n    msg=reader.readNext(1,TimeUnit.SECONDS);\n    if (msg != null) {\n      receivedMessages.add(msg.getValue());\n    }\n  }\n while (msg != null);\n  assertTrue(expectedMessages > 0);\n  assertEquals(receivedMessages.size(),expectedMessages);\n  for (  String receivedMessage : receivedMessages) {\n    log.info(\"Receive message {}\",receivedMessage);\n    assertTrue(Integer.parseInt(receivedMessage) <= StickyKeyConsumerSelector.DEFAULT_RANGE_SIZE / 2);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 357,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3165,
+        "startLineNumber" : 367,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 449,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test public void testKeyHashRangeReader() throws IOException {\n  final List<String> keys=Arrays.asList(\"0\",\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\");\n  final String topic=\"persistent://my-property/my-ns/testKeyHashRangeReader\";\n  try {\n    pulsarClient.newReader().topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(0,10000),Range.of(8000,12000)).create();\n    fail(\"should failed with unexpected key hash range\");\n  }\n catch (  IllegalArgumentException e) {\n    log.error(\"Create key hash range failed\",e);\n  }\n  try {\n    pulsarClient.newReader().topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(30000,20000)).create();\n    fail(\"should failed with unexpected key hash range\");\n  }\n catch (  IllegalArgumentException e) {\n    log.error(\"Create key hash range failed\",e);\n  }\n  try {\n    pulsarClient.newReader().topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(80000,90000)).create();\n    fail(\"should failed with unexpected key hash range\");\n  }\n catch (  IllegalArgumentException e) {\n    log.error(\"Create key hash range failed\",e);\n  }\n  @Cleanup Reader<String> reader=pulsarClient.newReader(Schema.STRING).topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(0,StickyKeyConsumerSelector.DEFAULT_RANGE_SIZE / 2)).create();\n  @Cleanup Producer<String> producer=pulsarClient.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();\n  int expectedMessages=0;\n  for (  String key : keys) {\n    int slot=Murmur3_32Hash.getInstance().makeHash(key.getBytes()) % StickyKeyConsumerSelector.DEFAULT_RANGE_SIZE;\n    if (slot <= StickyKeyConsumerSelector.DEFAULT_RANGE_SIZE / 2) {\n      expectedMessages++;\n    }\n    producer.newMessage().key(key).value(key).send();\n    log.info(\"Publish message to slot {}\",slot);\n  }\n  List<String> receivedMessages=new ArrayList<>();\n  Message<String> msg;\n  do {\n    msg=reader.readNext(1,TimeUnit.SECONDS);\n    if (msg != null) {\n      receivedMessages.add(msg.getValue());\n    }\n  }\n while (msg != null);\n  assertTrue(expectedMessages > 0);\n  assertEquals(receivedMessages.size(),expectedMessages);\n  for (  String receivedMessage : receivedMessages) {\n    log.info(\"Receive message {}\",receivedMessage);\n    assertTrue(Integer.parseInt(receivedMessage) <= StickyKeyConsumerSelector.DEFAULT_RANGE_SIZE / 2);\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 365,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 45,
+        "startLineNumber" : 380,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 380,
+        "endColumnNumber" : 57
+      },
+      "nodeContext" : "log.error(\"Create key hash range failed\",e);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "java.lang.IllegalArgumentException"
+  }, {
+    "nodeContext" : "e",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 1,
+      "startLineNumber" : 391,
+      "startColumnNumber" : 54,
+      "endLineNumber" : 391,
+      "endColumnNumber" : 55
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 44,
+        "startLineNumber" : 391,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 391,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "log.error(\"Create key hash range failed\",e)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 5,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 45,
+        "startLineNumber" : 391,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 391,
+        "endColumnNumber" : 57
+      },
+      "nodeContext" : "log.error(\"Create key hash range failed\",e);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.CatchClause,body]",
+      "nodePosition" : {
+        "charLength" : 69,
+        "startLineNumber" : 390,
+        "startColumnNumber" : 45,
+        "endLineNumber" : 392,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  log.error(\"Create key hash range failed\",e);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TryStatement,catchClauses]",
+      "nodePosition" : {
+        "charLength" : 104,
+        "startLineNumber" : 390,
+        "startColumnNumber" : 10,
+        "endLineNumber" : 392,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "catch (IllegalArgumentException e) {\n  log.error(\"Create key hash range failed\",e);\n}\n",
+      "nodeType" : "CatchClause",
+      "astNodeNumber" : 12,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 402,
+        "startLineNumber" : 383,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 392,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "try {\n  pulsarClient.newReader().topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(30000,20000)).create();\n  fail(\"should failed with unexpected key hash range\");\n}\n catch (IllegalArgumentException e) {\n  log.error(\"Create key hash range failed\",e);\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 39,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3099,
+        "startLineNumber" : 368,
+        "startColumnNumber" : 60,
+        "endLineNumber" : 449,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final List<String> keys=Arrays.asList(\"0\",\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\");\n  final String topic=\"persistent://my-property/my-ns/testKeyHashRangeReader\";\n  try {\n    pulsarClient.newReader().topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(0,10000),Range.of(8000,12000)).create();\n    fail(\"should failed with unexpected key hash range\");\n  }\n catch (  IllegalArgumentException e) {\n    log.error(\"Create key hash range failed\",e);\n  }\n  try {\n    pulsarClient.newReader().topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(30000,20000)).create();\n    fail(\"should failed with unexpected key hash range\");\n  }\n catch (  IllegalArgumentException e) {\n    log.error(\"Create key hash range failed\",e);\n  }\n  try {\n    pulsarClient.newReader().topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(80000,90000)).create();\n    fail(\"should failed with unexpected key hash range\");\n  }\n catch (  IllegalArgumentException e) {\n    log.error(\"Create key hash range failed\",e);\n  }\n  @Cleanup Reader<String> reader=pulsarClient.newReader(Schema.STRING).topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(0,StickyKeyConsumerSelector.DEFAULT_RANGE_SIZE / 2)).create();\n  @Cleanup Producer<String> producer=pulsarClient.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();\n  int expectedMessages=0;\n  for (  String key : keys) {\n    int slot=Murmur3_32Hash.getInstance().makeHash(key.getBytes()) % StickyKeyConsumerSelector.DEFAULT_RANGE_SIZE;\n    if (slot <= StickyKeyConsumerSelector.DEFAULT_RANGE_SIZE / 2) {\n      expectedMessages++;\n    }\n    producer.newMessage().key(key).value(key).send();\n    log.info(\"Publish message to slot {}\",slot);\n  }\n  List<String> receivedMessages=new ArrayList<>();\n  Message<String> msg;\n  do {\n    msg=reader.readNext(1,TimeUnit.SECONDS);\n    if (msg != null) {\n      receivedMessages.add(msg.getValue());\n    }\n  }\n while (msg != null);\n  assertTrue(expectedMessages > 0);\n  assertEquals(receivedMessages.size(),expectedMessages);\n  for (  String receivedMessage : receivedMessages) {\n    log.info(\"Receive message {}\",receivedMessage);\n    assertTrue(Integer.parseInt(receivedMessage) <= StickyKeyConsumerSelector.DEFAULT_RANGE_SIZE / 2);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 357,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3165,
+        "startLineNumber" : 367,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 449,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test public void testKeyHashRangeReader() throws IOException {\n  final List<String> keys=Arrays.asList(\"0\",\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\");\n  final String topic=\"persistent://my-property/my-ns/testKeyHashRangeReader\";\n  try {\n    pulsarClient.newReader().topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(0,10000),Range.of(8000,12000)).create();\n    fail(\"should failed with unexpected key hash range\");\n  }\n catch (  IllegalArgumentException e) {\n    log.error(\"Create key hash range failed\",e);\n  }\n  try {\n    pulsarClient.newReader().topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(30000,20000)).create();\n    fail(\"should failed with unexpected key hash range\");\n  }\n catch (  IllegalArgumentException e) {\n    log.error(\"Create key hash range failed\",e);\n  }\n  try {\n    pulsarClient.newReader().topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(80000,90000)).create();\n    fail(\"should failed with unexpected key hash range\");\n  }\n catch (  IllegalArgumentException e) {\n    log.error(\"Create key hash range failed\",e);\n  }\n  @Cleanup Reader<String> reader=pulsarClient.newReader(Schema.STRING).topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(0,StickyKeyConsumerSelector.DEFAULT_RANGE_SIZE / 2)).create();\n  @Cleanup Producer<String> producer=pulsarClient.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();\n  int expectedMessages=0;\n  for (  String key : keys) {\n    int slot=Murmur3_32Hash.getInstance().makeHash(key.getBytes()) % StickyKeyConsumerSelector.DEFAULT_RANGE_SIZE;\n    if (slot <= StickyKeyConsumerSelector.DEFAULT_RANGE_SIZE / 2) {\n      expectedMessages++;\n    }\n    producer.newMessage().key(key).value(key).send();\n    log.info(\"Publish message to slot {}\",slot);\n  }\n  List<String> receivedMessages=new ArrayList<>();\n  Message<String> msg;\n  do {\n    msg=reader.readNext(1,TimeUnit.SECONDS);\n    if (msg != null) {\n      receivedMessages.add(msg.getValue());\n    }\n  }\n while (msg != null);\n  assertTrue(expectedMessages > 0);\n  assertEquals(receivedMessages.size(),expectedMessages);\n  for (  String receivedMessage : receivedMessages) {\n    log.info(\"Receive message {}\",receivedMessage);\n    assertTrue(Integer.parseInt(receivedMessage) <= StickyKeyConsumerSelector.DEFAULT_RANGE_SIZE / 2);\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 365,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 45,
+        "startLineNumber" : 391,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 391,
+        "endColumnNumber" : 57
+      },
+      "nodeContext" : "log.error(\"Create key hash range failed\",e);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "java.lang.IllegalArgumentException"
+  }, {
+    "nodeContext" : "e",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 1,
+      "startLineNumber" : 402,
+      "startColumnNumber" : 54,
+      "endLineNumber" : 402,
+      "endColumnNumber" : 55
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 44,
+        "startLineNumber" : 402,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 402,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "log.error(\"Create key hash range failed\",e)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 5,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 45,
+        "startLineNumber" : 402,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 402,
+        "endColumnNumber" : 57
+      },
+      "nodeContext" : "log.error(\"Create key hash range failed\",e);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.CatchClause,body]",
+      "nodePosition" : {
+        "charLength" : 69,
+        "startLineNumber" : 401,
+        "startColumnNumber" : 45,
+        "endLineNumber" : 403,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  log.error(\"Create key hash range failed\",e);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TryStatement,catchClauses]",
+      "nodePosition" : {
+        "charLength" : 104,
+        "startLineNumber" : 401,
+        "startColumnNumber" : 10,
+        "endLineNumber" : 403,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "catch (IllegalArgumentException e) {\n  log.error(\"Create key hash range failed\",e);\n}\n",
+      "nodeType" : "CatchClause",
+      "astNodeNumber" : 12,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 402,
+        "startLineNumber" : 394,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 403,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "try {\n  pulsarClient.newReader().topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(80000,90000)).create();\n  fail(\"should failed with unexpected key hash range\");\n}\n catch (IllegalArgumentException e) {\n  log.error(\"Create key hash range failed\",e);\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 39,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3099,
+        "startLineNumber" : 368,
+        "startColumnNumber" : 60,
+        "endLineNumber" : 449,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final List<String> keys=Arrays.asList(\"0\",\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\");\n  final String topic=\"persistent://my-property/my-ns/testKeyHashRangeReader\";\n  try {\n    pulsarClient.newReader().topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(0,10000),Range.of(8000,12000)).create();\n    fail(\"should failed with unexpected key hash range\");\n  }\n catch (  IllegalArgumentException e) {\n    log.error(\"Create key hash range failed\",e);\n  }\n  try {\n    pulsarClient.newReader().topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(30000,20000)).create();\n    fail(\"should failed with unexpected key hash range\");\n  }\n catch (  IllegalArgumentException e) {\n    log.error(\"Create key hash range failed\",e);\n  }\n  try {\n    pulsarClient.newReader().topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(80000,90000)).create();\n    fail(\"should failed with unexpected key hash range\");\n  }\n catch (  IllegalArgumentException e) {\n    log.error(\"Create key hash range failed\",e);\n  }\n  @Cleanup Reader<String> reader=pulsarClient.newReader(Schema.STRING).topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(0,StickyKeyConsumerSelector.DEFAULT_RANGE_SIZE / 2)).create();\n  @Cleanup Producer<String> producer=pulsarClient.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();\n  int expectedMessages=0;\n  for (  String key : keys) {\n    int slot=Murmur3_32Hash.getInstance().makeHash(key.getBytes()) % StickyKeyConsumerSelector.DEFAULT_RANGE_SIZE;\n    if (slot <= StickyKeyConsumerSelector.DEFAULT_RANGE_SIZE / 2) {\n      expectedMessages++;\n    }\n    producer.newMessage().key(key).value(key).send();\n    log.info(\"Publish message to slot {}\",slot);\n  }\n  List<String> receivedMessages=new ArrayList<>();\n  Message<String> msg;\n  do {\n    msg=reader.readNext(1,TimeUnit.SECONDS);\n    if (msg != null) {\n      receivedMessages.add(msg.getValue());\n    }\n  }\n while (msg != null);\n  assertTrue(expectedMessages > 0);\n  assertEquals(receivedMessages.size(),expectedMessages);\n  for (  String receivedMessage : receivedMessages) {\n    log.info(\"Receive message {}\",receivedMessage);\n    assertTrue(Integer.parseInt(receivedMessage) <= StickyKeyConsumerSelector.DEFAULT_RANGE_SIZE / 2);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 357,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3165,
+        "startLineNumber" : 367,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 449,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test public void testKeyHashRangeReader() throws IOException {\n  final List<String> keys=Arrays.asList(\"0\",\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\");\n  final String topic=\"persistent://my-property/my-ns/testKeyHashRangeReader\";\n  try {\n    pulsarClient.newReader().topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(0,10000),Range.of(8000,12000)).create();\n    fail(\"should failed with unexpected key hash range\");\n  }\n catch (  IllegalArgumentException e) {\n    log.error(\"Create key hash range failed\",e);\n  }\n  try {\n    pulsarClient.newReader().topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(30000,20000)).create();\n    fail(\"should failed with unexpected key hash range\");\n  }\n catch (  IllegalArgumentException e) {\n    log.error(\"Create key hash range failed\",e);\n  }\n  try {\n    pulsarClient.newReader().topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(80000,90000)).create();\n    fail(\"should failed with unexpected key hash range\");\n  }\n catch (  IllegalArgumentException e) {\n    log.error(\"Create key hash range failed\",e);\n  }\n  @Cleanup Reader<String> reader=pulsarClient.newReader(Schema.STRING).topic(topic).startMessageId(MessageId.earliest).keyHashRange(Range.of(0,StickyKeyConsumerSelector.DEFAULT_RANGE_SIZE / 2)).create();\n  @Cleanup Producer<String> producer=pulsarClient.newProducer(Schema.STRING).topic(topic).enableBatching(false).create();\n  int expectedMessages=0;\n  for (  String key : keys) {\n    int slot=Murmur3_32Hash.getInstance().makeHash(key.getBytes()) % StickyKeyConsumerSelector.DEFAULT_RANGE_SIZE;\n    if (slot <= StickyKeyConsumerSelector.DEFAULT_RANGE_SIZE / 2) {\n      expectedMessages++;\n    }\n    producer.newMessage().key(key).value(key).send();\n    log.info(\"Publish message to slot {}\",slot);\n  }\n  List<String> receivedMessages=new ArrayList<>();\n  Message<String> msg;\n  do {\n    msg=reader.readNext(1,TimeUnit.SECONDS);\n    if (msg != null) {\n      receivedMessages.add(msg.getValue());\n    }\n  }\n while (msg != null);\n  assertTrue(expectedMessages > 0);\n  assertEquals(receivedMessages.size(),expectedMessages);\n  for (  String receivedMessage : receivedMessages) {\n    log.info(\"Receive message {}\",receivedMessage);\n    assertTrue(Integer.parseInt(receivedMessage) <= StickyKeyConsumerSelector.DEFAULT_RANGE_SIZE / 2);\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 365,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 45,
+        "startLineNumber" : 402,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 402,
+        "endColumnNumber" : 57
+      },
+      "nodeContext" : "log.error(\"Create key hash range failed\",e);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "java.lang.IllegalArgumentException"
+  } ],
+  "positionList" : [ {
+    "charLength" : 1,
+    "startLineNumber" : 380,
+    "startColumnNumber" : 54,
+    "endLineNumber" : 380,
+    "endColumnNumber" : 55
+  }, {
+    "charLength" : 1,
+    "startLineNumber" : 391,
+    "startColumnNumber" : 54,
+    "endLineNumber" : 391,
+    "endColumnNumber" : 55
+  }, {
+    "charLength" : 1,
+    "startLineNumber" : 402,
+    "startColumnNumber" : 54,
+    "endLineNumber" : 402,
+    "endColumnNumber" : 55
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 5
+  } ]
+}

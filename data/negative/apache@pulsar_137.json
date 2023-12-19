@@ -1,0 +1,126 @@
+{
+  "id" : 137,
+  "expression" : "new RuntimeException(e)",
+  "projectName" : "apache@pulsar",
+  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
+  "filePath" : "/pulsar-io/canal/src/main/java/org/apache/pulsar/io/canal/MessageUtils.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "new RuntimeException(e)",
+    "nodeType" : "ClassInstanceCreation",
+    "nodePosition" : {
+      "charLength" : 23,
+      "startLineNumber" : 157,
+      "startColumnNumber" : 18,
+      "endLineNumber" : 157,
+      "endColumnNumber" : 41
+    },
+    "astNodeNumber" : 4,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 157,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 157,
+        "endColumnNumber" : 42
+      },
+      "nodeContext" : "throw new RuntimeException(e);\n",
+      "nodeType" : "ThrowStatement",
+      "astNodeNumber" : 5,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.CatchClause,body]",
+      "nodePosition" : {
+        "charLength" : 54,
+        "startLineNumber" : 156,
+        "startColumnNumber" : 30,
+        "endLineNumber" : 158,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  throw new RuntimeException(e);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 6,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TryStatement,catchClauses]",
+      "nodePosition" : {
+        "charLength" : 74,
+        "startLineNumber" : 156,
+        "startColumnNumber" : 10,
+        "endLineNumber" : 158,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "catch (Exception e) {\n  throw new RuntimeException(e);\n}\n",
+      "nodeType" : "CatchClause",
+      "astNodeNumber" : 11,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 4065,
+        "startLineNumber" : 67,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 158,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "try {\n  if (message == null) {\n    return null;\n  }\n  List<FlatMessage> flatMessages=new ArrayList<>();\n  List<CanalEntry.Entry> entrys=null;\n  if (message.isRaw()) {\n    List<ByteString> rawEntries=message.getRawEntries();\n    entrys=new ArrayList<CanalEntry.Entry>(rawEntries.size());\n    for (    ByteString byteString : rawEntries) {\n      CanalEntry.Entry entry=CanalEntry.Entry.parseFrom(byteString);\n      entrys.add(entry);\n    }\n  }\n else {\n    entrys=message.getEntries();\n  }\n  for (  CanalEntry.Entry entry : entrys) {\n    if (entry.getEntryType() == CanalEntry.EntryType.TRANSACTIONBEGIN || entry.getEntryType() == CanalEntry.EntryType.TRANSACTIONEND) {\n      continue;\n    }\n    CanalEntry.RowChange rowChange;\n    try {\n      rowChange=CanalEntry.RowChange.parseFrom(entry.getStoreValue());\n    }\n catch (    Exception e) {\n      throw new RuntimeException(\"ERROR ## parser of eromanga-event has an error , data:\" + entry.toString(),e);\n    }\n    CanalEntry.EventType eventType=rowChange.getEventType();\n    FlatMessage flatMessage=new FlatMessage(message.getId());\n    flatMessages.add(flatMessage);\n    flatMessage.setDatabase(entry.getHeader().getSchemaName());\n    flatMessage.setTable(entry.getHeader().getTableName());\n    flatMessage.setIsDdl(rowChange.getIsDdl());\n    flatMessage.setType(eventType.toString());\n    flatMessage.setEs(entry.getHeader().getExecuteTime());\n    flatMessage.setTs(System.currentTimeMillis());\n    flatMessage.setSql(rowChange.getSql());\n    if (!rowChange.getIsDdl()) {\n      List<Map<String,String>> data=new ArrayList<>();\n      List<Map<String,String>> old=new ArrayList<>();\n      for (      CanalEntry.RowData rowData : rowChange.getRowDatasList()) {\n        if (eventType != CanalEntry.EventType.INSERT && eventType != CanalEntry.EventType.UPDATE && eventType != CanalEntry.EventType.DELETE) {\n          continue;\n        }\n        List<CanalEntry.Column> columns;\n        if (eventType == CanalEntry.EventType.DELETE) {\n          columns=rowData.getBeforeColumnsList();\n        }\n else {\n          columns=rowData.getAfterColumnsList();\n        }\n        columns.size();\n        for (        CanalEntry.Column column : columns) {\n          Map<String,String> row=genColumn(column);\n          if (column.getUpdated()) {\n            row.put(\"updated\",\"1\");\n          }\n else {\n            row.put(\"updated\",\"0\");\n          }\n          data.add(row);\n        }\n        if (eventType == CanalEntry.EventType.UPDATE) {\n          for (          CanalEntry.Column column : rowData.getBeforeColumnsList()) {\n            Map<String,String> rowOld=genColumn(column);\n            old.add(rowOld);\n          }\n        }\n      }\n      if (!data.isEmpty()) {\n        flatMessage.setData(data);\n      }\n      if (!old.isEmpty()) {\n        flatMessage.setOld(old);\n      }\n    }\n  }\n  return flatMessages;\n}\n catch (Exception e) {\n  throw new RuntimeException(e);\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 473,
+      "astHeight" : 16
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4081,
+        "startLineNumber" : 66,
+        "startColumnNumber" : 70,
+        "endLineNumber" : 159,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  try {\n    if (message == null) {\n      return null;\n    }\n    List<FlatMessage> flatMessages=new ArrayList<>();\n    List<CanalEntry.Entry> entrys=null;\n    if (message.isRaw()) {\n      List<ByteString> rawEntries=message.getRawEntries();\n      entrys=new ArrayList<CanalEntry.Entry>(rawEntries.size());\n      for (      ByteString byteString : rawEntries) {\n        CanalEntry.Entry entry=CanalEntry.Entry.parseFrom(byteString);\n        entrys.add(entry);\n      }\n    }\n else {\n      entrys=message.getEntries();\n    }\n    for (    CanalEntry.Entry entry : entrys) {\n      if (entry.getEntryType() == CanalEntry.EntryType.TRANSACTIONBEGIN || entry.getEntryType() == CanalEntry.EntryType.TRANSACTIONEND) {\n        continue;\n      }\n      CanalEntry.RowChange rowChange;\n      try {\n        rowChange=CanalEntry.RowChange.parseFrom(entry.getStoreValue());\n      }\n catch (      Exception e) {\n        throw new RuntimeException(\"ERROR ## parser of eromanga-event has an error , data:\" + entry.toString(),e);\n      }\n      CanalEntry.EventType eventType=rowChange.getEventType();\n      FlatMessage flatMessage=new FlatMessage(message.getId());\n      flatMessages.add(flatMessage);\n      flatMessage.setDatabase(entry.getHeader().getSchemaName());\n      flatMessage.setTable(entry.getHeader().getTableName());\n      flatMessage.setIsDdl(rowChange.getIsDdl());\n      flatMessage.setType(eventType.toString());\n      flatMessage.setEs(entry.getHeader().getExecuteTime());\n      flatMessage.setTs(System.currentTimeMillis());\n      flatMessage.setSql(rowChange.getSql());\n      if (!rowChange.getIsDdl()) {\n        List<Map<String,String>> data=new ArrayList<>();\n        List<Map<String,String>> old=new ArrayList<>();\n        for (        CanalEntry.RowData rowData : rowChange.getRowDatasList()) {\n          if (eventType != CanalEntry.EventType.INSERT && eventType != CanalEntry.EventType.UPDATE && eventType != CanalEntry.EventType.DELETE) {\n            continue;\n          }\n          List<CanalEntry.Column> columns;\n          if (eventType == CanalEntry.EventType.DELETE) {\n            columns=rowData.getBeforeColumnsList();\n          }\n else {\n            columns=rowData.getAfterColumnsList();\n          }\n          columns.size();\n          for (          CanalEntry.Column column : columns) {\n            Map<String,String> row=genColumn(column);\n            if (column.getUpdated()) {\n              row.put(\"updated\",\"1\");\n            }\n else {\n              row.put(\"updated\",\"0\");\n            }\n            data.add(row);\n          }\n          if (eventType == CanalEntry.EventType.UPDATE) {\n            for (            CanalEntry.Column column : rowData.getBeforeColumnsList()) {\n              Map<String,String> rowOld=genColumn(column);\n              old.add(rowOld);\n            }\n          }\n        }\n        if (!data.isEmpty()) {\n          flatMessage.setData(data);\n        }\n        if (!old.isEmpty()) {\n          flatMessage.setOld(old);\n        }\n      }\n    }\n    return flatMessages;\n  }\n catch (  Exception e) {\n    throw new RuntimeException(e);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 474,
+      "astHeight" : 17
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4262,
+        "startLineNumber" : 60,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 159,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Message convert to FlatMessage\n * @param message\n * @return FlatMessage List\n */\npublic static List<FlatMessage> messageConverter(Message message){\n  try {\n    if (message == null) {\n      return null;\n    }\n    List<FlatMessage> flatMessages=new ArrayList<>();\n    List<CanalEntry.Entry> entrys=null;\n    if (message.isRaw()) {\n      List<ByteString> rawEntries=message.getRawEntries();\n      entrys=new ArrayList<CanalEntry.Entry>(rawEntries.size());\n      for (      ByteString byteString : rawEntries) {\n        CanalEntry.Entry entry=CanalEntry.Entry.parseFrom(byteString);\n        entrys.add(entry);\n      }\n    }\n else {\n      entrys=message.getEntries();\n    }\n    for (    CanalEntry.Entry entry : entrys) {\n      if (entry.getEntryType() == CanalEntry.EntryType.TRANSACTIONBEGIN || entry.getEntryType() == CanalEntry.EntryType.TRANSACTIONEND) {\n        continue;\n      }\n      CanalEntry.RowChange rowChange;\n      try {\n        rowChange=CanalEntry.RowChange.parseFrom(entry.getStoreValue());\n      }\n catch (      Exception e) {\n        throw new RuntimeException(\"ERROR ## parser of eromanga-event has an error , data:\" + entry.toString(),e);\n      }\n      CanalEntry.EventType eventType=rowChange.getEventType();\n      FlatMessage flatMessage=new FlatMessage(message.getId());\n      flatMessages.add(flatMessage);\n      flatMessage.setDatabase(entry.getHeader().getSchemaName());\n      flatMessage.setTable(entry.getHeader().getTableName());\n      flatMessage.setIsDdl(rowChange.getIsDdl());\n      flatMessage.setType(eventType.toString());\n      flatMessage.setEs(entry.getHeader().getExecuteTime());\n      flatMessage.setTs(System.currentTimeMillis());\n      flatMessage.setSql(rowChange.getSql());\n      if (!rowChange.getIsDdl()) {\n        List<Map<String,String>> data=new ArrayList<>();\n        List<Map<String,String>> old=new ArrayList<>();\n        for (        CanalEntry.RowData rowData : rowChange.getRowDatasList()) {\n          if (eventType != CanalEntry.EventType.INSERT && eventType != CanalEntry.EventType.UPDATE && eventType != CanalEntry.EventType.DELETE) {\n            continue;\n          }\n          List<CanalEntry.Column> columns;\n          if (eventType == CanalEntry.EventType.DELETE) {\n            columns=rowData.getBeforeColumnsList();\n          }\n else {\n            columns=rowData.getAfterColumnsList();\n          }\n          columns.size();\n          for (          CanalEntry.Column column : columns) {\n            Map<String,String> row=genColumn(column);\n            if (column.getUpdated()) {\n              row.put(\"updated\",\"1\");\n            }\n else {\n              row.put(\"updated\",\"0\");\n            }\n            data.add(row);\n          }\n          if (eventType == CanalEntry.EventType.UPDATE) {\n            for (            CanalEntry.Column column : rowData.getBeforeColumnsList()) {\n              Map<String,String> rowOld=genColumn(column);\n              old.add(rowOld);\n            }\n          }\n        }\n        if (!data.isEmpty()) {\n          flatMessage.setData(data);\n        }\n        if (!old.isEmpty()) {\n          flatMessage.setOld(old);\n        }\n      }\n    }\n    return flatMessages;\n  }\n catch (  Exception e) {\n    throw new RuntimeException(e);\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 488,
+      "astHeight" : 18
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 157,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 157,
+        "endColumnNumber" : 42
+      },
+      "nodeContext" : "throw new RuntimeException(e);\n",
+      "nodeType" : "ThrowStatement",
+      "astNodeNumber" : 5,
+      "astHeight" : 4
+    },
+    "tokenLength" : 2,
+    "type" : "java.lang.RuntimeException"
+  } ],
+  "positionList" : [ {
+    "charLength" : 23,
+    "startLineNumber" : 157,
+    "startColumnNumber" : 18,
+    "endLineNumber" : 157,
+    "endColumnNumber" : 41
+  } ],
+  "layoutRelationDataList" : [ ]
+}

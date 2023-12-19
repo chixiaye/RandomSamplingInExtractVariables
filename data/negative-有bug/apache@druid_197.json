@@ -1,0 +1,87 @@
+{
+  "id" : 197,
+  "expression" : "subPaths == null",
+  "projectName" : "apache@druid",
+  "commitID" : "f6662b4893a9b8cc8a0ebb77e63daddde882148d",
+  "filePath" : "/server/src/main/java/org/apache/druid/curator/announcement/Announcer.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "subPaths == null",
+    "nodeType" : "InfixExpression",
+    "nodePosition" : {
+      "charLength" : 16,
+      "startLineNumber" : 209,
+      "startColumnNumber" : 8,
+      "endLineNumber" : 209,
+      "endColumnNumber" : 24
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 4884,
+        "startLineNumber" : 209,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 308,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "if (subPaths == null) {\n  try {\n    if (curator.checkExists().forPath(parentPath) == null) {\n      buildParentPath=true;\n    }\n  }\n catch (  Exception e) {\n    log.debug(e,\"Problem checking if the parent existed, ignoring.\");\n  }\n  announcements.putIfAbsent(parentPath,new ConcurrentHashMap<>());\n  final ConcurrentMap<String,byte[]> finalSubPaths=announcements.get(parentPath);\nsynchronized (finalSubPaths) {\n    if (!listeners.containsKey(parentPath)) {\n      final PathChildrenCache cache=factory.make(curator,parentPath);\n      cache.getListenable().addListener(new PathChildrenCacheListener(){\n        private final AtomicReference<Set<String>> pathsLost=new AtomicReference<Set<String>>(null);\n        @Override public void childEvent(        CuratorFramework client,        PathChildrenCacheEvent event) throws Exception {\n          log.debug(\"Path[%s] got event[%s]\",parentPath,event);\nswitch (event.getType()) {\ncase CHILD_REMOVED:            final ChildData child=event.getData();\n          final ZKPaths.PathAndNode childPath=ZKPaths.getPathAndNode(child.getPath());\n        final byte[] value=finalSubPaths.get(childPath.getNode());\n      if (value != null) {\n        log.info(\"Node[%s] dropped, reinstating.\",child.getPath());\n        createAnnouncement(child.getPath(),value);\n      }\n    break;\ncase CONNECTION_LOST:  Set<String> pathsToReinstate=new HashSet<>();\nfor (String node : finalSubPaths.keySet()) {\n  String path=ZKPaths.makePath(parentPath,node);\n  log.info(\"Node[%s] is added to reinstate.\",path);\n  pathsToReinstate.add(path);\n}\nif (!pathsToReinstate.isEmpty() && !pathsLost.compareAndSet(null,pathsToReinstate)) {\nlog.info(\"Already had a pathsLost set!?[%s]\",parentPath);\n}\nbreak;\ncase CONNECTION_RECONNECTED:final Set<String> thePathsLost=pathsLost.getAndSet(null);\nif (thePathsLost != null) {\nfor (String path : thePathsLost) {\nlog.info(\"Reinstating [%s]\",path);\nfinal ZKPaths.PathAndNode split=ZKPaths.getPathAndNode(path);\ncreateAnnouncement(path,announcements.get(split.getPath()).get(split.getNode()));\n}\n}\nbreak;\ncase CHILD_ADDED:if (addedChildren != null) {\naddedChildren.add(event.getData().getPath());\n}\ncase INITIALIZED:case CHILD_UPDATED:case CONNECTION_SUSPENDED:}\n}\n}\n);\nsynchronized (toAnnounce) {\nif (started) {\nif (buildParentPath) {\ncreatePath(parentPath,removeParentIfCreated);\n}\nstartCache(cache);\nlisteners.put(parentPath,cache);\n}\n}\n}\n}\nsubPaths=finalSubPaths;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 374,
+      "astHeight" : 23
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5843,
+        "startLineNumber" : 194,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 331,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\nsynchronized (toAnnounce) {\n    if (!started) {\n      toAnnounce.add(new Announceable(path,bytes,removeParentIfCreated));\n      return;\n    }\n  }\n  final ZKPaths.PathAndNode pathAndNode=ZKPaths.getPathAndNode(path);\n  final String parentPath=pathAndNode.getPath();\n  boolean buildParentPath=false;\n  ConcurrentMap<String,byte[]> subPaths=announcements.get(parentPath);\n  if (subPaths == null) {\n    try {\n      if (curator.checkExists().forPath(parentPath) == null) {\n        buildParentPath=true;\n      }\n    }\n catch (    Exception e) {\n      log.debug(e,\"Problem checking if the parent existed, ignoring.\");\n    }\n    announcements.putIfAbsent(parentPath,new ConcurrentHashMap<>());\n    final ConcurrentMap<String,byte[]> finalSubPaths=announcements.get(parentPath);\nsynchronized (finalSubPaths) {\n      if (!listeners.containsKey(parentPath)) {\n        final PathChildrenCache cache=factory.make(curator,parentPath);\n        cache.getListenable().addListener(new PathChildrenCacheListener(){\n          private final AtomicReference<Set<String>> pathsLost=new AtomicReference<Set<String>>(null);\n          @Override public void childEvent(          CuratorFramework client,          PathChildrenCacheEvent event) throws Exception {\n            log.debug(\"Path[%s] got event[%s]\",parentPath,event);\nswitch (event.getType()) {\ncase CHILD_REMOVED:              final ChildData child=event.getData();\n            final ZKPaths.PathAndNode childPath=ZKPaths.getPathAndNode(child.getPath());\n          final byte[] value=finalSubPaths.get(childPath.getNode());\n        if (value != null) {\n          log.info(\"Node[%s] dropped, reinstating.\",child.getPath());\n          createAnnouncement(child.getPath(),value);\n        }\n      break;\ncase CONNECTION_LOST:    Set<String> pathsToReinstate=new HashSet<>();\n  for (  String node : finalSubPaths.keySet()) {\n    String path=ZKPaths.makePath(parentPath,node);\n    log.info(\"Node[%s] is added to reinstate.\",path);\n    pathsToReinstate.add(path);\n  }\nif (!pathsToReinstate.isEmpty() && !pathsLost.compareAndSet(null,pathsToReinstate)) {\n  log.info(\"Already had a pathsLost set!?[%s]\",parentPath);\n}\nbreak;\ncase CONNECTION_RECONNECTED:final Set<String> thePathsLost=pathsLost.getAndSet(null);\nif (thePathsLost != null) {\nfor (String path : thePathsLost) {\nlog.info(\"Reinstating [%s]\",path);\nfinal ZKPaths.PathAndNode split=ZKPaths.getPathAndNode(path);\ncreateAnnouncement(path,announcements.get(split.getPath()).get(split.getNode()));\n}\n}\nbreak;\ncase CHILD_ADDED:if (addedChildren != null) {\naddedChildren.add(event.getData().getPath());\n}\ncase INITIALIZED:case CHILD_UPDATED:case CONNECTION_SUSPENDED:}\n}\n}\n);\nsynchronized (toAnnounce) {\nif (started) {\nif (buildParentPath) {\ncreatePath(parentPath,removeParentIfCreated);\n}\nstartCache(cache);\nlisteners.put(parentPath,cache);\n}\n}\n}\n}\nsubPaths=finalSubPaths;\n}\nboolean created=false;\nsynchronized (toAnnounce) {\nif (started) {\nbyte[] oldBytes=subPaths.putIfAbsent(pathAndNode.getNode(),bytes);\nif (oldBytes == null) {\ncreated=true;\n}\n else if (!Arrays.equals(oldBytes,bytes)) {\nthrow new IAE(\"Cannot reannounce different values under the same path\");\n}\n}\n}\nif (created) {\ntry {\ncreateAnnouncement(path,bytes);\n}\n catch (Exception e) {\nthrow new RuntimeException(e);\n}\n}\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 501,
+      "astHeight" : 24
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 6361,
+        "startLineNumber" : 185,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 331,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "/** \n * Announces the provided bytes at the given path.  Announcement means that it will create an ephemeral node and monitor it to make sure that it always exists until it is unannounced or this object is closed.\n * @param path                  The path to announce at\n * @param bytes                 The payload to announce\n * @param removeParentIfCreated remove parent of \"path\" if we had created that parent\n */\npublic void announce(String path,byte[] bytes,boolean removeParentIfCreated){\nsynchronized (toAnnounce) {\n    if (!started) {\n      toAnnounce.add(new Announceable(path,bytes,removeParentIfCreated));\n      return;\n    }\n  }\n  final ZKPaths.PathAndNode pathAndNode=ZKPaths.getPathAndNode(path);\n  final String parentPath=pathAndNode.getPath();\n  boolean buildParentPath=false;\n  ConcurrentMap<String,byte[]> subPaths=announcements.get(parentPath);\n  if (subPaths == null) {\n    try {\n      if (curator.checkExists().forPath(parentPath) == null) {\n        buildParentPath=true;\n      }\n    }\n catch (    Exception e) {\n      log.debug(e,\"Problem checking if the parent existed, ignoring.\");\n    }\n    announcements.putIfAbsent(parentPath,new ConcurrentHashMap<>());\n    final ConcurrentMap<String,byte[]> finalSubPaths=announcements.get(parentPath);\nsynchronized (finalSubPaths) {\n      if (!listeners.containsKey(parentPath)) {\n        final PathChildrenCache cache=factory.make(curator,parentPath);\n        cache.getListenable().addListener(new PathChildrenCacheListener(){\n          private final AtomicReference<Set<String>> pathsLost=new AtomicReference<Set<String>>(null);\n          @Override public void childEvent(          CuratorFramework client,          PathChildrenCacheEvent event) throws Exception {\n            log.debug(\"Path[%s] got event[%s]\",parentPath,event);\nswitch (event.getType()) {\ncase CHILD_REMOVED:              final ChildData child=event.getData();\n            final ZKPaths.PathAndNode childPath=ZKPaths.getPathAndNode(child.getPath());\n          final byte[] value=finalSubPaths.get(childPath.getNode());\n        if (value != null) {\n          log.info(\"Node[%s] dropped, reinstating.\",child.getPath());\n          createAnnouncement(child.getPath(),value);\n        }\n      break;\ncase CONNECTION_LOST:    Set<String> pathsToReinstate=new HashSet<>();\n  for (  String node : finalSubPaths.keySet()) {\n    String path=ZKPaths.makePath(parentPath,node);\n    log.info(\"Node[%s] is added to reinstate.\",path);\n    pathsToReinstate.add(path);\n  }\nif (!pathsToReinstate.isEmpty() && !pathsLost.compareAndSet(null,pathsToReinstate)) {\n  log.info(\"Already had a pathsLost set!?[%s]\",parentPath);\n}\nbreak;\ncase CONNECTION_RECONNECTED:final Set<String> thePathsLost=pathsLost.getAndSet(null);\nif (thePathsLost != null) {\nfor (String path : thePathsLost) {\nlog.info(\"Reinstating [%s]\",path);\nfinal ZKPaths.PathAndNode split=ZKPaths.getPathAndNode(path);\ncreateAnnouncement(path,announcements.get(split.getPath()).get(split.getNode()));\n}\n}\nbreak;\ncase CHILD_ADDED:if (addedChildren != null) {\naddedChildren.add(event.getData().getPath());\n}\ncase INITIALIZED:case CHILD_UPDATED:case CONNECTION_SUSPENDED:}\n}\n}\n);\nsynchronized (toAnnounce) {\nif (started) {\nif (buildParentPath) {\ncreatePath(parentPath,removeParentIfCreated);\n}\nstartCache(cache);\nlisteners.put(parentPath,cache);\n}\n}\n}\n}\nsubPaths=finalSubPaths;\n}\nboolean created=false;\nsynchronized (toAnnounce) {\nif (started) {\nbyte[] oldBytes=subPaths.putIfAbsent(pathAndNode.getNode(),bytes);\nif (oldBytes == null) {\ncreated=true;\n}\n else if (!Arrays.equals(oldBytes,bytes)) {\nthrow new IAE(\"Cannot reannounce different values under the same path\");\n}\n}\n}\nif (created) {\ntry {\ncreateAnnouncement(path,bytes);\n}\n catch (Exception e) {\nthrow new RuntimeException(e);\n}\n}\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 518,
+      "astHeight" : 25
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 4884,
+        "startLineNumber" : 209,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 308,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "if (subPaths == null) {\n  try {\n    if (curator.checkExists().forPath(parentPath) == null) {\n      buildParentPath=true;\n    }\n  }\n catch (  Exception e) {\n    log.debug(e,\"Problem checking if the parent existed, ignoring.\");\n  }\n  announcements.putIfAbsent(parentPath,new ConcurrentHashMap<>());\n  final ConcurrentMap<String,byte[]> finalSubPaths=announcements.get(parentPath);\nsynchronized (finalSubPaths) {\n    if (!listeners.containsKey(parentPath)) {\n      final PathChildrenCache cache=factory.make(curator,parentPath);\n      cache.getListenable().addListener(new PathChildrenCacheListener(){\n        private final AtomicReference<Set<String>> pathsLost=new AtomicReference<Set<String>>(null);\n        @Override public void childEvent(        CuratorFramework client,        PathChildrenCacheEvent event) throws Exception {\n          log.debug(\"Path[%s] got event[%s]\",parentPath,event);\nswitch (event.getType()) {\ncase CHILD_REMOVED:            final ChildData child=event.getData();\n          final ZKPaths.PathAndNode childPath=ZKPaths.getPathAndNode(child.getPath());\n        final byte[] value=finalSubPaths.get(childPath.getNode());\n      if (value != null) {\n        log.info(\"Node[%s] dropped, reinstating.\",child.getPath());\n        createAnnouncement(child.getPath(),value);\n      }\n    break;\ncase CONNECTION_LOST:  Set<String> pathsToReinstate=new HashSet<>();\nfor (String node : finalSubPaths.keySet()) {\n  String path=ZKPaths.makePath(parentPath,node);\n  log.info(\"Node[%s] is added to reinstate.\",path);\n  pathsToReinstate.add(path);\n}\nif (!pathsToReinstate.isEmpty() && !pathsLost.compareAndSet(null,pathsToReinstate)) {\nlog.info(\"Already had a pathsLost set!?[%s]\",parentPath);\n}\nbreak;\ncase CONNECTION_RECONNECTED:final Set<String> thePathsLost=pathsLost.getAndSet(null);\nif (thePathsLost != null) {\nfor (String path : thePathsLost) {\nlog.info(\"Reinstating [%s]\",path);\nfinal ZKPaths.PathAndNode split=ZKPaths.getPathAndNode(path);\ncreateAnnouncement(path,announcements.get(split.getPath()).get(split.getNode()));\n}\n}\nbreak;\ncase CHILD_ADDED:if (addedChildren != null) {\naddedChildren.add(event.getData().getPath());\n}\ncase INITIALIZED:case CHILD_UPDATED:case CONNECTION_SUSPENDED:}\n}\n}\n);\nsynchronized (toAnnounce) {\nif (started) {\nif (buildParentPath) {\ncreatePath(parentPath,removeParentIfCreated);\n}\nstartCache(cache);\nlisteners.put(parentPath,cache);\n}\n}\n}\n}\nsubPaths=finalSubPaths;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 374,
+      "astHeight" : 23
+    },
+    "tokenLength" : 3,
+    "type" : "boolean"
+  } ],
+  "positionList" : [ {
+    "charLength" : 16,
+    "startLineNumber" : 209,
+    "startColumnNumber" : 8,
+    "endLineNumber" : 209,
+    "endColumnNumber" : 24
+  } ],
+  "layoutRelationDataList" : [ ]
+}

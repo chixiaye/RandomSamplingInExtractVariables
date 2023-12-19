@@ -1,0 +1,100 @@
+{
+  "id" : 133,
+  "expression" : "String.format(\"select count(*) from pulsar.\\\"%s\\\".\\\"%s\\\"\",namespace,topic)",
+  "projectName" : "apache@pulsar",
+  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
+  "filePath" : "/tests/integration/src/test/java/org/apache/pulsar/tests/integration/presto/TestPulsarSQLBase.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "String.format(\"select count(*) from pulsar.\\\"%s\\\".\\\"%s\\\"\",namespace,topic)",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 76,
+      "startLineNumber" : 270,
+      "startColumnNumber" : 16,
+      "endLineNumber" : 270,
+      "endColumnNumber" : 92
+    },
+    "astNodeNumber" : 6,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 84,
+        "startLineNumber" : 270,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 270,
+        "endColumnNumber" : 92
+      },
+      "nodeContext" : "query=String.format(\"select count(*) from pulsar.\\\"%s\\\".\\\"%s\\\"\",namespace,topic)",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 8,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 85,
+        "startLineNumber" : 270,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 270,
+        "endColumnNumber" : 93
+      },
+      "nodeContext" : "query=String.format(\"select count(*) from pulsar.\\\"%s\\\".\\\"%s\\\"\",namespace,topic);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5443,
+        "startLineNumber" : 167,
+        "startColumnNumber" : 99,
+        "endLineNumber" : 276,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  String namespace=topicName.getNamespace();\n  String topic=topicName.getLocalName();\n  final String queryAllDataSql;\n  if (schema.getSchemaInfo().getType().isStruct() || schema.getSchemaInfo().getType().equals(SchemaType.KEY_VALUE)) {\n    queryAllDataSql=String.format(\"select * from pulsar.\\\"%s\\\".\\\"%s\\\" order by entryid;\",namespace,topic);\n  }\n else {\n    queryAllDataSql=String.format(\"select * from pulsar.\\\"%s\\\".\\\"%s\\\";\",namespace,topic);\n  }\n  Awaitility.await().pollDelay(Duration.ofMillis(0)).pollInterval(Duration.ofSeconds(3)).atMost(Duration.ofSeconds(15)).untilAsserted(() -> {\n    ContainerExecResult containerExecResult=execQuery(queryAllDataSql);\n    assertThat(containerExecResult.getExitCode()).isEqualTo(0);\n    log.info(\"select sql query output \\n{}\",containerExecResult.getStdout());\n    String[] split=containerExecResult.getStdout().split(\"\\n\");\n    assertThat(split.length).isEqualTo(messageNum);\n    String[] contentArr=containerExecResult.getStdout().split(\"\\n|,\");\n    validateContent(messageNum,contentArr,schema);\n  }\n);\n  String url=String.format(\"jdbc:presto://%s\",pulsarCluster.getPrestoWorkerContainer().getUrl());\n  Connection connection=DriverManager.getConnection(url,\"test\",null);\n  String query=String.format(\"select * from pulsar\" + \".\\\"%s\\\".\\\"%s\\\" order by __publish_time__\",namespace,topic);\n  log.info(\"Executing query: {}\",query);\n  ResultSet res=connection.createStatement().executeQuery(query);\n  List<Timestamp> timestamps=new LinkedList<>();\n  while (res.next()) {\n    printCurrent(res);\n    timestamps.add(res.getTimestamp(\"__publish_time__\"));\n  }\n  log.info(\"Executing query: result for topic {} timestamps size {}\",topic,timestamps.size());\n  assertThat(timestamps.size()).isGreaterThan(messageNum - 2);\n  query=String.format(\"select * from pulsar\" + \".\\\"%s\\\".\\\"%s\\\" where __publish_time__ > timestamp '%s' order by __publish_time__\",namespace,topic,timestamps.get(timestamps.size() / 2));\n  log.info(\"Executing query: {}\",query);\n  res=connection.createStatement().executeQuery(query);\n  List<Timestamp> returnedTimestamps=new LinkedList<>();\n  while (res.next()) {\n    printCurrent(res);\n    returnedTimestamps.add(res.getTimestamp(\"__publish_time__\"));\n  }\n  log.info(\"Executing query: result for topic {} returnedTimestamps size: {}\",topic,returnedTimestamps.size());\n  if (timestamps.size() % 2 == 0) {\n    assertThat(returnedTimestamps.size() + 1).isEqualTo(timestamps.size() / 2);\n  }\n else {\n    assertThat(returnedTimestamps.size()).isEqualTo((timestamps.size() - 1) / 2);\n  }\n  query=String.format(\"select * from pulsar.\\\"%s\\\".\\\"%s\\\" where \" + \"__publish_time__ > from_unixtime(%s) order by __publish_time__\",namespace,topic,0);\n  log.info(\"Executing query: {}\",query);\n  res=connection.createStatement().executeQuery(query);\n  returnedTimestamps=new LinkedList<>();\n  while (res.next()) {\n    printCurrent(res);\n    returnedTimestamps.add(res.getTimestamp(\"__publish_time__\"));\n  }\n  log.info(\"Executing query: result for topic {} returnedTimestamps size: {}\",topic,returnedTimestamps.size());\n  assertThat(returnedTimestamps.size()).isEqualTo(timestamps.size());\n  query=String.format(\"select * from pulsar.\\\"%s\\\".\\\"%s\\\" where \" + \"__publish_time__ > from_unixtime(%s) order by __publish_time__\",namespace,topic,99999999999L);\n  log.info(\"Executing query: {}\",query);\n  res=connection.createStatement().executeQuery(query);\n  returnedTimestamps=new LinkedList<>();\n  while (res.next()) {\n    printCurrent(res);\n    returnedTimestamps.add(res.getTimestamp(\"__publish_time__\"));\n  }\n  log.info(\"Executing query: result for topic {} returnedTimestamps size: {}\",topic,returnedTimestamps.size());\n  assertThat(returnedTimestamps.size()).isEqualTo(0);\n  query=String.format(\"select count(*) from pulsar.\\\"%s\\\".\\\"%s\\\"\",namespace,topic);\n  log.info(\"Executing query: {}\",query);\n  res=connection.createStatement().executeQuery(query);\n  res.next();\n  int count=res.getInt(\"_col0\");\n  assertThat(count).isGreaterThan(messageNum - 2);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 556,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 5538,
+        "startLineNumber" : 167,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 276,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "private void validateData(TopicName topicName,int messageNum,Schema schema) throws Exception {\n  String namespace=topicName.getNamespace();\n  String topic=topicName.getLocalName();\n  final String queryAllDataSql;\n  if (schema.getSchemaInfo().getType().isStruct() || schema.getSchemaInfo().getType().equals(SchemaType.KEY_VALUE)) {\n    queryAllDataSql=String.format(\"select * from pulsar.\\\"%s\\\".\\\"%s\\\" order by entryid;\",namespace,topic);\n  }\n else {\n    queryAllDataSql=String.format(\"select * from pulsar.\\\"%s\\\".\\\"%s\\\";\",namespace,topic);\n  }\n  Awaitility.await().pollDelay(Duration.ofMillis(0)).pollInterval(Duration.ofSeconds(3)).atMost(Duration.ofSeconds(15)).untilAsserted(() -> {\n    ContainerExecResult containerExecResult=execQuery(queryAllDataSql);\n    assertThat(containerExecResult.getExitCode()).isEqualTo(0);\n    log.info(\"select sql query output \\n{}\",containerExecResult.getStdout());\n    String[] split=containerExecResult.getStdout().split(\"\\n\");\n    assertThat(split.length).isEqualTo(messageNum);\n    String[] contentArr=containerExecResult.getStdout().split(\"\\n|,\");\n    validateContent(messageNum,contentArr,schema);\n  }\n);\n  String url=String.format(\"jdbc:presto://%s\",pulsarCluster.getPrestoWorkerContainer().getUrl());\n  Connection connection=DriverManager.getConnection(url,\"test\",null);\n  String query=String.format(\"select * from pulsar\" + \".\\\"%s\\\".\\\"%s\\\" order by __publish_time__\",namespace,topic);\n  log.info(\"Executing query: {}\",query);\n  ResultSet res=connection.createStatement().executeQuery(query);\n  List<Timestamp> timestamps=new LinkedList<>();\n  while (res.next()) {\n    printCurrent(res);\n    timestamps.add(res.getTimestamp(\"__publish_time__\"));\n  }\n  log.info(\"Executing query: result for topic {} timestamps size {}\",topic,timestamps.size());\n  assertThat(timestamps.size()).isGreaterThan(messageNum - 2);\n  query=String.format(\"select * from pulsar\" + \".\\\"%s\\\".\\\"%s\\\" where __publish_time__ > timestamp '%s' order by __publish_time__\",namespace,topic,timestamps.get(timestamps.size() / 2));\n  log.info(\"Executing query: {}\",query);\n  res=connection.createStatement().executeQuery(query);\n  List<Timestamp> returnedTimestamps=new LinkedList<>();\n  while (res.next()) {\n    printCurrent(res);\n    returnedTimestamps.add(res.getTimestamp(\"__publish_time__\"));\n  }\n  log.info(\"Executing query: result for topic {} returnedTimestamps size: {}\",topic,returnedTimestamps.size());\n  if (timestamps.size() % 2 == 0) {\n    assertThat(returnedTimestamps.size() + 1).isEqualTo(timestamps.size() / 2);\n  }\n else {\n    assertThat(returnedTimestamps.size()).isEqualTo((timestamps.size() - 1) / 2);\n  }\n  query=String.format(\"select * from pulsar.\\\"%s\\\".\\\"%s\\\" where \" + \"__publish_time__ > from_unixtime(%s) order by __publish_time__\",namespace,topic,0);\n  log.info(\"Executing query: {}\",query);\n  res=connection.createStatement().executeQuery(query);\n  returnedTimestamps=new LinkedList<>();\n  while (res.next()) {\n    printCurrent(res);\n    returnedTimestamps.add(res.getTimestamp(\"__publish_time__\"));\n  }\n  log.info(\"Executing query: result for topic {} returnedTimestamps size: {}\",topic,returnedTimestamps.size());\n  assertThat(returnedTimestamps.size()).isEqualTo(timestamps.size());\n  query=String.format(\"select * from pulsar.\\\"%s\\\".\\\"%s\\\" where \" + \"__publish_time__ > from_unixtime(%s) order by __publish_time__\",namespace,topic,99999999999L);\n  log.info(\"Executing query: {}\",query);\n  res=connection.createStatement().executeQuery(query);\n  returnedTimestamps=new LinkedList<>();\n  while (res.next()) {\n    printCurrent(res);\n    returnedTimestamps.add(res.getTimestamp(\"__publish_time__\"));\n  }\n  log.info(\"Executing query: result for topic {} returnedTimestamps size: {}\",topic,returnedTimestamps.size());\n  assertThat(returnedTimestamps.size()).isEqualTo(0);\n  query=String.format(\"select count(*) from pulsar.\\\"%s\\\".\\\"%s\\\"\",namespace,topic);\n  log.info(\"Executing query: {}\",query);\n  res=connection.createStatement().executeQuery(query);\n  res.next();\n  int count=res.getInt(\"_col0\");\n  assertThat(count).isGreaterThan(messageNum - 2);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 573,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 85,
+        "startLineNumber" : 270,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 270,
+        "endColumnNumber" : 93
+      },
+      "nodeContext" : "query=String.format(\"select count(*) from pulsar.\\\"%s\\\".\\\"%s\\\"\",namespace,topic);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    },
+    "tokenLength" : 11,
+    "type" : "java.lang.String"
+  } ],
+  "positionList" : [ {
+    "charLength" : 76,
+    "startLineNumber" : 270,
+    "startColumnNumber" : 16,
+    "endLineNumber" : 270,
+    "endColumnNumber" : 92
+  } ],
+  "layoutRelationDataList" : [ ]
+}

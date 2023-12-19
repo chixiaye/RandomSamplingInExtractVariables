@@ -1,0 +1,113 @@
+{
+  "id" : 20,
+  "expression" : "new AudioFileInfo(totalDurationUs,bytes)",
+  "projectName" : "signalapp@Signal-Android",
+  "commitID" : "7e91132e7ed62a58b5f347de252ab1eda3f43b90",
+  "filePath" : "/app/src/main/java/org/thoughtcrime/securesms/audio/AudioWaveForm.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "new AudioFileInfo(totalDurationUs,bytes)",
+    "nodeType" : "ClassInstanceCreation",
+    "nodePosition" : {
+      "charLength" : 41,
+      "startLineNumber" : 286,
+      "startColumnNumber" : 13,
+      "endLineNumber" : 286,
+      "endColumnNumber" : 54
+    },
+    "astNodeNumber" : 5,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 49,
+        "startLineNumber" : 286,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 286,
+        "endColumnNumber" : 55
+      },
+      "nodeContext" : "return new AudioFileInfo(totalDurationUs,bytes);\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 4805,
+        "startLineNumber" : 153,
+        "startColumnNumber" : 86,
+        "endLineNumber" : 287,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  long[] wave=new long[BAR_COUNT];\n  int[] waveSamples=new int[BAR_COUNT];\n  MediaExtractor extractor=dataSource.createExtractor();\n  if (extractor.getTrackCount() == 0) {\n    throw new IOException(\"No audio track\");\n  }\n  MediaFormat format=extractor.getTrackFormat(0);\n  if (!format.containsKey(MediaFormat.KEY_DURATION)) {\n    throw new IOException(\"Unknown duration\");\n  }\n  long totalDurationUs=format.getLong(MediaFormat.KEY_DURATION);\n  String mime=format.getString(MediaFormat.KEY_MIME);\n  if (!mime.startsWith(\"audio/\")) {\n    throw new IOException(\"Mime not audio\");\n  }\n  MediaCodec codec=MediaCodec.createDecoderByType(mime);\n  if (totalDurationUs == 0) {\n    throw new IOException(\"Zero duration\");\n  }\n  codec.configure(format,null,null,0);\n  codec.start();\n  ByteBuffer[] codecInputBuffers=codec.getInputBuffers();\n  ByteBuffer[] codecOutputBuffers=codec.getOutputBuffers();\n  extractor.selectTrack(0);\n  long kTimeOutUs=5000;\n  MediaCodec.BufferInfo info=new MediaCodec.BufferInfo();\n  boolean sawInputEOS=false;\n  boolean sawOutputEOS=false;\n  int noOutputCounter=0;\n  while (!sawOutputEOS && noOutputCounter < 50) {\n    noOutputCounter++;\n    if (!sawInputEOS) {\n      int inputBufIndex=codec.dequeueInputBuffer(kTimeOutUs);\n      if (inputBufIndex >= 0) {\n        ByteBuffer dstBuf=codecInputBuffers[inputBufIndex];\n        int sampleSize=extractor.readSampleData(dstBuf,0);\n        long presentationTimeUs=0;\n        if (sampleSize < 0) {\n          sawInputEOS=true;\n          sampleSize=0;\n        }\n else {\n          presentationTimeUs=extractor.getSampleTime();\n        }\n        codec.queueInputBuffer(inputBufIndex,0,sampleSize,presentationTimeUs,sawInputEOS ? MediaCodec.BUFFER_FLAG_END_OF_STREAM : 0);\n        if (!sawInputEOS) {\n          int barSampleIndex=(int)(SAMPLES_PER_BAR * (wave.length * extractor.getSampleTime()) / totalDurationUs);\n          sawInputEOS=!extractor.advance();\n          int nextBarSampleIndex=(int)(SAMPLES_PER_BAR * (wave.length * extractor.getSampleTime()) / totalDurationUs);\n          while (!sawInputEOS && nextBarSampleIndex == barSampleIndex) {\n            sawInputEOS=!extractor.advance();\n            if (!sawInputEOS) {\n              nextBarSampleIndex=(int)(SAMPLES_PER_BAR * (wave.length * extractor.getSampleTime()) / totalDurationUs);\n            }\n          }\n        }\n      }\n    }\n    int outputBufferIndex;\n    do {\n      outputBufferIndex=codec.dequeueOutputBuffer(info,kTimeOutUs);\n      if (outputBufferIndex >= 0) {\n        if (info.size > 0) {\n          noOutputCounter=0;\n        }\n        ByteBuffer buf=codecOutputBuffers[outputBufferIndex];\n        int barIndex=(int)((wave.length * info.presentationTimeUs) / totalDurationUs);\n        long total=0;\n        for (int i=0; i < info.size; i+=2 * 4) {\n          short aShort=buf.getShort(i);\n          total+=Math.abs(aShort);\n        }\n        if (barIndex >= 0 && barIndex < wave.length) {\n          wave[barIndex]+=total;\n          waveSamples[barIndex]+=info.size / 2;\n        }\n        codec.releaseOutputBuffer(outputBufferIndex,false);\n        if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {\n          sawOutputEOS=true;\n        }\n      }\n else       if (outputBufferIndex == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {\n        codecOutputBuffers=codec.getOutputBuffers();\n      }\n else       if (outputBufferIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {\n        Log.d(TAG,\"output format has changed to \" + codec.getOutputFormat());\n      }\n    }\n while (outputBufferIndex >= 0);\n  }\n  codec.stop();\n  codec.release();\n  extractor.release();\n  float[] floats=new float[BAR_COUNT];\n  byte[] bytes=new byte[BAR_COUNT];\n  float max=0;\n  for (int i=0; i < BAR_COUNT; i++) {\n    if (waveSamples[i] == 0)     continue;\n    floats[i]=wave[i] / (float)waveSamples[i];\n    if (floats[i] > max) {\n      max=floats[i];\n    }\n  }\n  for (int i=0; i < BAR_COUNT; i++) {\n    float normalized=floats[i] / max;\n    bytes[i]=(byte)(255 * normalized);\n  }\n  return new AudioFileInfo(totalDurationUs,bytes);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 654,
+      "astHeight" : 23
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 4887,
+        "startLineNumber" : 153,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 287,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "try (MediaInput dataSource=DecryptableUriMediaInput.createForUri(context,uri)){\n  long[] wave=new long[BAR_COUNT];\n  int[] waveSamples=new int[BAR_COUNT];\n  MediaExtractor extractor=dataSource.createExtractor();\n  if (extractor.getTrackCount() == 0) {\n    throw new IOException(\"No audio track\");\n  }\n  MediaFormat format=extractor.getTrackFormat(0);\n  if (!format.containsKey(MediaFormat.KEY_DURATION)) {\n    throw new IOException(\"Unknown duration\");\n  }\n  long totalDurationUs=format.getLong(MediaFormat.KEY_DURATION);\n  String mime=format.getString(MediaFormat.KEY_MIME);\n  if (!mime.startsWith(\"audio/\")) {\n    throw new IOException(\"Mime not audio\");\n  }\n  MediaCodec codec=MediaCodec.createDecoderByType(mime);\n  if (totalDurationUs == 0) {\n    throw new IOException(\"Zero duration\");\n  }\n  codec.configure(format,null,null,0);\n  codec.start();\n  ByteBuffer[] codecInputBuffers=codec.getInputBuffers();\n  ByteBuffer[] codecOutputBuffers=codec.getOutputBuffers();\n  extractor.selectTrack(0);\n  long kTimeOutUs=5000;\n  MediaCodec.BufferInfo info=new MediaCodec.BufferInfo();\n  boolean sawInputEOS=false;\n  boolean sawOutputEOS=false;\n  int noOutputCounter=0;\n  while (!sawOutputEOS && noOutputCounter < 50) {\n    noOutputCounter++;\n    if (!sawInputEOS) {\n      int inputBufIndex=codec.dequeueInputBuffer(kTimeOutUs);\n      if (inputBufIndex >= 0) {\n        ByteBuffer dstBuf=codecInputBuffers[inputBufIndex];\n        int sampleSize=extractor.readSampleData(dstBuf,0);\n        long presentationTimeUs=0;\n        if (sampleSize < 0) {\n          sawInputEOS=true;\n          sampleSize=0;\n        }\n else {\n          presentationTimeUs=extractor.getSampleTime();\n        }\n        codec.queueInputBuffer(inputBufIndex,0,sampleSize,presentationTimeUs,sawInputEOS ? MediaCodec.BUFFER_FLAG_END_OF_STREAM : 0);\n        if (!sawInputEOS) {\n          int barSampleIndex=(int)(SAMPLES_PER_BAR * (wave.length * extractor.getSampleTime()) / totalDurationUs);\n          sawInputEOS=!extractor.advance();\n          int nextBarSampleIndex=(int)(SAMPLES_PER_BAR * (wave.length * extractor.getSampleTime()) / totalDurationUs);\n          while (!sawInputEOS && nextBarSampleIndex == barSampleIndex) {\n            sawInputEOS=!extractor.advance();\n            if (!sawInputEOS) {\n              nextBarSampleIndex=(int)(SAMPLES_PER_BAR * (wave.length * extractor.getSampleTime()) / totalDurationUs);\n            }\n          }\n        }\n      }\n    }\n    int outputBufferIndex;\n    do {\n      outputBufferIndex=codec.dequeueOutputBuffer(info,kTimeOutUs);\n      if (outputBufferIndex >= 0) {\n        if (info.size > 0) {\n          noOutputCounter=0;\n        }\n        ByteBuffer buf=codecOutputBuffers[outputBufferIndex];\n        int barIndex=(int)((wave.length * info.presentationTimeUs) / totalDurationUs);\n        long total=0;\n        for (int i=0; i < info.size; i+=2 * 4) {\n          short aShort=buf.getShort(i);\n          total+=Math.abs(aShort);\n        }\n        if (barIndex >= 0 && barIndex < wave.length) {\n          wave[barIndex]+=total;\n          waveSamples[barIndex]+=info.size / 2;\n        }\n        codec.releaseOutputBuffer(outputBufferIndex,false);\n        if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {\n          sawOutputEOS=true;\n        }\n      }\n else       if (outputBufferIndex == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {\n        codecOutputBuffers=codec.getOutputBuffers();\n      }\n else       if (outputBufferIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {\n        Log.d(TAG,\"output format has changed to \" + codec.getOutputFormat());\n      }\n    }\n while (outputBufferIndex >= 0);\n  }\n  codec.stop();\n  codec.release();\n  extractor.release();\n  float[] floats=new float[BAR_COUNT];\n  byte[] bytes=new byte[BAR_COUNT];\n  float max=0;\n  for (int i=0; i < BAR_COUNT; i++) {\n    if (waveSamples[i] == 0)     continue;\n    floats[i]=wave[i] / (float)waveSamples[i];\n    if (floats[i] > max) {\n      max=floats[i];\n    }\n  }\n  for (int i=0; i < BAR_COUNT; i++) {\n    float normalized=floats[i] / max;\n    bytes[i]=(byte)(255 * normalized);\n  }\n  return new AudioFileInfo(totalDurationUs,bytes);\n}\n ",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 665,
+      "astHeight" : 24
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4897,
+        "startLineNumber" : 152,
+        "startColumnNumber" : 87,
+        "endLineNumber" : 288,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  try (MediaInput dataSource=DecryptableUriMediaInput.createForUri(context,uri)){\n    long[] wave=new long[BAR_COUNT];\n    int[] waveSamples=new int[BAR_COUNT];\n    MediaExtractor extractor=dataSource.createExtractor();\n    if (extractor.getTrackCount() == 0) {\n      throw new IOException(\"No audio track\");\n    }\n    MediaFormat format=extractor.getTrackFormat(0);\n    if (!format.containsKey(MediaFormat.KEY_DURATION)) {\n      throw new IOException(\"Unknown duration\");\n    }\n    long totalDurationUs=format.getLong(MediaFormat.KEY_DURATION);\n    String mime=format.getString(MediaFormat.KEY_MIME);\n    if (!mime.startsWith(\"audio/\")) {\n      throw new IOException(\"Mime not audio\");\n    }\n    MediaCodec codec=MediaCodec.createDecoderByType(mime);\n    if (totalDurationUs == 0) {\n      throw new IOException(\"Zero duration\");\n    }\n    codec.configure(format,null,null,0);\n    codec.start();\n    ByteBuffer[] codecInputBuffers=codec.getInputBuffers();\n    ByteBuffer[] codecOutputBuffers=codec.getOutputBuffers();\n    extractor.selectTrack(0);\n    long kTimeOutUs=5000;\n    MediaCodec.BufferInfo info=new MediaCodec.BufferInfo();\n    boolean sawInputEOS=false;\n    boolean sawOutputEOS=false;\n    int noOutputCounter=0;\n    while (!sawOutputEOS && noOutputCounter < 50) {\n      noOutputCounter++;\n      if (!sawInputEOS) {\n        int inputBufIndex=codec.dequeueInputBuffer(kTimeOutUs);\n        if (inputBufIndex >= 0) {\n          ByteBuffer dstBuf=codecInputBuffers[inputBufIndex];\n          int sampleSize=extractor.readSampleData(dstBuf,0);\n          long presentationTimeUs=0;\n          if (sampleSize < 0) {\n            sawInputEOS=true;\n            sampleSize=0;\n          }\n else {\n            presentationTimeUs=extractor.getSampleTime();\n          }\n          codec.queueInputBuffer(inputBufIndex,0,sampleSize,presentationTimeUs,sawInputEOS ? MediaCodec.BUFFER_FLAG_END_OF_STREAM : 0);\n          if (!sawInputEOS) {\n            int barSampleIndex=(int)(SAMPLES_PER_BAR * (wave.length * extractor.getSampleTime()) / totalDurationUs);\n            sawInputEOS=!extractor.advance();\n            int nextBarSampleIndex=(int)(SAMPLES_PER_BAR * (wave.length * extractor.getSampleTime()) / totalDurationUs);\n            while (!sawInputEOS && nextBarSampleIndex == barSampleIndex) {\n              sawInputEOS=!extractor.advance();\n              if (!sawInputEOS) {\n                nextBarSampleIndex=(int)(SAMPLES_PER_BAR * (wave.length * extractor.getSampleTime()) / totalDurationUs);\n              }\n            }\n          }\n        }\n      }\n      int outputBufferIndex;\n      do {\n        outputBufferIndex=codec.dequeueOutputBuffer(info,kTimeOutUs);\n        if (outputBufferIndex >= 0) {\n          if (info.size > 0) {\n            noOutputCounter=0;\n          }\n          ByteBuffer buf=codecOutputBuffers[outputBufferIndex];\n          int barIndex=(int)((wave.length * info.presentationTimeUs) / totalDurationUs);\n          long total=0;\n          for (int i=0; i < info.size; i+=2 * 4) {\n            short aShort=buf.getShort(i);\n            total+=Math.abs(aShort);\n          }\n          if (barIndex >= 0 && barIndex < wave.length) {\n            wave[barIndex]+=total;\n            waveSamples[barIndex]+=info.size / 2;\n          }\n          codec.releaseOutputBuffer(outputBufferIndex,false);\n          if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {\n            sawOutputEOS=true;\n          }\n        }\n else         if (outputBufferIndex == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {\n          codecOutputBuffers=codec.getOutputBuffers();\n        }\n else         if (outputBufferIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {\n          Log.d(TAG,\"output format has changed to \" + codec.getOutputFormat());\n        }\n      }\n while (outputBufferIndex >= 0);\n    }\n    codec.stop();\n    codec.release();\n    extractor.release();\n    float[] floats=new float[BAR_COUNT];\n    byte[] bytes=new byte[BAR_COUNT];\n    float max=0;\n    for (int i=0; i < BAR_COUNT; i++) {\n      if (waveSamples[i] == 0)       continue;\n      floats[i]=wave[i] / (float)waveSamples[i];\n      if (floats[i] > max) {\n        max=floats[i];\n      }\n    }\n    for (int i=0; i < BAR_COUNT; i++) {\n      float normalized=floats[i] / max;\n      bytes[i]=(byte)(255 * normalized);\n    }\n    return new AudioFileInfo(totalDurationUs,bytes);\n  }\n }\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 666,
+      "astHeight" : 25
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 5203,
+        "startLineNumber" : 145,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 288,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "/** \n * Based on decode sample from: <p> https://android.googlesource.com/platform/cts/+/jb-mr2-release/tests/tests/media/src/android/media/cts/DecoderTest.java\n */\n@WorkerThread @RequiresApi(api=23) private @NonNull AudioFileInfo generateWaveForm(@NonNull Uri uri) throws IOException {\n  try (MediaInput dataSource=DecryptableUriMediaInput.createForUri(context,uri)){\n    long[] wave=new long[BAR_COUNT];\n    int[] waveSamples=new int[BAR_COUNT];\n    MediaExtractor extractor=dataSource.createExtractor();\n    if (extractor.getTrackCount() == 0) {\n      throw new IOException(\"No audio track\");\n    }\n    MediaFormat format=extractor.getTrackFormat(0);\n    if (!format.containsKey(MediaFormat.KEY_DURATION)) {\n      throw new IOException(\"Unknown duration\");\n    }\n    long totalDurationUs=format.getLong(MediaFormat.KEY_DURATION);\n    String mime=format.getString(MediaFormat.KEY_MIME);\n    if (!mime.startsWith(\"audio/\")) {\n      throw new IOException(\"Mime not audio\");\n    }\n    MediaCodec codec=MediaCodec.createDecoderByType(mime);\n    if (totalDurationUs == 0) {\n      throw new IOException(\"Zero duration\");\n    }\n    codec.configure(format,null,null,0);\n    codec.start();\n    ByteBuffer[] codecInputBuffers=codec.getInputBuffers();\n    ByteBuffer[] codecOutputBuffers=codec.getOutputBuffers();\n    extractor.selectTrack(0);\n    long kTimeOutUs=5000;\n    MediaCodec.BufferInfo info=new MediaCodec.BufferInfo();\n    boolean sawInputEOS=false;\n    boolean sawOutputEOS=false;\n    int noOutputCounter=0;\n    while (!sawOutputEOS && noOutputCounter < 50) {\n      noOutputCounter++;\n      if (!sawInputEOS) {\n        int inputBufIndex=codec.dequeueInputBuffer(kTimeOutUs);\n        if (inputBufIndex >= 0) {\n          ByteBuffer dstBuf=codecInputBuffers[inputBufIndex];\n          int sampleSize=extractor.readSampleData(dstBuf,0);\n          long presentationTimeUs=0;\n          if (sampleSize < 0) {\n            sawInputEOS=true;\n            sampleSize=0;\n          }\n else {\n            presentationTimeUs=extractor.getSampleTime();\n          }\n          codec.queueInputBuffer(inputBufIndex,0,sampleSize,presentationTimeUs,sawInputEOS ? MediaCodec.BUFFER_FLAG_END_OF_STREAM : 0);\n          if (!sawInputEOS) {\n            int barSampleIndex=(int)(SAMPLES_PER_BAR * (wave.length * extractor.getSampleTime()) / totalDurationUs);\n            sawInputEOS=!extractor.advance();\n            int nextBarSampleIndex=(int)(SAMPLES_PER_BAR * (wave.length * extractor.getSampleTime()) / totalDurationUs);\n            while (!sawInputEOS && nextBarSampleIndex == barSampleIndex) {\n              sawInputEOS=!extractor.advance();\n              if (!sawInputEOS) {\n                nextBarSampleIndex=(int)(SAMPLES_PER_BAR * (wave.length * extractor.getSampleTime()) / totalDurationUs);\n              }\n            }\n          }\n        }\n      }\n      int outputBufferIndex;\n      do {\n        outputBufferIndex=codec.dequeueOutputBuffer(info,kTimeOutUs);\n        if (outputBufferIndex >= 0) {\n          if (info.size > 0) {\n            noOutputCounter=0;\n          }\n          ByteBuffer buf=codecOutputBuffers[outputBufferIndex];\n          int barIndex=(int)((wave.length * info.presentationTimeUs) / totalDurationUs);\n          long total=0;\n          for (int i=0; i < info.size; i+=2 * 4) {\n            short aShort=buf.getShort(i);\n            total+=Math.abs(aShort);\n          }\n          if (barIndex >= 0 && barIndex < wave.length) {\n            wave[barIndex]+=total;\n            waveSamples[barIndex]+=info.size / 2;\n          }\n          codec.releaseOutputBuffer(outputBufferIndex,false);\n          if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {\n            sawOutputEOS=true;\n          }\n        }\n else         if (outputBufferIndex == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {\n          codecOutputBuffers=codec.getOutputBuffers();\n        }\n else         if (outputBufferIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {\n          Log.d(TAG,\"output format has changed to \" + codec.getOutputFormat());\n        }\n      }\n while (outputBufferIndex >= 0);\n    }\n    codec.stop();\n    codec.release();\n    extractor.release();\n    float[] floats=new float[BAR_COUNT];\n    byte[] bytes=new byte[BAR_COUNT];\n    float max=0;\n    for (int i=0; i < BAR_COUNT; i++) {\n      if (waveSamples[i] == 0)       continue;\n      floats[i]=wave[i] / (float)waveSamples[i];\n      if (floats[i] > max) {\n        max=floats[i];\n      }\n    }\n    for (int i=0; i < BAR_COUNT; i++) {\n      float normalized=floats[i] / max;\n      bytes[i]=(byte)(255 * normalized);\n    }\n    return new AudioFileInfo(totalDurationUs,bytes);\n  }\n }\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 689,
+      "astHeight" : 26
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 49,
+        "startLineNumber" : 286,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 286,
+        "endColumnNumber" : 55
+      },
+      "nodeContext" : "return new AudioFileInfo(totalDurationUs,bytes);\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
+    },
+    "tokenLength" : 3,
+    "type" : "org.thoughtcrime.securesms.audio.AudioWaveForm.AudioFileInfo"
+  } ],
+  "positionList" : [ {
+    "charLength" : 41,
+    "startLineNumber" : 286,
+    "startColumnNumber" : 13,
+    "endLineNumber" : 286,
+    "endColumnNumber" : 54
+  } ],
+  "layoutRelationDataList" : [ ]
+}

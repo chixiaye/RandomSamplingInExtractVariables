@@ -1,0 +1,178 @@
+{
+  "id" : 463,
+  "expression" : "State",
+  "projectName" : "apache@pulsar",
+  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
+  "filePath" : "/pulsar-broker/src/main/java/org/apache/pulsar/broker/service/persistent/GeoPersistentReplicator.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "State",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 119,
+      "startColumnNumber" : 47,
+      "endLineNumber" : 119,
+      "endColumnNumber" : 52
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,rightOperand]",
+      "nodePosition" : {
+        "charLength" : 13,
+        "startLineNumber" : 119,
+        "startColumnNumber" : 47,
+        "endLineNumber" : 119,
+        "endColumnNumber" : 60
+      },
+      "nodeContext" : "State.Started",
+      "nodeType" : "QualifiedName",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 40,
+        "startLineNumber" : 119,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 119,
+        "endColumnNumber" : 60
+      },
+      "nodeContext" : "STATE_UPDATER.get(this) != State.Started",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 8,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 69,
+        "startLineNumber" : 119,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 119,
+        "endColumnNumber" : 89
+      },
+      "nodeContext" : "STATE_UPDATER.get(this) != State.Started || isLocalMessageSkippedOnce",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 677,
+        "startLineNumber" : 119,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 130,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "if (STATE_UPDATER.get(this) != State.Started || isLocalMessageSkippedOnce) {\n  if (log.isDebugEnabled()) {\n    log.debug(\"[{}] Dropping read message at {} because producer is not ready\",replicatorId,entry.getPosition());\n  }\n  isLocalMessageSkippedOnce=true;\n  entry.release();\n  msg.recycle();\n  continue;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 39,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 5538,
+        "startLineNumber" : 63,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 169,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  Entry entry=entries.get(i);\n  if (skipRemainingMessages) {\n    entry.release();\n    continue;\n  }\n  int length=entry.getLength();\n  ByteBuf headersAndPayload=entry.getDataBuffer();\n  MessageImpl msg;\n  try {\n    msg=MessageImpl.deserializeSkipBrokerEntryMetaData(headersAndPayload);\n  }\n catch (  Throwable t) {\n    log.error(\"[{}] Failed to deserialize message at {} (buffer size: {}): {}\",replicatorId,entry.getPosition(),length,t.getMessage(),t);\n    cursor.asyncDelete(entry.getPosition(),this,entry.getPosition());\n    entry.release();\n    continue;\n  }\n  if (isEnableReplicatedSubscriptions) {\n    checkReplicatedSubscriptionMarker(entry.getPosition(),msg,headersAndPayload);\n  }\n  if (msg.isReplicated()) {\n    cursor.asyncDelete(entry.getPosition(),this,entry.getPosition());\n    entry.release();\n    msg.recycle();\n    continue;\n  }\n  if (msg.hasReplicateTo() && !msg.getReplicateTo().contains(remoteCluster)) {\n    if (log.isDebugEnabled()) {\n      log.debug(\"[{}] Skipping message at position {}, replicateTo {}\",replicatorId,entry.getPosition(),msg.getReplicateTo());\n    }\n    cursor.asyncDelete(entry.getPosition(),this,entry.getPosition());\n    entry.release();\n    msg.recycle();\n    continue;\n  }\n  if (msg.isExpired(messageTTLInSeconds)) {\n    msgExpired.recordEvent(0);\n    if (log.isDebugEnabled()) {\n      log.debug(\"[{}] Discarding expired message at position {}, replicateTo {}\",replicatorId,entry.getPosition(),msg.getReplicateTo());\n    }\n    cursor.asyncDelete(entry.getPosition(),this,entry.getPosition());\n    entry.release();\n    msg.recycle();\n    continue;\n  }\n  if (STATE_UPDATER.get(this) != State.Started || isLocalMessageSkippedOnce) {\n    if (log.isDebugEnabled()) {\n      log.debug(\"[{}] Dropping read message at {} because producer is not ready\",replicatorId,entry.getPosition());\n    }\n    isLocalMessageSkippedOnce=true;\n    entry.release();\n    msg.recycle();\n    continue;\n  }\n  dispatchRateLimiter.ifPresent(rateLimiter -> rateLimiter.tryDispatchPermit(1,entry.getLength()));\n  PENDING_MESSAGES_UPDATER.incrementAndGet(this);\n  msgOut.recordEvent(headersAndPayload.readableBytes());\n  msg.setReplicatedFrom(localCluster);\n  headersAndPayload.retain();\n  CompletableFuture<SchemaInfo> schemaFuture=getSchemaInfo(msg);\n  if (!schemaFuture.isDone() || schemaFuture.isCompletedExceptionally()) {\n    entry.release();\n    headersAndPayload.release();\n    msg.recycle();\n    fetchSchemaInProgress=true;\n    skipRemainingMessages=true;\n    cursor.cancelPendingReadRequest();\n    log.info(\"[{}] Pause the data replication due to new detected schema\",replicatorId);\n    schemaFuture.whenComplete((__,e) -> {\n      if (e != null) {\n        log.warn(\"[{}] Failed to get schema from local cluster, will try in the next loop\",replicatorId,e);\n      }\n      log.info(\"[{}] Resume the data replication after the schema fetching done\",replicatorId);\n      cursor.rewind();\n      fetchSchemaInProgress=false;\n      readMoreEntries();\n    }\n);\n  }\n else {\n    msg.setSchemaInfoForReplicator(schemaFuture.get());\n    producer.sendAsync(msg,ProducerSendCallback.create(this,entry,msg));\n    atLeastOneMessageSentForReplication=true;\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 404,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 5579,
+        "startLineNumber" : 63,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 169,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "for (int i=0; i < entries.size(); i++) {\n  Entry entry=entries.get(i);\n  if (skipRemainingMessages) {\n    entry.release();\n    continue;\n  }\n  int length=entry.getLength();\n  ByteBuf headersAndPayload=entry.getDataBuffer();\n  MessageImpl msg;\n  try {\n    msg=MessageImpl.deserializeSkipBrokerEntryMetaData(headersAndPayload);\n  }\n catch (  Throwable t) {\n    log.error(\"[{}] Failed to deserialize message at {} (buffer size: {}): {}\",replicatorId,entry.getPosition(),length,t.getMessage(),t);\n    cursor.asyncDelete(entry.getPosition(),this,entry.getPosition());\n    entry.release();\n    continue;\n  }\n  if (isEnableReplicatedSubscriptions) {\n    checkReplicatedSubscriptionMarker(entry.getPosition(),msg,headersAndPayload);\n  }\n  if (msg.isReplicated()) {\n    cursor.asyncDelete(entry.getPosition(),this,entry.getPosition());\n    entry.release();\n    msg.recycle();\n    continue;\n  }\n  if (msg.hasReplicateTo() && !msg.getReplicateTo().contains(remoteCluster)) {\n    if (log.isDebugEnabled()) {\n      log.debug(\"[{}] Skipping message at position {}, replicateTo {}\",replicatorId,entry.getPosition(),msg.getReplicateTo());\n    }\n    cursor.asyncDelete(entry.getPosition(),this,entry.getPosition());\n    entry.release();\n    msg.recycle();\n    continue;\n  }\n  if (msg.isExpired(messageTTLInSeconds)) {\n    msgExpired.recordEvent(0);\n    if (log.isDebugEnabled()) {\n      log.debug(\"[{}] Discarding expired message at position {}, replicateTo {}\",replicatorId,entry.getPosition(),msg.getReplicateTo());\n    }\n    cursor.asyncDelete(entry.getPosition(),this,entry.getPosition());\n    entry.release();\n    msg.recycle();\n    continue;\n  }\n  if (STATE_UPDATER.get(this) != State.Started || isLocalMessageSkippedOnce) {\n    if (log.isDebugEnabled()) {\n      log.debug(\"[{}] Dropping read message at {} because producer is not ready\",replicatorId,entry.getPosition());\n    }\n    isLocalMessageSkippedOnce=true;\n    entry.release();\n    msg.recycle();\n    continue;\n  }\n  dispatchRateLimiter.ifPresent(rateLimiter -> rateLimiter.tryDispatchPermit(1,entry.getLength()));\n  PENDING_MESSAGES_UPDATER.incrementAndGet(this);\n  msgOut.recordEvent(headersAndPayload.readableBytes());\n  msg.setReplicatedFrom(localCluster);\n  headersAndPayload.retain();\n  CompletableFuture<SchemaInfo> schemaFuture=getSchemaInfo(msg);\n  if (!schemaFuture.isDone() || schemaFuture.isCompletedExceptionally()) {\n    entry.release();\n    headersAndPayload.release();\n    msg.recycle();\n    fetchSchemaInProgress=true;\n    skipRemainingMessages=true;\n    cursor.cancelPendingReadRequest();\n    log.info(\"[{}] Pause the data replication due to new detected schema\",replicatorId);\n    schemaFuture.whenComplete((__,e) -> {\n      if (e != null) {\n        log.warn(\"[{}] Failed to get schema from local cluster, will try in the next loop\",replicatorId,e);\n      }\n      log.info(\"[{}] Resume the data replication after the schema fetching done\",replicatorId);\n      cursor.rewind();\n      fetchSchemaInProgress=false;\n      readMoreEntries();\n    }\n);\n  }\n else {\n    msg.setSchemaInfoForReplicator(schemaFuture.get());\n    producer.sendAsync(msg,ProducerSendCallback.create(this,entry,msg));\n    atLeastOneMessageSentForReplication=true;\n  }\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 417,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 5854,
+        "startLineNumber" : 58,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 170,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  boolean isLocalMessageSkippedOnce=false;\n  boolean skipRemainingMessages=false;\n  for (int i=0; i < entries.size(); i++) {\n    Entry entry=entries.get(i);\n    if (skipRemainingMessages) {\n      entry.release();\n      continue;\n    }\n    int length=entry.getLength();\n    ByteBuf headersAndPayload=entry.getDataBuffer();\n    MessageImpl msg;\n    try {\n      msg=MessageImpl.deserializeSkipBrokerEntryMetaData(headersAndPayload);\n    }\n catch (    Throwable t) {\n      log.error(\"[{}] Failed to deserialize message at {} (buffer size: {}): {}\",replicatorId,entry.getPosition(),length,t.getMessage(),t);\n      cursor.asyncDelete(entry.getPosition(),this,entry.getPosition());\n      entry.release();\n      continue;\n    }\n    if (isEnableReplicatedSubscriptions) {\n      checkReplicatedSubscriptionMarker(entry.getPosition(),msg,headersAndPayload);\n    }\n    if (msg.isReplicated()) {\n      cursor.asyncDelete(entry.getPosition(),this,entry.getPosition());\n      entry.release();\n      msg.recycle();\n      continue;\n    }\n    if (msg.hasReplicateTo() && !msg.getReplicateTo().contains(remoteCluster)) {\n      if (log.isDebugEnabled()) {\n        log.debug(\"[{}] Skipping message at position {}, replicateTo {}\",replicatorId,entry.getPosition(),msg.getReplicateTo());\n      }\n      cursor.asyncDelete(entry.getPosition(),this,entry.getPosition());\n      entry.release();\n      msg.recycle();\n      continue;\n    }\n    if (msg.isExpired(messageTTLInSeconds)) {\n      msgExpired.recordEvent(0);\n      if (log.isDebugEnabled()) {\n        log.debug(\"[{}] Discarding expired message at position {}, replicateTo {}\",replicatorId,entry.getPosition(),msg.getReplicateTo());\n      }\n      cursor.asyncDelete(entry.getPosition(),this,entry.getPosition());\n      entry.release();\n      msg.recycle();\n      continue;\n    }\n    if (STATE_UPDATER.get(this) != State.Started || isLocalMessageSkippedOnce) {\n      if (log.isDebugEnabled()) {\n        log.debug(\"[{}] Dropping read message at {} because producer is not ready\",replicatorId,entry.getPosition());\n      }\n      isLocalMessageSkippedOnce=true;\n      entry.release();\n      msg.recycle();\n      continue;\n    }\n    dispatchRateLimiter.ifPresent(rateLimiter -> rateLimiter.tryDispatchPermit(1,entry.getLength()));\n    PENDING_MESSAGES_UPDATER.incrementAndGet(this);\n    msgOut.recordEvent(headersAndPayload.readableBytes());\n    msg.setReplicatedFrom(localCluster);\n    headersAndPayload.retain();\n    CompletableFuture<SchemaInfo> schemaFuture=getSchemaInfo(msg);\n    if (!schemaFuture.isDone() || schemaFuture.isCompletedExceptionally()) {\n      entry.release();\n      headersAndPayload.release();\n      msg.recycle();\n      fetchSchemaInProgress=true;\n      skipRemainingMessages=true;\n      cursor.cancelPendingReadRequest();\n      log.info(\"[{}] Pause the data replication due to new detected schema\",replicatorId);\n      schemaFuture.whenComplete((__,e) -> {\n        if (e != null) {\n          log.warn(\"[{}] Failed to get schema from local cluster, will try in the next loop\",replicatorId,e);\n        }\n        log.info(\"[{}] Resume the data replication after the schema fetching done\",replicatorId);\n        cursor.rewind();\n        fetchSchemaInProgress=false;\n        readMoreEntries();\n      }\n);\n    }\n else {\n      msg.setSchemaInfoForReplicator(schemaFuture.get());\n      producer.sendAsync(msg,ProducerSendCallback.create(this,entry,msg));\n      atLeastOneMessageSentForReplication=true;\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 428,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 5981,
+        "startLineNumber" : 58,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 172,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "try {\n  boolean isLocalMessageSkippedOnce=false;\n  boolean skipRemainingMessages=false;\n  for (int i=0; i < entries.size(); i++) {\n    Entry entry=entries.get(i);\n    if (skipRemainingMessages) {\n      entry.release();\n      continue;\n    }\n    int length=entry.getLength();\n    ByteBuf headersAndPayload=entry.getDataBuffer();\n    MessageImpl msg;\n    try {\n      msg=MessageImpl.deserializeSkipBrokerEntryMetaData(headersAndPayload);\n    }\n catch (    Throwable t) {\n      log.error(\"[{}] Failed to deserialize message at {} (buffer size: {}): {}\",replicatorId,entry.getPosition(),length,t.getMessage(),t);\n      cursor.asyncDelete(entry.getPosition(),this,entry.getPosition());\n      entry.release();\n      continue;\n    }\n    if (isEnableReplicatedSubscriptions) {\n      checkReplicatedSubscriptionMarker(entry.getPosition(),msg,headersAndPayload);\n    }\n    if (msg.isReplicated()) {\n      cursor.asyncDelete(entry.getPosition(),this,entry.getPosition());\n      entry.release();\n      msg.recycle();\n      continue;\n    }\n    if (msg.hasReplicateTo() && !msg.getReplicateTo().contains(remoteCluster)) {\n      if (log.isDebugEnabled()) {\n        log.debug(\"[{}] Skipping message at position {}, replicateTo {}\",replicatorId,entry.getPosition(),msg.getReplicateTo());\n      }\n      cursor.asyncDelete(entry.getPosition(),this,entry.getPosition());\n      entry.release();\n      msg.recycle();\n      continue;\n    }\n    if (msg.isExpired(messageTTLInSeconds)) {\n      msgExpired.recordEvent(0);\n      if (log.isDebugEnabled()) {\n        log.debug(\"[{}] Discarding expired message at position {}, replicateTo {}\",replicatorId,entry.getPosition(),msg.getReplicateTo());\n      }\n      cursor.asyncDelete(entry.getPosition(),this,entry.getPosition());\n      entry.release();\n      msg.recycle();\n      continue;\n    }\n    if (STATE_UPDATER.get(this) != State.Started || isLocalMessageSkippedOnce) {\n      if (log.isDebugEnabled()) {\n        log.debug(\"[{}] Dropping read message at {} because producer is not ready\",replicatorId,entry.getPosition());\n      }\n      isLocalMessageSkippedOnce=true;\n      entry.release();\n      msg.recycle();\n      continue;\n    }\n    dispatchRateLimiter.ifPresent(rateLimiter -> rateLimiter.tryDispatchPermit(1,entry.getLength()));\n    PENDING_MESSAGES_UPDATER.incrementAndGet(this);\n    msgOut.recordEvent(headersAndPayload.readableBytes());\n    msg.setReplicatedFrom(localCluster);\n    headersAndPayload.retain();\n    CompletableFuture<SchemaInfo> schemaFuture=getSchemaInfo(msg);\n    if (!schemaFuture.isDone() || schemaFuture.isCompletedExceptionally()) {\n      entry.release();\n      headersAndPayload.release();\n      msg.recycle();\n      fetchSchemaInProgress=true;\n      skipRemainingMessages=true;\n      cursor.cancelPendingReadRequest();\n      log.info(\"[{}] Pause the data replication due to new detected schema\",replicatorId);\n      schemaFuture.whenComplete((__,e) -> {\n        if (e != null) {\n          log.warn(\"[{}] Failed to get schema from local cluster, will try in the next loop\",replicatorId,e);\n        }\n        log.info(\"[{}] Resume the data replication after the schema fetching done\",replicatorId);\n        cursor.rewind();\n        fetchSchemaInProgress=false;\n        readMoreEntries();\n      }\n);\n    }\n else {\n      msg.setSchemaInfoForReplicator(schemaFuture.get());\n      producer.sendAsync(msg,ProducerSendCallback.create(this,entry,msg));\n      atLeastOneMessageSentForReplication=true;\n    }\n  }\n}\n catch (Exception e) {\n  log.error(\"[{}] Unexpected exception: {}\",replicatorId,e.getMessage(),e);\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 445,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 6261,
+        "startLineNumber" : 53,
+        "startColumnNumber" : 60,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  boolean atLeastOneMessageSentForReplication=false;\n  boolean isEnableReplicatedSubscriptions=brokerService.pulsar().getConfiguration().isEnableReplicatedSubscriptions();\n  try {\n    boolean isLocalMessageSkippedOnce=false;\n    boolean skipRemainingMessages=false;\n    for (int i=0; i < entries.size(); i++) {\n      Entry entry=entries.get(i);\n      if (skipRemainingMessages) {\n        entry.release();\n        continue;\n      }\n      int length=entry.getLength();\n      ByteBuf headersAndPayload=entry.getDataBuffer();\n      MessageImpl msg;\n      try {\n        msg=MessageImpl.deserializeSkipBrokerEntryMetaData(headersAndPayload);\n      }\n catch (      Throwable t) {\n        log.error(\"[{}] Failed to deserialize message at {} (buffer size: {}): {}\",replicatorId,entry.getPosition(),length,t.getMessage(),t);\n        cursor.asyncDelete(entry.getPosition(),this,entry.getPosition());\n        entry.release();\n        continue;\n      }\n      if (isEnableReplicatedSubscriptions) {\n        checkReplicatedSubscriptionMarker(entry.getPosition(),msg,headersAndPayload);\n      }\n      if (msg.isReplicated()) {\n        cursor.asyncDelete(entry.getPosition(),this,entry.getPosition());\n        entry.release();\n        msg.recycle();\n        continue;\n      }\n      if (msg.hasReplicateTo() && !msg.getReplicateTo().contains(remoteCluster)) {\n        if (log.isDebugEnabled()) {\n          log.debug(\"[{}] Skipping message at position {}, replicateTo {}\",replicatorId,entry.getPosition(),msg.getReplicateTo());\n        }\n        cursor.asyncDelete(entry.getPosition(),this,entry.getPosition());\n        entry.release();\n        msg.recycle();\n        continue;\n      }\n      if (msg.isExpired(messageTTLInSeconds)) {\n        msgExpired.recordEvent(0);\n        if (log.isDebugEnabled()) {\n          log.debug(\"[{}] Discarding expired message at position {}, replicateTo {}\",replicatorId,entry.getPosition(),msg.getReplicateTo());\n        }\n        cursor.asyncDelete(entry.getPosition(),this,entry.getPosition());\n        entry.release();\n        msg.recycle();\n        continue;\n      }\n      if (STATE_UPDATER.get(this) != State.Started || isLocalMessageSkippedOnce) {\n        if (log.isDebugEnabled()) {\n          log.debug(\"[{}] Dropping read message at {} because producer is not ready\",replicatorId,entry.getPosition());\n        }\n        isLocalMessageSkippedOnce=true;\n        entry.release();\n        msg.recycle();\n        continue;\n      }\n      dispatchRateLimiter.ifPresent(rateLimiter -> rateLimiter.tryDispatchPermit(1,entry.getLength()));\n      PENDING_MESSAGES_UPDATER.incrementAndGet(this);\n      msgOut.recordEvent(headersAndPayload.readableBytes());\n      msg.setReplicatedFrom(localCluster);\n      headersAndPayload.retain();\n      CompletableFuture<SchemaInfo> schemaFuture=getSchemaInfo(msg);\n      if (!schemaFuture.isDone() || schemaFuture.isCompletedExceptionally()) {\n        entry.release();\n        headersAndPayload.release();\n        msg.recycle();\n        fetchSchemaInProgress=true;\n        skipRemainingMessages=true;\n        cursor.cancelPendingReadRequest();\n        log.info(\"[{}] Pause the data replication due to new detected schema\",replicatorId);\n        schemaFuture.whenComplete((__,e) -> {\n          if (e != null) {\n            log.warn(\"[{}] Failed to get schema from local cluster, will try in the next loop\",replicatorId,e);\n          }\n          log.info(\"[{}] Resume the data replication after the schema fetching done\",replicatorId);\n          cursor.rewind();\n          fetchSchemaInProgress=false;\n          readMoreEntries();\n        }\n);\n      }\n else {\n        msg.setSchemaInfoForReplicator(schemaFuture.get());\n        producer.sendAsync(msg,ProducerSendCallback.create(this,entry,msg));\n        atLeastOneMessageSentForReplication=true;\n      }\n    }\n  }\n catch (  Exception e) {\n    log.error(\"[{}] Unexpected exception: {}\",replicatorId,e.getMessage(),e);\n  }\n  return atLeastOneMessageSentForReplication;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 464,
+      "astHeight" : 16
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 6332,
+        "startLineNumber" : 52,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override protected boolean replicateEntries(List<Entry> entries){\n  boolean atLeastOneMessageSentForReplication=false;\n  boolean isEnableReplicatedSubscriptions=brokerService.pulsar().getConfiguration().isEnableReplicatedSubscriptions();\n  try {\n    boolean isLocalMessageSkippedOnce=false;\n    boolean skipRemainingMessages=false;\n    for (int i=0; i < entries.size(); i++) {\n      Entry entry=entries.get(i);\n      if (skipRemainingMessages) {\n        entry.release();\n        continue;\n      }\n      int length=entry.getLength();\n      ByteBuf headersAndPayload=entry.getDataBuffer();\n      MessageImpl msg;\n      try {\n        msg=MessageImpl.deserializeSkipBrokerEntryMetaData(headersAndPayload);\n      }\n catch (      Throwable t) {\n        log.error(\"[{}] Failed to deserialize message at {} (buffer size: {}): {}\",replicatorId,entry.getPosition(),length,t.getMessage(),t);\n        cursor.asyncDelete(entry.getPosition(),this,entry.getPosition());\n        entry.release();\n        continue;\n      }\n      if (isEnableReplicatedSubscriptions) {\n        checkReplicatedSubscriptionMarker(entry.getPosition(),msg,headersAndPayload);\n      }\n      if (msg.isReplicated()) {\n        cursor.asyncDelete(entry.getPosition(),this,entry.getPosition());\n        entry.release();\n        msg.recycle();\n        continue;\n      }\n      if (msg.hasReplicateTo() && !msg.getReplicateTo().contains(remoteCluster)) {\n        if (log.isDebugEnabled()) {\n          log.debug(\"[{}] Skipping message at position {}, replicateTo {}\",replicatorId,entry.getPosition(),msg.getReplicateTo());\n        }\n        cursor.asyncDelete(entry.getPosition(),this,entry.getPosition());\n        entry.release();\n        msg.recycle();\n        continue;\n      }\n      if (msg.isExpired(messageTTLInSeconds)) {\n        msgExpired.recordEvent(0);\n        if (log.isDebugEnabled()) {\n          log.debug(\"[{}] Discarding expired message at position {}, replicateTo {}\",replicatorId,entry.getPosition(),msg.getReplicateTo());\n        }\n        cursor.asyncDelete(entry.getPosition(),this,entry.getPosition());\n        entry.release();\n        msg.recycle();\n        continue;\n      }\n      if (STATE_UPDATER.get(this) != State.Started || isLocalMessageSkippedOnce) {\n        if (log.isDebugEnabled()) {\n          log.debug(\"[{}] Dropping read message at {} because producer is not ready\",replicatorId,entry.getPosition());\n        }\n        isLocalMessageSkippedOnce=true;\n        entry.release();\n        msg.recycle();\n        continue;\n      }\n      dispatchRateLimiter.ifPresent(rateLimiter -> rateLimiter.tryDispatchPermit(1,entry.getLength()));\n      PENDING_MESSAGES_UPDATER.incrementAndGet(this);\n      msgOut.recordEvent(headersAndPayload.readableBytes());\n      msg.setReplicatedFrom(localCluster);\n      headersAndPayload.retain();\n      CompletableFuture<SchemaInfo> schemaFuture=getSchemaInfo(msg);\n      if (!schemaFuture.isDone() || schemaFuture.isCompletedExceptionally()) {\n        entry.release();\n        headersAndPayload.release();\n        msg.recycle();\n        fetchSchemaInProgress=true;\n        skipRemainingMessages=true;\n        cursor.cancelPendingReadRequest();\n        log.info(\"[{}] Pause the data replication due to new detected schema\",replicatorId);\n        schemaFuture.whenComplete((__,e) -> {\n          if (e != null) {\n            log.warn(\"[{}] Failed to get schema from local cluster, will try in the next loop\",replicatorId,e);\n          }\n          log.info(\"[{}] Resume the data replication after the schema fetching done\",replicatorId);\n          cursor.rewind();\n          fetchSchemaInProgress=false;\n          readMoreEntries();\n        }\n);\n      }\n else {\n        msg.setSchemaInfoForReplicator(schemaFuture.get());\n        producer.sendAsync(msg,ProducerSendCallback.create(this,entry,msg));\n        atLeastOneMessageSentForReplication=true;\n      }\n    }\n  }\n catch (  Exception e) {\n    log.error(\"[{}] Unexpected exception: {}\",replicatorId,e.getMessage(),e);\n  }\n  return atLeastOneMessageSentForReplication;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 477,
+      "astHeight" : 17
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 69,
+        "startLineNumber" : 119,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 119,
+        "endColumnNumber" : 89
+      },
+      "nodeContext" : "STATE_UPDATER.get(this) != State.Started || isLocalMessageSkippedOnce",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.pulsar.broker.service.AbstractReplicator.State"
+  } ],
+  "positionList" : [ {
+    "charLength" : 5,
+    "startLineNumber" : 119,
+    "startColumnNumber" : 47,
+    "endLineNumber" : 119,
+    "endColumnNumber" : 52
+  } ],
+  "layoutRelationDataList" : [ ]
+}

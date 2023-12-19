@@ -1,0 +1,100 @@
+{
+  "id" : 408,
+  "expression" : "((InsnWrapArg)wrap.getArg(0)).getWrapInsn()",
+  "projectName" : "skylot@jadx",
+  "commitID" : "eb2a1734d3e02c19814f628e10bf80de5fb19772",
+  "filePath" : "/jadx-core/src/main/java/jadx/core/dex/visitors/SimplifyVisitor.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "((InsnWrapArg)wrap.getArg(0)).getWrapInsn()",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 44,
+      "startLineNumber" : 285,
+      "startColumnNumber" : 17,
+      "endLineNumber" : 285,
+      "endColumnNumber" : 61
+    },
+    "astNodeNumber" : 10,
+    "astHeight" : 5,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 50,
+        "startLineNumber" : 285,
+        "startColumnNumber" : 11,
+        "endLineNumber" : 285,
+        "endColumnNumber" : 61
+      },
+      "nodeContext" : "get=((InsnWrapArg)wrap.getArg(0)).getWrapInsn()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 12,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 60,
+        "startLineNumber" : 285,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 285,
+        "endColumnNumber" : 62
+      },
+      "nodeContext" : "InsnNode get=((InsnWrapArg)wrap.getArg(0)).getWrapInsn();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 1514,
+        "startLineNumber" : 274,
+        "startColumnNumber" : 74,
+        "endLineNumber" : 323,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  InsnArg arg=insn.getArg(0);\n  if (!arg.isInsnWrap()) {\n    return null;\n  }\n  InsnNode wrap=((InsnWrapArg)arg).getWrapInsn();\n  InsnType wrapType=wrap.getType();\n  if (wrapType != InsnType.ARITH && wrapType != InsnType.STR_CONCAT || !wrap.getArg(0).isInsnWrap()) {\n    return null;\n  }\n  InsnNode get=((InsnWrapArg)wrap.getArg(0)).getWrapInsn();\n  InsnType getType=get.getType();\n  if (getType != InsnType.IGET && getType != InsnType.SGET) {\n    return null;\n  }\n  FieldInfo field=(FieldInfo)((IndexInsnNode)insn).getIndex();\n  FieldInfo innerField=(FieldInfo)((IndexInsnNode)get).getIndex();\n  if (!field.equals(innerField)) {\n    return null;\n  }\n  try {\n    InsnArg reg=null;\n    if (getType == InsnType.IGET) {\n      reg=get.getArg(0);\n      InsnArg putReg=insn.getArg(1);\n      if (!reg.equals(putReg)) {\n        return null;\n      }\n    }\n    FieldArg fArg=new FieldArg(field,reg);\n    if (reg != null) {\n      fArg.setType(get.getArg(0).getType());\n    }\n    if (wrapType == InsnType.ARITH) {\n      ArithNode ar=(ArithNode)wrap;\n      return new ArithNode(ar.getOp(),fArg,ar.getArg(1));\n    }\n else {\n      int argsCount=wrap.getArgsCount();\n      InsnNode concat=new InsnNode(InsnType.STR_CONCAT,argsCount - 1);\n      for (int i=1; i < argsCount; i++) {\n        concat.addArg(wrap.getArg(i));\n      }\n      return new ArithNode(ArithOp.ADD,fArg,InsnArg.wrapArg(concat));\n    }\n  }\n catch (  Exception e) {\n    LOG.debug(\"Can't convert field arith insn: {}, mth: {}\",insn,mth,e);\n  }\n  return null;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 301,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 1713,
+        "startLineNumber" : 270,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 323,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "/** \n * Convert field arith operation to arith instruction (IPUT = ARITH (IGET, lit) -> ARITH (fieldArg <op>= lit))\n */\nprivate static InsnNode convertFieldArith(MethodNode mth,InsnNode insn){\n  InsnArg arg=insn.getArg(0);\n  if (!arg.isInsnWrap()) {\n    return null;\n  }\n  InsnNode wrap=((InsnWrapArg)arg).getWrapInsn();\n  InsnType wrapType=wrap.getType();\n  if (wrapType != InsnType.ARITH && wrapType != InsnType.STR_CONCAT || !wrap.getArg(0).isInsnWrap()) {\n    return null;\n  }\n  InsnNode get=((InsnWrapArg)wrap.getArg(0)).getWrapInsn();\n  InsnType getType=get.getType();\n  if (getType != InsnType.IGET && getType != InsnType.SGET) {\n    return null;\n  }\n  FieldInfo field=(FieldInfo)((IndexInsnNode)insn).getIndex();\n  FieldInfo innerField=(FieldInfo)((IndexInsnNode)get).getIndex();\n  if (!field.equals(innerField)) {\n    return null;\n  }\n  try {\n    InsnArg reg=null;\n    if (getType == InsnType.IGET) {\n      reg=get.getArg(0);\n      InsnArg putReg=insn.getArg(1);\n      if (!reg.equals(putReg)) {\n        return null;\n      }\n    }\n    FieldArg fArg=new FieldArg(field,reg);\n    if (reg != null) {\n      fArg.setType(get.getArg(0).getType());\n    }\n    if (wrapType == InsnType.ARITH) {\n      ArithNode ar=(ArithNode)wrap;\n      return new ArithNode(ar.getOp(),fArg,ar.getArg(1));\n    }\n else {\n      int argsCount=wrap.getArgsCount();\n      InsnNode concat=new InsnNode(InsnType.STR_CONCAT,argsCount - 1);\n      for (int i=1; i < argsCount; i++) {\n        concat.addArg(wrap.getArg(i));\n      }\n      return new ArithNode(ArithOp.ADD,fArg,InsnArg.wrapArg(concat));\n    }\n  }\n catch (  Exception e) {\n    LOG.debug(\"Can't convert field arith insn: {}, mth: {}\",insn,mth,e);\n  }\n  return null;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 316,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 60,
+        "startLineNumber" : 285,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 285,
+        "endColumnNumber" : 62
+      },
+      "nodeContext" : "InsnNode get=((InsnWrapArg)wrap.getArg(0)).getWrapInsn();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 7
+    },
+    "tokenLength" : 5,
+    "type" : "jadx.core.dex.nodes.InsnNode"
+  } ],
+  "positionList" : [ {
+    "charLength" : 44,
+    "startLineNumber" : 285,
+    "startColumnNumber" : 17,
+    "endLineNumber" : 285,
+    "endColumnNumber" : 61
+  } ],
+  "layoutRelationDataList" : [ ]
+}

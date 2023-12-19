@@ -1,0 +1,126 @@
+{
+  "id" : 170,
+  "expression" : "3",
+  "projectName" : "apache@rocketmq",
+  "commitID" : "7692d466e1fda6c29d52a61617cab1d82de8b884",
+  "filePath" : "/test/src/test/java/org/apache/rocketmq/test/container/GetMetadataReverseIT.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "3",
+    "nodeType" : "NumberLiteral",
+    "nodePosition" : {
+      "charLength" : 1,
+      "startLineNumber" : 110,
+      "startColumnNumber" : 42,
+      "endLineNumber" : 110,
+      "endColumnNumber" : 43
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 21,
+        "startLineNumber" : 110,
+        "startColumnNumber" : 23,
+        "endLineNumber" : 110,
+        "endColumnNumber" : 44
+      },
+      "nodeContext" : "Duration.ofMinutes(3)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 37,
+        "startLineNumber" : 110,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 110,
+        "endColumnNumber" : 45
+      },
+      "nodeContext" : "await().atMost(Duration.ofMinutes(3))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 8,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 90,
+        "startLineNumber" : 110,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 110,
+        "endColumnNumber" : 98
+      },
+      "nodeContext" : "await().atMost(Duration.ofMinutes(3)).until(() -> receivedMsgCount.get() >= MESSAGE_COUNT)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 16,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 91,
+        "startLineNumber" : 110,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 110,
+        "endColumnNumber" : 99
+      },
+      "nodeContext" : "await().atMost(Duration.ofMinutes(3)).until(() -> receivedMsgCount.get() >= MESSAGE_COUNT);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 17,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3851,
+        "startLineNumber" : 71,
+        "startColumnNumber" : 73,
+        "endLineNumber" : 152,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  String topic=GetMetadataReverseIT.class.getSimpleName() + \"_consumerOffset\" + random.nextInt(65535);\n  createTopicTo(master1With3Replicas,topic,1,1);\n  await().atMost(Duration.ofMinutes(1)).until(() -> {\n    InnerSalveBrokerController slaveBroker=brokerContainer2.getSlaveBrokers().iterator().next();\n    return slaveBroker.getTopicConfigManager().selectTopicConfig(topic) != null;\n  }\n);\n  int sendSuccess=0;\n  for (int i=0; i < MESSAGE_COUNT; i++) {\n    Message msg=new Message(topic,Integer.toString(i).getBytes());\n    SendResult sendResult=producer.send(msg);\n    if (sendResult.getSendStatus() == SendStatus.SEND_OK) {\n      sendSuccess++;\n    }\n  }\n  final int finalSendSuccess=sendSuccess;\n  await().atMost(Duration.ofMinutes(1)).until(() -> finalSendSuccess >= MESSAGE_COUNT);\n  System.out.printf(\"send success%n\");\n  isolateBroker(master1With3Replicas);\n  brokerContainer1.removeBroker(new BrokerIdentity(master1With3Replicas.getBrokerConfig().getBrokerClusterName(),master1With3Replicas.getBrokerConfig().getBrokerName(),master1With3Replicas.getBrokerConfig().getBrokerId()));\n  System.out.printf(\"Remove master%n\");\n  DefaultMQPushConsumer pushConsumer=createPushConsumer(CONSUMER_GROUP);\n  pushConsumer.subscribe(topic,\"*\");\n  pushConsumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);\n  AtomicInteger receivedMsgCount=new AtomicInteger(0);\n  pushConsumer.registerMessageListener((MessageListenerConcurrently)(msgs,context) -> {\n    receivedMsgCount.addAndGet(msgs.size());\n    msgs.forEach(x -> System.out.printf(x + \"%n\"));\n    return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;\n  }\n);\n  pushConsumer.start();\n  await().atMost(Duration.ofMinutes(3)).until(() -> receivedMsgCount.get() >= MESSAGE_COUNT);\n  await().atMost(Duration.ofMinutes(1)).until(() -> {\n    pushConsumer.getDefaultMQPushConsumerImpl().persistConsumerOffset();\n    Map<Integer,Long> slaveOffsetTable=null;\n    for (    InnerSalveBrokerController slave : brokerContainer2.getSlaveBrokers()) {\n      if (slave.getBrokerConfig().getBrokerName().equals(master1With3Replicas.getBrokerConfig().getBrokerName())) {\n        slaveOffsetTable=slave.getConsumerOffsetManager().queryOffset(CONSUMER_GROUP,topic);\n      }\n    }\n    if (slaveOffsetTable != null) {\n      long totalOffset=0;\n      for (      final Long offset : slaveOffsetTable.values()) {\n        totalOffset+=offset;\n      }\n      return totalOffset >= MESSAGE_COUNT;\n    }\n    return false;\n  }\n);\n  master1With3Replicas=brokerContainer1.addBroker(master1With3Replicas.getBrokerConfig(),master1With3Replicas.getMessageStoreConfig());\n  master1With3Replicas.start();\n  cancelIsolatedBroker(master1With3Replicas);\n  System.out.printf(\"Add back master%n\");\n  awaitUntilSlaveOK();\n  await().atMost(Duration.ofMinutes(1)).until(() -> {\n    Map<Integer,Long> offsetTable=master1With3Replicas.getConsumerOffsetManager().queryOffset(CONSUMER_GROUP,topic);\n    long totalOffset=0;\n    if (offsetTable != null) {\n      for (      final Long offset : offsetTable.values()) {\n        totalOffset+=offset;\n      }\n    }\n    return totalOffset >= MESSAGE_COUNT;\n  }\n);\n  pushConsumer.shutdown();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 447,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3931,
+        "startLineNumber" : 70,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 152,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test public void testGetMetadataReverse_consumerOffset() throws Exception {\n  String topic=GetMetadataReverseIT.class.getSimpleName() + \"_consumerOffset\" + random.nextInt(65535);\n  createTopicTo(master1With3Replicas,topic,1,1);\n  await().atMost(Duration.ofMinutes(1)).until(() -> {\n    InnerSalveBrokerController slaveBroker=brokerContainer2.getSlaveBrokers().iterator().next();\n    return slaveBroker.getTopicConfigManager().selectTopicConfig(topic) != null;\n  }\n);\n  int sendSuccess=0;\n  for (int i=0; i < MESSAGE_COUNT; i++) {\n    Message msg=new Message(topic,Integer.toString(i).getBytes());\n    SendResult sendResult=producer.send(msg);\n    if (sendResult.getSendStatus() == SendStatus.SEND_OK) {\n      sendSuccess++;\n    }\n  }\n  final int finalSendSuccess=sendSuccess;\n  await().atMost(Duration.ofMinutes(1)).until(() -> finalSendSuccess >= MESSAGE_COUNT);\n  System.out.printf(\"send success%n\");\n  isolateBroker(master1With3Replicas);\n  brokerContainer1.removeBroker(new BrokerIdentity(master1With3Replicas.getBrokerConfig().getBrokerClusterName(),master1With3Replicas.getBrokerConfig().getBrokerName(),master1With3Replicas.getBrokerConfig().getBrokerId()));\n  System.out.printf(\"Remove master%n\");\n  DefaultMQPushConsumer pushConsumer=createPushConsumer(CONSUMER_GROUP);\n  pushConsumer.subscribe(topic,\"*\");\n  pushConsumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);\n  AtomicInteger receivedMsgCount=new AtomicInteger(0);\n  pushConsumer.registerMessageListener((MessageListenerConcurrently)(msgs,context) -> {\n    receivedMsgCount.addAndGet(msgs.size());\n    msgs.forEach(x -> System.out.printf(x + \"%n\"));\n    return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;\n  }\n);\n  pushConsumer.start();\n  await().atMost(Duration.ofMinutes(3)).until(() -> receivedMsgCount.get() >= MESSAGE_COUNT);\n  await().atMost(Duration.ofMinutes(1)).until(() -> {\n    pushConsumer.getDefaultMQPushConsumerImpl().persistConsumerOffset();\n    Map<Integer,Long> slaveOffsetTable=null;\n    for (    InnerSalveBrokerController slave : brokerContainer2.getSlaveBrokers()) {\n      if (slave.getBrokerConfig().getBrokerName().equals(master1With3Replicas.getBrokerConfig().getBrokerName())) {\n        slaveOffsetTable=slave.getConsumerOffsetManager().queryOffset(CONSUMER_GROUP,topic);\n      }\n    }\n    if (slaveOffsetTable != null) {\n      long totalOffset=0;\n      for (      final Long offset : slaveOffsetTable.values()) {\n        totalOffset+=offset;\n      }\n      return totalOffset >= MESSAGE_COUNT;\n    }\n    return false;\n  }\n);\n  master1With3Replicas=brokerContainer1.addBroker(master1With3Replicas.getBrokerConfig(),master1With3Replicas.getMessageStoreConfig());\n  master1With3Replicas.start();\n  cancelIsolatedBroker(master1With3Replicas);\n  System.out.printf(\"Add back master%n\");\n  awaitUntilSlaveOK();\n  await().atMost(Duration.ofMinutes(1)).until(() -> {\n    Map<Integer,Long> offsetTable=master1With3Replicas.getConsumerOffsetManager().queryOffset(CONSUMER_GROUP,topic);\n    long totalOffset=0;\n    if (offsetTable != null) {\n      for (      final Long offset : offsetTable.values()) {\n        totalOffset+=offset;\n      }\n    }\n    return totalOffset >= MESSAGE_COUNT;\n  }\n);\n  pushConsumer.shutdown();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 455,
+      "astHeight" : 15
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 91,
+        "startLineNumber" : 110,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 110,
+        "endColumnNumber" : 99
+      },
+      "nodeContext" : "await().atMost(Duration.ofMinutes(3)).until(() -> receivedMsgCount.get() >= MESSAGE_COUNT);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 17,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "int"
+  } ],
+  "positionList" : [ {
+    "charLength" : 1,
+    "startLineNumber" : 110,
+    "startColumnNumber" : 42,
+    "endLineNumber" : 110,
+    "endColumnNumber" : 43
+  } ],
+  "layoutRelationDataList" : [ ]
+}

@@ -1,0 +1,519 @@
+{
+  "id" : 379,
+  "expression" : "8",
+  "projectName" : "apache@flink",
+  "commitID" : "f8cb19e70ca7da6423dfb01b97e05c4d520c9fde",
+  "filePath" : "/flink-table/flink-table-runtime/src/main/java/org/apache/flink/table/runtime/hashtable/LongHybridHashTable.java",
+  "occurrences" : 3,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "8",
+    "nodeType" : "NumberLiteral",
+    "nodePosition" : {
+      "charLength" : 1,
+      "startLineNumber" : 218,
+      "startColumnNumber" : 77,
+      "endLineNumber" : 218,
+      "endColumnNumber" : 78
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,rightOperand]",
+      "nodePosition" : {
+        "charLength" : 15,
+        "startLineNumber" : 218,
+        "startColumnNumber" : 63,
+        "endLineNumber" : 218,
+        "endColumnNumber" : 78
+      },
+      "nodeContext" : "segmentSize / 8",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,rightOperand]",
+      "nodePosition" : {
+        "charLength" : 24,
+        "startLineNumber" : 218,
+        "startColumnNumber" : 54,
+        "endLineNumber" : 218,
+        "endColumnNumber" : 78
+      },
+      "nodeContext" : "range <= segmentSize / 8",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ParenthesizedExpression,expression]",
+      "nodePosition" : {
+        "charLength" : 52,
+        "startLineNumber" : 218,
+        "startColumnNumber" : 26,
+        "endLineNumber" : 218,
+        "endColumnNumber" : 78
+      },
+      "nodeContext" : "range <= recordCount * 4 || range <= segmentSize / 8",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 11,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,rightOperand]",
+      "nodePosition" : {
+        "charLength" : 54,
+        "startLineNumber" : 218,
+        "startColumnNumber" : 25,
+        "endLineNumber" : 218,
+        "endColumnNumber" : 79
+      },
+      "nodeContext" : "(range <= recordCount * 4 || range <= segmentSize / 8)",
+      "nodeType" : "ParenthesizedExpression",
+      "astNodeNumber" : 12,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 67,
+        "startLineNumber" : 218,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 218,
+        "endColumnNumber" : 79
+      },
+      "nodeContext" : "range > 0 && (range <= recordCount * 4 || range <= segmentSize / 8)",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 16,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 2017,
+        "startLineNumber" : 218,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 264,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (range > 0 && (range <= recordCount * 4 || range <= segmentSize / 8)) {\n  int buffers=(int)Math.ceil(((double)(range * 8)) / segmentSize);\n  MemorySegment[] denseBuckets=new MemorySegment[buffers];\n  for (int i=0; i < buffers; i++) {\n    MemorySegment seg=getNextBuffer();\n    if (seg == null) {\n      returnAll(Arrays.asList(denseBuckets));\n      return;\n    }\n    denseBuckets[i]=seg;\n    for (int j=0; j < segmentSize; j+=8) {\n      seg.putLong(j,INVALID_ADDRESS);\n    }\n  }\n  denseMode=true;\n  LOG.info(\"LongHybridHashTable: Use dense mode!\");\n  this.minKey=minKey;\n  this.maxKey=maxKey;\n  List<MemorySegment> segments=new ArrayList<>();\n  buildSpillReturnBuffers.drainTo(segments);\n  returnAll(segments);\n  ArrayList<MemorySegment> dataBuffers=new ArrayList<>();\n  long addressOffset=0;\n  for (  LongHashPartition p : this.partitionsBeingBuilt) {\n    p.iteratorToDenseBucket(denseBuckets,addressOffset,minKey);\n    p.updateDenseAddressOffset(addressOffset);\n    dataBuffers.addAll(Arrays.asList(p.getPartitionBuffers()));\n    addressOffset+=(p.getPartitionBuffers().length << segmentSizeBits);\n    returnAll(Arrays.asList(p.getBuckets()));\n  }\n  this.denseBuckets=denseBuckets;\n  this.densePartition=new LongHashPartition(this,buildSideSerializer,dataBuffers.toArray(new MemorySegment[0]));\n  freeCurrent();\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 244,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3088,
+        "startLineNumber" : 186,
+        "startColumnNumber" : 32,
+        "endLineNumber" : 265,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (numSpillFiles != 0) {\n    return;\n  }\n  long minKey=Long.MAX_VALUE;\n  long maxKey=Long.MIN_VALUE;\n  long recordCount=0;\n  for (  LongHashPartition p : this.partitionsBeingBuilt) {\n    long partitionRecords=p.getBuildSideRecordCount();\n    recordCount+=partitionRecords;\n    if (partitionRecords > 0) {\n      if (p.getMinKey() < minKey) {\n        minKey=p.getMinKey();\n      }\n      if (p.getMaxKey() > maxKey) {\n        maxKey=p.getMaxKey();\n      }\n    }\n  }\n  if (buildSpillRetBufferNumbers != 0) {\n    throw new RuntimeException(\"buildSpillRetBufferNumbers should be 0: \" + buildSpillRetBufferNumbers);\n  }\n  long range=maxKey - minKey + 1;\n  if (range > 0 && (range <= recordCount * 4 || range <= segmentSize / 8)) {\n    int buffers=(int)Math.ceil(((double)(range * 8)) / segmentSize);\n    MemorySegment[] denseBuckets=new MemorySegment[buffers];\n    for (int i=0; i < buffers; i++) {\n      MemorySegment seg=getNextBuffer();\n      if (seg == null) {\n        returnAll(Arrays.asList(denseBuckets));\n        return;\n      }\n      denseBuckets[i]=seg;\n      for (int j=0; j < segmentSize; j+=8) {\n        seg.putLong(j,INVALID_ADDRESS);\n      }\n    }\n    denseMode=true;\n    LOG.info(\"LongHybridHashTable: Use dense mode!\");\n    this.minKey=minKey;\n    this.maxKey=maxKey;\n    List<MemorySegment> segments=new ArrayList<>();\n    buildSpillReturnBuffers.drainTo(segments);\n    returnAll(segments);\n    ArrayList<MemorySegment> dataBuffers=new ArrayList<>();\n    long addressOffset=0;\n    for (    LongHashPartition p : this.partitionsBeingBuilt) {\n      p.iteratorToDenseBucket(denseBuckets,addressOffset,minKey);\n      p.updateDenseAddressOffset(addressOffset);\n      dataBuffers.addAll(Arrays.asList(p.getPartitionBuffers()));\n      addressOffset+=(p.getPartitionBuffers().length << segmentSizeBits);\n      returnAll(Arrays.asList(p.getBuckets()));\n    }\n    this.denseBuckets=denseBuckets;\n    this.densePartition=new LongHashPartition(this,buildSideSerializer,dataBuffers.toArray(new MemorySegment[0]));\n    freeCurrent();\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 342,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3167,
+        "startLineNumber" : 185,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 265,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * After build end, try to use dense mode. \n */\nprivate void tryDenseMode(){\n  if (numSpillFiles != 0) {\n    return;\n  }\n  long minKey=Long.MAX_VALUE;\n  long maxKey=Long.MIN_VALUE;\n  long recordCount=0;\n  for (  LongHashPartition p : this.partitionsBeingBuilt) {\n    long partitionRecords=p.getBuildSideRecordCount();\n    recordCount+=partitionRecords;\n    if (partitionRecords > 0) {\n      if (p.getMinKey() < minKey) {\n        minKey=p.getMinKey();\n      }\n      if (p.getMaxKey() > maxKey) {\n        maxKey=p.getMaxKey();\n      }\n    }\n  }\n  if (buildSpillRetBufferNumbers != 0) {\n    throw new RuntimeException(\"buildSpillRetBufferNumbers should be 0: \" + buildSpillRetBufferNumbers);\n  }\n  long range=maxKey - minKey + 1;\n  if (range > 0 && (range <= recordCount * 4 || range <= segmentSize / 8)) {\n    int buffers=(int)Math.ceil(((double)(range * 8)) / segmentSize);\n    MemorySegment[] denseBuckets=new MemorySegment[buffers];\n    for (int i=0; i < buffers; i++) {\n      MemorySegment seg=getNextBuffer();\n      if (seg == null) {\n        returnAll(Arrays.asList(denseBuckets));\n        return;\n      }\n      denseBuckets[i]=seg;\n      for (int j=0; j < segmentSize; j+=8) {\n        seg.putLong(j,INVALID_ADDRESS);\n      }\n    }\n    denseMode=true;\n    LOG.info(\"LongHybridHashTable: Use dense mode!\");\n    this.minKey=minKey;\n    this.maxKey=maxKey;\n    List<MemorySegment> segments=new ArrayList<>();\n    buildSpillReturnBuffers.drainTo(segments);\n    returnAll(segments);\n    ArrayList<MemorySegment> dataBuffers=new ArrayList<>();\n    long addressOffset=0;\n    for (    LongHashPartition p : this.partitionsBeingBuilt) {\n      p.iteratorToDenseBucket(denseBuckets,addressOffset,minKey);\n      p.updateDenseAddressOffset(addressOffset);\n      dataBuffers.addAll(Arrays.asList(p.getPartitionBuffers()));\n      addressOffset+=(p.getPartitionBuffers().length << segmentSizeBits);\n      returnAll(Arrays.asList(p.getBuckets()));\n    }\n    this.denseBuckets=denseBuckets;\n    this.densePartition=new LongHashPartition(this,buildSideSerializer,dataBuffers.toArray(new MemorySegment[0]));\n    freeCurrent();\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 347,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 67,
+        "startLineNumber" : 218,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 218,
+        "endColumnNumber" : 79
+      },
+      "nodeContext" : "range > 0 && (range <= recordCount * 4 || range <= segmentSize / 8)",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 16,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "int"
+  }, {
+    "nodeContext" : "8",
+    "nodeType" : "NumberLiteral",
+    "nodePosition" : {
+      "charLength" : 1,
+      "startLineNumber" : 221,
+      "startColumnNumber" : 61,
+      "endLineNumber" : 221,
+      "endColumnNumber" : 62
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ParenthesizedExpression,expression]",
+      "nodePosition" : {
+        "charLength" : 9,
+        "startLineNumber" : 221,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 221,
+        "endColumnNumber" : 62
+      },
+      "nodeContext" : "range * 8",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.CastExpression,expression]",
+      "nodePosition" : {
+        "charLength" : 11,
+        "startLineNumber" : 221,
+        "startColumnNumber" : 52,
+        "endLineNumber" : 221,
+        "endColumnNumber" : 63
+      },
+      "nodeContext" : "(range * 8)",
+      "nodeType" : "ParenthesizedExpression",
+      "astNodeNumber" : 4,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ParenthesizedExpression,expression]",
+      "nodePosition" : {
+        "charLength" : 20,
+        "startLineNumber" : 221,
+        "startColumnNumber" : 43,
+        "endLineNumber" : 221,
+        "endColumnNumber" : 63
+      },
+      "nodeContext" : "(double)(range * 8)",
+      "nodeType" : "CastExpression",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 22,
+        "startLineNumber" : 221,
+        "startColumnNumber" : 42,
+        "endLineNumber" : 221,
+        "endColumnNumber" : 64
+      },
+      "nodeContext" : "((double)(range * 8))",
+      "nodeType" : "ParenthesizedExpression",
+      "astNodeNumber" : 7,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 36,
+        "startLineNumber" : 221,
+        "startColumnNumber" : 42,
+        "endLineNumber" : 221,
+        "endColumnNumber" : 78
+      },
+      "nodeContext" : "((double)(range * 8)) / segmentSize",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 9,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.CastExpression,expression]",
+      "nodePosition" : {
+        "charLength" : 47,
+        "startLineNumber" : 221,
+        "startColumnNumber" : 32,
+        "endLineNumber" : 221,
+        "endColumnNumber" : 79
+      },
+      "nodeContext" : "Math.ceil(((double)(range * 8)) / segmentSize)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 12,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 53,
+        "startLineNumber" : 221,
+        "startColumnNumber" : 26,
+        "endLineNumber" : 221,
+        "endColumnNumber" : 79
+      },
+      "nodeContext" : "(int)Math.ceil(((double)(range * 8)) / segmentSize)",
+      "nodeType" : "CastExpression",
+      "astNodeNumber" : 14,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 63,
+        "startLineNumber" : 221,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 221,
+        "endColumnNumber" : 79
+      },
+      "nodeContext" : "buffers=(int)Math.ceil(((double)(range * 8)) / segmentSize)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 16,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 68,
+        "startLineNumber" : 221,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 221,
+        "endColumnNumber" : 80
+      },
+      "nodeContext" : "int buffers=(int)Math.ceil(((double)(range * 8)) / segmentSize);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 18,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 1944,
+        "startLineNumber" : 218,
+        "startColumnNumber" : 81,
+        "endLineNumber" : 264,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  int buffers=(int)Math.ceil(((double)(range * 8)) / segmentSize);\n  MemorySegment[] denseBuckets=new MemorySegment[buffers];\n  for (int i=0; i < buffers; i++) {\n    MemorySegment seg=getNextBuffer();\n    if (seg == null) {\n      returnAll(Arrays.asList(denseBuckets));\n      return;\n    }\n    denseBuckets[i]=seg;\n    for (int j=0; j < segmentSize; j+=8) {\n      seg.putLong(j,INVALID_ADDRESS);\n    }\n  }\n  denseMode=true;\n  LOG.info(\"LongHybridHashTable: Use dense mode!\");\n  this.minKey=minKey;\n  this.maxKey=maxKey;\n  List<MemorySegment> segments=new ArrayList<>();\n  buildSpillReturnBuffers.drainTo(segments);\n  returnAll(segments);\n  ArrayList<MemorySegment> dataBuffers=new ArrayList<>();\n  long addressOffset=0;\n  for (  LongHashPartition p : this.partitionsBeingBuilt) {\n    p.iteratorToDenseBucket(denseBuckets,addressOffset,minKey);\n    p.updateDenseAddressOffset(addressOffset);\n    dataBuffers.addAll(Arrays.asList(p.getPartitionBuffers()));\n    addressOffset+=(p.getPartitionBuffers().length << segmentSizeBits);\n    returnAll(Arrays.asList(p.getBuckets()));\n  }\n  this.denseBuckets=denseBuckets;\n  this.densePartition=new LongHashPartition(this,buildSideSerializer,dataBuffers.toArray(new MemorySegment[0]));\n  freeCurrent();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 227,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 2017,
+        "startLineNumber" : 218,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 264,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (range > 0 && (range <= recordCount * 4 || range <= segmentSize / 8)) {\n  int buffers=(int)Math.ceil(((double)(range * 8)) / segmentSize);\n  MemorySegment[] denseBuckets=new MemorySegment[buffers];\n  for (int i=0; i < buffers; i++) {\n    MemorySegment seg=getNextBuffer();\n    if (seg == null) {\n      returnAll(Arrays.asList(denseBuckets));\n      return;\n    }\n    denseBuckets[i]=seg;\n    for (int j=0; j < segmentSize; j+=8) {\n      seg.putLong(j,INVALID_ADDRESS);\n    }\n  }\n  denseMode=true;\n  LOG.info(\"LongHybridHashTable: Use dense mode!\");\n  this.minKey=minKey;\n  this.maxKey=maxKey;\n  List<MemorySegment> segments=new ArrayList<>();\n  buildSpillReturnBuffers.drainTo(segments);\n  returnAll(segments);\n  ArrayList<MemorySegment> dataBuffers=new ArrayList<>();\n  long addressOffset=0;\n  for (  LongHashPartition p : this.partitionsBeingBuilt) {\n    p.iteratorToDenseBucket(denseBuckets,addressOffset,minKey);\n    p.updateDenseAddressOffset(addressOffset);\n    dataBuffers.addAll(Arrays.asList(p.getPartitionBuffers()));\n    addressOffset+=(p.getPartitionBuffers().length << segmentSizeBits);\n    returnAll(Arrays.asList(p.getBuckets()));\n  }\n  this.denseBuckets=denseBuckets;\n  this.densePartition=new LongHashPartition(this,buildSideSerializer,dataBuffers.toArray(new MemorySegment[0]));\n  freeCurrent();\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 244,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3088,
+        "startLineNumber" : 186,
+        "startColumnNumber" : 32,
+        "endLineNumber" : 265,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (numSpillFiles != 0) {\n    return;\n  }\n  long minKey=Long.MAX_VALUE;\n  long maxKey=Long.MIN_VALUE;\n  long recordCount=0;\n  for (  LongHashPartition p : this.partitionsBeingBuilt) {\n    long partitionRecords=p.getBuildSideRecordCount();\n    recordCount+=partitionRecords;\n    if (partitionRecords > 0) {\n      if (p.getMinKey() < minKey) {\n        minKey=p.getMinKey();\n      }\n      if (p.getMaxKey() > maxKey) {\n        maxKey=p.getMaxKey();\n      }\n    }\n  }\n  if (buildSpillRetBufferNumbers != 0) {\n    throw new RuntimeException(\"buildSpillRetBufferNumbers should be 0: \" + buildSpillRetBufferNumbers);\n  }\n  long range=maxKey - minKey + 1;\n  if (range > 0 && (range <= recordCount * 4 || range <= segmentSize / 8)) {\n    int buffers=(int)Math.ceil(((double)(range * 8)) / segmentSize);\n    MemorySegment[] denseBuckets=new MemorySegment[buffers];\n    for (int i=0; i < buffers; i++) {\n      MemorySegment seg=getNextBuffer();\n      if (seg == null) {\n        returnAll(Arrays.asList(denseBuckets));\n        return;\n      }\n      denseBuckets[i]=seg;\n      for (int j=0; j < segmentSize; j+=8) {\n        seg.putLong(j,INVALID_ADDRESS);\n      }\n    }\n    denseMode=true;\n    LOG.info(\"LongHybridHashTable: Use dense mode!\");\n    this.minKey=minKey;\n    this.maxKey=maxKey;\n    List<MemorySegment> segments=new ArrayList<>();\n    buildSpillReturnBuffers.drainTo(segments);\n    returnAll(segments);\n    ArrayList<MemorySegment> dataBuffers=new ArrayList<>();\n    long addressOffset=0;\n    for (    LongHashPartition p : this.partitionsBeingBuilt) {\n      p.iteratorToDenseBucket(denseBuckets,addressOffset,minKey);\n      p.updateDenseAddressOffset(addressOffset);\n      dataBuffers.addAll(Arrays.asList(p.getPartitionBuffers()));\n      addressOffset+=(p.getPartitionBuffers().length << segmentSizeBits);\n      returnAll(Arrays.asList(p.getBuckets()));\n    }\n    this.denseBuckets=denseBuckets;\n    this.densePartition=new LongHashPartition(this,buildSideSerializer,dataBuffers.toArray(new MemorySegment[0]));\n    freeCurrent();\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 342,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3167,
+        "startLineNumber" : 185,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 265,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * After build end, try to use dense mode. \n */\nprivate void tryDenseMode(){\n  if (numSpillFiles != 0) {\n    return;\n  }\n  long minKey=Long.MAX_VALUE;\n  long maxKey=Long.MIN_VALUE;\n  long recordCount=0;\n  for (  LongHashPartition p : this.partitionsBeingBuilt) {\n    long partitionRecords=p.getBuildSideRecordCount();\n    recordCount+=partitionRecords;\n    if (partitionRecords > 0) {\n      if (p.getMinKey() < minKey) {\n        minKey=p.getMinKey();\n      }\n      if (p.getMaxKey() > maxKey) {\n        maxKey=p.getMaxKey();\n      }\n    }\n  }\n  if (buildSpillRetBufferNumbers != 0) {\n    throw new RuntimeException(\"buildSpillRetBufferNumbers should be 0: \" + buildSpillRetBufferNumbers);\n  }\n  long range=maxKey - minKey + 1;\n  if (range > 0 && (range <= recordCount * 4 || range <= segmentSize / 8)) {\n    int buffers=(int)Math.ceil(((double)(range * 8)) / segmentSize);\n    MemorySegment[] denseBuckets=new MemorySegment[buffers];\n    for (int i=0; i < buffers; i++) {\n      MemorySegment seg=getNextBuffer();\n      if (seg == null) {\n        returnAll(Arrays.asList(denseBuckets));\n        return;\n      }\n      denseBuckets[i]=seg;\n      for (int j=0; j < segmentSize; j+=8) {\n        seg.putLong(j,INVALID_ADDRESS);\n      }\n    }\n    denseMode=true;\n    LOG.info(\"LongHybridHashTable: Use dense mode!\");\n    this.minKey=minKey;\n    this.maxKey=maxKey;\n    List<MemorySegment> segments=new ArrayList<>();\n    buildSpillReturnBuffers.drainTo(segments);\n    returnAll(segments);\n    ArrayList<MemorySegment> dataBuffers=new ArrayList<>();\n    long addressOffset=0;\n    for (    LongHashPartition p : this.partitionsBeingBuilt) {\n      p.iteratorToDenseBucket(denseBuckets,addressOffset,minKey);\n      p.updateDenseAddressOffset(addressOffset);\n      dataBuffers.addAll(Arrays.asList(p.getPartitionBuffers()));\n      addressOffset+=(p.getPartitionBuffers().length << segmentSizeBits);\n      returnAll(Arrays.asList(p.getBuckets()));\n    }\n    this.denseBuckets=denseBuckets;\n    this.densePartition=new LongHashPartition(this,buildSideSerializer,dataBuffers.toArray(new MemorySegment[0]));\n    freeCurrent();\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 347,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 68,
+        "startLineNumber" : 221,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 221,
+        "endColumnNumber" : 80
+      },
+      "nodeContext" : "int buffers=(int)Math.ceil(((double)(range * 8)) / segmentSize);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 18,
+      "astHeight" : 10
+    },
+    "tokenLength" : 1,
+    "type" : "int"
+  }, {
+    "nodeContext" : "8",
+    "nodeType" : "NumberLiteral",
+    "nodePosition" : {
+      "charLength" : 1,
+      "startLineNumber" : 234,
+      "startColumnNumber" : 54,
+      "endLineNumber" : 234,
+      "endColumnNumber" : 55
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.ForStatement,updaters]",
+      "nodePosition" : {
+        "charLength" : 6,
+        "startLineNumber" : 234,
+        "startColumnNumber" : 49,
+        "endLineNumber" : 234,
+        "endColumnNumber" : 55
+      },
+      "nodeContext" : "j+=8",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 113,
+        "startLineNumber" : 234,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 236,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "for (int j=0; j < segmentSize; j+=8) {\n  seg.putLong(j,INVALID_ADDRESS);\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 19,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 378,
+        "startLineNumber" : 227,
+        "startColumnNumber" : 46,
+        "endLineNumber" : 237,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  MemorySegment seg=getNextBuffer();\n  if (seg == null) {\n    returnAll(Arrays.asList(denseBuckets));\n    return;\n  }\n  denseBuckets[i]=seg;\n  for (int j=0; j < segmentSize; j+=8) {\n    seg.putLong(j,INVALID_ADDRESS);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 46,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 412,
+        "startLineNumber" : 227,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 237,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "for (int i=0; i < buffers; i++) {\n  MemorySegment seg=getNextBuffer();\n  if (seg == null) {\n    returnAll(Arrays.asList(denseBuckets));\n    return;\n  }\n  denseBuckets[i]=seg;\n  for (int j=0; j < segmentSize; j+=8) {\n    seg.putLong(j,INVALID_ADDRESS);\n  }\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 57,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 1944,
+        "startLineNumber" : 218,
+        "startColumnNumber" : 81,
+        "endLineNumber" : 264,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  int buffers=(int)Math.ceil(((double)(range * 8)) / segmentSize);\n  MemorySegment[] denseBuckets=new MemorySegment[buffers];\n  for (int i=0; i < buffers; i++) {\n    MemorySegment seg=getNextBuffer();\n    if (seg == null) {\n      returnAll(Arrays.asList(denseBuckets));\n      return;\n    }\n    denseBuckets[i]=seg;\n    for (int j=0; j < segmentSize; j+=8) {\n      seg.putLong(j,INVALID_ADDRESS);\n    }\n  }\n  denseMode=true;\n  LOG.info(\"LongHybridHashTable: Use dense mode!\");\n  this.minKey=minKey;\n  this.maxKey=maxKey;\n  List<MemorySegment> segments=new ArrayList<>();\n  buildSpillReturnBuffers.drainTo(segments);\n  returnAll(segments);\n  ArrayList<MemorySegment> dataBuffers=new ArrayList<>();\n  long addressOffset=0;\n  for (  LongHashPartition p : this.partitionsBeingBuilt) {\n    p.iteratorToDenseBucket(denseBuckets,addressOffset,minKey);\n    p.updateDenseAddressOffset(addressOffset);\n    dataBuffers.addAll(Arrays.asList(p.getPartitionBuffers()));\n    addressOffset+=(p.getPartitionBuffers().length << segmentSizeBits);\n    returnAll(Arrays.asList(p.getBuckets()));\n  }\n  this.denseBuckets=denseBuckets;\n  this.densePartition=new LongHashPartition(this,buildSideSerializer,dataBuffers.toArray(new MemorySegment[0]));\n  freeCurrent();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 227,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 2017,
+        "startLineNumber" : 218,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 264,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (range > 0 && (range <= recordCount * 4 || range <= segmentSize / 8)) {\n  int buffers=(int)Math.ceil(((double)(range * 8)) / segmentSize);\n  MemorySegment[] denseBuckets=new MemorySegment[buffers];\n  for (int i=0; i < buffers; i++) {\n    MemorySegment seg=getNextBuffer();\n    if (seg == null) {\n      returnAll(Arrays.asList(denseBuckets));\n      return;\n    }\n    denseBuckets[i]=seg;\n    for (int j=0; j < segmentSize; j+=8) {\n      seg.putLong(j,INVALID_ADDRESS);\n    }\n  }\n  denseMode=true;\n  LOG.info(\"LongHybridHashTable: Use dense mode!\");\n  this.minKey=minKey;\n  this.maxKey=maxKey;\n  List<MemorySegment> segments=new ArrayList<>();\n  buildSpillReturnBuffers.drainTo(segments);\n  returnAll(segments);\n  ArrayList<MemorySegment> dataBuffers=new ArrayList<>();\n  long addressOffset=0;\n  for (  LongHashPartition p : this.partitionsBeingBuilt) {\n    p.iteratorToDenseBucket(denseBuckets,addressOffset,minKey);\n    p.updateDenseAddressOffset(addressOffset);\n    dataBuffers.addAll(Arrays.asList(p.getPartitionBuffers()));\n    addressOffset+=(p.getPartitionBuffers().length << segmentSizeBits);\n    returnAll(Arrays.asList(p.getBuckets()));\n  }\n  this.denseBuckets=denseBuckets;\n  this.densePartition=new LongHashPartition(this,buildSideSerializer,dataBuffers.toArray(new MemorySegment[0]));\n  freeCurrent();\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 244,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3088,
+        "startLineNumber" : 186,
+        "startColumnNumber" : 32,
+        "endLineNumber" : 265,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (numSpillFiles != 0) {\n    return;\n  }\n  long minKey=Long.MAX_VALUE;\n  long maxKey=Long.MIN_VALUE;\n  long recordCount=0;\n  for (  LongHashPartition p : this.partitionsBeingBuilt) {\n    long partitionRecords=p.getBuildSideRecordCount();\n    recordCount+=partitionRecords;\n    if (partitionRecords > 0) {\n      if (p.getMinKey() < minKey) {\n        minKey=p.getMinKey();\n      }\n      if (p.getMaxKey() > maxKey) {\n        maxKey=p.getMaxKey();\n      }\n    }\n  }\n  if (buildSpillRetBufferNumbers != 0) {\n    throw new RuntimeException(\"buildSpillRetBufferNumbers should be 0: \" + buildSpillRetBufferNumbers);\n  }\n  long range=maxKey - minKey + 1;\n  if (range > 0 && (range <= recordCount * 4 || range <= segmentSize / 8)) {\n    int buffers=(int)Math.ceil(((double)(range * 8)) / segmentSize);\n    MemorySegment[] denseBuckets=new MemorySegment[buffers];\n    for (int i=0; i < buffers; i++) {\n      MemorySegment seg=getNextBuffer();\n      if (seg == null) {\n        returnAll(Arrays.asList(denseBuckets));\n        return;\n      }\n      denseBuckets[i]=seg;\n      for (int j=0; j < segmentSize; j+=8) {\n        seg.putLong(j,INVALID_ADDRESS);\n      }\n    }\n    denseMode=true;\n    LOG.info(\"LongHybridHashTable: Use dense mode!\");\n    this.minKey=minKey;\n    this.maxKey=maxKey;\n    List<MemorySegment> segments=new ArrayList<>();\n    buildSpillReturnBuffers.drainTo(segments);\n    returnAll(segments);\n    ArrayList<MemorySegment> dataBuffers=new ArrayList<>();\n    long addressOffset=0;\n    for (    LongHashPartition p : this.partitionsBeingBuilt) {\n      p.iteratorToDenseBucket(denseBuckets,addressOffset,minKey);\n      p.updateDenseAddressOffset(addressOffset);\n      dataBuffers.addAll(Arrays.asList(p.getPartitionBuffers()));\n      addressOffset+=(p.getPartitionBuffers().length << segmentSizeBits);\n      returnAll(Arrays.asList(p.getBuckets()));\n    }\n    this.denseBuckets=denseBuckets;\n    this.densePartition=new LongHashPartition(this,buildSideSerializer,dataBuffers.toArray(new MemorySegment[0]));\n    freeCurrent();\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 342,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3167,
+        "startLineNumber" : 185,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 265,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * After build end, try to use dense mode. \n */\nprivate void tryDenseMode(){\n  if (numSpillFiles != 0) {\n    return;\n  }\n  long minKey=Long.MAX_VALUE;\n  long maxKey=Long.MIN_VALUE;\n  long recordCount=0;\n  for (  LongHashPartition p : this.partitionsBeingBuilt) {\n    long partitionRecords=p.getBuildSideRecordCount();\n    recordCount+=partitionRecords;\n    if (partitionRecords > 0) {\n      if (p.getMinKey() < minKey) {\n        minKey=p.getMinKey();\n      }\n      if (p.getMaxKey() > maxKey) {\n        maxKey=p.getMaxKey();\n      }\n    }\n  }\n  if (buildSpillRetBufferNumbers != 0) {\n    throw new RuntimeException(\"buildSpillRetBufferNumbers should be 0: \" + buildSpillRetBufferNumbers);\n  }\n  long range=maxKey - minKey + 1;\n  if (range > 0 && (range <= recordCount * 4 || range <= segmentSize / 8)) {\n    int buffers=(int)Math.ceil(((double)(range * 8)) / segmentSize);\n    MemorySegment[] denseBuckets=new MemorySegment[buffers];\n    for (int i=0; i < buffers; i++) {\n      MemorySegment seg=getNextBuffer();\n      if (seg == null) {\n        returnAll(Arrays.asList(denseBuckets));\n        return;\n      }\n      denseBuckets[i]=seg;\n      for (int j=0; j < segmentSize; j+=8) {\n        seg.putLong(j,INVALID_ADDRESS);\n      }\n    }\n    denseMode=true;\n    LOG.info(\"LongHybridHashTable: Use dense mode!\");\n    this.minKey=minKey;\n    this.maxKey=maxKey;\n    List<MemorySegment> segments=new ArrayList<>();\n    buildSpillReturnBuffers.drainTo(segments);\n    returnAll(segments);\n    ArrayList<MemorySegment> dataBuffers=new ArrayList<>();\n    long addressOffset=0;\n    for (    LongHashPartition p : this.partitionsBeingBuilt) {\n      p.iteratorToDenseBucket(denseBuckets,addressOffset,minKey);\n      p.updateDenseAddressOffset(addressOffset);\n      dataBuffers.addAll(Arrays.asList(p.getPartitionBuffers()));\n      addressOffset+=(p.getPartitionBuffers().length << segmentSizeBits);\n      returnAll(Arrays.asList(p.getBuckets()));\n    }\n    this.denseBuckets=denseBuckets;\n    this.densePartition=new LongHashPartition(this,buildSideSerializer,dataBuffers.toArray(new MemorySegment[0]));\n    freeCurrent();\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 347,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.ForStatement,updaters]",
+      "nodePosition" : {
+        "charLength" : 6,
+        "startLineNumber" : 234,
+        "startColumnNumber" : 49,
+        "endLineNumber" : 234,
+        "endColumnNumber" : 55
+      },
+      "nodeContext" : "j+=8",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    },
+    "tokenLength" : 1,
+    "type" : "int"
+  } ],
+  "positionList" : [ {
+    "charLength" : 1,
+    "startLineNumber" : 218,
+    "startColumnNumber" : 77,
+    "endLineNumber" : 218,
+    "endColumnNumber" : 78
+  }, {
+    "charLength" : 1,
+    "startLineNumber" : 221,
+    "startColumnNumber" : 61,
+    "endLineNumber" : 221,
+    "endColumnNumber" : 62
+  }, {
+    "charLength" : 1,
+    "startLineNumber" : 234,
+    "startColumnNumber" : 54,
+    "endLineNumber" : 234,
+    "endColumnNumber" : 55
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 10
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 9
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 4
+  } ]
+}

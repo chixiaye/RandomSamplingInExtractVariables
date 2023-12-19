@@ -1,0 +1,113 @@
+{
+  "id" : 454,
+  "expression" : "packageAndMaybeConfigurationValues.get(packageKey)",
+  "projectName" : "bazelbuild@bazel",
+  "commitID" : "302971e1b3d803069ac949c0085c0d2a3916c8ab",
+  "filePath" : "/src/main/java/com/google/devtools/build/lib/skyframe/ConfiguredTargetFunction.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "packageAndMaybeConfigurationValues.get(packageKey)",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 50,
+      "startLineNumber" : 217,
+      "startColumnNumber" : 47,
+      "endLineNumber" : 217,
+      "endColumnNumber" : 97
+    },
+    "astNodeNumber" : 4,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 65,
+        "startLineNumber" : 217,
+        "startColumnNumber" : 32,
+        "endLineNumber" : 217,
+        "endColumnNumber" : 97
+      },
+      "nodeContext" : "(PackageValue)packageAndMaybeConfigurationValues.get(packageKey)",
+      "nodeType" : "CastExpression",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 80,
+        "startLineNumber" : 217,
+        "startColumnNumber" : 17,
+        "endLineNumber" : 217,
+        "endColumnNumber" : 97
+      },
+      "nodeContext" : "packageValue=(PackageValue)packageAndMaybeConfigurationValues.get(packageKey)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 94,
+        "startLineNumber" : 217,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 217,
+        "endColumnNumber" : 98
+      },
+      "nodeContext" : "PackageValue packageValue=(PackageValue)packageAndMaybeConfigurationValues.get(packageKey);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 12,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 11785,
+        "startLineNumber" : 188,
+        "startColumnNumber" : 74,
+        "endLineNumber" : 440,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  if (shouldUnblockCpuWorkWhenFetchingDeps) {\n    env=new StateInformingSkyFunctionEnvironment(env,this::maybeReleaseSemaphore,() -> maybeAcquireSemaphoreWithLogging(key));\n  }\n  SkyframeBuildView view=buildViewProvider.getSkyframeBuildView();\n  NestedSetBuilder<Package> transitivePackagesForPackageRootResolution=storeTransitivePackagesForPackageRootResolution ? NestedSetBuilder.stableOrder() : null;\n  NestedSetBuilder<Cause> transitiveRootCauses=NestedSetBuilder.stableOrder();\n  ConfiguredTargetKey configuredTargetKey=(ConfiguredTargetKey)key.argument();\n  Label label=configuredTargetKey.getLabel();\n  BuildConfigurationValue configuration=null;\n  ImmutableSet<SkyKey> packageAndMaybeConfiguration;\n  SkyKey packageKey=PackageValue.key(label.getPackageIdentifier());\n  SkyKey configurationKeyMaybe=configuredTargetKey.getConfigurationKey();\n  if (configurationKeyMaybe == null) {\n    packageAndMaybeConfiguration=ImmutableSet.of(packageKey);\n  }\n else {\n    packageAndMaybeConfiguration=ImmutableSet.of(packageKey,configurationKeyMaybe);\n  }\n  Map<SkyKey,SkyValue> packageAndMaybeConfigurationValues=env.getValues(packageAndMaybeConfiguration);\n  if (env.valuesMissing()) {\n    return null;\n  }\n  PackageValue packageValue=(PackageValue)packageAndMaybeConfigurationValues.get(packageKey);\n  if (configurationKeyMaybe != null) {\n    configuration=(BuildConfigurationValue)packageAndMaybeConfigurationValues.get(configurationKeyMaybe);\n  }\n  Package pkg=packageValue.getPackage();\n  Target target;\n  try {\n    target=pkg.getTarget(label.getName());\n  }\n catch (  NoSuchTargetException e) {\n    if (!e.getMessage().isEmpty()) {\n      env.getListener().handle(Event.error(pkg.getBuildFile().getLocation(),e.getMessage()));\n    }\n    throw new ReportedException(new ConfiguredValueCreationException(pkg.getBuildFile().getLocation(),e.getMessage(),label,configuration.getEventId(),null,e.getDetailedExitCode()));\n  }\n  if (pkg.containsErrors()) {\n    FailureDetail failureDetail=pkg.contextualizeFailureDetailForTarget(target);\n    transitiveRootCauses.add(new LoadingFailedCause(label,DetailedExitCode.of(failureDetail)));\n  }\n  if (transitivePackagesForPackageRootResolution != null) {\n    transitivePackagesForPackageRootResolution.add(pkg);\n  }\n  if (target.isConfigurable() == (configuredTargetKey.getConfigurationKey() == null)) {\n    return new NonRuleConfiguredTargetValue(new EmptyConfiguredTarget(target.getLabel(),configuredTargetKey.getConfigurationKey()),transitivePackagesForPackageRootResolution == null ? null : transitivePackagesForPackageRootResolution.build());\n  }\n  TargetAndConfiguration ctgValue=new TargetAndConfiguration(target,configuration);\n  SkyframeDependencyResolver resolver=new SkyframeDependencyResolver(env);\n  ToolchainCollection<UnloadedToolchainContext> unloadedToolchainContexts=null;\n  ExecGroupCollection.Builder execGroupCollectionBuilder=null;\n  maybeAcquireSemaphoreWithLogging(key);\n  try {\n    ComputedToolchainContexts result=computeUnloadedToolchainContexts(env,ruleClassProvider,ctgValue,configuredTargetKey.getExecutionPlatformLabel());\n    if (env.valuesMissing()) {\n      return null;\n    }\n    unloadedToolchainContexts=result.toolchainCollection;\n    execGroupCollectionBuilder=result.execGroupCollectionBuilder;\n    ConfigConditions configConditions=getConfigConditions(env,ctgValue,transitivePackagesForPackageRootResolution,unloadedToolchainContexts == null ? null : unloadedToolchainContexts.getTargetPlatform(),transitiveRootCauses);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    if (!transitiveRootCauses.isEmpty() && !Objects.equals(configConditions,ConfigConditions.EMPTY)) {\n      NestedSet<Cause> causes=transitiveRootCauses.build();\n      env.getListener().handle(Event.error(target.getLocation(),\"Cannot compute config conditions\"));\n      throw new ReportedException(new ConfiguredValueCreationException(ctgValue,\"Cannot compute config conditions\",causes,getPrioritizedDetailedExitCode(causes)));\n    }\n    OrderedSetMultimap<DependencyKind,ConfiguredTargetAndData> depValueMap=computeDependencies(env,resolver,ctgValue,ImmutableList.of(),configConditions.asProviders(),unloadedToolchainContexts == null ? null : unloadedToolchainContexts.asToolchainContexts(),DependencyResolver.shouldUseToolchainTransition(configuration,ctgValue.getTarget()),ruleClassProvider,view.getHostConfiguration(),transitivePackagesForPackageRootResolution,transitiveRootCauses);\n    if (!transitiveRootCauses.isEmpty()) {\n      NestedSet<Cause> causes=transitiveRootCauses.build();\n      throw new UnreportedException(new ConfiguredValueCreationException(ctgValue,\"Analysis failed\",causes,getPrioritizedDetailedExitCode(causes)));\n    }\n    if (env.valuesMissing()) {\n      return null;\n    }\n    Preconditions.checkNotNull(depValueMap);\n    ToolchainCollection<ResolvedToolchainContext> toolchainContexts=null;\n    if (unloadedToolchainContexts != null) {\n      String targetDescription=target.toString();\n      ToolchainCollection.Builder<ResolvedToolchainContext> contextsBuilder=ToolchainCollection.builder();\n      for (      Map.Entry<String,UnloadedToolchainContext> unloadedContext : unloadedToolchainContexts.getContextMap().entrySet()) {\n        Set<ConfiguredTargetAndData> toolchainDependencies=depValueMap.get(DependencyKind.forExecGroup(unloadedContext.getKey()));\n        contextsBuilder.addContext(unloadedContext.getKey(),ResolvedToolchainContext.load(unloadedContext.getValue(),targetDescription,toolchainDependencies));\n      }\n      toolchainContexts=contextsBuilder.build();\n    }\n    ConfiguredTargetValue ans=createConfiguredTarget(view,env,ctgValue,configuredTargetKey,depValueMap,configConditions,toolchainContexts,execGroupCollectionBuilder,transitivePackagesForPackageRootResolution);\n    if (ans != null && configuredTargetProgress != null) {\n      configuredTargetProgress.doneConfigureTarget();\n    }\n    return ans;\n  }\n catch (  DependencyEvaluationException e) {\n    String errorMessage=e.getMessage();\n    if (!e.depReportedOwnError()) {\n      env.getListener().handle(Event.error(e.getLocation(),e.getMessage()));\n    }\n    ConfiguredValueCreationException cvce=null;\n    if (e.getCause() instanceof ConfiguredValueCreationException) {\n      cvce=(ConfiguredValueCreationException)e.getCause();\n      if (unloadedToolchainContexts != null) {\n        ImmutableSet<Label> requiredToolchains=unloadedToolchainContexts.getResolvedToolchains();\n        Set<Label> toolchainDependencyErrors=cvce.getRootCauses().toList().stream().map(Cause::getLabel).filter(requiredToolchains::contains).collect(ImmutableSet.toImmutableSet());\n        if (!toolchainDependencyErrors.isEmpty()) {\n          errorMessage=\"errors encountered resolving toolchains for \" + target.getLabel();\n          env.getListener().handle(Event.error(target.getLocation(),errorMessage));\n        }\n      }\n    }\n    throw new ReportedException(cvce != null ? cvce : new ConfiguredValueCreationException(ctgValue,errorMessage,null,e.getDetailedExitCode()));\n  }\ncatch (  ConfiguredValueCreationException e) {\n    if (!e.getMessage().isEmpty()) {\n      env.getListener().handle(Event.error(e.getLocation(),e.getMessage()));\n    }\n    throw new ReportedException(e);\n  }\ncatch (  AspectCreationException e) {\n    throw new ReportedException(new ConfiguredValueCreationException(ctgValue,e.getMessage(),e.getCauses(),e.getDetailedExitCode()));\n  }\ncatch (  ToolchainException e) {\n    String message=String.format(\"While resolving toolchains for target %s: %s\",target.getLabel(),e.getMessage());\n    ConfiguredValueCreationException cvce=asConfiguredValueCreationException(e);\n    if (cvce == null) {\n      cvce=new ConfiguredValueCreationException(ctgValue,message,null,e.getDetailedExitCode());\n    }\n    if (!message.isEmpty()) {\n      env.getListener().handle(Event.error(target.getLocation(),message));\n    }\n    throw new ReportedException(cvce);\n  }\n finally {\n    maybeReleaseSemaphore();\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 957,
+      "astHeight" : 17
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 11924,
+        "startLineNumber" : 186,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 440,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "@Override public SkyValue compute(SkyKey key,Environment env) throws ReportedException, UnreportedException, InterruptedException {\n  if (shouldUnblockCpuWorkWhenFetchingDeps) {\n    env=new StateInformingSkyFunctionEnvironment(env,this::maybeReleaseSemaphore,() -> maybeAcquireSemaphoreWithLogging(key));\n  }\n  SkyframeBuildView view=buildViewProvider.getSkyframeBuildView();\n  NestedSetBuilder<Package> transitivePackagesForPackageRootResolution=storeTransitivePackagesForPackageRootResolution ? NestedSetBuilder.stableOrder() : null;\n  NestedSetBuilder<Cause> transitiveRootCauses=NestedSetBuilder.stableOrder();\n  ConfiguredTargetKey configuredTargetKey=(ConfiguredTargetKey)key.argument();\n  Label label=configuredTargetKey.getLabel();\n  BuildConfigurationValue configuration=null;\n  ImmutableSet<SkyKey> packageAndMaybeConfiguration;\n  SkyKey packageKey=PackageValue.key(label.getPackageIdentifier());\n  SkyKey configurationKeyMaybe=configuredTargetKey.getConfigurationKey();\n  if (configurationKeyMaybe == null) {\n    packageAndMaybeConfiguration=ImmutableSet.of(packageKey);\n  }\n else {\n    packageAndMaybeConfiguration=ImmutableSet.of(packageKey,configurationKeyMaybe);\n  }\n  Map<SkyKey,SkyValue> packageAndMaybeConfigurationValues=env.getValues(packageAndMaybeConfiguration);\n  if (env.valuesMissing()) {\n    return null;\n  }\n  PackageValue packageValue=(PackageValue)packageAndMaybeConfigurationValues.get(packageKey);\n  if (configurationKeyMaybe != null) {\n    configuration=(BuildConfigurationValue)packageAndMaybeConfigurationValues.get(configurationKeyMaybe);\n  }\n  Package pkg=packageValue.getPackage();\n  Target target;\n  try {\n    target=pkg.getTarget(label.getName());\n  }\n catch (  NoSuchTargetException e) {\n    if (!e.getMessage().isEmpty()) {\n      env.getListener().handle(Event.error(pkg.getBuildFile().getLocation(),e.getMessage()));\n    }\n    throw new ReportedException(new ConfiguredValueCreationException(pkg.getBuildFile().getLocation(),e.getMessage(),label,configuration.getEventId(),null,e.getDetailedExitCode()));\n  }\n  if (pkg.containsErrors()) {\n    FailureDetail failureDetail=pkg.contextualizeFailureDetailForTarget(target);\n    transitiveRootCauses.add(new LoadingFailedCause(label,DetailedExitCode.of(failureDetail)));\n  }\n  if (transitivePackagesForPackageRootResolution != null) {\n    transitivePackagesForPackageRootResolution.add(pkg);\n  }\n  if (target.isConfigurable() == (configuredTargetKey.getConfigurationKey() == null)) {\n    return new NonRuleConfiguredTargetValue(new EmptyConfiguredTarget(target.getLabel(),configuredTargetKey.getConfigurationKey()),transitivePackagesForPackageRootResolution == null ? null : transitivePackagesForPackageRootResolution.build());\n  }\n  TargetAndConfiguration ctgValue=new TargetAndConfiguration(target,configuration);\n  SkyframeDependencyResolver resolver=new SkyframeDependencyResolver(env);\n  ToolchainCollection<UnloadedToolchainContext> unloadedToolchainContexts=null;\n  ExecGroupCollection.Builder execGroupCollectionBuilder=null;\n  maybeAcquireSemaphoreWithLogging(key);\n  try {\n    ComputedToolchainContexts result=computeUnloadedToolchainContexts(env,ruleClassProvider,ctgValue,configuredTargetKey.getExecutionPlatformLabel());\n    if (env.valuesMissing()) {\n      return null;\n    }\n    unloadedToolchainContexts=result.toolchainCollection;\n    execGroupCollectionBuilder=result.execGroupCollectionBuilder;\n    ConfigConditions configConditions=getConfigConditions(env,ctgValue,transitivePackagesForPackageRootResolution,unloadedToolchainContexts == null ? null : unloadedToolchainContexts.getTargetPlatform(),transitiveRootCauses);\n    if (env.valuesMissing()) {\n      return null;\n    }\n    if (!transitiveRootCauses.isEmpty() && !Objects.equals(configConditions,ConfigConditions.EMPTY)) {\n      NestedSet<Cause> causes=transitiveRootCauses.build();\n      env.getListener().handle(Event.error(target.getLocation(),\"Cannot compute config conditions\"));\n      throw new ReportedException(new ConfiguredValueCreationException(ctgValue,\"Cannot compute config conditions\",causes,getPrioritizedDetailedExitCode(causes)));\n    }\n    OrderedSetMultimap<DependencyKind,ConfiguredTargetAndData> depValueMap=computeDependencies(env,resolver,ctgValue,ImmutableList.of(),configConditions.asProviders(),unloadedToolchainContexts == null ? null : unloadedToolchainContexts.asToolchainContexts(),DependencyResolver.shouldUseToolchainTransition(configuration,ctgValue.getTarget()),ruleClassProvider,view.getHostConfiguration(),transitivePackagesForPackageRootResolution,transitiveRootCauses);\n    if (!transitiveRootCauses.isEmpty()) {\n      NestedSet<Cause> causes=transitiveRootCauses.build();\n      throw new UnreportedException(new ConfiguredValueCreationException(ctgValue,\"Analysis failed\",causes,getPrioritizedDetailedExitCode(causes)));\n    }\n    if (env.valuesMissing()) {\n      return null;\n    }\n    Preconditions.checkNotNull(depValueMap);\n    ToolchainCollection<ResolvedToolchainContext> toolchainContexts=null;\n    if (unloadedToolchainContexts != null) {\n      String targetDescription=target.toString();\n      ToolchainCollection.Builder<ResolvedToolchainContext> contextsBuilder=ToolchainCollection.builder();\n      for (      Map.Entry<String,UnloadedToolchainContext> unloadedContext : unloadedToolchainContexts.getContextMap().entrySet()) {\n        Set<ConfiguredTargetAndData> toolchainDependencies=depValueMap.get(DependencyKind.forExecGroup(unloadedContext.getKey()));\n        contextsBuilder.addContext(unloadedContext.getKey(),ResolvedToolchainContext.load(unloadedContext.getValue(),targetDescription,toolchainDependencies));\n      }\n      toolchainContexts=contextsBuilder.build();\n    }\n    ConfiguredTargetValue ans=createConfiguredTarget(view,env,ctgValue,configuredTargetKey,depValueMap,configConditions,toolchainContexts,execGroupCollectionBuilder,transitivePackagesForPackageRootResolution);\n    if (ans != null && configuredTargetProgress != null) {\n      configuredTargetProgress.doneConfigureTarget();\n    }\n    return ans;\n  }\n catch (  DependencyEvaluationException e) {\n    String errorMessage=e.getMessage();\n    if (!e.depReportedOwnError()) {\n      env.getListener().handle(Event.error(e.getLocation(),e.getMessage()));\n    }\n    ConfiguredValueCreationException cvce=null;\n    if (e.getCause() instanceof ConfiguredValueCreationException) {\n      cvce=(ConfiguredValueCreationException)e.getCause();\n      if (unloadedToolchainContexts != null) {\n        ImmutableSet<Label> requiredToolchains=unloadedToolchainContexts.getResolvedToolchains();\n        Set<Label> toolchainDependencyErrors=cvce.getRootCauses().toList().stream().map(Cause::getLabel).filter(requiredToolchains::contains).collect(ImmutableSet.toImmutableSet());\n        if (!toolchainDependencyErrors.isEmpty()) {\n          errorMessage=\"errors encountered resolving toolchains for \" + target.getLabel();\n          env.getListener().handle(Event.error(target.getLocation(),errorMessage));\n        }\n      }\n    }\n    throw new ReportedException(cvce != null ? cvce : new ConfiguredValueCreationException(ctgValue,errorMessage,null,e.getDetailedExitCode()));\n  }\ncatch (  ConfiguredValueCreationException e) {\n    if (!e.getMessage().isEmpty()) {\n      env.getListener().handle(Event.error(e.getLocation(),e.getMessage()));\n    }\n    throw new ReportedException(e);\n  }\ncatch (  AspectCreationException e) {\n    throw new ReportedException(new ConfiguredValueCreationException(ctgValue,e.getMessage(),e.getCauses(),e.getDetailedExitCode()));\n  }\ncatch (  ToolchainException e) {\n    String message=String.format(\"While resolving toolchains for target %s: %s\",target.getLabel(),e.getMessage());\n    ConfiguredValueCreationException cvce=asConfiguredValueCreationException(e);\n    if (cvce == null) {\n      cvce=new ConfiguredValueCreationException(ctgValue,message,null,e.getDetailedExitCode());\n    }\n    if (!message.isEmpty()) {\n      env.getListener().handle(Event.error(target.getLocation(),message));\n    }\n    throw new ReportedException(cvce);\n  }\n finally {\n    maybeReleaseSemaphore();\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 978,
+      "astHeight" : 18
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 94,
+        "startLineNumber" : 217,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 217,
+        "endColumnNumber" : 98
+      },
+      "nodeContext" : "PackageValue packageValue=(PackageValue)packageAndMaybeConfigurationValues.get(packageKey);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 12,
+      "astHeight" : 5
+    },
+    "tokenLength" : 3,
+    "type" : "com.google.devtools.build.skyframe.SkyValue"
+  } ],
+  "positionList" : [ {
+    "charLength" : 50,
+    "startLineNumber" : 217,
+    "startColumnNumber" : 47,
+    "endLineNumber" : 217,
+    "endColumnNumber" : 97
+  } ],
+  "layoutRelationDataList" : [ ]
+}

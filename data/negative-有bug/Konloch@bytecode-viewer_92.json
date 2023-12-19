@@ -1,0 +1,126 @@
+{
+  "id" : 92,
+  "expression" : "fileContainer.APKToolContents.exists()",
+  "projectName" : "Konloch@bytecode-viewer",
+  "commitID" : "9ab8ec7f8c061fb1d9b1db3e901034d162a211ff",
+  "filePath" : "/src/main/java/the/bytecode/club/bytecodeviewer/resources/exporting/impl/APKExport.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "fileContainer.APKToolContents.exists()",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 38,
+      "startLineNumber" : 37,
+      "startColumnNumber" : 48,
+      "endLineNumber" : 37,
+      "endColumnNumber" : 86
+    },
+    "astNodeNumber" : 5,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 79,
+        "startLineNumber" : 37,
+        "startColumnNumber" : 7,
+        "endLineNumber" : 37,
+        "endColumnNumber" : 86
+      },
+      "nodeContext" : "fileContainer.APKToolContents != null && fileContainer.APKToolContents.exists()",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 11,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 184,
+        "startLineNumber" : 37,
+        "startColumnNumber" : 3,
+        "endLineNumber" : 41,
+        "endColumnNumber" : 4
+      },
+      "nodeContext" : "if (fileContainer.APKToolContents != null && fileContainer.APKToolContents.exists()) {\n  validContainersNames.add(fileContainer.name);\n  validContainers.add(fileContainer);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 25,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.EnhancedForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 193,
+        "startLineNumber" : 36,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 42,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  if (fileContainer.APKToolContents != null && fileContainer.APKToolContents.exists()) {\n    validContainersNames.add(fileContainer.name);\n    validContainers.add(fileContainer);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 26,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 242,
+        "startLineNumber" : 35,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 42,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "for (FileContainer fileContainer : containers) {\n  if (fileContainer.APKToolContents != null && fileContainer.APKToolContents.exists()) {\n    validContainersNames.add(fileContainer.name);\n    validContainers.add(fileContainer);\n  }\n}\n",
+      "nodeType" : "EnhancedForStatement",
+      "astNodeNumber" : 32,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2571,
+        "startLineNumber" : 26,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 107,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  if (BytecodeViewer.promptIfNoLoadedClasses())   return;\n  List<FileContainer> containers=BytecodeViewer.getFiles();\n  List<FileContainer> validContainers=new ArrayList<>();\n  List<String> validContainersNames=new ArrayList<>();\n  FileContainer container;\n  for (  FileContainer fileContainer : containers) {\n    if (fileContainer.APKToolContents != null && fileContainer.APKToolContents.exists()) {\n      validContainersNames.add(fileContainer.name);\n      validContainers.add(fileContainer);\n    }\n  }\n  if (!validContainers.isEmpty()) {\n    container=validContainers.get(0);\n    if (validContainers.size() >= 2) {\n      MultipleChoiceDialogue dialogue=new MultipleChoiceDialogue(\"Bytecode Viewer - Select APK\",\"Which file would you like to export as an APK?\",validContainersNames.toArray(new String[0]));\n      container=containers.get(dialogue.promptChoice());\n    }\n  }\n else {\n    BytecodeViewer.showMessage(\"You can only export as APK from a valid APK file. Make sure Settings>Decode Resources is ticked on.\" + \"\\n\\nTip: Try exporting as DEX, it doesn't rely on decoded APK resources\");\n    return;\n  }\n  final FileContainer finalContainer=container;\n  Thread exportThread=new Thread(() -> {\n    if (BytecodeViewer.autoCompileSuccessful())     return;\n    JFileChooser fc=new FileChooser(Configuration.getLastDirectory(),\"Select APK Export\",\"Android APK\",\"apk\");\n    int returnVal=fc.showSaveDialog(BytecodeViewer.viewer);\n    if (returnVal == JFileChooser.APPROVE_OPTION) {\n      Configuration.lastDirectory=fc.getSelectedFile().getAbsolutePath();\n      final File file=fc.getSelectedFile();\n      String output=file.getAbsolutePath();\n      if (!output.endsWith(\".apk\"))       output=output + \".apk\";\n      final File file2=new File(output);\n      if (!DialogueUtils.canOverwriteFile(file2))       return;\n      Thread saveThread=new Thread(() -> {\n        BytecodeViewer.updateBusyStatus(true);\n        final String input=tempDirectory + fs + MiscUtils.getRandomizedName()+ \".jar\";\n        JarUtils.saveAsJar(BytecodeViewer.getLoadedClasses(),input);\n        Thread buildAPKThread=new Thread(() -> {\n          APKTool.buildAPK(new File(input),file2,finalContainer);\n          BytecodeViewer.updateBusyStatus(false);\n        }\n,\"Process APK\");\n        buildAPKThread.start();\n      }\n,\"Jar Export\");\n      saveThread.start();\n    }\n  }\n,\"Resource Export\");\n  exportThread.start();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 320,
+      "astHeight" : 23
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 2613,
+        "startLineNumber" : 24,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 107,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "@Override public void promptForExport(){\n  if (BytecodeViewer.promptIfNoLoadedClasses())   return;\n  List<FileContainer> containers=BytecodeViewer.getFiles();\n  List<FileContainer> validContainers=new ArrayList<>();\n  List<String> validContainersNames=new ArrayList<>();\n  FileContainer container;\n  for (  FileContainer fileContainer : containers) {\n    if (fileContainer.APKToolContents != null && fileContainer.APKToolContents.exists()) {\n      validContainersNames.add(fileContainer.name);\n      validContainers.add(fileContainer);\n    }\n  }\n  if (!validContainers.isEmpty()) {\n    container=validContainers.get(0);\n    if (validContainers.size() >= 2) {\n      MultipleChoiceDialogue dialogue=new MultipleChoiceDialogue(\"Bytecode Viewer - Select APK\",\"Which file would you like to export as an APK?\",validContainersNames.toArray(new String[0]));\n      container=containers.get(dialogue.promptChoice());\n    }\n  }\n else {\n    BytecodeViewer.showMessage(\"You can only export as APK from a valid APK file. Make sure Settings>Decode Resources is ticked on.\" + \"\\n\\nTip: Try exporting as DEX, it doesn't rely on decoded APK resources\");\n    return;\n  }\n  final FileContainer finalContainer=container;\n  Thread exportThread=new Thread(() -> {\n    if (BytecodeViewer.autoCompileSuccessful())     return;\n    JFileChooser fc=new FileChooser(Configuration.getLastDirectory(),\"Select APK Export\",\"Android APK\",\"apk\");\n    int returnVal=fc.showSaveDialog(BytecodeViewer.viewer);\n    if (returnVal == JFileChooser.APPROVE_OPTION) {\n      Configuration.lastDirectory=fc.getSelectedFile().getAbsolutePath();\n      final File file=fc.getSelectedFile();\n      String output=file.getAbsolutePath();\n      if (!output.endsWith(\".apk\"))       output=output + \".apk\";\n      final File file2=new File(output);\n      if (!DialogueUtils.canOverwriteFile(file2))       return;\n      Thread saveThread=new Thread(() -> {\n        BytecodeViewer.updateBusyStatus(true);\n        final String input=tempDirectory + fs + MiscUtils.getRandomizedName()+ \".jar\";\n        JarUtils.saveAsJar(BytecodeViewer.getLoadedClasses(),input);\n        Thread buildAPKThread=new Thread(() -> {\n          APKTool.buildAPK(new File(input),file2,finalContainer);\n          BytecodeViewer.updateBusyStatus(false);\n        }\n,\"Process APK\");\n        buildAPKThread.start();\n      }\n,\"Jar Export\");\n      saveThread.start();\n    }\n  }\n,\"Resource Export\");\n  exportThread.start();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 326,
+      "astHeight" : 24
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 79,
+        "startLineNumber" : 37,
+        "startColumnNumber" : 7,
+        "endLineNumber" : 37,
+        "endColumnNumber" : 86
+      },
+      "nodeContext" : "fileContainer.APKToolContents != null && fileContainer.APKToolContents.exists()",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 11,
+      "astHeight" : 4
+    },
+    "tokenLength" : 3,
+    "type" : "boolean"
+  } ],
+  "positionList" : [ {
+    "charLength" : 38,
+    "startLineNumber" : 37,
+    "startColumnNumber" : 48,
+    "endLineNumber" : 37,
+    "endColumnNumber" : 86
+  } ],
+  "layoutRelationDataList" : [ ]
+}

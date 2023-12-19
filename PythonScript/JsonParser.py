@@ -1,5 +1,6 @@
 import json
 import os
+import re
 
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
@@ -25,7 +26,7 @@ class JsonParser:
         return data
 
     def get_value(self, keys):
-        values = []
+        maps = {}
         for file, json_data in self.data.items():
             data = json_data
             value = []
@@ -73,12 +74,17 @@ class JsonParser:
                     # if data['expressionList'][0]['nodePosition'][key] <= 2:
                     #     print(data['expressionList'][0]['nodeContext'])
                     if key == 'charLength':
-                        value.append(len(data['expressionList'][0]['nodeContext']))
+                        pattern = r'("[^"]*")|\s+'
+                        result = re.sub(pattern, lambda m: m.group(1) if m.group(1) else '',
+                                        data['expressionList'][0]['nodeContext'])
+                        # if "\"" in data['expressionList'][0]['nodeContext']:
+                        #     print(result)
+                        value.append(len(result))
                     else:
                         value.append(data['expressionList'][0]['nodePosition'][key])
                     # print(data['expressionList'][0]['nodeContext'],data['expressionList'][0]['nodePosition'][key])
                 # elif key=="charLength_CurrentLineData":
                 #     value.append(data['expressionList'][0]['nodePosition'][key])
             if value:
-                values.append(value)
-        return values
+                maps[file.replace(".json", "_"+str(self.flag))] = value
+        return maps

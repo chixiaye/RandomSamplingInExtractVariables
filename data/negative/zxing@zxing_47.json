@@ -1,0 +1,113 @@
+{
+  "id" : 47,
+  "expression" : "rectangleDetector",
+  "projectName" : "zxing@zxing",
+  "commitID" : "1b0aed9c091717337b865955f58290450a3a9e3a",
+  "filePath" : "/core/src/com/google/zxing/datamatrix/detector/Detector.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "rectangleDetector",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 17,
+      "startLineNumber" : 58,
+      "startColumnNumber" : 33,
+      "endLineNumber" : 58,
+      "endColumnNumber" : 50
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 26,
+        "startLineNumber" : 58,
+        "startColumnNumber" : 33,
+        "endLineNumber" : 58,
+        "endColumnNumber" : 59
+      },
+      "nodeContext" : "rectangleDetector.detect()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 41,
+        "startLineNumber" : 58,
+        "startColumnNumber" : 18,
+        "endLineNumber" : 58,
+        "endColumnNumber" : 59
+      },
+      "nodeContext" : "cornerPoints=rectangleDetector.detect()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 56,
+        "startLineNumber" : 58,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 58,
+        "endColumnNumber" : 60
+      },
+      "nodeContext" : "ResultPoint[] cornerPoints=rectangleDetector.detect();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 6580,
+        "startLineNumber" : 56,
+        "startColumnNumber" : 58,
+        "endLineNumber" : 213,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  ResultPoint[] cornerPoints=rectangleDetector.detect();\n  ResultPoint pointA=cornerPoints[0];\n  ResultPoint pointB=cornerPoints[1];\n  ResultPoint pointC=cornerPoints[2];\n  ResultPoint pointD=cornerPoints[3];\n  List<ResultPointsAndTransitions> transitions=new ArrayList<ResultPointsAndTransitions>(4);\n  transitions.add(transitionsBetween(pointA,pointB));\n  transitions.add(transitionsBetween(pointA,pointC));\n  transitions.add(transitionsBetween(pointB,pointD));\n  transitions.add(transitionsBetween(pointC,pointD));\n  Collections.sort(transitions,new ResultPointsAndTransitionsComparator());\n  ResultPointsAndTransitions lSideOne=transitions.get(0);\n  ResultPointsAndTransitions lSideTwo=transitions.get(1);\n  Map<ResultPoint,Integer> pointCount=new HashMap<ResultPoint,Integer>();\n  increment(pointCount,lSideOne.getFrom());\n  increment(pointCount,lSideOne.getTo());\n  increment(pointCount,lSideTwo.getFrom());\n  increment(pointCount,lSideTwo.getTo());\n  ResultPoint maybeTopLeft=null;\n  ResultPoint bottomLeft=null;\n  ResultPoint maybeBottomRight=null;\n  for (  Map.Entry<ResultPoint,Integer> entry : pointCount.entrySet()) {\n    ResultPoint point=entry.getKey();\n    Integer value=entry.getValue();\n    if (value == 2) {\n      bottomLeft=point;\n    }\n else {\n      if (maybeTopLeft == null) {\n        maybeTopLeft=point;\n      }\n else {\n        maybeBottomRight=point;\n      }\n    }\n  }\n  if (maybeTopLeft == null || bottomLeft == null || maybeBottomRight == null) {\n    throw NotFoundException.getNotFoundInstance();\n  }\n  ResultPoint[] corners={maybeTopLeft,bottomLeft,maybeBottomRight};\n  ResultPoint.orderBestPatterns(corners);\n  ResultPoint bottomRight=corners[0];\n  bottomLeft=corners[1];\n  ResultPoint topLeft=corners[2];\n  ResultPoint topRight;\n  if (!pointCount.containsKey(pointA)) {\n    topRight=pointA;\n  }\n else   if (!pointCount.containsKey(pointB)) {\n    topRight=pointB;\n  }\n else   if (!pointCount.containsKey(pointC)) {\n    topRight=pointC;\n  }\n else {\n    topRight=pointD;\n  }\n  int dimensionTop=transitionsBetween(topLeft,topRight).getTransitions();\n  int dimensionRight=transitionsBetween(bottomRight,topRight).getTransitions();\n  if ((dimensionTop & 0x01) == 1) {\n    dimensionTop++;\n  }\n  dimensionTop+=2;\n  if ((dimensionRight & 0x01) == 1) {\n    dimensionRight++;\n  }\n  dimensionRight+=2;\n  BitMatrix bits;\n  ResultPoint correctedTopRight;\n  if (4 * dimensionTop >= 7 * dimensionRight || 4 * dimensionRight >= 7 * dimensionTop) {\n    correctedTopRight=correctTopRightRectangular(bottomLeft,bottomRight,topLeft,topRight,dimensionTop,dimensionRight);\n    if (correctedTopRight == null) {\n      correctedTopRight=topRight;\n    }\n    dimensionTop=transitionsBetween(topLeft,correctedTopRight).getTransitions();\n    dimensionRight=transitionsBetween(bottomRight,correctedTopRight).getTransitions();\n    if ((dimensionTop & 0x01) == 1) {\n      dimensionTop++;\n    }\n    if ((dimensionRight & 0x01) == 1) {\n      dimensionRight++;\n    }\n    bits=sampleGrid(image,topLeft,bottomLeft,bottomRight,correctedTopRight,dimensionTop,dimensionRight);\n  }\n else {\n    int dimension=Math.min(dimensionRight,dimensionTop);\n    correctedTopRight=correctTopRight(bottomLeft,bottomRight,topLeft,topRight,dimension);\n    if (correctedTopRight == null) {\n      correctedTopRight=topRight;\n    }\n    int dimensionCorrected=Math.max(transitionsBetween(topLeft,correctedTopRight).getTransitions(),transitionsBetween(bottomRight,correctedTopRight).getTransitions());\n    dimensionCorrected++;\n    if ((dimensionCorrected & 0x01) == 1) {\n      dimensionCorrected++;\n    }\n    bits=sampleGrid(image,topLeft,bottomLeft,bottomRight,correctedTopRight,dimensionCorrected,dimensionCorrected);\n  }\n  return new DetectorResult(bits,new ResultPoint[]{topLeft,bottomLeft,bottomRight,correctedTopRight});\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 572,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 6868,
+        "startLineNumber" : 50,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 213,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "/** \n * <p>Detects a Data Matrix Code in an image.</p>\n * @return {@link DetectorResult} encapsulating results of detecting a Data Matrix Code\n * @throws NotFoundException if no Data Matrix Code can be found\n */\npublic DetectorResult detect() throws NotFoundException {\n  ResultPoint[] cornerPoints=rectangleDetector.detect();\n  ResultPoint pointA=cornerPoints[0];\n  ResultPoint pointB=cornerPoints[1];\n  ResultPoint pointC=cornerPoints[2];\n  ResultPoint pointD=cornerPoints[3];\n  List<ResultPointsAndTransitions> transitions=new ArrayList<ResultPointsAndTransitions>(4);\n  transitions.add(transitionsBetween(pointA,pointB));\n  transitions.add(transitionsBetween(pointA,pointC));\n  transitions.add(transitionsBetween(pointB,pointD));\n  transitions.add(transitionsBetween(pointC,pointD));\n  Collections.sort(transitions,new ResultPointsAndTransitionsComparator());\n  ResultPointsAndTransitions lSideOne=transitions.get(0);\n  ResultPointsAndTransitions lSideTwo=transitions.get(1);\n  Map<ResultPoint,Integer> pointCount=new HashMap<ResultPoint,Integer>();\n  increment(pointCount,lSideOne.getFrom());\n  increment(pointCount,lSideOne.getTo());\n  increment(pointCount,lSideTwo.getFrom());\n  increment(pointCount,lSideTwo.getTo());\n  ResultPoint maybeTopLeft=null;\n  ResultPoint bottomLeft=null;\n  ResultPoint maybeBottomRight=null;\n  for (  Map.Entry<ResultPoint,Integer> entry : pointCount.entrySet()) {\n    ResultPoint point=entry.getKey();\n    Integer value=entry.getValue();\n    if (value == 2) {\n      bottomLeft=point;\n    }\n else {\n      if (maybeTopLeft == null) {\n        maybeTopLeft=point;\n      }\n else {\n        maybeBottomRight=point;\n      }\n    }\n  }\n  if (maybeTopLeft == null || bottomLeft == null || maybeBottomRight == null) {\n    throw NotFoundException.getNotFoundInstance();\n  }\n  ResultPoint[] corners={maybeTopLeft,bottomLeft,maybeBottomRight};\n  ResultPoint.orderBestPatterns(corners);\n  ResultPoint bottomRight=corners[0];\n  bottomLeft=corners[1];\n  ResultPoint topLeft=corners[2];\n  ResultPoint topRight;\n  if (!pointCount.containsKey(pointA)) {\n    topRight=pointA;\n  }\n else   if (!pointCount.containsKey(pointB)) {\n    topRight=pointB;\n  }\n else   if (!pointCount.containsKey(pointC)) {\n    topRight=pointC;\n  }\n else {\n    topRight=pointD;\n  }\n  int dimensionTop=transitionsBetween(topLeft,topRight).getTransitions();\n  int dimensionRight=transitionsBetween(bottomRight,topRight).getTransitions();\n  if ((dimensionTop & 0x01) == 1) {\n    dimensionTop++;\n  }\n  dimensionTop+=2;\n  if ((dimensionRight & 0x01) == 1) {\n    dimensionRight++;\n  }\n  dimensionRight+=2;\n  BitMatrix bits;\n  ResultPoint correctedTopRight;\n  if (4 * dimensionTop >= 7 * dimensionRight || 4 * dimensionRight >= 7 * dimensionTop) {\n    correctedTopRight=correctTopRightRectangular(bottomLeft,bottomRight,topLeft,topRight,dimensionTop,dimensionRight);\n    if (correctedTopRight == null) {\n      correctedTopRight=topRight;\n    }\n    dimensionTop=transitionsBetween(topLeft,correctedTopRight).getTransitions();\n    dimensionRight=transitionsBetween(bottomRight,correctedTopRight).getTransitions();\n    if ((dimensionTop & 0x01) == 1) {\n      dimensionTop++;\n    }\n    if ((dimensionRight & 0x01) == 1) {\n      dimensionRight++;\n    }\n    bits=sampleGrid(image,topLeft,bottomLeft,bottomRight,correctedTopRight,dimensionTop,dimensionRight);\n  }\n else {\n    int dimension=Math.min(dimensionRight,dimensionTop);\n    correctedTopRight=correctTopRight(bottomLeft,bottomRight,topLeft,topRight,dimension);\n    if (correctedTopRight == null) {\n      correctedTopRight=topRight;\n    }\n    int dimensionCorrected=Math.max(transitionsBetween(topLeft,correctedTopRight).getTransitions(),transitionsBetween(bottomRight,correctedTopRight).getTransitions());\n    dimensionCorrected++;\n    if ((dimensionCorrected & 0x01) == 1) {\n      dimensionCorrected++;\n    }\n    bits=sampleGrid(image,topLeft,bottomLeft,bottomRight,correctedTopRight,dimensionCorrected,dimensionCorrected);\n  }\n  return new DetectorResult(bits,new ResultPoint[]{topLeft,bottomLeft,bottomRight,correctedTopRight});\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 580,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 56,
+        "startLineNumber" : 58,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 58,
+        "endColumnNumber" : 60
+      },
+      "nodeContext" : "ResultPoint[] cornerPoints=rectangleDetector.detect();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "com.google.zxing.common.detector.WhiteRectangleDetector"
+  } ],
+  "positionList" : [ {
+    "charLength" : 17,
+    "startLineNumber" : 58,
+    "startColumnNumber" : 33,
+    "endLineNumber" : 58,
+    "endColumnNumber" : 50
+  } ],
+  "layoutRelationDataList" : [ ]
+}

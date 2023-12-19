@@ -1,0 +1,113 @@
+{
+  "id" : 397,
+  "expression" : "context.newOutputMessage(context.getOutputTopic(),outputSchema)",
+  "projectName" : "apache@pulsar",
+  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
+  "filePath" : "/tests/docker-images/java-test-functions/src/main/java/org/apache/pulsar/tests/integration/functions/RemoveAvroFieldFunction.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "context.newOutputMessage(context.getOutputTopic(),outputSchema)",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 64,
+      "startLineNumber" : 155,
+      "startColumnNumber" : 8,
+      "endLineNumber" : 155,
+      "endColumnNumber" : 72
+    },
+    "astNodeNumber" : 7,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 102,
+        "startLineNumber" : 155,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 156,
+        "endColumnNumber" : 36
+      },
+      "nodeContext" : "context.newOutputMessage(context.getOutputTopic(),outputSchema).value(outputObject)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 109,
+        "startLineNumber" : 155,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 156,
+        "endColumnNumber" : 43
+      },
+      "nodeContext" : "context.newOutputMessage(context.getOutputTopic(),outputSchema).value(outputObject).send()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 12,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 110,
+        "startLineNumber" : 155,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 156,
+        "endColumnNumber" : 44
+      },
+      "nodeContext" : "context.newOutputMessage(context.getOutputTopic(),outputSchema).value(outputObject).send();\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 13,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 6395,
+        "startLineNumber" : 48,
+        "startColumnNumber" : 87,
+        "endLineNumber" : 158,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  Record<?> currentRecord=context.getCurrentRecord();\n  log.info(\"apply to {} {}\",genericObject,genericObject.getNativeObject());\n  log.info(\"record with schema {} version {} {}\",currentRecord.getSchema(),currentRecord.getMessage().get().getSchemaVersion(),currentRecord);\n  Object nativeObject=genericObject.getNativeObject();\n  Schema<?> schema=currentRecord.getSchema();\n  Schema outputSchema=schema;\n  Object outputObject=genericObject.getNativeObject();\n  boolean someThingDone=false;\n  if (schema instanceof KeyValueSchema && nativeObject instanceof KeyValue) {\n    KeyValueSchema kvSchema=(KeyValueSchema)schema;\n    Schema keySchema=kvSchema.getKeySchema();\n    Schema valueSchema=kvSchema.getValueSchema();\n    if (valueSchema.getSchemaInfo().getType() == SchemaType.AVRO) {\n      org.apache.avro.Schema avroSchema=(org.apache.avro.Schema)valueSchema.getNativeSchema().get();\n      if (avroSchema.getField(FIELD_TO_REMOVE) != null) {\n        org.apache.avro.Schema.Parser parser=new org.apache.avro.Schema.Parser();\n        org.apache.avro.Schema originalAvroSchema=parser.parse(avroSchema.toString(false));\n        org.apache.avro.Schema modified=org.apache.avro.Schema.createRecord(originalAvroSchema.getName(),originalAvroSchema.getDoc(),originalAvroSchema.getNamespace(),originalAvroSchema.isError(),originalAvroSchema.getFields().stream().filter(f -> !f.name().equals(FIELD_TO_REMOVE)).map(f -> new org.apache.avro.Schema.Field(f.name(),f.schema(),f.doc(),f.defaultVal(),f.order())).collect(Collectors.toList()));\n        KeyValue originalObject=(KeyValue)nativeObject;\n        GenericRecord value=(GenericRecord)originalObject.getValue();\n        org.apache.avro.generic.GenericRecord genericRecord=(org.apache.avro.generic.GenericRecord)value.getNativeObject();\n        org.apache.avro.generic.GenericRecord newRecord=new GenericData.Record(modified);\n        for (        org.apache.avro.Schema.Field field : modified.getFields()) {\n          newRecord.put(field.name(),genericRecord.get(field.name()));\n        }\n        GenericDatumWriter writer=new GenericDatumWriter(modified);\n        ByteArrayOutputStream oo=new ByteArrayOutputStream();\n        BinaryEncoder encoder=EncoderFactory.get().directBinaryEncoder(oo,null);\n        writer.write(newRecord,encoder);\n        Object newValue=oo.toByteArray();\n        Schema newValueSchema=Schema.NATIVE_AVRO(modified);\n        outputSchema=Schema.KeyValue(keySchema,newValueSchema,kvSchema.getKeyValueEncodingType());\n        outputObject=new KeyValue(originalObject.getKey(),newValue);\n        someThingDone=true;\n      }\n    }\n  }\n else   if (schema.getSchemaInfo().getType() == SchemaType.AVRO) {\n    org.apache.avro.Schema avroSchema=(org.apache.avro.Schema)schema.getNativeSchema().get();\n    if (avroSchema.getField(FIELD_TO_REMOVE) != null) {\n      org.apache.avro.Schema.Parser parser=new org.apache.avro.Schema.Parser();\n      org.apache.avro.Schema originalAvroSchema=parser.parse(avroSchema.toString(false));\n      org.apache.avro.Schema modified=org.apache.avro.Schema.createRecord(originalAvroSchema.getName(),originalAvroSchema.getDoc(),originalAvroSchema.getNamespace(),originalAvroSchema.isError(),originalAvroSchema.getFields().stream().filter(f -> !f.name().equals(FIELD_TO_REMOVE)).map(f -> new org.apache.avro.Schema.Field(f.name(),f.schema(),f.doc(),f.defaultVal(),f.order())).collect(Collectors.toList()));\n      org.apache.avro.generic.GenericRecord genericRecord=(org.apache.avro.generic.GenericRecord)nativeObject;\n      org.apache.avro.generic.GenericRecord newRecord=new GenericData.Record(modified);\n      for (      org.apache.avro.Schema.Field field : modified.getFields()) {\n        newRecord.put(field.name(),genericRecord.get(field.name()));\n      }\n      GenericDatumWriter writer=new GenericDatumWriter(modified);\n      ByteArrayOutputStream oo=new ByteArrayOutputStream();\n      BinaryEncoder encoder=EncoderFactory.get().directBinaryEncoder(oo,null);\n      writer.write(newRecord,encoder);\n      Schema newValueSchema=Schema.NATIVE_AVRO(modified);\n      outputSchema=newValueSchema;\n      outputObject=oo.toByteArray();\n      someThingDone=true;\n    }\n  }\n  if (!someThingDone) {\n    final boolean isStruct;\nswitch (currentRecord.getSchema().getSchemaInfo().getType()) {\ncase AVRO:case JSON:case PROTOBUF_NATIVE:      isStruct=true;\n    break;\ndefault:  isStruct=false;\nbreak;\n}\nif (isStruct) {\noutputObject=currentRecord.getValue();\n}\n else {\noutputObject=nativeObject;\n}\n}\nlog.info(\"output {} schema {}\",outputObject,outputSchema);\ncontext.newOutputMessage(context.getOutputTopic(),outputSchema).value(outputObject).send();\nreturn null;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 826,
+      "astHeight" : 20
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 6493,
+        "startLineNumber" : 47,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 158,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public Void process(GenericObject genericObject,Context context) throws Exception {\n  Record<?> currentRecord=context.getCurrentRecord();\n  log.info(\"apply to {} {}\",genericObject,genericObject.getNativeObject());\n  log.info(\"record with schema {} version {} {}\",currentRecord.getSchema(),currentRecord.getMessage().get().getSchemaVersion(),currentRecord);\n  Object nativeObject=genericObject.getNativeObject();\n  Schema<?> schema=currentRecord.getSchema();\n  Schema outputSchema=schema;\n  Object outputObject=genericObject.getNativeObject();\n  boolean someThingDone=false;\n  if (schema instanceof KeyValueSchema && nativeObject instanceof KeyValue) {\n    KeyValueSchema kvSchema=(KeyValueSchema)schema;\n    Schema keySchema=kvSchema.getKeySchema();\n    Schema valueSchema=kvSchema.getValueSchema();\n    if (valueSchema.getSchemaInfo().getType() == SchemaType.AVRO) {\n      org.apache.avro.Schema avroSchema=(org.apache.avro.Schema)valueSchema.getNativeSchema().get();\n      if (avroSchema.getField(FIELD_TO_REMOVE) != null) {\n        org.apache.avro.Schema.Parser parser=new org.apache.avro.Schema.Parser();\n        org.apache.avro.Schema originalAvroSchema=parser.parse(avroSchema.toString(false));\n        org.apache.avro.Schema modified=org.apache.avro.Schema.createRecord(originalAvroSchema.getName(),originalAvroSchema.getDoc(),originalAvroSchema.getNamespace(),originalAvroSchema.isError(),originalAvroSchema.getFields().stream().filter(f -> !f.name().equals(FIELD_TO_REMOVE)).map(f -> new org.apache.avro.Schema.Field(f.name(),f.schema(),f.doc(),f.defaultVal(),f.order())).collect(Collectors.toList()));\n        KeyValue originalObject=(KeyValue)nativeObject;\n        GenericRecord value=(GenericRecord)originalObject.getValue();\n        org.apache.avro.generic.GenericRecord genericRecord=(org.apache.avro.generic.GenericRecord)value.getNativeObject();\n        org.apache.avro.generic.GenericRecord newRecord=new GenericData.Record(modified);\n        for (        org.apache.avro.Schema.Field field : modified.getFields()) {\n          newRecord.put(field.name(),genericRecord.get(field.name()));\n        }\n        GenericDatumWriter writer=new GenericDatumWriter(modified);\n        ByteArrayOutputStream oo=new ByteArrayOutputStream();\n        BinaryEncoder encoder=EncoderFactory.get().directBinaryEncoder(oo,null);\n        writer.write(newRecord,encoder);\n        Object newValue=oo.toByteArray();\n        Schema newValueSchema=Schema.NATIVE_AVRO(modified);\n        outputSchema=Schema.KeyValue(keySchema,newValueSchema,kvSchema.getKeyValueEncodingType());\n        outputObject=new KeyValue(originalObject.getKey(),newValue);\n        someThingDone=true;\n      }\n    }\n  }\n else   if (schema.getSchemaInfo().getType() == SchemaType.AVRO) {\n    org.apache.avro.Schema avroSchema=(org.apache.avro.Schema)schema.getNativeSchema().get();\n    if (avroSchema.getField(FIELD_TO_REMOVE) != null) {\n      org.apache.avro.Schema.Parser parser=new org.apache.avro.Schema.Parser();\n      org.apache.avro.Schema originalAvroSchema=parser.parse(avroSchema.toString(false));\n      org.apache.avro.Schema modified=org.apache.avro.Schema.createRecord(originalAvroSchema.getName(),originalAvroSchema.getDoc(),originalAvroSchema.getNamespace(),originalAvroSchema.isError(),originalAvroSchema.getFields().stream().filter(f -> !f.name().equals(FIELD_TO_REMOVE)).map(f -> new org.apache.avro.Schema.Field(f.name(),f.schema(),f.doc(),f.defaultVal(),f.order())).collect(Collectors.toList()));\n      org.apache.avro.generic.GenericRecord genericRecord=(org.apache.avro.generic.GenericRecord)nativeObject;\n      org.apache.avro.generic.GenericRecord newRecord=new GenericData.Record(modified);\n      for (      org.apache.avro.Schema.Field field : modified.getFields()) {\n        newRecord.put(field.name(),genericRecord.get(field.name()));\n      }\n      GenericDatumWriter writer=new GenericDatumWriter(modified);\n      ByteArrayOutputStream oo=new ByteArrayOutputStream();\n      BinaryEncoder encoder=EncoderFactory.get().directBinaryEncoder(oo,null);\n      writer.write(newRecord,encoder);\n      Schema newValueSchema=Schema.NATIVE_AVRO(modified);\n      outputSchema=newValueSchema;\n      outputObject=oo.toByteArray();\n      someThingDone=true;\n    }\n  }\n  if (!someThingDone) {\n    final boolean isStruct;\nswitch (currentRecord.getSchema().getSchemaInfo().getType()) {\ncase AVRO:case JSON:case PROTOBUF_NATIVE:      isStruct=true;\n    break;\ndefault:  isStruct=false;\nbreak;\n}\nif (isStruct) {\noutputObject=currentRecord.getValue();\n}\n else {\noutputObject=nativeObject;\n}\n}\nlog.info(\"output {} schema {}\",outputObject,outputSchema);\ncontext.newOutputMessage(context.getOutputTopic(),outputSchema).value(outputObject).send();\nreturn null;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 843,
+      "astHeight" : 21
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 102,
+        "startLineNumber" : 155,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 156,
+        "endColumnNumber" : 36
+      },
+      "nodeContext" : "context.newOutputMessage(context.getOutputTopic(),outputSchema).value(outputObject)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    },
+    "tokenLength" : 5,
+    "type" : "org.apache.pulsar.client.api.TypedMessageBuilder"
+  } ],
+  "positionList" : [ {
+    "charLength" : 64,
+    "startLineNumber" : 155,
+    "startColumnNumber" : 8,
+    "endLineNumber" : 155,
+    "endColumnNumber" : 72
+  } ],
+  "layoutRelationDataList" : [ ]
+}

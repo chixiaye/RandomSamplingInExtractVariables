@@ -1,0 +1,100 @@
+{
+  "id" : 428,
+  "expression" : "remoteExecutionService.buildRemoteAction(spawn,context)",
+  "projectName" : "bazelbuild@bazel",
+  "commitID" : "302971e1b3d803069ac949c0085c0d2a3916c8ab",
+  "filePath" : "/src/main/java/com/google/devtools/build/lib/remote/RemoteSpawnCache.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "remoteExecutionService.buildRemoteAction(spawn,context)",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 56,
+      "startLineNumber" : 102,
+      "startColumnNumber" : 26,
+      "endLineNumber" : 102,
+      "endColumnNumber" : 82
+    },
+    "astNodeNumber" : 5,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 65,
+        "startLineNumber" : 102,
+        "startColumnNumber" : 17,
+        "endLineNumber" : 102,
+        "endColumnNumber" : 82
+      },
+      "nodeContext" : "action=remoteExecutionService.buildRemoteAction(spawn,context)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 79,
+        "startLineNumber" : 102,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 102,
+        "endColumnNumber" : 83
+      },
+      "nodeContext" : "RemoteAction action=remoteExecutionService.buildRemoteAction(spawn,context);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4865,
+        "startLineNumber" : 93,
+        "startColumnNumber" : 93,
+        "endLineNumber" : 224,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  boolean shouldAcceptCachedResult=remoteExecutionService.shouldAcceptCachedResult(spawn);\n  boolean shouldUploadLocalResults=remoteExecutionService.shouldUploadLocalResults(spawn);\n  if (!shouldAcceptCachedResult && !shouldUploadLocalResults) {\n    return SpawnCache.NO_RESULT_NO_STORE;\n  }\n  Stopwatch totalTime=Stopwatch.createStarted();\n  RemoteAction action=remoteExecutionService.buildRemoteAction(spawn,context);\n  SpawnMetrics.Builder spawnMetrics=SpawnMetrics.Builder.forRemoteExec().setInputBytes(action.getInputBytes()).setInputFiles(action.getInputFiles());\n  Profiler prof=Profiler.instance();\n  if (shouldAcceptCachedResult) {\n    context.report(SPAWN_CHECKING_CACHE_EVENT);\n    try {\n      RemoteActionResult result;\n      try (SilentCloseable c=prof.profile(ProfilerTask.REMOTE_CACHE_CHECK,\"check cache hit\")){\n        result=remoteExecutionService.lookupCache(action);\n      }\n       if (result != null && result.getExitCode() == 0) {\n        Stopwatch fetchTime=Stopwatch.createStarted();\n        InMemoryOutput inMemoryOutput;\n        try (SilentCloseable c=prof.profile(REMOTE_DOWNLOAD,\"download outputs\")){\n          inMemoryOutput=remoteExecutionService.downloadOutputs(action,result);\n        }\n         fetchTime.stop();\n        totalTime.stop();\n        spawnMetrics.setFetchTime(fetchTime.elapsed()).setTotalTime(totalTime.elapsed()).setNetworkTime(action.getNetworkTime().getDuration());\n        SpawnResult spawnResult=createSpawnResult(result.getExitCode(),true,result.cacheName(),inMemoryOutput,spawnMetrics.build(),spawn.getMnemonic());\n        return SpawnCache.success(spawnResult);\n      }\n    }\n catch (    CacheNotFoundException e) {\n    }\ncatch (    IOException e) {\n      if (BulkTransferException.isOnlyCausedByCacheNotFoundException(e)) {\n      }\n else {\n        String errorMessage;\n        if (!verboseFailures) {\n          errorMessage=Utils.grpcAwareErrorMessage(e);\n        }\n else {\n          errorMessage=Throwables.getStackTraceAsString(e);\n        }\n        if (isNullOrEmpty(errorMessage)) {\n          errorMessage=e.getClass().getSimpleName();\n        }\n        errorMessage=\"Reading from Remote Cache:\\n\" + errorMessage;\n        report(Event.warn(errorMessage));\n      }\n    }\n  }\n  context.report(SPAWN_EXECUTING_EVENT);\n  context.prefetchInputs();\n  if (shouldUploadLocalResults) {\n    return new CacheHandle(){\n      @Override public boolean hasResult(){\n        return false;\n      }\n      @Override public SpawnResult getResult(){\n        throw new NoSuchElementException();\n      }\n      @Override public boolean willStore(){\n        return true;\n      }\n      @Override public void store(      SpawnResult result) throws ExecException, InterruptedException {\n        boolean uploadResults=Status.SUCCESS.equals(result.status()) && result.exitCode() == 0;\n        if (!uploadResults) {\n          return;\n        }\n        if (options.experimentalGuardAgainstConcurrentChanges) {\n          try (SilentCloseable c=prof.profile(\"RemoteCache.checkForConcurrentModifications\")){\n            checkForConcurrentModifications();\n          }\n catch (          IOException|ForbiddenActionInputException e) {\n            report(Event.warn(e.getMessage()));\n            return;\n          }\n        }\n        remoteExecutionService.uploadOutputs(action,result);\n      }\n      @Override public void close(){\n      }\n      private void checkForConcurrentModifications() throws IOException, ForbiddenActionInputException {\n        for (        ActionInput input : action.getInputMap().values()) {\n          if (input instanceof VirtualActionInput) {\n            continue;\n          }\n          FileArtifactValue metadata=context.getMetadataProvider().getMetadata(input);\n          Path path=execRoot.getRelative(input.getExecPath());\n          if (metadata.wasModifiedSinceDigest(path)) {\n            throw new IOException(path + \" was modified during execution\");\n          }\n        }\n      }\n    }\n;\n  }\n else {\n    return SpawnCache.NO_RESULT_NO_STORE;\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 481,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 5040,
+        "startLineNumber" : 91,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 224,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "@Override public CacheHandle lookup(Spawn spawn,SpawnExecutionContext context) throws InterruptedException, IOException, ExecException, ForbiddenActionInputException {\n  boolean shouldAcceptCachedResult=remoteExecutionService.shouldAcceptCachedResult(spawn);\n  boolean shouldUploadLocalResults=remoteExecutionService.shouldUploadLocalResults(spawn);\n  if (!shouldAcceptCachedResult && !shouldUploadLocalResults) {\n    return SpawnCache.NO_RESULT_NO_STORE;\n  }\n  Stopwatch totalTime=Stopwatch.createStarted();\n  RemoteAction action=remoteExecutionService.buildRemoteAction(spawn,context);\n  SpawnMetrics.Builder spawnMetrics=SpawnMetrics.Builder.forRemoteExec().setInputBytes(action.getInputBytes()).setInputFiles(action.getInputFiles());\n  Profiler prof=Profiler.instance();\n  if (shouldAcceptCachedResult) {\n    context.report(SPAWN_CHECKING_CACHE_EVENT);\n    try {\n      RemoteActionResult result;\n      try (SilentCloseable c=prof.profile(ProfilerTask.REMOTE_CACHE_CHECK,\"check cache hit\")){\n        result=remoteExecutionService.lookupCache(action);\n      }\n       if (result != null && result.getExitCode() == 0) {\n        Stopwatch fetchTime=Stopwatch.createStarted();\n        InMemoryOutput inMemoryOutput;\n        try (SilentCloseable c=prof.profile(REMOTE_DOWNLOAD,\"download outputs\")){\n          inMemoryOutput=remoteExecutionService.downloadOutputs(action,result);\n        }\n         fetchTime.stop();\n        totalTime.stop();\n        spawnMetrics.setFetchTime(fetchTime.elapsed()).setTotalTime(totalTime.elapsed()).setNetworkTime(action.getNetworkTime().getDuration());\n        SpawnResult spawnResult=createSpawnResult(result.getExitCode(),true,result.cacheName(),inMemoryOutput,spawnMetrics.build(),spawn.getMnemonic());\n        return SpawnCache.success(spawnResult);\n      }\n    }\n catch (    CacheNotFoundException e) {\n    }\ncatch (    IOException e) {\n      if (BulkTransferException.isOnlyCausedByCacheNotFoundException(e)) {\n      }\n else {\n        String errorMessage;\n        if (!verboseFailures) {\n          errorMessage=Utils.grpcAwareErrorMessage(e);\n        }\n else {\n          errorMessage=Throwables.getStackTraceAsString(e);\n        }\n        if (isNullOrEmpty(errorMessage)) {\n          errorMessage=e.getClass().getSimpleName();\n        }\n        errorMessage=\"Reading from Remote Cache:\\n\" + errorMessage;\n        report(Event.warn(errorMessage));\n      }\n    }\n  }\n  context.report(SPAWN_EXECUTING_EVENT);\n  context.prefetchInputs();\n  if (shouldUploadLocalResults) {\n    return new CacheHandle(){\n      @Override public boolean hasResult(){\n        return false;\n      }\n      @Override public SpawnResult getResult(){\n        throw new NoSuchElementException();\n      }\n      @Override public boolean willStore(){\n        return true;\n      }\n      @Override public void store(      SpawnResult result) throws ExecException, InterruptedException {\n        boolean uploadResults=Status.SUCCESS.equals(result.status()) && result.exitCode() == 0;\n        if (!uploadResults) {\n          return;\n        }\n        if (options.experimentalGuardAgainstConcurrentChanges) {\n          try (SilentCloseable c=prof.profile(\"RemoteCache.checkForConcurrentModifications\")){\n            checkForConcurrentModifications();\n          }\n catch (          IOException|ForbiddenActionInputException e) {\n            report(Event.warn(e.getMessage()));\n            return;\n          }\n        }\n        remoteExecutionService.uploadOutputs(action,result);\n      }\n      @Override public void close(){\n      }\n      private void checkForConcurrentModifications() throws IOException, ForbiddenActionInputException {\n        for (        ActionInput input : action.getInputMap().values()) {\n          if (input instanceof VirtualActionInput) {\n            continue;\n          }\n          FileArtifactValue metadata=context.getMetadataProvider().getMetadata(input);\n          Path path=execRoot.getRelative(input.getExecPath());\n          if (metadata.wasModifiedSinceDigest(path)) {\n            throw new IOException(path + \" was modified during execution\");\n          }\n        }\n      }\n    }\n;\n  }\n else {\n    return SpawnCache.NO_RESULT_NO_STORE;\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 504,
+      "astHeight" : 19
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 79,
+        "startLineNumber" : 102,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 102,
+        "endColumnNumber" : 83
+      },
+      "nodeContext" : "RemoteAction action=remoteExecutionService.buildRemoteAction(spawn,context);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    },
+    "tokenLength" : 4,
+    "type" : "com.google.devtools.build.lib.remote.RemoteExecutionService.RemoteAction"
+  } ],
+  "positionList" : [ {
+    "charLength" : 56,
+    "startLineNumber" : 102,
+    "startColumnNumber" : 26,
+    "endLineNumber" : 102,
+    "endColumnNumber" : 82
+  } ],
+  "layoutRelationDataList" : [ ]
+}

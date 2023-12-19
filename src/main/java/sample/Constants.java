@@ -6,7 +6,7 @@ public class Constants {
     public static String NEGATIVE_OUTPUT_PATH = "C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\negative\\";
     public static String POSITIVE_OUTPUT_PATH = "C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\positive\\";
 
-    public static String PREFIX_PATH = "D:\\Top1K\\dataset\\";
+    public static String PREFIX_PATH = "D:\\Top1K\\Top100-needed\\";
 
     public static String EXCEL_PATH = "C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\src\\main\\resources\\ReposAndNumbers.xlsx";
 
@@ -15,4 +15,5 @@ public class Constants {
 
     public static String LABELED_DATA_PATH = "C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\PythonScript\\labeledData\\";
     public static int LIMIT_MILLISECOND = 1000 * 10;
+    public static int RATIO = 37;
 }

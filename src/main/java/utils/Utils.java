@@ -6,6 +6,7 @@ import org.eclipse.jdt.core.dom.ASTParser;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class Utils {
@@ -26,7 +27,7 @@ public class Utils {
         return sb.toString().toCharArray();
     }
 
-    public static void getFileList(ArrayList<File> arrayList, String strPath,String extension) {
+    public static void getFileList(List<File> arrayList, String strPath, String extension) {
         File fileDir = new File(strPath);
         if(!extension.startsWith("."))
             extension="."+extension;

@@ -1,0 +1,113 @@
+{
+  "id" : 93,
+  "expression" : "65536",
+  "projectName" : "Tencent@tinker",
+  "commitID" : "df9e1d29420d53a650ab73569d828a22e3cfe728",
+  "filePath" : "/third-party/tinker-ziputils/src/main/java/com/tencent/tinker/ziputils/ziputil/TinkerZipFile.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "65536",
+    "nodeType" : "NumberLiteral",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 431,
+      "startColumnNumber" : 39,
+      "endLineNumber" : 431,
+      "endColumnNumber" : 44
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 18,
+        "startLineNumber" : 431,
+        "startColumnNumber" : 26,
+        "endLineNumber" : 431,
+        "endColumnNumber" : 44
+      },
+      "nodeContext" : "scanOffset - 65536",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 31,
+        "startLineNumber" : 431,
+        "startColumnNumber" : 13,
+        "endLineNumber" : 431,
+        "endColumnNumber" : 44
+      },
+      "nodeContext" : "stopOffset=scanOffset - 65536",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 37,
+        "startLineNumber" : 431,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 431,
+        "endColumnNumber" : 45
+      },
+      "nodeContext" : "long stopOffset=scanOffset - 65536;\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3373,
+        "startLineNumber" : 415,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 492,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  long scanOffset=raf.length() - ENDHDR;\n  if (scanOffset < 0) {\n    throw new ZipException(\"File too short to be a zip file: \" + raf.length());\n  }\n  raf.seek(0);\n  final int headerMagic=Integer.reverseBytes(raf.readInt());\n  if (headerMagic != LOCSIG) {\n    throw new ZipException(\"Not a zip archive\");\n  }\n  long stopOffset=scanOffset - 65536;\n  if (stopOffset < 0) {\n    stopOffset=0;\n  }\n  while (true) {\n    raf.seek(scanOffset);\n    if (Integer.reverseBytes(raf.readInt()) == ENDSIG) {\n      break;\n    }\n    scanOffset--;\n    if (scanOffset < stopOffset) {\n      throw new ZipException(\"End Of Central Directory signature not found\");\n    }\n  }\n  byte[] eocd=new byte[ENDHDR - 4];\n  raf.readFully(eocd);\n  BufferIterator it=HeapBufferIterator.iterator(eocd,0,eocd.length,ByteOrder.LITTLE_ENDIAN);\n  int diskNumber=it.readShort() & 0xffff;\n  int diskWithCentralDir=it.readShort() & 0xffff;\n  int numEntries=it.readShort() & 0xffff;\n  int totalNumEntries=it.readShort() & 0xffff;\n  it.skip(4);\n  long centralDirOffset=((long)it.readInt()) & 0xffffffffL;\n  int commentLength=it.readShort() & 0xffff;\n  if (numEntries != totalNumEntries || diskNumber != 0 || diskWithCentralDir != 0) {\n    throw new ZipException(\"Spanned archives not supported\");\n  }\n  if (commentLength > 0) {\n    byte[] commentBytes=new byte[commentLength];\n    raf.readFully(commentBytes);\n    comment=new String(commentBytes,0,commentBytes.length,StandardCharsets.UTF_8);\n  }\n  RAFStream rafStream=new RAFStream(raf,centralDirOffset);\n  BufferedInputStream bufferedStream=new BufferedInputStream(rafStream,4096);\n  byte[] hdrBuf=new byte[CENHDR];\n  for (int i=0; i < numEntries; ++i) {\n    TinkerZipEntry newEntry=new TinkerZipEntry(hdrBuf,bufferedStream,StandardCharsets.UTF_8,(false));\n    if (newEntry.localHeaderRelOffset >= centralDirOffset) {\n      throw new ZipException(\"Local file header offset is after central directory\");\n    }\n    String entryName=newEntry.getName();\n    if (entries.put(entryName,newEntry) != null) {\n      throw new ZipException(\"Duplicate entry name: \" + entryName);\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 341,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4053,
+        "startLineNumber" : 402,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 492,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Find the central directory and read the contents. <p>The central directory can be followed by a variable-length comment field, so we have to scan through it backwards.  The comment is at most 64K, plus we have 18 bytes for the end-of-central-dir stuff itself, plus apparently sometimes people throw random junk on the end just for the fun of it. <p>This is all a little wobbly.  If the wrong value ends up in the EOCD area, we're hosed. This appears to be the way that everybody handles it though, so we're in good company if this fails.\n */\nprivate void readCentralDir() throws IOException {\n  long scanOffset=raf.length() - ENDHDR;\n  if (scanOffset < 0) {\n    throw new ZipException(\"File too short to be a zip file: \" + raf.length());\n  }\n  raf.seek(0);\n  final int headerMagic=Integer.reverseBytes(raf.readInt());\n  if (headerMagic != LOCSIG) {\n    throw new ZipException(\"Not a zip archive\");\n  }\n  long stopOffset=scanOffset - 65536;\n  if (stopOffset < 0) {\n    stopOffset=0;\n  }\n  while (true) {\n    raf.seek(scanOffset);\n    if (Integer.reverseBytes(raf.readInt()) == ENDSIG) {\n      break;\n    }\n    scanOffset--;\n    if (scanOffset < stopOffset) {\n      throw new ZipException(\"End Of Central Directory signature not found\");\n    }\n  }\n  byte[] eocd=new byte[ENDHDR - 4];\n  raf.readFully(eocd);\n  BufferIterator it=HeapBufferIterator.iterator(eocd,0,eocd.length,ByteOrder.LITTLE_ENDIAN);\n  int diskNumber=it.readShort() & 0xffff;\n  int diskWithCentralDir=it.readShort() & 0xffff;\n  int numEntries=it.readShort() & 0xffff;\n  int totalNumEntries=it.readShort() & 0xffff;\n  it.skip(4);\n  long centralDirOffset=((long)it.readInt()) & 0xffffffffL;\n  int commentLength=it.readShort() & 0xffff;\n  if (numEntries != totalNumEntries || diskNumber != 0 || diskWithCentralDir != 0) {\n    throw new ZipException(\"Spanned archives not supported\");\n  }\n  if (commentLength > 0) {\n    byte[] commentBytes=new byte[commentLength];\n    raf.readFully(commentBytes);\n    comment=new String(commentBytes,0,commentBytes.length,StandardCharsets.UTF_8);\n  }\n  RAFStream rafStream=new RAFStream(raf,centralDirOffset);\n  BufferedInputStream bufferedStream=new BufferedInputStream(rafStream,4096);\n  byte[] hdrBuf=new byte[CENHDR];\n  for (int i=0; i < numEntries; ++i) {\n    TinkerZipEntry newEntry=new TinkerZipEntry(hdrBuf,bufferedStream,StandardCharsets.UTF_8,(false));\n    if (newEntry.localHeaderRelOffset >= centralDirOffset) {\n      throw new ZipException(\"Local file header offset is after central directory\");\n    }\n    String entryName=newEntry.getName();\n    if (entries.put(entryName,newEntry) != null) {\n      throw new ZipException(\"Duplicate entry name: \" + entryName);\n    }\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 348,
+      "astHeight" : 10
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 37,
+        "startLineNumber" : 431,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 431,
+        "endColumnNumber" : 45
+      },
+      "nodeContext" : "long stopOffset=scanOffset - 65536;\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "int"
+  } ],
+  "positionList" : [ {
+    "charLength" : 5,
+    "startLineNumber" : 431,
+    "startColumnNumber" : 39,
+    "endLineNumber" : 431,
+    "endColumnNumber" : 44
+  } ],
+  "layoutRelationDataList" : [ ]
+}

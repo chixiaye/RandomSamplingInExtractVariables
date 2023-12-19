@@ -1,0 +1,260 @@
+{
+  "id" : 291,
+  "expression" : "System.currentTimeMillis()",
+  "projectName" : "bazelbuild@bazel",
+  "commitID" : "302971e1b3d803069ac949c0085c0d2a3916c8ab",
+  "filePath" : "/src/tools/remote/src/main/java/com/google/devtools/build/remote/worker/ExecutionServer.java",
+  "occurrences" : 2,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "System.currentTimeMillis()",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 26,
+      "startLineNumber" : 296,
+      "startColumnNumber" : 21,
+      "endLineNumber" : 296,
+      "endColumnNumber" : 47
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 38,
+        "startLineNumber" : 296,
+        "startColumnNumber" : 9,
+        "endLineNumber" : 296,
+        "endColumnNumber" : 47
+      },
+      "nodeContext" : "startTime=System.currentTimeMillis()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 44,
+        "startLineNumber" : 296,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 296,
+        "endColumnNumber" : 48
+      },
+      "nodeContext" : "long startTime=System.currentTimeMillis();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4844,
+        "startLineNumber" : 253,
+        "startColumnNumber" : 64,
+        "endLineNumber" : 384,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  Command command;\n  Action action;\n  ActionKey actionKey=digestUtil.asActionKey(actionDigest);\n  try {\n    action=Action.parseFrom(getFromFuture(cache.downloadBlob(context,actionDigest)),ExtensionRegistry.getEmptyRegistry());\n    command=Command.parseFrom(getFromFuture(cache.downloadBlob(context,action.getCommandDigest())),ExtensionRegistry.getEmptyRegistry());\n    cache.downloadTree(context,action.getInputRootDigest(),execRoot);\n  }\n catch (  CacheNotFoundException e) {\n    throw StatusUtils.notFoundError(e.getMissingDigest());\n  }\n  Path workingDirectory=execRoot.getRelative(command.getWorkingDirectory());\n  FileSystemUtils.createDirectoryAndParents(workingDirectory);\n  List<Path> outputs=new ArrayList<>(command.getOutputFilesList().size());\n  for (  String output : command.getOutputFilesList()) {\n    Path file=workingDirectory.getRelative(output);\n    if (file.exists()) {\n      throw new FileAlreadyExistsException(\"Output file already exists: \" + file);\n    }\n    FileSystemUtils.createDirectoryAndParents(file.getParentDirectory());\n    outputs.add(file);\n  }\n  for (  String output : command.getOutputDirectoriesList()) {\n    Path file=workingDirectory.getRelative(output);\n    if (file.exists()) {\n      throw new FileAlreadyExistsException(\"Output directory/file already exists: \" + file);\n    }\n    FileSystemUtils.createDirectoryAndParents(file.getParentDirectory());\n    outputs.add(file);\n  }\n  com.google.devtools.build.lib.shell.Command cmd=getCommand(command,workingDirectory.getPathString());\n  long startTime=System.currentTimeMillis();\n  CommandResult cmdResult=null;\n  String uuid=UUID.randomUUID().toString();\n  Path stdout=execRoot.getChild(\"stdout-\" + uuid);\n  Path stderr=execRoot.getChild(\"stderr-\" + uuid);\n  try (FileOutErr outErr=new FileOutErr(stdout,stderr)){\n    FutureCommandResult futureCmdResult=null;\n    try {\n      futureCmdResult=cmd.executeAsync(outErr.getOutputStream(),outErr.getErrorStream());\n    }\n catch (    CommandException e) {\n      Throwables.throwIfInstanceOf(e.getCause(),IOException.class);\n    }\n    if (futureCmdResult != null) {\n      try {\n        cmdResult=futureCmdResult.get();\n      }\n catch (      AbnormalTerminationException e) {\n        cmdResult=e.getResult();\n      }\n    }\n    long timeoutMillis=action.hasTimeout() ? Durations.toMillis(action.getTimeout()) : TimeUnit.MINUTES.toMillis(15);\n    boolean wasTimeout=(cmdResult != null && cmdResult.getTerminationStatus().timedOut()) || wasTimeout(timeoutMillis,System.currentTimeMillis() - startTime);\n    final int exitCode;\n    Status errStatus=null;\n    ExecuteResponse.Builder resp=ExecuteResponse.newBuilder();\n    if (wasTimeout) {\n      final String errMessage=String.format(\"Command:\\n%s\\nexceeded deadline of %f seconds.\",Arrays.toString(command.getArgumentsList().toArray()),timeoutMillis / 1000.0);\n      logger.atWarning().log(\"%s\",errMessage);\n      errStatus=Status.newBuilder().setCode(Code.DEADLINE_EXCEEDED.getNumber()).setMessage(errMessage).build();\n      exitCode=LOCAL_EXEC_ERROR;\n    }\n else     if (cmdResult == null) {\n      exitCode=LOCAL_EXEC_ERROR;\n    }\n else {\n      exitCode=cmdResult.getTerminationStatus().getRawExitCode();\n    }\n    ActionResult result=null;\n    try {\n      UploadManifest manifest=UploadManifest.create(cache.getRemoteOptions(),digestUtil,RemotePathResolver.createDefault(workingDirectory),actionKey,action,command,outputs,outErr,exitCode);\n      result=manifest.upload(context,cache,NullEventHandler.INSTANCE);\n    }\n catch (    ExecException e) {\n      if (errStatus == null) {\n        errStatus=Status.newBuilder().setCode(Code.FAILED_PRECONDITION.getNumber()).setMessage(e.getMessage()).build();\n      }\n    }\n    if (result == null) {\n      result=ActionResult.newBuilder().setExitCode(exitCode).build();\n    }\n    resp.setResult(result);\n    if (errStatus != null) {\n      resp.setStatus(errStatus);\n      throw new ExecutionStatusException(errStatus,resp.build());\n    }\n    return result;\n  }\n }\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 585,
+      "astHeight" : 16
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 5018,
+        "startLineNumber" : 251,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 384,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "private ActionResult execute(RemoteActionExecutionContext context,Digest actionDigest,Path execRoot) throws IOException, InterruptedException, StatusException {\n  Command command;\n  Action action;\n  ActionKey actionKey=digestUtil.asActionKey(actionDigest);\n  try {\n    action=Action.parseFrom(getFromFuture(cache.downloadBlob(context,actionDigest)),ExtensionRegistry.getEmptyRegistry());\n    command=Command.parseFrom(getFromFuture(cache.downloadBlob(context,action.getCommandDigest())),ExtensionRegistry.getEmptyRegistry());\n    cache.downloadTree(context,action.getInputRootDigest(),execRoot);\n  }\n catch (  CacheNotFoundException e) {\n    throw StatusUtils.notFoundError(e.getMissingDigest());\n  }\n  Path workingDirectory=execRoot.getRelative(command.getWorkingDirectory());\n  FileSystemUtils.createDirectoryAndParents(workingDirectory);\n  List<Path> outputs=new ArrayList<>(command.getOutputFilesList().size());\n  for (  String output : command.getOutputFilesList()) {\n    Path file=workingDirectory.getRelative(output);\n    if (file.exists()) {\n      throw new FileAlreadyExistsException(\"Output file already exists: \" + file);\n    }\n    FileSystemUtils.createDirectoryAndParents(file.getParentDirectory());\n    outputs.add(file);\n  }\n  for (  String output : command.getOutputDirectoriesList()) {\n    Path file=workingDirectory.getRelative(output);\n    if (file.exists()) {\n      throw new FileAlreadyExistsException(\"Output directory/file already exists: \" + file);\n    }\n    FileSystemUtils.createDirectoryAndParents(file.getParentDirectory());\n    outputs.add(file);\n  }\n  com.google.devtools.build.lib.shell.Command cmd=getCommand(command,workingDirectory.getPathString());\n  long startTime=System.currentTimeMillis();\n  CommandResult cmdResult=null;\n  String uuid=UUID.randomUUID().toString();\n  Path stdout=execRoot.getChild(\"stdout-\" + uuid);\n  Path stderr=execRoot.getChild(\"stderr-\" + uuid);\n  try (FileOutErr outErr=new FileOutErr(stdout,stderr)){\n    FutureCommandResult futureCmdResult=null;\n    try {\n      futureCmdResult=cmd.executeAsync(outErr.getOutputStream(),outErr.getErrorStream());\n    }\n catch (    CommandException e) {\n      Throwables.throwIfInstanceOf(e.getCause(),IOException.class);\n    }\n    if (futureCmdResult != null) {\n      try {\n        cmdResult=futureCmdResult.get();\n      }\n catch (      AbnormalTerminationException e) {\n        cmdResult=e.getResult();\n      }\n    }\n    long timeoutMillis=action.hasTimeout() ? Durations.toMillis(action.getTimeout()) : TimeUnit.MINUTES.toMillis(15);\n    boolean wasTimeout=(cmdResult != null && cmdResult.getTerminationStatus().timedOut()) || wasTimeout(timeoutMillis,System.currentTimeMillis() - startTime);\n    final int exitCode;\n    Status errStatus=null;\n    ExecuteResponse.Builder resp=ExecuteResponse.newBuilder();\n    if (wasTimeout) {\n      final String errMessage=String.format(\"Command:\\n%s\\nexceeded deadline of %f seconds.\",Arrays.toString(command.getArgumentsList().toArray()),timeoutMillis / 1000.0);\n      logger.atWarning().log(\"%s\",errMessage);\n      errStatus=Status.newBuilder().setCode(Code.DEADLINE_EXCEEDED.getNumber()).setMessage(errMessage).build();\n      exitCode=LOCAL_EXEC_ERROR;\n    }\n else     if (cmdResult == null) {\n      exitCode=LOCAL_EXEC_ERROR;\n    }\n else {\n      exitCode=cmdResult.getTerminationStatus().getRawExitCode();\n    }\n    ActionResult result=null;\n    try {\n      UploadManifest manifest=UploadManifest.create(cache.getRemoteOptions(),digestUtil,RemotePathResolver.createDefault(workingDirectory),actionKey,action,command,outputs,outErr,exitCode);\n      result=manifest.upload(context,cache,NullEventHandler.INSTANCE);\n    }\n catch (    ExecException e) {\n      if (errStatus == null) {\n        errStatus=Status.newBuilder().setCode(Code.FAILED_PRECONDITION.getNumber()).setMessage(e.getMessage()).build();\n      }\n    }\n    if (result == null) {\n      result=ActionResult.newBuilder().setExitCode(exitCode).build();\n    }\n    resp.setResult(result);\n    if (errStatus != null) {\n      resp.setStatus(errStatus);\n      throw new ExecutionStatusException(errStatus,resp.build());\n    }\n    return result;\n  }\n }\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 608,
+      "astHeight" : 17
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 44,
+        "startLineNumber" : 296,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 296,
+        "endColumnNumber" : 48
+      },
+      "nodeContext" : "long startTime=System.currentTimeMillis();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    },
+    "tokenLength" : 2,
+    "type" : "long"
+  }, {
+    "nodeContext" : "System.currentTimeMillis()",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 26,
+      "startLineNumber" : 325,
+      "startColumnNumber" : 43,
+      "endLineNumber" : 325,
+      "endColumnNumber" : 69
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 38,
+        "startLineNumber" : 325,
+        "startColumnNumber" : 43,
+        "endLineNumber" : 325,
+        "endColumnNumber" : 81
+      },
+      "nodeContext" : "System.currentTimeMillis() - startTime",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,rightOperand]",
+      "nodePosition" : {
+        "charLength" : 65,
+        "startLineNumber" : 325,
+        "startColumnNumber" : 17,
+        "endLineNumber" : 325,
+        "endColumnNumber" : 82
+      },
+      "nodeContext" : "wasTimeout(timeoutMillis,System.currentTimeMillis() - startTime)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 149,
+        "startLineNumber" : 324,
+        "startColumnNumber" : 10,
+        "endLineNumber" : 325,
+        "endColumnNumber" : 82
+      },
+      "nodeContext" : "(cmdResult != null && cmdResult.getTerminationStatus().timedOut()) || wasTimeout(timeoutMillis,System.currentTimeMillis() - startTime)",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 19,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 172,
+        "startLineNumber" : 323,
+        "startColumnNumber" : 14,
+        "endLineNumber" : 325,
+        "endColumnNumber" : 82
+      },
+      "nodeContext" : "wasTimeout=(cmdResult != null && cmdResult.getTerminationStatus().timedOut()) || wasTimeout(timeoutMillis,System.currentTimeMillis() - startTime)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 21,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 181,
+        "startLineNumber" : 323,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 325,
+        "endColumnNumber" : 83
+      },
+      "nodeContext" : "boolean wasTimeout=(cmdResult != null && cmdResult.getTerminationStatus().timedOut()) || wasTimeout(timeoutMillis,System.currentTimeMillis() - startTime);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 23,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 2709,
+        "startLineNumber" : 302,
+        "startColumnNumber" : 61,
+        "endLineNumber" : 383,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  FutureCommandResult futureCmdResult=null;\n  try {\n    futureCmdResult=cmd.executeAsync(outErr.getOutputStream(),outErr.getErrorStream());\n  }\n catch (  CommandException e) {\n    Throwables.throwIfInstanceOf(e.getCause(),IOException.class);\n  }\n  if (futureCmdResult != null) {\n    try {\n      cmdResult=futureCmdResult.get();\n    }\n catch (    AbnormalTerminationException e) {\n      cmdResult=e.getResult();\n    }\n  }\n  long timeoutMillis=action.hasTimeout() ? Durations.toMillis(action.getTimeout()) : TimeUnit.MINUTES.toMillis(15);\n  boolean wasTimeout=(cmdResult != null && cmdResult.getTerminationStatus().timedOut()) || wasTimeout(timeoutMillis,System.currentTimeMillis() - startTime);\n  final int exitCode;\n  Status errStatus=null;\n  ExecuteResponse.Builder resp=ExecuteResponse.newBuilder();\n  if (wasTimeout) {\n    final String errMessage=String.format(\"Command:\\n%s\\nexceeded deadline of %f seconds.\",Arrays.toString(command.getArgumentsList().toArray()),timeoutMillis / 1000.0);\n    logger.atWarning().log(\"%s\",errMessage);\n    errStatus=Status.newBuilder().setCode(Code.DEADLINE_EXCEEDED.getNumber()).setMessage(errMessage).build();\n    exitCode=LOCAL_EXEC_ERROR;\n  }\n else   if (cmdResult == null) {\n    exitCode=LOCAL_EXEC_ERROR;\n  }\n else {\n    exitCode=cmdResult.getTerminationStatus().getRawExitCode();\n  }\n  ActionResult result=null;\n  try {\n    UploadManifest manifest=UploadManifest.create(cache.getRemoteOptions(),digestUtil,RemotePathResolver.createDefault(workingDirectory),actionKey,action,command,outputs,outErr,exitCode);\n    result=manifest.upload(context,cache,NullEventHandler.INSTANCE);\n  }\n catch (  ExecException e) {\n    if (errStatus == null) {\n      errStatus=Status.newBuilder().setCode(Code.FAILED_PRECONDITION.getNumber()).setMessage(e.getMessage()).build();\n    }\n  }\n  if (result == null) {\n    result=ActionResult.newBuilder().setExitCode(exitCode).build();\n  }\n  resp.setResult(result);\n  if (errStatus != null) {\n    resp.setStatus(errStatus);\n    throw new ExecutionStatusException(errStatus,resp.build());\n  }\n  return result;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 311,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 2766,
+        "startLineNumber" : 302,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 383,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "try (FileOutErr outErr=new FileOutErr(stdout,stderr)){\n  FutureCommandResult futureCmdResult=null;\n  try {\n    futureCmdResult=cmd.executeAsync(outErr.getOutputStream(),outErr.getErrorStream());\n  }\n catch (  CommandException e) {\n    Throwables.throwIfInstanceOf(e.getCause(),IOException.class);\n  }\n  if (futureCmdResult != null) {\n    try {\n      cmdResult=futureCmdResult.get();\n    }\n catch (    AbnormalTerminationException e) {\n      cmdResult=e.getResult();\n    }\n  }\n  long timeoutMillis=action.hasTimeout() ? Durations.toMillis(action.getTimeout()) : TimeUnit.MINUTES.toMillis(15);\n  boolean wasTimeout=(cmdResult != null && cmdResult.getTerminationStatus().timedOut()) || wasTimeout(timeoutMillis,System.currentTimeMillis() - startTime);\n  final int exitCode;\n  Status errStatus=null;\n  ExecuteResponse.Builder resp=ExecuteResponse.newBuilder();\n  if (wasTimeout) {\n    final String errMessage=String.format(\"Command:\\n%s\\nexceeded deadline of %f seconds.\",Arrays.toString(command.getArgumentsList().toArray()),timeoutMillis / 1000.0);\n    logger.atWarning().log(\"%s\",errMessage);\n    errStatus=Status.newBuilder().setCode(Code.DEADLINE_EXCEEDED.getNumber()).setMessage(errMessage).build();\n    exitCode=LOCAL_EXEC_ERROR;\n  }\n else   if (cmdResult == null) {\n    exitCode=LOCAL_EXEC_ERROR;\n  }\n else {\n    exitCode=cmdResult.getTerminationStatus().getRawExitCode();\n  }\n  ActionResult result=null;\n  try {\n    UploadManifest manifest=UploadManifest.create(cache.getRemoteOptions(),digestUtil,RemotePathResolver.createDefault(workingDirectory),actionKey,action,command,outputs,outErr,exitCode);\n    result=manifest.upload(context,cache,NullEventHandler.INSTANCE);\n  }\n catch (  ExecException e) {\n    if (errStatus == null) {\n      errStatus=Status.newBuilder().setCode(Code.FAILED_PRECONDITION.getNumber()).setMessage(e.getMessage()).build();\n    }\n  }\n  if (result == null) {\n    result=ActionResult.newBuilder().setExitCode(exitCode).build();\n  }\n  resp.setResult(result);\n  if (errStatus != null) {\n    resp.setStatus(errStatus);\n    throw new ExecutionStatusException(errStatus,resp.build());\n  }\n  return result;\n}\n ",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 322,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4844,
+        "startLineNumber" : 253,
+        "startColumnNumber" : 64,
+        "endLineNumber" : 384,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  Command command;\n  Action action;\n  ActionKey actionKey=digestUtil.asActionKey(actionDigest);\n  try {\n    action=Action.parseFrom(getFromFuture(cache.downloadBlob(context,actionDigest)),ExtensionRegistry.getEmptyRegistry());\n    command=Command.parseFrom(getFromFuture(cache.downloadBlob(context,action.getCommandDigest())),ExtensionRegistry.getEmptyRegistry());\n    cache.downloadTree(context,action.getInputRootDigest(),execRoot);\n  }\n catch (  CacheNotFoundException e) {\n    throw StatusUtils.notFoundError(e.getMissingDigest());\n  }\n  Path workingDirectory=execRoot.getRelative(command.getWorkingDirectory());\n  FileSystemUtils.createDirectoryAndParents(workingDirectory);\n  List<Path> outputs=new ArrayList<>(command.getOutputFilesList().size());\n  for (  String output : command.getOutputFilesList()) {\n    Path file=workingDirectory.getRelative(output);\n    if (file.exists()) {\n      throw new FileAlreadyExistsException(\"Output file already exists: \" + file);\n    }\n    FileSystemUtils.createDirectoryAndParents(file.getParentDirectory());\n    outputs.add(file);\n  }\n  for (  String output : command.getOutputDirectoriesList()) {\n    Path file=workingDirectory.getRelative(output);\n    if (file.exists()) {\n      throw new FileAlreadyExistsException(\"Output directory/file already exists: \" + file);\n    }\n    FileSystemUtils.createDirectoryAndParents(file.getParentDirectory());\n    outputs.add(file);\n  }\n  com.google.devtools.build.lib.shell.Command cmd=getCommand(command,workingDirectory.getPathString());\n  long startTime=System.currentTimeMillis();\n  CommandResult cmdResult=null;\n  String uuid=UUID.randomUUID().toString();\n  Path stdout=execRoot.getChild(\"stdout-\" + uuid);\n  Path stderr=execRoot.getChild(\"stderr-\" + uuid);\n  try (FileOutErr outErr=new FileOutErr(stdout,stderr)){\n    FutureCommandResult futureCmdResult=null;\n    try {\n      futureCmdResult=cmd.executeAsync(outErr.getOutputStream(),outErr.getErrorStream());\n    }\n catch (    CommandException e) {\n      Throwables.throwIfInstanceOf(e.getCause(),IOException.class);\n    }\n    if (futureCmdResult != null) {\n      try {\n        cmdResult=futureCmdResult.get();\n      }\n catch (      AbnormalTerminationException e) {\n        cmdResult=e.getResult();\n      }\n    }\n    long timeoutMillis=action.hasTimeout() ? Durations.toMillis(action.getTimeout()) : TimeUnit.MINUTES.toMillis(15);\n    boolean wasTimeout=(cmdResult != null && cmdResult.getTerminationStatus().timedOut()) || wasTimeout(timeoutMillis,System.currentTimeMillis() - startTime);\n    final int exitCode;\n    Status errStatus=null;\n    ExecuteResponse.Builder resp=ExecuteResponse.newBuilder();\n    if (wasTimeout) {\n      final String errMessage=String.format(\"Command:\\n%s\\nexceeded deadline of %f seconds.\",Arrays.toString(command.getArgumentsList().toArray()),timeoutMillis / 1000.0);\n      logger.atWarning().log(\"%s\",errMessage);\n      errStatus=Status.newBuilder().setCode(Code.DEADLINE_EXCEEDED.getNumber()).setMessage(errMessage).build();\n      exitCode=LOCAL_EXEC_ERROR;\n    }\n else     if (cmdResult == null) {\n      exitCode=LOCAL_EXEC_ERROR;\n    }\n else {\n      exitCode=cmdResult.getTerminationStatus().getRawExitCode();\n    }\n    ActionResult result=null;\n    try {\n      UploadManifest manifest=UploadManifest.create(cache.getRemoteOptions(),digestUtil,RemotePathResolver.createDefault(workingDirectory),actionKey,action,command,outputs,outErr,exitCode);\n      result=manifest.upload(context,cache,NullEventHandler.INSTANCE);\n    }\n catch (    ExecException e) {\n      if (errStatus == null) {\n        errStatus=Status.newBuilder().setCode(Code.FAILED_PRECONDITION.getNumber()).setMessage(e.getMessage()).build();\n      }\n    }\n    if (result == null) {\n      result=ActionResult.newBuilder().setExitCode(exitCode).build();\n    }\n    resp.setResult(result);\n    if (errStatus != null) {\n      resp.setStatus(errStatus);\n      throw new ExecutionStatusException(errStatus,resp.build());\n    }\n    return result;\n  }\n }\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 585,
+      "astHeight" : 16
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 5018,
+        "startLineNumber" : 251,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 384,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "private ActionResult execute(RemoteActionExecutionContext context,Digest actionDigest,Path execRoot) throws IOException, InterruptedException, StatusException {\n  Command command;\n  Action action;\n  ActionKey actionKey=digestUtil.asActionKey(actionDigest);\n  try {\n    action=Action.parseFrom(getFromFuture(cache.downloadBlob(context,actionDigest)),ExtensionRegistry.getEmptyRegistry());\n    command=Command.parseFrom(getFromFuture(cache.downloadBlob(context,action.getCommandDigest())),ExtensionRegistry.getEmptyRegistry());\n    cache.downloadTree(context,action.getInputRootDigest(),execRoot);\n  }\n catch (  CacheNotFoundException e) {\n    throw StatusUtils.notFoundError(e.getMissingDigest());\n  }\n  Path workingDirectory=execRoot.getRelative(command.getWorkingDirectory());\n  FileSystemUtils.createDirectoryAndParents(workingDirectory);\n  List<Path> outputs=new ArrayList<>(command.getOutputFilesList().size());\n  for (  String output : command.getOutputFilesList()) {\n    Path file=workingDirectory.getRelative(output);\n    if (file.exists()) {\n      throw new FileAlreadyExistsException(\"Output file already exists: \" + file);\n    }\n    FileSystemUtils.createDirectoryAndParents(file.getParentDirectory());\n    outputs.add(file);\n  }\n  for (  String output : command.getOutputDirectoriesList()) {\n    Path file=workingDirectory.getRelative(output);\n    if (file.exists()) {\n      throw new FileAlreadyExistsException(\"Output directory/file already exists: \" + file);\n    }\n    FileSystemUtils.createDirectoryAndParents(file.getParentDirectory());\n    outputs.add(file);\n  }\n  com.google.devtools.build.lib.shell.Command cmd=getCommand(command,workingDirectory.getPathString());\n  long startTime=System.currentTimeMillis();\n  CommandResult cmdResult=null;\n  String uuid=UUID.randomUUID().toString();\n  Path stdout=execRoot.getChild(\"stdout-\" + uuid);\n  Path stderr=execRoot.getChild(\"stderr-\" + uuid);\n  try (FileOutErr outErr=new FileOutErr(stdout,stderr)){\n    FutureCommandResult futureCmdResult=null;\n    try {\n      futureCmdResult=cmd.executeAsync(outErr.getOutputStream(),outErr.getErrorStream());\n    }\n catch (    CommandException e) {\n      Throwables.throwIfInstanceOf(e.getCause(),IOException.class);\n    }\n    if (futureCmdResult != null) {\n      try {\n        cmdResult=futureCmdResult.get();\n      }\n catch (      AbnormalTerminationException e) {\n        cmdResult=e.getResult();\n      }\n    }\n    long timeoutMillis=action.hasTimeout() ? Durations.toMillis(action.getTimeout()) : TimeUnit.MINUTES.toMillis(15);\n    boolean wasTimeout=(cmdResult != null && cmdResult.getTerminationStatus().timedOut()) || wasTimeout(timeoutMillis,System.currentTimeMillis() - startTime);\n    final int exitCode;\n    Status errStatus=null;\n    ExecuteResponse.Builder resp=ExecuteResponse.newBuilder();\n    if (wasTimeout) {\n      final String errMessage=String.format(\"Command:\\n%s\\nexceeded deadline of %f seconds.\",Arrays.toString(command.getArgumentsList().toArray()),timeoutMillis / 1000.0);\n      logger.atWarning().log(\"%s\",errMessage);\n      errStatus=Status.newBuilder().setCode(Code.DEADLINE_EXCEEDED.getNumber()).setMessage(errMessage).build();\n      exitCode=LOCAL_EXEC_ERROR;\n    }\n else     if (cmdResult == null) {\n      exitCode=LOCAL_EXEC_ERROR;\n    }\n else {\n      exitCode=cmdResult.getTerminationStatus().getRawExitCode();\n    }\n    ActionResult result=null;\n    try {\n      UploadManifest manifest=UploadManifest.create(cache.getRemoteOptions(),digestUtil,RemotePathResolver.createDefault(workingDirectory),actionKey,action,command,outputs,outErr,exitCode);\n      result=manifest.upload(context,cache,NullEventHandler.INSTANCE);\n    }\n catch (    ExecException e) {\n      if (errStatus == null) {\n        errStatus=Status.newBuilder().setCode(Code.FAILED_PRECONDITION.getNumber()).setMessage(e.getMessage()).build();\n      }\n    }\n    if (result == null) {\n      result=ActionResult.newBuilder().setExitCode(exitCode).build();\n    }\n    resp.setResult(result);\n    if (errStatus != null) {\n      resp.setStatus(errStatus);\n      throw new ExecutionStatusException(errStatus,resp.build());\n    }\n    return result;\n  }\n }\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 608,
+      "astHeight" : 17
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,rightOperand]",
+      "nodePosition" : {
+        "charLength" : 65,
+        "startLineNumber" : 325,
+        "startColumnNumber" : 17,
+        "endLineNumber" : 325,
+        "endColumnNumber" : 82
+      },
+      "nodeContext" : "wasTimeout(timeoutMillis,System.currentTimeMillis() - startTime)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 2,
+    "type" : "long"
+  } ],
+  "positionList" : [ {
+    "charLength" : 26,
+    "startLineNumber" : 296,
+    "startColumnNumber" : 21,
+    "endLineNumber" : 296,
+    "endColumnNumber" : 47
+  }, {
+    "charLength" : 26,
+    "startLineNumber" : 325,
+    "startColumnNumber" : 43,
+    "endLineNumber" : 325,
+    "endColumnNumber" : 69
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 7
+  } ]
+}

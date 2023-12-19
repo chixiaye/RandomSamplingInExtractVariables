@@ -1,0 +1,100 @@
+{
+  "id" : 409,
+  "expression" : "new Thread(){\n  public void run(){\n    try {\n      barrier.await();\n      for (int i=0; i < numMsgs; i++) {\n        consumer1.acknowledge(consumer1.receive());\n        consumer2.receive();\n      }\n    }\n catch (    Exception e) {\n      gotException.set(true);\n    }\n finally {\n      counter.countDown();\n    }\n  }\n}\n",
+  "projectName" : "apache@pulsar",
+  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
+  "filePath" : "/pulsar-broker/src/test/java/org/apache/pulsar/broker/service/BacklogQuotaManagerTest.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "new Thread(){\n  public void run(){\n    try {\n      barrier.await();\n      for (int i=0; i < numMsgs; i++) {\n        consumer1.acknowledge(consumer1.receive());\n        consumer2.receive();\n      }\n    }\n catch (    Exception e) {\n      gotException.set(true);\n    }\n finally {\n      counter.countDown();\n    }\n  }\n}\n",
+    "nodeType" : "ClassInstanceCreation",
+    "nodePosition" : {
+      "charLength" : 561,
+      "startLineNumber" : 697,
+      "startColumnNumber" : 32,
+      "endLineNumber" : 712,
+      "endColumnNumber" : 9
+    },
+    "astNodeNumber" : 54,
+    "astHeight" : 12,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 578,
+        "startLineNumber" : 697,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 712,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "consumerThread=new Thread(){\n  public void run(){\n    try {\n      barrier.await();\n      for (int i=0; i < numMsgs; i++) {\n        consumer1.acknowledge(consumer1.receive());\n        consumer2.receive();\n      }\n    }\n catch (    Exception e) {\n      gotException.set(true);\n    }\n finally {\n      counter.countDown();\n    }\n  }\n}\n",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 56,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 586,
+        "startLineNumber" : 697,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 712,
+        "endColumnNumber" : 10
+      },
+      "nodeContext" : "Thread consumerThread=new Thread(){\n  public void run(){\n    try {\n      barrier.await();\n      for (int i=0; i < numMsgs; i++) {\n        consumer1.acknowledge(consumer1.receive());\n        consumer2.receive();\n      }\n    }\n catch (    Exception e) {\n      gotException.set(true);\n    }\n finally {\n      counter.countDown();\n    }\n  }\n}\n;\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 59,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3077,
+        "startLineNumber" : 653,
+        "startColumnNumber" : 64,
+        "endLineNumber" : 725,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  assertEquals(admin.namespaces().getBacklogQuotaMap(\"prop/ns-quota\"),Maps.newHashMap());\n  admin.namespaces().setBacklogQuota(\"prop/ns-quota\",BacklogQuota.builder().limitSize(10 * 1024).retentionPolicy(BacklogQuota.RetentionPolicy.consumer_backlog_eviction).build());\n  final String topic1=\"persistent://prop/ns-quota/topic12\";\n  final String subName1=\"c12\";\n  final String subName2=\"c22\";\n  final int numMsgs=20;\n  final CyclicBarrier barrier=new CyclicBarrier(2);\n  final CountDownLatch counter=new CountDownLatch(2);\n  final AtomicBoolean gotException=new AtomicBoolean(false);\n  @Cleanup PulsarClient client=PulsarClient.builder().serviceUrl(adminUrl.toString()).statsInterval(0,TimeUnit.SECONDS).build();\n  @Cleanup PulsarClient client2=PulsarClient.builder().serviceUrl(adminUrl.toString()).statsInterval(0,TimeUnit.SECONDS).build();\n  Consumer<byte[]> consumer1=client2.newConsumer().topic(topic1).subscriptionName(subName1).subscribe();\n  Consumer<byte[]> consumer2=client2.newConsumer().topic(topic1).subscriptionName(subName2).subscribe();\n  Thread producerThread=new Thread(){\n    public void run(){\n      try {\n        barrier.await();\n        org.apache.pulsar.client.api.Producer<byte[]> producer=createProducer(client,topic1);\n        byte[] content=new byte[1024];\n        for (int i=0; i < numMsgs; i++) {\n          producer.send(content);\n        }\n        producer.close();\n      }\n catch (      Exception e) {\n        gotException.set(true);\n      }\n finally {\n        counter.countDown();\n      }\n    }\n  }\n;\n  Thread consumerThread=new Thread(){\n    public void run(){\n      try {\n        barrier.await();\n        for (int i=0; i < numMsgs; i++) {\n          consumer1.acknowledge(consumer1.receive());\n          consumer2.receive();\n        }\n      }\n catch (      Exception e) {\n        gotException.set(true);\n      }\n finally {\n        counter.countDown();\n      }\n    }\n  }\n;\n  producerThread.start();\n  consumerThread.start();\n  counter.await(20,TimeUnit.SECONDS);\n  assertFalse(gotException.get());\n  Thread.sleep((TIME_TO_CHECK_BACKLOG_QUOTA + 1) * 1000);\n  rolloverStats();\n  TopicStats stats=admin.topics().getStats(topic1);\n  assertTrue(stats.getBacklogSize() <= 10 * 1024,\"Storage size is [\" + stats.getStorageSize() + \"]\");\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 392,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3147,
+        "startLineNumber" : 652,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 725,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test public void testConcurrentAckAndEviction() throws Exception {\n  assertEquals(admin.namespaces().getBacklogQuotaMap(\"prop/ns-quota\"),Maps.newHashMap());\n  admin.namespaces().setBacklogQuota(\"prop/ns-quota\",BacklogQuota.builder().limitSize(10 * 1024).retentionPolicy(BacklogQuota.RetentionPolicy.consumer_backlog_eviction).build());\n  final String topic1=\"persistent://prop/ns-quota/topic12\";\n  final String subName1=\"c12\";\n  final String subName2=\"c22\";\n  final int numMsgs=20;\n  final CyclicBarrier barrier=new CyclicBarrier(2);\n  final CountDownLatch counter=new CountDownLatch(2);\n  final AtomicBoolean gotException=new AtomicBoolean(false);\n  @Cleanup PulsarClient client=PulsarClient.builder().serviceUrl(adminUrl.toString()).statsInterval(0,TimeUnit.SECONDS).build();\n  @Cleanup PulsarClient client2=PulsarClient.builder().serviceUrl(adminUrl.toString()).statsInterval(0,TimeUnit.SECONDS).build();\n  Consumer<byte[]> consumer1=client2.newConsumer().topic(topic1).subscriptionName(subName1).subscribe();\n  Consumer<byte[]> consumer2=client2.newConsumer().topic(topic1).subscriptionName(subName2).subscribe();\n  Thread producerThread=new Thread(){\n    public void run(){\n      try {\n        barrier.await();\n        org.apache.pulsar.client.api.Producer<byte[]> producer=createProducer(client,topic1);\n        byte[] content=new byte[1024];\n        for (int i=0; i < numMsgs; i++) {\n          producer.send(content);\n        }\n        producer.close();\n      }\n catch (      Exception e) {\n        gotException.set(true);\n      }\n finally {\n        counter.countDown();\n      }\n    }\n  }\n;\n  Thread consumerThread=new Thread(){\n    public void run(){\n      try {\n        barrier.await();\n        for (int i=0; i < numMsgs; i++) {\n          consumer1.acknowledge(consumer1.receive());\n          consumer2.receive();\n        }\n      }\n catch (      Exception e) {\n        gotException.set(true);\n      }\n finally {\n        counter.countDown();\n      }\n    }\n  }\n;\n  producerThread.start();\n  consumerThread.start();\n  counter.await(20,TimeUnit.SECONDS);\n  assertFalse(gotException.get());\n  Thread.sleep((TIME_TO_CHECK_BACKLOG_QUOTA + 1) * 1000);\n  rolloverStats();\n  TopicStats stats=admin.topics().getStats(topic1);\n  assertTrue(stats.getBacklogSize() <= 10 * 1024,\"Storage size is [\" + stats.getStorageSize() + \"]\");\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 400,
+      "astHeight" : 19
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 586,
+        "startLineNumber" : 697,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 712,
+        "endColumnNumber" : 10
+      },
+      "nodeContext" : "Thread consumerThread=new Thread(){\n  public void run(){\n    try {\n      barrier.await();\n      for (int i=0; i < numMsgs; i++) {\n        consumer1.acknowledge(consumer1.receive());\n        consumer2.receive();\n      }\n    }\n catch (    Exception e) {\n      gotException.set(true);\n    }\n finally {\n      counter.countDown();\n    }\n  }\n}\n;\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 59,
+      "astHeight" : 14
+    },
+    "tokenLength" : 22,
+    "type" : ""
+  } ],
+  "positionList" : [ {
+    "charLength" : 561,
+    "startLineNumber" : 697,
+    "startColumnNumber" : 32,
+    "endLineNumber" : 712,
+    "endColumnNumber" : 9
+  } ],
+  "layoutRelationDataList" : [ ]
+}

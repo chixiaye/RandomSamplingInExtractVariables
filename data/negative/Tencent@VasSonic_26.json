@@ -1,0 +1,100 @@
+{
+  "id" : 26,
+  "expression" : "cacheOffline",
+  "projectName" : "Tencent@VasSonic",
+  "commitID" : "a3e09c156adb93b4ebe6139def465c519069aa9e",
+  "filePath" : "/sonic-android/sdk/src/main/java/com/tencent/sonic/sdk/SonicSession.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "cacheOffline",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 12,
+      "startLineNumber" : 511,
+      "startColumnNumber" : 47,
+      "endLineNumber" : 511,
+      "endColumnNumber" : 59
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 48,
+        "startLineNumber" : 511,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 511,
+        "endColumnNumber" : 60
+      },
+      "nodeContext" : "OFFLINE_MODE_HTTP.equalsIgnoreCase(cacheOffline)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 473,
+        "startLineNumber" : 511,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 521,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (OFFLINE_MODE_HTTP.equalsIgnoreCase(cacheOffline)) {\n  if (!TextUtils.isEmpty(htmlString)) {\n    SonicUtils.removeSessionCache(id);\n  }\n  long unavailableTime=System.currentTimeMillis() + SonicEngine.getInstance().getConfig().SONIC_UNAVAILABLE_TIME;\n  SonicDataHelper.setSonicUnavailableTime(id,unavailableTime);\n  handleFlow_ServiceUnavailable();\n  return;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 43,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 7808,
+        "startLineNumber" : 439,
+        "startColumnNumber" : 60,
+        "endLineNumber" : 579,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  statistics.connectionFlowStartTime=System.currentTimeMillis();\n  SonicDataHelper.SessionData sessionData=SonicDataHelper.getSessionData(id);\n  Intent intent=new Intent();\n  intent.putExtra(SonicSessionConnection.CUSTOM_HEAD_FILED_ETAG,sessionData.etag);\n  intent.putExtra(SonicSessionConnection.CUSTOM_HEAD_FILED_TEMPLATE_TAG,sessionData.templateTag);\n  String hostDirectAddress=SonicEngine.getInstance().getRuntime().getHostDirectAddress(srcUrl);\n  if (!TextUtils.isEmpty(hostDirectAddress)) {\n    statistics.isDirectAddress=true;\n  }\n  intent.putExtra(SonicSessionConnection.DNS_PREFETCH_ADDRESS,hostDirectAddress);\n  sessionConnection=SonicSessionConnectionInterceptor.getSonicSessionConnection(this,intent);\n  long startTime=System.currentTimeMillis();\n  int responseCode=sessionConnection.connect();\n  if (SonicConstants.ERROR_CODE_SUCCESS == responseCode) {\n    statistics.connectionConnectTime=System.currentTimeMillis();\n    if (SonicUtils.shouldLog(Log.DEBUG)) {\n      SonicUtils.log(TAG,Log.DEBUG,\"session(\" + sId + \") connection connect cost = \"+ (System.currentTimeMillis() - startTime)+ \" ms.\");\n    }\n    startTime=System.currentTimeMillis();\n    responseCode=sessionConnection.getResponseCode();\n    statistics.connectionRespondTime=System.currentTimeMillis();\n    if (SonicUtils.shouldLog(Log.DEBUG)) {\n      SonicUtils.log(TAG,Log.DEBUG,\"session(\" + sId + \") connection response cost = \"+ (System.currentTimeMillis() - startTime)+ \" ms.\");\n    }\n    startTime=System.currentTimeMillis();\n    Map<String,List<String>> HeaderFieldsMap=sessionConnection.getResponseHeaderFields();\n    if (SonicUtils.shouldLog(Log.DEBUG)) {\n      SonicUtils.log(TAG,Log.DEBUG,\"session(\" + sId + \") connection get header fields cost = \"+ (System.currentTimeMillis() - startTime)+ \" ms.\");\n    }\n    if (null != HeaderFieldsMap) {\n      String keyOfSetCookie=null;\n      if (HeaderFieldsMap.containsKey(\"Set-Cookie\")) {\n        keyOfSetCookie=\"Set-Cookie\";\n      }\n else       if (HeaderFieldsMap.containsKey(\"set-cookie\")) {\n        keyOfSetCookie=\"set-cookie\";\n      }\n      if (!TextUtils.isEmpty(keyOfSetCookie)) {\n        List<String> cookieList=HeaderFieldsMap.get(keyOfSetCookie);\n        SonicEngine.getInstance().getRuntime().setCookie(getCurrentUrl(),cookieList);\n      }\n    }\n  }\n  SonicUtils.log(TAG,Log.INFO,\"session(\" + sId + \") handleFlow_Connection: respCode = \"+ responseCode+ \", cost \"+ (System.currentTimeMillis() - statistics.connectionFlowStartTime)+ \" ms.\");\n  if (isDestroyedOrWaitingForDestroy()) {\n    SonicUtils.log(TAG,Log.ERROR,\"session(\" + sId + \") handleFlow_Connection: destroy before server response.\");\n    return;\n  }\n  if (HttpURLConnection.HTTP_NOT_MODIFIED == responseCode) {\n    handleFlow_304();\n    return;\n  }\n  if (HttpURLConnection.HTTP_OK != responseCode) {\n    handleFlow_HttpError(responseCode);\n    SonicEngine.getInstance().getRuntime().notifyError(sessionClient,srcUrl,responseCode);\n    SonicUtils.log(TAG,Log.INFO,\"session(\" + sId + \") handleFlow_Connection: response code not 200, response code = \"+ responseCode);\n    return;\n  }\n  String cacheOffline=sessionConnection.getResponseHeaderField(SonicSessionConnection.CUSTOM_HEAD_FILED_CACHE_OFFLINE);\n  if (OFFLINE_MODE_HTTP.equalsIgnoreCase(cacheOffline)) {\n    if (!TextUtils.isEmpty(htmlString)) {\n      SonicUtils.removeSessionCache(id);\n    }\n    long unavailableTime=System.currentTimeMillis() + SonicEngine.getInstance().getConfig().SONIC_UNAVAILABLE_TIME;\n    SonicDataHelper.setSonicUnavailableTime(id,unavailableTime);\n    handleFlow_ServiceUnavailable();\n    return;\n  }\n  if (TextUtils.isEmpty(htmlString)) {\n    handleFlow_FirstLoad();\n  }\n else {\n    String strictMode=sessionConnection.getResponseHeaderField(SonicSessionConnection.CUSTOM_HEAD_FILED_STRICT_MODE);\n    String templateChange=sessionConnection.getResponseHeaderField(SonicSessionConnection.CUSTOM_HEAD_FILED_TEMPLATE_CHANGE);\n    if (\"false\".equalsIgnoreCase(strictMode)) {\n      String eTag=sessionConnection.getResponseHeaderField(SonicSessionConnection.CUSTOM_HEAD_FILED_ETAG);\n      if (SonicUtils.shouldLog(Log.INFO)) {\n        SonicUtils.log(TAG,Log.INFO,\"session(\" + sId + \") handleFlow_Connection:templateChange = \"+ templateChange+ \", strict mode: \"+ strictMode);\n      }\n      boolean error=false;\n      if (\"false\".equalsIgnoreCase(templateChange) || \"0\".equals(templateChange)) {\n        SonicUtils.log(TAG,Log.ERROR,\"session(\" + sId + \") handleFlow_Connection: data update without strict mode!\");\n        error=true;\n      }\n else {\n        if (!TextUtils.isEmpty(eTag)) {\n          if (!eTag.equalsIgnoreCase(sessionData.etag)) {\n            handleFlow_TemplateChange();\n          }\n else {\n            SonicUtils.log(TAG,Log.INFO,\"session(\" + sId + \") handleFlow_Connection: eTag is the same as last eTag!\");\n          }\n        }\n else {\n          SonicUtils.log(TAG,Log.ERROR,\"session(\" + sId + \") handleFlow_Connection:no eTag field and eTag is \"+ eTag+ \".\");\n          error=true;\n        }\n      }\n      if (error) {\n        SonicUtils.log(TAG,Log.ERROR,\"session(\" + sId + \") handleFlow_Connection: remove all session.\");\n        SonicUtils.removeSessionCache(id);\n        SonicEngine.getInstance().getRuntime().notifyError(sessionClient,srcUrl,SonicConstants.ERROR_CODE_SERVER_DATA_EXCEPTION);\n      }\n    }\n else {\n      if (!TextUtils.isEmpty(templateChange)) {\n        if (\"false\".equalsIgnoreCase(templateChange) || \"0\".equals(templateChange)) {\n          handleFlow_DataUpdate();\n        }\n else {\n          handleFlow_TemplateChange();\n        }\n      }\n else {\n        String templateTag=sessionConnection.getResponseHeaderField(SonicSessionConnection.CUSTOM_HEAD_FILED_TEMPLATE_TAG);\n        if (!TextUtils.isEmpty(templateTag) && !templateTag.equalsIgnoreCase(sessionData.templateTag)) {\n          SonicUtils.log(TAG,Log.INFO,\"session(\" + sId + \") handleFlow_Connection:no templateChange field but template-tag has changed.\");\n          handleFlow_TemplateChange();\n        }\n else {\n          SonicUtils.log(TAG,Log.ERROR,\"session(\" + sId + \") handleFlow_Connection:no templateChange field and template-tag is \"+ templateTag+ \".\");\n          SonicUtils.removeSessionCache(id);\n          SonicEngine.getInstance().getRuntime().notifyError(sessionClient,srcUrl,SonicConstants.ERROR_CODE_SERVER_DATA_EXCEPTION);\n        }\n      }\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 734,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 7989,
+        "startLineNumber" : 434,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 579,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Initiate a network request to obtain server data.\n * @param htmlString Local html content.\n */\nprotected void handleFlow_Connection(String htmlString){\n  statistics.connectionFlowStartTime=System.currentTimeMillis();\n  SonicDataHelper.SessionData sessionData=SonicDataHelper.getSessionData(id);\n  Intent intent=new Intent();\n  intent.putExtra(SonicSessionConnection.CUSTOM_HEAD_FILED_ETAG,sessionData.etag);\n  intent.putExtra(SonicSessionConnection.CUSTOM_HEAD_FILED_TEMPLATE_TAG,sessionData.templateTag);\n  String hostDirectAddress=SonicEngine.getInstance().getRuntime().getHostDirectAddress(srcUrl);\n  if (!TextUtils.isEmpty(hostDirectAddress)) {\n    statistics.isDirectAddress=true;\n  }\n  intent.putExtra(SonicSessionConnection.DNS_PREFETCH_ADDRESS,hostDirectAddress);\n  sessionConnection=SonicSessionConnectionInterceptor.getSonicSessionConnection(this,intent);\n  long startTime=System.currentTimeMillis();\n  int responseCode=sessionConnection.connect();\n  if (SonicConstants.ERROR_CODE_SUCCESS == responseCode) {\n    statistics.connectionConnectTime=System.currentTimeMillis();\n    if (SonicUtils.shouldLog(Log.DEBUG)) {\n      SonicUtils.log(TAG,Log.DEBUG,\"session(\" + sId + \") connection connect cost = \"+ (System.currentTimeMillis() - startTime)+ \" ms.\");\n    }\n    startTime=System.currentTimeMillis();\n    responseCode=sessionConnection.getResponseCode();\n    statistics.connectionRespondTime=System.currentTimeMillis();\n    if (SonicUtils.shouldLog(Log.DEBUG)) {\n      SonicUtils.log(TAG,Log.DEBUG,\"session(\" + sId + \") connection response cost = \"+ (System.currentTimeMillis() - startTime)+ \" ms.\");\n    }\n    startTime=System.currentTimeMillis();\n    Map<String,List<String>> HeaderFieldsMap=sessionConnection.getResponseHeaderFields();\n    if (SonicUtils.shouldLog(Log.DEBUG)) {\n      SonicUtils.log(TAG,Log.DEBUG,\"session(\" + sId + \") connection get header fields cost = \"+ (System.currentTimeMillis() - startTime)+ \" ms.\");\n    }\n    if (null != HeaderFieldsMap) {\n      String keyOfSetCookie=null;\n      if (HeaderFieldsMap.containsKey(\"Set-Cookie\")) {\n        keyOfSetCookie=\"Set-Cookie\";\n      }\n else       if (HeaderFieldsMap.containsKey(\"set-cookie\")) {\n        keyOfSetCookie=\"set-cookie\";\n      }\n      if (!TextUtils.isEmpty(keyOfSetCookie)) {\n        List<String> cookieList=HeaderFieldsMap.get(keyOfSetCookie);\n        SonicEngine.getInstance().getRuntime().setCookie(getCurrentUrl(),cookieList);\n      }\n    }\n  }\n  SonicUtils.log(TAG,Log.INFO,\"session(\" + sId + \") handleFlow_Connection: respCode = \"+ responseCode+ \", cost \"+ (System.currentTimeMillis() - statistics.connectionFlowStartTime)+ \" ms.\");\n  if (isDestroyedOrWaitingForDestroy()) {\n    SonicUtils.log(TAG,Log.ERROR,\"session(\" + sId + \") handleFlow_Connection: destroy before server response.\");\n    return;\n  }\n  if (HttpURLConnection.HTTP_NOT_MODIFIED == responseCode) {\n    handleFlow_304();\n    return;\n  }\n  if (HttpURLConnection.HTTP_OK != responseCode) {\n    handleFlow_HttpError(responseCode);\n    SonicEngine.getInstance().getRuntime().notifyError(sessionClient,srcUrl,responseCode);\n    SonicUtils.log(TAG,Log.INFO,\"session(\" + sId + \") handleFlow_Connection: response code not 200, response code = \"+ responseCode);\n    return;\n  }\n  String cacheOffline=sessionConnection.getResponseHeaderField(SonicSessionConnection.CUSTOM_HEAD_FILED_CACHE_OFFLINE);\n  if (OFFLINE_MODE_HTTP.equalsIgnoreCase(cacheOffline)) {\n    if (!TextUtils.isEmpty(htmlString)) {\n      SonicUtils.removeSessionCache(id);\n    }\n    long unavailableTime=System.currentTimeMillis() + SonicEngine.getInstance().getConfig().SONIC_UNAVAILABLE_TIME;\n    SonicDataHelper.setSonicUnavailableTime(id,unavailableTime);\n    handleFlow_ServiceUnavailable();\n    return;\n  }\n  if (TextUtils.isEmpty(htmlString)) {\n    handleFlow_FirstLoad();\n  }\n else {\n    String strictMode=sessionConnection.getResponseHeaderField(SonicSessionConnection.CUSTOM_HEAD_FILED_STRICT_MODE);\n    String templateChange=sessionConnection.getResponseHeaderField(SonicSessionConnection.CUSTOM_HEAD_FILED_TEMPLATE_CHANGE);\n    if (\"false\".equalsIgnoreCase(strictMode)) {\n      String eTag=sessionConnection.getResponseHeaderField(SonicSessionConnection.CUSTOM_HEAD_FILED_ETAG);\n      if (SonicUtils.shouldLog(Log.INFO)) {\n        SonicUtils.log(TAG,Log.INFO,\"session(\" + sId + \") handleFlow_Connection:templateChange = \"+ templateChange+ \", strict mode: \"+ strictMode);\n      }\n      boolean error=false;\n      if (\"false\".equalsIgnoreCase(templateChange) || \"0\".equals(templateChange)) {\n        SonicUtils.log(TAG,Log.ERROR,\"session(\" + sId + \") handleFlow_Connection: data update without strict mode!\");\n        error=true;\n      }\n else {\n        if (!TextUtils.isEmpty(eTag)) {\n          if (!eTag.equalsIgnoreCase(sessionData.etag)) {\n            handleFlow_TemplateChange();\n          }\n else {\n            SonicUtils.log(TAG,Log.INFO,\"session(\" + sId + \") handleFlow_Connection: eTag is the same as last eTag!\");\n          }\n        }\n else {\n          SonicUtils.log(TAG,Log.ERROR,\"session(\" + sId + \") handleFlow_Connection:no eTag field and eTag is \"+ eTag+ \".\");\n          error=true;\n        }\n      }\n      if (error) {\n        SonicUtils.log(TAG,Log.ERROR,\"session(\" + sId + \") handleFlow_Connection: remove all session.\");\n        SonicUtils.removeSessionCache(id);\n        SonicEngine.getInstance().getRuntime().notifyError(sessionClient,srcUrl,SonicConstants.ERROR_CODE_SERVER_DATA_EXCEPTION);\n      }\n    }\n else {\n      if (!TextUtils.isEmpty(templateChange)) {\n        if (\"false\".equalsIgnoreCase(templateChange) || \"0\".equals(templateChange)) {\n          handleFlow_DataUpdate();\n        }\n else {\n          handleFlow_TemplateChange();\n        }\n      }\n else {\n        String templateTag=sessionConnection.getResponseHeaderField(SonicSessionConnection.CUSTOM_HEAD_FILED_TEMPLATE_TAG);\n        if (!TextUtils.isEmpty(templateTag) && !templateTag.equalsIgnoreCase(sessionData.templateTag)) {\n          SonicUtils.log(TAG,Log.INFO,\"session(\" + sId + \") handleFlow_Connection:no templateChange field but template-tag has changed.\");\n          handleFlow_TemplateChange();\n        }\n else {\n          SonicUtils.log(TAG,Log.ERROR,\"session(\" + sId + \") handleFlow_Connection:no templateChange field and template-tag is \"+ templateTag+ \".\");\n          SonicUtils.removeSessionCache(id);\n          SonicEngine.getInstance().getRuntime().notifyError(sessionClient,srcUrl,SonicConstants.ERROR_CODE_SERVER_DATA_EXCEPTION);\n        }\n      }\n    }\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 743,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 48,
+        "startLineNumber" : 511,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 511,
+        "endColumnNumber" : 60
+      },
+      "nodeContext" : "OFFLINE_MODE_HTTP.equalsIgnoreCase(cacheOffline)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    },
+    "tokenLength" : 1,
+    "type" : "java.lang.String"
+  } ],
+  "positionList" : [ {
+    "charLength" : 12,
+    "startLineNumber" : 511,
+    "startColumnNumber" : 47,
+    "endLineNumber" : 511,
+    "endColumnNumber" : 59
+  } ],
+  "layoutRelationDataList" : [ ]
+}

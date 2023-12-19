@@ -1,0 +1,139 @@
+{
+  "id" : 108,
+  "expression" : "10000",
+  "projectName" : "dbeaver@dbeaver",
+  "commitID" : "aecf0da5baef5ea4aa1675578670cf057248123d",
+  "filePath" : "/plugins/org.jkiss.dbeaver.core/src/org/jkiss/dbeaver/tools/project/ProjectExportWizard.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "10000",
+    "nodeType" : "NumberLiteral",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 125,
+      "startColumnNumber" : 73,
+      "endLineNumber" : 125,
+      "endColumnNumber" : 78
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 32,
+        "startLineNumber" : 125,
+        "startColumnNumber" : 47,
+        "endLineNumber" : 125,
+        "endColumnNumber" : 79
+      },
+      "nodeContext" : "new ByteArrayOutputStream(10000)",
+      "nodeType" : "ClassInstanceCreation",
+      "astNodeNumber" : 4,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 45,
+        "startLineNumber" : 125,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 125,
+        "endColumnNumber" : 79
+      },
+      "nodeContext" : "metaBuffer=new ByteArrayOutputStream(10000)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 68,
+        "startLineNumber" : 125,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 125,
+        "endColumnNumber" : 80
+      },
+      "nodeContext" : "ByteArrayOutputStream metaBuffer=new ByteArrayOutputStream(10000);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 6078,
+        "startLineNumber" : 124,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 243,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  ByteArrayOutputStream metaBuffer=new ByteArrayOutputStream(10000);\n  ZipOutputStream archiveStream=new ZipOutputStream(exportStream);\n  XMLBuilder meta=new XMLBuilder(metaBuffer,GeneralUtils.UTF8_ENCODING);\n  meta.startElement(ExportConstants.TAG_ARCHIVE);\n  meta.addAttribute(ExportConstants.ATTR_VERSION,ExportConstants.ARCHIVE_VERSION_CURRENT);\n  exportData.initExport(DBWorkbench.getPlatform().getWorkspace(),meta,archiveStream);\n{\n    meta.startElement(ExportConstants.TAG_SOURCE);\n    meta.addAttribute(ExportConstants.ATTR_TIME,System.currentTimeMillis());\n    meta.addAttribute(ExportConstants.ATTR_ADDRESS,InetAddress.getLocalHost().getHostAddress());\n    meta.addAttribute(ExportConstants.ATTR_HOST,InetAddress.getLocalHost().getHostName());\n    meta.endElement();\n  }\n  Map<DBPProject,Integer> resCountMap=new HashMap<>();\n  monitor.beginTask(CoreMessages.dialog_project_export_wizard_monitor_collect_info,exportData.getProjectsToExport().size());\n  for (  DBPProject project : exportData.getProjectsToExport()) {\n    final DBPDataSourceRegistry dataSourceRegistry=project.getDataSourceRegistry();\n    if (dataSourceRegistry != null) {\n      for (      DBPDataSourceContainer dataSourceDescriptor : dataSourceRegistry.getDataSources()) {\n        exportData.usedDrivers.add(dataSourceDescriptor.getDriver());\n      }\n    }\n    resCountMap.put(project,getChildCount(exportData,project.getEclipseProject()));\n    monitor.worked(1);\n  }\n  monitor.done();\n{\n    exportData.meta.startElement(ExportConstants.TAG_PROJECTS);\n    for (    DBPProject project : exportData.getProjectsToExport()) {\n      monitor.beginTask(NLS.bind(CoreMessages.dialog_project_export_wizard_monitor_export_project,project.getName()),resCountMap.get(project));\n      try {\n        exportProject(monitor,exportData,project.getEclipseProject());\n      }\n  finally {\n        monitor.done();\n      }\n    }\n    exportData.meta.endElement();\n  }\n  if (exportData.isExportDrivers()) {\n    Set<File> libFiles=new HashSet<>();\n    Map<String,File> libPathMap=new HashMap<>();\n    for (    DBPDriver driver : exportData.usedDrivers) {\n      for (      DBPDriverLibrary fileDescriptor : driver.getDriverLibraries()) {\n        final File libraryFile=fileDescriptor.getLocalFile();\n        if (libraryFile != null && !fileDescriptor.isDisabled() && libraryFile.exists()) {\n          libFiles.add(libraryFile);\n          libPathMap.put(fileDescriptor.getPath(),libraryFile);\n        }\n      }\n    }\n    if (!libFiles.isEmpty()) {\n      monitor.beginTask(CoreMessages.dialog_project_export_wizard_monitor_export_libraries,libFiles.size());\n      final ZipEntry driversFolder=new ZipEntry(ExportConstants.DIR_DRIVERS + \"/\");\n      driversFolder.setComment(\"Database driver libraries\");\n      exportData.archiveStream.putNextEntry(driversFolder);\n      exportData.archiveStream.closeEntry();\n      exportData.meta.startElement(ExportConstants.TAG_LIBRARIES);\n      Set<String> libFileNames=new HashSet<>();\n      for (      String libPath : libPathMap.keySet()) {\n        final File libFile=libPathMap.get(libPath);\n        final String libFileName=libFile.getName();\n        if (libFileNames.contains(libFileName)) {\n          log.warn(\"Duplicate driver library file name: \" + libFileName);\n          continue;\n        }\n        libFileNames.add(libFileName);\n        monitor.subTask(libFileName);\n        exportData.meta.startElement(RegistryConstants.TAG_FILE);\n        exportData.meta.addAttribute(ExportConstants.ATTR_PATH,libPath);\n        exportData.meta.addAttribute(ExportConstants.ATTR_FILE,\"drivers/\" + libFileName);\n        exportData.meta.endElement();\n        final ZipEntry driverFile=new ZipEntry(ExportConstants.DIR_DRIVERS + \"/\" + libFileName);\n        driverFile.setComment(\"Driver library\");\n        exportData.archiveStream.putNextEntry(driverFile);\n        try (InputStream is=new FileInputStream(libFile)){\n          IOUtils.copyStream(is,exportData.archiveStream,COPY_BUFFER_SIZE);\n        }\n         exportData.archiveStream.closeEntry();\n        monitor.worked(1);\n      }\n      exportData.meta.endElement();\n      monitor.done();\n    }\n  }\n{\n    exportData.meta.endElement();\n    exportData.meta.flush();\n    archiveStream.putNextEntry(new ZipEntry(ExportConstants.META_FILENAME));\n    archiveStream.write(metaBuffer.toByteArray());\n    archiveStream.closeEntry();\n  }\n  archiveStream.finish();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 598,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 6148,
+        "startLineNumber" : 124,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 245,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "try {\n  ByteArrayOutputStream metaBuffer=new ByteArrayOutputStream(10000);\n  ZipOutputStream archiveStream=new ZipOutputStream(exportStream);\n  XMLBuilder meta=new XMLBuilder(metaBuffer,GeneralUtils.UTF8_ENCODING);\n  meta.startElement(ExportConstants.TAG_ARCHIVE);\n  meta.addAttribute(ExportConstants.ATTR_VERSION,ExportConstants.ARCHIVE_VERSION_CURRENT);\n  exportData.initExport(DBWorkbench.getPlatform().getWorkspace(),meta,archiveStream);\n{\n    meta.startElement(ExportConstants.TAG_SOURCE);\n    meta.addAttribute(ExportConstants.ATTR_TIME,System.currentTimeMillis());\n    meta.addAttribute(ExportConstants.ATTR_ADDRESS,InetAddress.getLocalHost().getHostAddress());\n    meta.addAttribute(ExportConstants.ATTR_HOST,InetAddress.getLocalHost().getHostName());\n    meta.endElement();\n  }\n  Map<DBPProject,Integer> resCountMap=new HashMap<>();\n  monitor.beginTask(CoreMessages.dialog_project_export_wizard_monitor_collect_info,exportData.getProjectsToExport().size());\n  for (  DBPProject project : exportData.getProjectsToExport()) {\n    final DBPDataSourceRegistry dataSourceRegistry=project.getDataSourceRegistry();\n    if (dataSourceRegistry != null) {\n      for (      DBPDataSourceContainer dataSourceDescriptor : dataSourceRegistry.getDataSources()) {\n        exportData.usedDrivers.add(dataSourceDescriptor.getDriver());\n      }\n    }\n    resCountMap.put(project,getChildCount(exportData,project.getEclipseProject()));\n    monitor.worked(1);\n  }\n  monitor.done();\n{\n    exportData.meta.startElement(ExportConstants.TAG_PROJECTS);\n    for (    DBPProject project : exportData.getProjectsToExport()) {\n      monitor.beginTask(NLS.bind(CoreMessages.dialog_project_export_wizard_monitor_export_project,project.getName()),resCountMap.get(project));\n      try {\n        exportProject(monitor,exportData,project.getEclipseProject());\n      }\n  finally {\n        monitor.done();\n      }\n    }\n    exportData.meta.endElement();\n  }\n  if (exportData.isExportDrivers()) {\n    Set<File> libFiles=new HashSet<>();\n    Map<String,File> libPathMap=new HashMap<>();\n    for (    DBPDriver driver : exportData.usedDrivers) {\n      for (      DBPDriverLibrary fileDescriptor : driver.getDriverLibraries()) {\n        final File libraryFile=fileDescriptor.getLocalFile();\n        if (libraryFile != null && !fileDescriptor.isDisabled() && libraryFile.exists()) {\n          libFiles.add(libraryFile);\n          libPathMap.put(fileDescriptor.getPath(),libraryFile);\n        }\n      }\n    }\n    if (!libFiles.isEmpty()) {\n      monitor.beginTask(CoreMessages.dialog_project_export_wizard_monitor_export_libraries,libFiles.size());\n      final ZipEntry driversFolder=new ZipEntry(ExportConstants.DIR_DRIVERS + \"/\");\n      driversFolder.setComment(\"Database driver libraries\");\n      exportData.archiveStream.putNextEntry(driversFolder);\n      exportData.archiveStream.closeEntry();\n      exportData.meta.startElement(ExportConstants.TAG_LIBRARIES);\n      Set<String> libFileNames=new HashSet<>();\n      for (      String libPath : libPathMap.keySet()) {\n        final File libFile=libPathMap.get(libPath);\n        final String libFileName=libFile.getName();\n        if (libFileNames.contains(libFileName)) {\n          log.warn(\"Duplicate driver library file name: \" + libFileName);\n          continue;\n        }\n        libFileNames.add(libFileName);\n        monitor.subTask(libFileName);\n        exportData.meta.startElement(RegistryConstants.TAG_FILE);\n        exportData.meta.addAttribute(ExportConstants.ATTR_PATH,libPath);\n        exportData.meta.addAttribute(ExportConstants.ATTR_FILE,\"drivers/\" + libFileName);\n        exportData.meta.endElement();\n        final ZipEntry driverFile=new ZipEntry(ExportConstants.DIR_DRIVERS + \"/\" + libFileName);\n        driverFile.setComment(\"Driver library\");\n        exportData.archiveStream.putNextEntry(driverFile);\n        try (InputStream is=new FileInputStream(libFile)){\n          IOUtils.copyStream(is,exportData.archiveStream,COPY_BUFFER_SIZE);\n        }\n         exportData.archiveStream.closeEntry();\n        monitor.worked(1);\n      }\n      exportData.meta.endElement();\n      monitor.done();\n    }\n  }\n{\n    exportData.meta.endElement();\n    exportData.meta.flush();\n    archiveStream.putNextEntry(new ZipEntry(ExportConstants.META_FILENAME));\n    archiveStream.write(metaBuffer.toByteArray());\n    archiveStream.closeEntry();\n  }\n  archiveStream.finish();\n}\n  finally {\n  ContentUtils.close(exportStream);\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 605,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 6691,
+        "startLineNumber" : 113,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 246,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (!exportData.getOutputFolder().exists()) {\n    if (!exportData.getOutputFolder().mkdirs()) {\n      throw new IOException(\"Cannot create directory '\" + exportData.getOutputFolder().getAbsolutePath() + \"'\");\n    }\n  }\n  String archiveName=exportData.getArchiveFileName() + ExportConstants.ARCHIVE_FILE_EXT;\n  File archiveFile=new File(exportData.getOutputFolder(),archiveName);\n  FileOutputStream exportStream=new FileOutputStream(archiveFile);\n  try {\n    ByteArrayOutputStream metaBuffer=new ByteArrayOutputStream(10000);\n    ZipOutputStream archiveStream=new ZipOutputStream(exportStream);\n    XMLBuilder meta=new XMLBuilder(metaBuffer,GeneralUtils.UTF8_ENCODING);\n    meta.startElement(ExportConstants.TAG_ARCHIVE);\n    meta.addAttribute(ExportConstants.ATTR_VERSION,ExportConstants.ARCHIVE_VERSION_CURRENT);\n    exportData.initExport(DBWorkbench.getPlatform().getWorkspace(),meta,archiveStream);\n{\n      meta.startElement(ExportConstants.TAG_SOURCE);\n      meta.addAttribute(ExportConstants.ATTR_TIME,System.currentTimeMillis());\n      meta.addAttribute(ExportConstants.ATTR_ADDRESS,InetAddress.getLocalHost().getHostAddress());\n      meta.addAttribute(ExportConstants.ATTR_HOST,InetAddress.getLocalHost().getHostName());\n      meta.endElement();\n    }\n    Map<DBPProject,Integer> resCountMap=new HashMap<>();\n    monitor.beginTask(CoreMessages.dialog_project_export_wizard_monitor_collect_info,exportData.getProjectsToExport().size());\n    for (    DBPProject project : exportData.getProjectsToExport()) {\n      final DBPDataSourceRegistry dataSourceRegistry=project.getDataSourceRegistry();\n      if (dataSourceRegistry != null) {\n        for (        DBPDataSourceContainer dataSourceDescriptor : dataSourceRegistry.getDataSources()) {\n          exportData.usedDrivers.add(dataSourceDescriptor.getDriver());\n        }\n      }\n      resCountMap.put(project,getChildCount(exportData,project.getEclipseProject()));\n      monitor.worked(1);\n    }\n    monitor.done();\n{\n      exportData.meta.startElement(ExportConstants.TAG_PROJECTS);\n      for (      DBPProject project : exportData.getProjectsToExport()) {\n        monitor.beginTask(NLS.bind(CoreMessages.dialog_project_export_wizard_monitor_export_project,project.getName()),resCountMap.get(project));\n        try {\n          exportProject(monitor,exportData,project.getEclipseProject());\n        }\n  finally {\n          monitor.done();\n        }\n      }\n      exportData.meta.endElement();\n    }\n    if (exportData.isExportDrivers()) {\n      Set<File> libFiles=new HashSet<>();\n      Map<String,File> libPathMap=new HashMap<>();\n      for (      DBPDriver driver : exportData.usedDrivers) {\n        for (        DBPDriverLibrary fileDescriptor : driver.getDriverLibraries()) {\n          final File libraryFile=fileDescriptor.getLocalFile();\n          if (libraryFile != null && !fileDescriptor.isDisabled() && libraryFile.exists()) {\n            libFiles.add(libraryFile);\n            libPathMap.put(fileDescriptor.getPath(),libraryFile);\n          }\n        }\n      }\n      if (!libFiles.isEmpty()) {\n        monitor.beginTask(CoreMessages.dialog_project_export_wizard_monitor_export_libraries,libFiles.size());\n        final ZipEntry driversFolder=new ZipEntry(ExportConstants.DIR_DRIVERS + \"/\");\n        driversFolder.setComment(\"Database driver libraries\");\n        exportData.archiveStream.putNextEntry(driversFolder);\n        exportData.archiveStream.closeEntry();\n        exportData.meta.startElement(ExportConstants.TAG_LIBRARIES);\n        Set<String> libFileNames=new HashSet<>();\n        for (        String libPath : libPathMap.keySet()) {\n          final File libFile=libPathMap.get(libPath);\n          final String libFileName=libFile.getName();\n          if (libFileNames.contains(libFileName)) {\n            log.warn(\"Duplicate driver library file name: \" + libFileName);\n            continue;\n          }\n          libFileNames.add(libFileName);\n          monitor.subTask(libFileName);\n          exportData.meta.startElement(RegistryConstants.TAG_FILE);\n          exportData.meta.addAttribute(ExportConstants.ATTR_PATH,libPath);\n          exportData.meta.addAttribute(ExportConstants.ATTR_FILE,\"drivers/\" + libFileName);\n          exportData.meta.endElement();\n          final ZipEntry driverFile=new ZipEntry(ExportConstants.DIR_DRIVERS + \"/\" + libFileName);\n          driverFile.setComment(\"Driver library\");\n          exportData.archiveStream.putNextEntry(driverFile);\n          try (InputStream is=new FileInputStream(libFile)){\n            IOUtils.copyStream(is,exportData.archiveStream,COPY_BUFFER_SIZE);\n          }\n           exportData.archiveStream.closeEntry();\n          monitor.worked(1);\n        }\n        exportData.meta.endElement();\n        monitor.done();\n      }\n    }\n{\n      exportData.meta.endElement();\n      exportData.meta.flush();\n      archiveStream.putNextEntry(new ZipEntry(ExportConstants.META_FILENAME));\n      archiveStream.write(metaBuffer.toByteArray());\n      archiveStream.closeEntry();\n    }\n    archiveStream.finish();\n  }\n  finally {\n    ContentUtils.close(exportStream);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 667,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 6851,
+        "startLineNumber" : 111,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 246,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "private void exportProjects(DBRProgressMonitor monitor,final ProjectExportData exportData) throws IOException, CoreException, InterruptedException {\n  if (!exportData.getOutputFolder().exists()) {\n    if (!exportData.getOutputFolder().mkdirs()) {\n      throw new IOException(\"Cannot create directory '\" + exportData.getOutputFolder().getAbsolutePath() + \"'\");\n    }\n  }\n  String archiveName=exportData.getArchiveFileName() + ExportConstants.ARCHIVE_FILE_EXT;\n  File archiveFile=new File(exportData.getOutputFolder(),archiveName);\n  FileOutputStream exportStream=new FileOutputStream(archiveFile);\n  try {\n    ByteArrayOutputStream metaBuffer=new ByteArrayOutputStream(10000);\n    ZipOutputStream archiveStream=new ZipOutputStream(exportStream);\n    XMLBuilder meta=new XMLBuilder(metaBuffer,GeneralUtils.UTF8_ENCODING);\n    meta.startElement(ExportConstants.TAG_ARCHIVE);\n    meta.addAttribute(ExportConstants.ATTR_VERSION,ExportConstants.ARCHIVE_VERSION_CURRENT);\n    exportData.initExport(DBWorkbench.getPlatform().getWorkspace(),meta,archiveStream);\n{\n      meta.startElement(ExportConstants.TAG_SOURCE);\n      meta.addAttribute(ExportConstants.ATTR_TIME,System.currentTimeMillis());\n      meta.addAttribute(ExportConstants.ATTR_ADDRESS,InetAddress.getLocalHost().getHostAddress());\n      meta.addAttribute(ExportConstants.ATTR_HOST,InetAddress.getLocalHost().getHostName());\n      meta.endElement();\n    }\n    Map<DBPProject,Integer> resCountMap=new HashMap<>();\n    monitor.beginTask(CoreMessages.dialog_project_export_wizard_monitor_collect_info,exportData.getProjectsToExport().size());\n    for (    DBPProject project : exportData.getProjectsToExport()) {\n      final DBPDataSourceRegistry dataSourceRegistry=project.getDataSourceRegistry();\n      if (dataSourceRegistry != null) {\n        for (        DBPDataSourceContainer dataSourceDescriptor : dataSourceRegistry.getDataSources()) {\n          exportData.usedDrivers.add(dataSourceDescriptor.getDriver());\n        }\n      }\n      resCountMap.put(project,getChildCount(exportData,project.getEclipseProject()));\n      monitor.worked(1);\n    }\n    monitor.done();\n{\n      exportData.meta.startElement(ExportConstants.TAG_PROJECTS);\n      for (      DBPProject project : exportData.getProjectsToExport()) {\n        monitor.beginTask(NLS.bind(CoreMessages.dialog_project_export_wizard_monitor_export_project,project.getName()),resCountMap.get(project));\n        try {\n          exportProject(monitor,exportData,project.getEclipseProject());\n        }\n  finally {\n          monitor.done();\n        }\n      }\n      exportData.meta.endElement();\n    }\n    if (exportData.isExportDrivers()) {\n      Set<File> libFiles=new HashSet<>();\n      Map<String,File> libPathMap=new HashMap<>();\n      for (      DBPDriver driver : exportData.usedDrivers) {\n        for (        DBPDriverLibrary fileDescriptor : driver.getDriverLibraries()) {\n          final File libraryFile=fileDescriptor.getLocalFile();\n          if (libraryFile != null && !fileDescriptor.isDisabled() && libraryFile.exists()) {\n            libFiles.add(libraryFile);\n            libPathMap.put(fileDescriptor.getPath(),libraryFile);\n          }\n        }\n      }\n      if (!libFiles.isEmpty()) {\n        monitor.beginTask(CoreMessages.dialog_project_export_wizard_monitor_export_libraries,libFiles.size());\n        final ZipEntry driversFolder=new ZipEntry(ExportConstants.DIR_DRIVERS + \"/\");\n        driversFolder.setComment(\"Database driver libraries\");\n        exportData.archiveStream.putNextEntry(driversFolder);\n        exportData.archiveStream.closeEntry();\n        exportData.meta.startElement(ExportConstants.TAG_LIBRARIES);\n        Set<String> libFileNames=new HashSet<>();\n        for (        String libPath : libPathMap.keySet()) {\n          final File libFile=libPathMap.get(libPath);\n          final String libFileName=libFile.getName();\n          if (libFileNames.contains(libFileName)) {\n            log.warn(\"Duplicate driver library file name: \" + libFileName);\n            continue;\n          }\n          libFileNames.add(libFileName);\n          monitor.subTask(libFileName);\n          exportData.meta.startElement(RegistryConstants.TAG_FILE);\n          exportData.meta.addAttribute(ExportConstants.ATTR_PATH,libPath);\n          exportData.meta.addAttribute(ExportConstants.ATTR_FILE,\"drivers/\" + libFileName);\n          exportData.meta.endElement();\n          final ZipEntry driverFile=new ZipEntry(ExportConstants.DIR_DRIVERS + \"/\" + libFileName);\n          driverFile.setComment(\"Driver library\");\n          exportData.archiveStream.putNextEntry(driverFile);\n          try (InputStream is=new FileInputStream(libFile)){\n            IOUtils.copyStream(is,exportData.archiveStream,COPY_BUFFER_SIZE);\n          }\n           exportData.archiveStream.closeEntry();\n          monitor.worked(1);\n        }\n        exportData.meta.endElement();\n        monitor.done();\n      }\n    }\n{\n      exportData.meta.endElement();\n      exportData.meta.flush();\n      archiveStream.putNextEntry(new ZipEntry(ExportConstants.META_FILENAME));\n      archiveStream.write(metaBuffer.toByteArray());\n      archiveStream.closeEntry();\n    }\n    archiveStream.finish();\n  }\n  finally {\n    ContentUtils.close(exportStream);\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 686,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 68,
+        "startLineNumber" : 125,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 125,
+        "endColumnNumber" : 80
+      },
+      "nodeContext" : "ByteArrayOutputStream metaBuffer=new ByteArrayOutputStream(10000);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "int"
+  } ],
+  "positionList" : [ {
+    "charLength" : 5,
+    "startLineNumber" : 125,
+    "startColumnNumber" : 73,
+    "endLineNumber" : 125,
+    "endColumnNumber" : 78
+  } ],
+  "layoutRelationDataList" : [ ]
+}

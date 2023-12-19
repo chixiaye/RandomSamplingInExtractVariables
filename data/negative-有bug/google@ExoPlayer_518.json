@@ -1,0 +1,165 @@
+{
+  "id" : 518,
+  "expression" : "\"command processed, \"",
+  "projectName" : "google@ExoPlayer",
+  "commitID" : "4803ab3bd12b71fc32150e96475c0e16aaf6ddc5",
+  "filePath" : "/extensions/media2/src/main/java/com/google/android/exoplayer2/ext/media2/PlayerCommandQueue.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "\"command processed, \"",
+    "nodeType" : "StringLiteral",
+    "nodePosition" : {
+      "charLength" : 21,
+      "startLineNumber" : 333,
+      "startColumnNumber" : 19,
+      "endLineNumber" : 333,
+      "endColumnNumber" : 40
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 37,
+        "startLineNumber" : 333,
+        "startColumnNumber" : 19,
+        "endLineNumber" : 333,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "\"command processed, \" + playerCommand",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 49,
+        "startLineNumber" : 333,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 333,
+        "endColumnNumber" : 57
+      },
+      "nodeContext" : "Log.d(TAG,\"command processed, \" + playerCommand)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 50,
+        "startLineNumber" : 333,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 333,
+        "endColumnNumber" : 58
+      },
+      "nodeContext" : "Log.d(TAG,\"command processed, \" + playerCommand);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 68,
+        "startLineNumber" : 332,
+        "startColumnNumber" : 17,
+        "endLineNumber" : 334,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "{\n  Log.d(TAG,\"command processed, \" + playerCommand);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 79,
+        "startLineNumber" : 332,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 334,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "if (DEBUG) {\n  Log.d(TAG,\"command processed, \" + playerCommand);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.WhileStatement,body]",
+      "nodePosition" : {
+        "charLength" : 3228,
+        "startLineNumber" : 263,
+        "startColumnNumber" : 52,
+        "endLineNumber" : 346,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  @Nullable PlayerCommand playerCommand;\nsynchronized (lock) {\n    playerCommand=pendingPlayerCommandQueue.poll();\n  }\n  if (playerCommand == null) {\n    return;\n  }\n  int commandCode=playerCommand.commandCode;\n  boolean asyncCommand=isAsyncCommand(playerCommand.commandCode);\n  if (commandCode == COMMAND_CODE_PLAYER_SEEK_TO) {\n    @Nullable List<PlayerCommand> skippingCommands=null;\n    while (true) {\nsynchronized (lock) {\n        @Nullable PlayerCommand pendingCommand=pendingPlayerCommandQueue.peek();\n        if (pendingCommand == null || pendingCommand.commandCode != commandCode) {\n          break;\n        }\n        pendingPlayerCommandQueue.poll();\n        if (skippingCommands == null) {\n          skippingCommands=new ArrayList<>();\n        }\n        skippingCommands.add(playerCommand);\n        playerCommand=pendingCommand;\n      }\n    }\n    if (skippingCommands != null) {\n      for (      PlayerCommand skippingCommand : skippingCommands) {\n        skippingCommand.result.set(new PlayerResult(PlayerResult.RESULT_INFO_SKIPPED,player.getCurrentMediaItem()));\n        if (DEBUG) {\n          Log.d(TAG,\"skipping pending command, \" + skippingCommand);\n        }\n      }\n    }\n  }\n  if (asyncCommand) {\n    pendingAsyncPlayerCommandResult=new AsyncPlayerCommandResult(commandCode,playerCommand.result);\n  }\n  if (DEBUG) {\n    Log.d(TAG,\"start processing command, \" + playerCommand);\n  }\n  int resultCode;\n  if (player.hasError()) {\n    resultCode=PlayerResult.RESULT_ERROR_INVALID_STATE;\n  }\n else {\n    try {\n      boolean handled=playerCommand.command.call();\n      resultCode=handled ? PlayerResult.RESULT_SUCCESS : PlayerResult.RESULT_INFO_SKIPPED;\n    }\n catch (    IllegalStateException e) {\n      resultCode=PlayerResult.RESULT_ERROR_INVALID_STATE;\n    }\ncatch (    IllegalArgumentException|IndexOutOfBoundsException e) {\n      resultCode=PlayerResult.RESULT_ERROR_BAD_VALUE;\n    }\ncatch (    SecurityException e) {\n      resultCode=PlayerResult.RESULT_ERROR_PERMISSION_DENIED;\n    }\ncatch (    Exception e) {\n      resultCode=PlayerResult.RESULT_ERROR_UNKNOWN;\n    }\n  }\n  if (DEBUG) {\n    Log.d(TAG,\"command processed, \" + playerCommand);\n  }\n  if (asyncCommand) {\n    if (resultCode != PlayerResult.RESULT_SUCCESS && pendingAsyncPlayerCommandResult != null && playerCommand.result == pendingAsyncPlayerCommandResult.result) {\n      pendingAsyncPlayerCommandResult=null;\n      playerCommand.result.set(new PlayerResult(resultCode,player.getCurrentMediaItem()));\n    }\n  }\n else {\n    playerCommand.result.set(new PlayerResult(resultCode,player.getCurrentMediaItem()));\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 323,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 3276,
+        "startLineNumber" : 263,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 346,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "while (pendingAsyncPlayerCommandResult == null) {\n  @Nullable PlayerCommand playerCommand;\nsynchronized (lock) {\n    playerCommand=pendingPlayerCommandQueue.poll();\n  }\n  if (playerCommand == null) {\n    return;\n  }\n  int commandCode=playerCommand.commandCode;\n  boolean asyncCommand=isAsyncCommand(playerCommand.commandCode);\n  if (commandCode == COMMAND_CODE_PLAYER_SEEK_TO) {\n    @Nullable List<PlayerCommand> skippingCommands=null;\n    while (true) {\nsynchronized (lock) {\n        @Nullable PlayerCommand pendingCommand=pendingPlayerCommandQueue.peek();\n        if (pendingCommand == null || pendingCommand.commandCode != commandCode) {\n          break;\n        }\n        pendingPlayerCommandQueue.poll();\n        if (skippingCommands == null) {\n          skippingCommands=new ArrayList<>();\n        }\n        skippingCommands.add(playerCommand);\n        playerCommand=pendingCommand;\n      }\n    }\n    if (skippingCommands != null) {\n      for (      PlayerCommand skippingCommand : skippingCommands) {\n        skippingCommand.result.set(new PlayerResult(PlayerResult.RESULT_INFO_SKIPPED,player.getCurrentMediaItem()));\n        if (DEBUG) {\n          Log.d(TAG,\"skipping pending command, \" + skippingCommand);\n        }\n      }\n    }\n  }\n  if (asyncCommand) {\n    pendingAsyncPlayerCommandResult=new AsyncPlayerCommandResult(commandCode,playerCommand.result);\n  }\n  if (DEBUG) {\n    Log.d(TAG,\"start processing command, \" + playerCommand);\n  }\n  int resultCode;\n  if (player.hasError()) {\n    resultCode=PlayerResult.RESULT_ERROR_INVALID_STATE;\n  }\n else {\n    try {\n      boolean handled=playerCommand.command.call();\n      resultCode=handled ? PlayerResult.RESULT_SUCCESS : PlayerResult.RESULT_INFO_SKIPPED;\n    }\n catch (    IllegalStateException e) {\n      resultCode=PlayerResult.RESULT_ERROR_INVALID_STATE;\n    }\ncatch (    IllegalArgumentException|IndexOutOfBoundsException e) {\n      resultCode=PlayerResult.RESULT_ERROR_BAD_VALUE;\n    }\ncatch (    SecurityException e) {\n      resultCode=PlayerResult.RESULT_ERROR_PERMISSION_DENIED;\n    }\ncatch (    Exception e) {\n      resultCode=PlayerResult.RESULT_ERROR_UNKNOWN;\n    }\n  }\n  if (DEBUG) {\n    Log.d(TAG,\"command processed, \" + playerCommand);\n  }\n  if (asyncCommand) {\n    if (resultCode != PlayerResult.RESULT_SUCCESS && pendingAsyncPlayerCommandResult != null && playerCommand.result == pendingAsyncPlayerCommandResult.result) {\n      pendingAsyncPlayerCommandResult=null;\n      playerCommand.result.set(new PlayerResult(resultCode,player.getCurrentMediaItem()));\n    }\n  }\n else {\n    playerCommand.result.set(new PlayerResult(resultCode,player.getCurrentMediaItem()));\n  }\n}\n",
+      "nodeType" : "WhileStatement",
+      "astNodeNumber" : 327,
+      "astHeight" : 16
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3286,
+        "startLineNumber" : 262,
+        "startColumnNumber" : 48,
+        "endLineNumber" : 347,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  while (pendingAsyncPlayerCommandResult == null) {\n    @Nullable PlayerCommand playerCommand;\nsynchronized (lock) {\n      playerCommand=pendingPlayerCommandQueue.poll();\n    }\n    if (playerCommand == null) {\n      return;\n    }\n    int commandCode=playerCommand.commandCode;\n    boolean asyncCommand=isAsyncCommand(playerCommand.commandCode);\n    if (commandCode == COMMAND_CODE_PLAYER_SEEK_TO) {\n      @Nullable List<PlayerCommand> skippingCommands=null;\n      while (true) {\nsynchronized (lock) {\n          @Nullable PlayerCommand pendingCommand=pendingPlayerCommandQueue.peek();\n          if (pendingCommand == null || pendingCommand.commandCode != commandCode) {\n            break;\n          }\n          pendingPlayerCommandQueue.poll();\n          if (skippingCommands == null) {\n            skippingCommands=new ArrayList<>();\n          }\n          skippingCommands.add(playerCommand);\n          playerCommand=pendingCommand;\n        }\n      }\n      if (skippingCommands != null) {\n        for (        PlayerCommand skippingCommand : skippingCommands) {\n          skippingCommand.result.set(new PlayerResult(PlayerResult.RESULT_INFO_SKIPPED,player.getCurrentMediaItem()));\n          if (DEBUG) {\n            Log.d(TAG,\"skipping pending command, \" + skippingCommand);\n          }\n        }\n      }\n    }\n    if (asyncCommand) {\n      pendingAsyncPlayerCommandResult=new AsyncPlayerCommandResult(commandCode,playerCommand.result);\n    }\n    if (DEBUG) {\n      Log.d(TAG,\"start processing command, \" + playerCommand);\n    }\n    int resultCode;\n    if (player.hasError()) {\n      resultCode=PlayerResult.RESULT_ERROR_INVALID_STATE;\n    }\n else {\n      try {\n        boolean handled=playerCommand.command.call();\n        resultCode=handled ? PlayerResult.RESULT_SUCCESS : PlayerResult.RESULT_INFO_SKIPPED;\n      }\n catch (      IllegalStateException e) {\n        resultCode=PlayerResult.RESULT_ERROR_INVALID_STATE;\n      }\ncatch (      IllegalArgumentException|IndexOutOfBoundsException e) {\n        resultCode=PlayerResult.RESULT_ERROR_BAD_VALUE;\n      }\ncatch (      SecurityException e) {\n        resultCode=PlayerResult.RESULT_ERROR_PERMISSION_DENIED;\n      }\ncatch (      Exception e) {\n        resultCode=PlayerResult.RESULT_ERROR_UNKNOWN;\n      }\n    }\n    if (DEBUG) {\n      Log.d(TAG,\"command processed, \" + playerCommand);\n    }\n    if (asyncCommand) {\n      if (resultCode != PlayerResult.RESULT_SUCCESS && pendingAsyncPlayerCommandResult != null && playerCommand.result == pendingAsyncPlayerCommandResult.result) {\n        pendingAsyncPlayerCommandResult=null;\n        playerCommand.result.set(new PlayerResult(resultCode,player.getCurrentMediaItem()));\n      }\n    }\n else {\n      playerCommand.result.set(new PlayerResult(resultCode,player.getCurrentMediaItem()));\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 328,
+      "astHeight" : 17
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3332,
+        "startLineNumber" : 262,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 347,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "private void processPendingCommandOnHandler(){\n  while (pendingAsyncPlayerCommandResult == null) {\n    @Nullable PlayerCommand playerCommand;\nsynchronized (lock) {\n      playerCommand=pendingPlayerCommandQueue.poll();\n    }\n    if (playerCommand == null) {\n      return;\n    }\n    int commandCode=playerCommand.commandCode;\n    boolean asyncCommand=isAsyncCommand(playerCommand.commandCode);\n    if (commandCode == COMMAND_CODE_PLAYER_SEEK_TO) {\n      @Nullable List<PlayerCommand> skippingCommands=null;\n      while (true) {\nsynchronized (lock) {\n          @Nullable PlayerCommand pendingCommand=pendingPlayerCommandQueue.peek();\n          if (pendingCommand == null || pendingCommand.commandCode != commandCode) {\n            break;\n          }\n          pendingPlayerCommandQueue.poll();\n          if (skippingCommands == null) {\n            skippingCommands=new ArrayList<>();\n          }\n          skippingCommands.add(playerCommand);\n          playerCommand=pendingCommand;\n        }\n      }\n      if (skippingCommands != null) {\n        for (        PlayerCommand skippingCommand : skippingCommands) {\n          skippingCommand.result.set(new PlayerResult(PlayerResult.RESULT_INFO_SKIPPED,player.getCurrentMediaItem()));\n          if (DEBUG) {\n            Log.d(TAG,\"skipping pending command, \" + skippingCommand);\n          }\n        }\n      }\n    }\n    if (asyncCommand) {\n      pendingAsyncPlayerCommandResult=new AsyncPlayerCommandResult(commandCode,playerCommand.result);\n    }\n    if (DEBUG) {\n      Log.d(TAG,\"start processing command, \" + playerCommand);\n    }\n    int resultCode;\n    if (player.hasError()) {\n      resultCode=PlayerResult.RESULT_ERROR_INVALID_STATE;\n    }\n else {\n      try {\n        boolean handled=playerCommand.command.call();\n        resultCode=handled ? PlayerResult.RESULT_SUCCESS : PlayerResult.RESULT_INFO_SKIPPED;\n      }\n catch (      IllegalStateException e) {\n        resultCode=PlayerResult.RESULT_ERROR_INVALID_STATE;\n      }\ncatch (      IllegalArgumentException|IndexOutOfBoundsException e) {\n        resultCode=PlayerResult.RESULT_ERROR_BAD_VALUE;\n      }\ncatch (      SecurityException e) {\n        resultCode=PlayerResult.RESULT_ERROR_PERMISSION_DENIED;\n      }\ncatch (      Exception e) {\n        resultCode=PlayerResult.RESULT_ERROR_UNKNOWN;\n      }\n    }\n    if (DEBUG) {\n      Log.d(TAG,\"command processed, \" + playerCommand);\n    }\n    if (asyncCommand) {\n      if (resultCode != PlayerResult.RESULT_SUCCESS && pendingAsyncPlayerCommandResult != null && playerCommand.result == pendingAsyncPlayerCommandResult.result) {\n        pendingAsyncPlayerCommandResult=null;\n        playerCommand.result.set(new PlayerResult(resultCode,player.getCurrentMediaItem()));\n      }\n    }\n else {\n      playerCommand.result.set(new PlayerResult(resultCode,player.getCurrentMediaItem()));\n    }\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 332,
+      "astHeight" : 18
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 50,
+        "startLineNumber" : 333,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 333,
+        "endColumnNumber" : 58
+      },
+      "nodeContext" : "Log.d(TAG,\"command processed, \" + playerCommand);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 2,
+    "type" : "java.lang.String"
+  } ],
+  "positionList" : [ {
+    "charLength" : 21,
+    "startLineNumber" : 333,
+    "startColumnNumber" : 19,
+    "endLineNumber" : 333,
+    "endColumnNumber" : 40
+  } ],
+  "layoutRelationDataList" : [ ]
+}

@@ -1,0 +1,273 @@
+{
+  "id" : 326,
+  "expression" : "channel.getShipStrategy()",
+  "projectName" : "apache@flink",
+  "commitID" : "f8cb19e70ca7da6423dfb01b97e05c4d520c9fde",
+  "filePath" : "/flink-optimizer/src/test/java/org/apache/flink/optimizer/dataexchange/UnionClosedBranchingTest.java",
+  "occurrences" : 2,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "channel.getShipStrategy()",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 25,
+      "startLineNumber" : 157,
+      "startColumnNumber" : 20,
+      "endLineNumber" : 157,
+      "endColumnNumber" : 45
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 178,
+        "startLineNumber" : 154,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 157,
+        "endColumnNumber" : 46
+      },
+      "nodeContext" : "assertEquals(\"Unexpected ship strategy between union and join node.\",unionToJoinStrategy,channel.getShipStrategy())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 179,
+        "startLineNumber" : 154,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 157,
+        "endColumnNumber" : 47
+      },
+      "nodeContext" : "assertEquals(\"Unexpected ship strategy between union and join node.\",unionToJoinStrategy,channel.getShipStrategy());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.EnhancedForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 396,
+        "startLineNumber" : 149,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 158,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  assertEquals(\"Unexpected data exchange mode between union and join node.\",unionToJoin,channel.getDataExchangeMode());\n  assertEquals(\"Unexpected ship strategy between union and join node.\",unionToJoinStrategy,channel.getShipStrategy());\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 17,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 441,
+        "startLineNumber" : 149,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 158,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "for (Channel channel : joinNode.getInputs()) {\n  assertEquals(\"Unexpected data exchange mode between union and join node.\",unionToJoin,channel.getDataExchangeMode());\n  assertEquals(\"Unexpected ship strategy between union and join node.\",unionToJoinStrategy,channel.getShipStrategy());\n}\n",
+      "nodeType" : "EnhancedForStatement",
+      "astNodeNumber" : 25,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4420,
+        "startLineNumber" : 117,
+        "startColumnNumber" : 64,
+        "endLineNumber" : 214,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  ExecutionEnvironment env=ExecutionEnvironment.getExecutionEnvironment();\n  env.getConfig().setExecutionMode(executionMode);\n  env.setParallelism(4);\n  DataSet<Tuple1<Integer>> src1=env.fromElements(new Tuple1<>(0),new Tuple1<>(1));\n  DataSet<Tuple1<Integer>> src2=env.fromElements(new Tuple1<>(0),new Tuple1<>(1));\n  DataSet<Tuple1<Integer>> union=src1.union(src2);\n  DataSet<Tuple2<Integer,Integer>> join=union.join(union).where(0).equalTo(0).projectFirst(0).projectSecond(0);\n  join.output(new DiscardingOutputFormat<Tuple2<Integer,Integer>>());\n  OptimizedPlan optimizedPlan=compileNoStats(env.createProgramPlan());\n  SinkPlanNode sinkNode=optimizedPlan.getDataSinks().iterator().next();\n  DualInputPlanNode joinNode=(DualInputPlanNode)sinkNode.getPredecessor();\n  for (  Channel channel : joinNode.getInputs()) {\n    assertEquals(\"Unexpected data exchange mode between union and join node.\",unionToJoin,channel.getDataExchangeMode());\n    assertEquals(\"Unexpected ship strategy between union and join node.\",unionToJoinStrategy,channel.getShipStrategy());\n  }\n  for (  SourcePlanNode src : optimizedPlan.getDataSources()) {\n    for (    Channel channel : src.getOutgoingChannels()) {\n      assertEquals(\"Unexpected data exchange mode between source and union node.\",sourceToUnion,channel.getDataExchangeMode());\n      assertEquals(\"Unexpected ship strategy between source and union node.\",sourceToUnionStrategy,channel.getShipStrategy());\n    }\n  }\n  JobGraphGenerator jgg=new JobGraphGenerator();\n  JobGraph jobGraph=jgg.compileJobGraph(optimizedPlan);\n  List<JobVertex> vertices=jobGraph.getVerticesSortedTopologicallyFromSources();\n  assertEquals(\"Unexpected number of vertices created.\",4,vertices.size());\n  JobVertex[] sources=new JobVertex[]{vertices.get(0),vertices.get(1)};\n  for (  JobVertex src : sources) {\n    assertTrue(\"Unexpected vertex type. Test setup is broken.\",src.isInputVertex());\n    assertEquals(\"Unexpected number of created results.\",2,src.getNumberOfProducedIntermediateDataSets());\n    for (    IntermediateDataSet dataSet : src.getProducedDataSets()) {\n      ResultPartitionType dsType=dataSet.getResultType();\n      if (!executionMode.equals(ExecutionMode.PIPELINED_FORCED)) {\n        assertTrue(\"Expected batch exchange, but result type is \" + dsType + \".\",dsType.isBlocking());\n      }\n else {\n        assertFalse(\"Expected non-batch exchange, but result type is \" + dsType + \".\",dsType.isBlocking());\n      }\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 346,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4490,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 214,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test public void testUnionClosedBranchingTest() throws Exception {\n  ExecutionEnvironment env=ExecutionEnvironment.getExecutionEnvironment();\n  env.getConfig().setExecutionMode(executionMode);\n  env.setParallelism(4);\n  DataSet<Tuple1<Integer>> src1=env.fromElements(new Tuple1<>(0),new Tuple1<>(1));\n  DataSet<Tuple1<Integer>> src2=env.fromElements(new Tuple1<>(0),new Tuple1<>(1));\n  DataSet<Tuple1<Integer>> union=src1.union(src2);\n  DataSet<Tuple2<Integer,Integer>> join=union.join(union).where(0).equalTo(0).projectFirst(0).projectSecond(0);\n  join.output(new DiscardingOutputFormat<Tuple2<Integer,Integer>>());\n  OptimizedPlan optimizedPlan=compileNoStats(env.createProgramPlan());\n  SinkPlanNode sinkNode=optimizedPlan.getDataSinks().iterator().next();\n  DualInputPlanNode joinNode=(DualInputPlanNode)sinkNode.getPredecessor();\n  for (  Channel channel : joinNode.getInputs()) {\n    assertEquals(\"Unexpected data exchange mode between union and join node.\",unionToJoin,channel.getDataExchangeMode());\n    assertEquals(\"Unexpected ship strategy between union and join node.\",unionToJoinStrategy,channel.getShipStrategy());\n  }\n  for (  SourcePlanNode src : optimizedPlan.getDataSources()) {\n    for (    Channel channel : src.getOutgoingChannels()) {\n      assertEquals(\"Unexpected data exchange mode between source and union node.\",sourceToUnion,channel.getDataExchangeMode());\n      assertEquals(\"Unexpected ship strategy between source and union node.\",sourceToUnionStrategy,channel.getShipStrategy());\n    }\n  }\n  JobGraphGenerator jgg=new JobGraphGenerator();\n  JobGraph jobGraph=jgg.compileJobGraph(optimizedPlan);\n  List<JobVertex> vertices=jobGraph.getVerticesSortedTopologicallyFromSources();\n  assertEquals(\"Unexpected number of vertices created.\",4,vertices.size());\n  JobVertex[] sources=new JobVertex[]{vertices.get(0),vertices.get(1)};\n  for (  JobVertex src : sources) {\n    assertTrue(\"Unexpected vertex type. Test setup is broken.\",src.isInputVertex());\n    assertEquals(\"Unexpected number of created results.\",2,src.getNumberOfProducedIntermediateDataSets());\n    for (    IntermediateDataSet dataSet : src.getProducedDataSets()) {\n      ResultPartitionType dsType=dataSet.getResultType();\n      if (!executionMode.equals(ExecutionMode.PIPELINED_FORCED)) {\n        assertTrue(\"Expected batch exchange, but result type is \" + dsType + \".\",dsType.isBlocking());\n      }\n else {\n        assertFalse(\"Expected non-batch exchange, but result type is \" + dsType + \".\",dsType.isBlocking());\n      }\n    }\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 354,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 178,
+        "startLineNumber" : 154,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 157,
+        "endColumnNumber" : 46
+      },
+      "nodeContext" : "assertEquals(\"Unexpected ship strategy between union and join node.\",unionToJoinStrategy,channel.getShipStrategy())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    },
+    "tokenLength" : 2,
+    "type" : "org.apache.flink.runtime.operators.shipping.ShipStrategyType"
+  }, {
+    "nodeContext" : "channel.getShipStrategy()",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 25,
+      "startLineNumber" : 169,
+      "startColumnNumber" : 24,
+      "endLineNumber" : 169,
+      "endColumnNumber" : 49
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 194,
+        "startLineNumber" : 166,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 169,
+        "endColumnNumber" : 50
+      },
+      "nodeContext" : "assertEquals(\"Unexpected ship strategy between source and union node.\",sourceToUnionStrategy,channel.getShipStrategy())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 195,
+        "startLineNumber" : 166,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 169,
+        "endColumnNumber" : 51
+      },
+      "nodeContext" : "assertEquals(\"Unexpected ship strategy between source and union node.\",sourceToUnionStrategy,channel.getShipStrategy());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.EnhancedForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 440,
+        "startLineNumber" : 161,
+        "startColumnNumber" : 62,
+        "endLineNumber" : 170,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  assertEquals(\"Unexpected data exchange mode between source and union node.\",sourceToUnion,channel.getDataExchangeMode());\n  assertEquals(\"Unexpected ship strategy between source and union node.\",sourceToUnionStrategy,channel.getShipStrategy());\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 17,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 490,
+        "startLineNumber" : 161,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 170,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "for (Channel channel : src.getOutgoingChannels()) {\n  assertEquals(\"Unexpected data exchange mode between source and union node.\",sourceToUnion,channel.getDataExchangeMode());\n  assertEquals(\"Unexpected ship strategy between source and union node.\",sourceToUnionStrategy,channel.getShipStrategy());\n}\n",
+      "nodeType" : "EnhancedForStatement",
+      "astNodeNumber" : 25,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.EnhancedForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 514,
+        "startLineNumber" : 160,
+        "startColumnNumber" : 66,
+        "endLineNumber" : 171,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  for (  Channel channel : src.getOutgoingChannels()) {\n    assertEquals(\"Unexpected data exchange mode between source and union node.\",sourceToUnion,channel.getDataExchangeMode());\n    assertEquals(\"Unexpected ship strategy between source and union node.\",sourceToUnionStrategy,channel.getShipStrategy());\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 26,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 572,
+        "startLineNumber" : 160,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 171,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "for (SourcePlanNode src : optimizedPlan.getDataSources()) {\n  for (  Channel channel : src.getOutgoingChannels()) {\n    assertEquals(\"Unexpected data exchange mode between source and union node.\",sourceToUnion,channel.getDataExchangeMode());\n    assertEquals(\"Unexpected ship strategy between source and union node.\",sourceToUnionStrategy,channel.getShipStrategy());\n  }\n}\n",
+      "nodeType" : "EnhancedForStatement",
+      "astNodeNumber" : 34,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4420,
+        "startLineNumber" : 117,
+        "startColumnNumber" : 64,
+        "endLineNumber" : 214,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  ExecutionEnvironment env=ExecutionEnvironment.getExecutionEnvironment();\n  env.getConfig().setExecutionMode(executionMode);\n  env.setParallelism(4);\n  DataSet<Tuple1<Integer>> src1=env.fromElements(new Tuple1<>(0),new Tuple1<>(1));\n  DataSet<Tuple1<Integer>> src2=env.fromElements(new Tuple1<>(0),new Tuple1<>(1));\n  DataSet<Tuple1<Integer>> union=src1.union(src2);\n  DataSet<Tuple2<Integer,Integer>> join=union.join(union).where(0).equalTo(0).projectFirst(0).projectSecond(0);\n  join.output(new DiscardingOutputFormat<Tuple2<Integer,Integer>>());\n  OptimizedPlan optimizedPlan=compileNoStats(env.createProgramPlan());\n  SinkPlanNode sinkNode=optimizedPlan.getDataSinks().iterator().next();\n  DualInputPlanNode joinNode=(DualInputPlanNode)sinkNode.getPredecessor();\n  for (  Channel channel : joinNode.getInputs()) {\n    assertEquals(\"Unexpected data exchange mode between union and join node.\",unionToJoin,channel.getDataExchangeMode());\n    assertEquals(\"Unexpected ship strategy between union and join node.\",unionToJoinStrategy,channel.getShipStrategy());\n  }\n  for (  SourcePlanNode src : optimizedPlan.getDataSources()) {\n    for (    Channel channel : src.getOutgoingChannels()) {\n      assertEquals(\"Unexpected data exchange mode between source and union node.\",sourceToUnion,channel.getDataExchangeMode());\n      assertEquals(\"Unexpected ship strategy between source and union node.\",sourceToUnionStrategy,channel.getShipStrategy());\n    }\n  }\n  JobGraphGenerator jgg=new JobGraphGenerator();\n  JobGraph jobGraph=jgg.compileJobGraph(optimizedPlan);\n  List<JobVertex> vertices=jobGraph.getVerticesSortedTopologicallyFromSources();\n  assertEquals(\"Unexpected number of vertices created.\",4,vertices.size());\n  JobVertex[] sources=new JobVertex[]{vertices.get(0),vertices.get(1)};\n  for (  JobVertex src : sources) {\n    assertTrue(\"Unexpected vertex type. Test setup is broken.\",src.isInputVertex());\n    assertEquals(\"Unexpected number of created results.\",2,src.getNumberOfProducedIntermediateDataSets());\n    for (    IntermediateDataSet dataSet : src.getProducedDataSets()) {\n      ResultPartitionType dsType=dataSet.getResultType();\n      if (!executionMode.equals(ExecutionMode.PIPELINED_FORCED)) {\n        assertTrue(\"Expected batch exchange, but result type is \" + dsType + \".\",dsType.isBlocking());\n      }\n else {\n        assertFalse(\"Expected non-batch exchange, but result type is \" + dsType + \".\",dsType.isBlocking());\n      }\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 346,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4490,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 214,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test public void testUnionClosedBranchingTest() throws Exception {\n  ExecutionEnvironment env=ExecutionEnvironment.getExecutionEnvironment();\n  env.getConfig().setExecutionMode(executionMode);\n  env.setParallelism(4);\n  DataSet<Tuple1<Integer>> src1=env.fromElements(new Tuple1<>(0),new Tuple1<>(1));\n  DataSet<Tuple1<Integer>> src2=env.fromElements(new Tuple1<>(0),new Tuple1<>(1));\n  DataSet<Tuple1<Integer>> union=src1.union(src2);\n  DataSet<Tuple2<Integer,Integer>> join=union.join(union).where(0).equalTo(0).projectFirst(0).projectSecond(0);\n  join.output(new DiscardingOutputFormat<Tuple2<Integer,Integer>>());\n  OptimizedPlan optimizedPlan=compileNoStats(env.createProgramPlan());\n  SinkPlanNode sinkNode=optimizedPlan.getDataSinks().iterator().next();\n  DualInputPlanNode joinNode=(DualInputPlanNode)sinkNode.getPredecessor();\n  for (  Channel channel : joinNode.getInputs()) {\n    assertEquals(\"Unexpected data exchange mode between union and join node.\",unionToJoin,channel.getDataExchangeMode());\n    assertEquals(\"Unexpected ship strategy between union and join node.\",unionToJoinStrategy,channel.getShipStrategy());\n  }\n  for (  SourcePlanNode src : optimizedPlan.getDataSources()) {\n    for (    Channel channel : src.getOutgoingChannels()) {\n      assertEquals(\"Unexpected data exchange mode between source and union node.\",sourceToUnion,channel.getDataExchangeMode());\n      assertEquals(\"Unexpected ship strategy between source and union node.\",sourceToUnionStrategy,channel.getShipStrategy());\n    }\n  }\n  JobGraphGenerator jgg=new JobGraphGenerator();\n  JobGraph jobGraph=jgg.compileJobGraph(optimizedPlan);\n  List<JobVertex> vertices=jobGraph.getVerticesSortedTopologicallyFromSources();\n  assertEquals(\"Unexpected number of vertices created.\",4,vertices.size());\n  JobVertex[] sources=new JobVertex[]{vertices.get(0),vertices.get(1)};\n  for (  JobVertex src : sources) {\n    assertTrue(\"Unexpected vertex type. Test setup is broken.\",src.isInputVertex());\n    assertEquals(\"Unexpected number of created results.\",2,src.getNumberOfProducedIntermediateDataSets());\n    for (    IntermediateDataSet dataSet : src.getProducedDataSets()) {\n      ResultPartitionType dsType=dataSet.getResultType();\n      if (!executionMode.equals(ExecutionMode.PIPELINED_FORCED)) {\n        assertTrue(\"Expected batch exchange, but result type is \" + dsType + \".\",dsType.isBlocking());\n      }\n else {\n        assertFalse(\"Expected non-batch exchange, but result type is \" + dsType + \".\",dsType.isBlocking());\n      }\n    }\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 354,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 194,
+        "startLineNumber" : 166,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 169,
+        "endColumnNumber" : 50
+      },
+      "nodeContext" : "assertEquals(\"Unexpected ship strategy between source and union node.\",sourceToUnionStrategy,channel.getShipStrategy())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    },
+    "tokenLength" : 2,
+    "type" : "org.apache.flink.runtime.operators.shipping.ShipStrategyType"
+  } ],
+  "positionList" : [ {
+    "charLength" : 25,
+    "startLineNumber" : 157,
+    "startColumnNumber" : 20,
+    "endLineNumber" : 157,
+    "endColumnNumber" : 45
+  }, {
+    "charLength" : 25,
+    "startLineNumber" : 169,
+    "startColumnNumber" : 24,
+    "endLineNumber" : 169,
+    "endColumnNumber" : 49
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 6
+  } ]
+}

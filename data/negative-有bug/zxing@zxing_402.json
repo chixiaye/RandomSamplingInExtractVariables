@@ -1,0 +1,113 @@
+{
+  "id" : 402,
+  "expression" : "3 * evenChecksumPortion",
+  "projectName" : "zxing@zxing",
+  "commitID" : "1b0aed9c091717337b865955f58290450a3a9e3a",
+  "filePath" : "/core/src/main/java/com/google/zxing/oned/rss/RSS14Reader.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "3 * evenChecksumPortion",
+    "nodeType" : "InfixExpression",
+    "nodePosition" : {
+      "charLength" : 23,
+      "startLineNumber" : 245,
+      "startColumnNumber" : 47,
+      "endLineNumber" : 245,
+      "endColumnNumber" : 70
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 44,
+        "startLineNumber" : 245,
+        "startColumnNumber" : 26,
+        "endLineNumber" : 245,
+        "endColumnNumber" : 70
+      },
+      "nodeContext" : "oddChecksumPortion + 3 * evenChecksumPortion",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 62,
+        "startLineNumber" : 245,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 245,
+        "endColumnNumber" : 70
+      },
+      "nodeContext" : "checksumPortion=oddChecksumPortion + 3 * evenChecksumPortion",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 67,
+        "startLineNumber" : 245,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 245,
+        "endColumnNumber" : 71
+      },
+      "nodeContext" : "int checksumPortion=oddChecksumPortion + 3 * evenChecksumPortion;\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3085,
+        "startLineNumber" : 186,
+        "startColumnNumber" : 31,
+        "endLineNumber" : 273,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  int[] counters=getDataCharacterCounters();\n  Arrays.fill(counters,0);\n  if (outsideChar) {\n    recordPatternInReverse(row,pattern.getStartEnd()[0],counters);\n  }\n else {\n    recordPattern(row,pattern.getStartEnd()[1],counters);\n    for (int i=0, j=counters.length - 1; i < j; i++, j--) {\n      int temp=counters[i];\n      counters[i]=counters[j];\n      counters[j]=temp;\n    }\n  }\n  int numModules=outsideChar ? 16 : 15;\n  float elementWidth=MathUtils.sum(counters) / (float)numModules;\n  int[] oddCounts=this.getOddCounts();\n  int[] evenCounts=this.getEvenCounts();\n  float[] oddRoundingErrors=this.getOddRoundingErrors();\n  float[] evenRoundingErrors=this.getEvenRoundingErrors();\n  for (int i=0; i < counters.length; i++) {\n    float value=counters[i] / elementWidth;\n    int count=(int)(value + 0.5f);\n    if (count < 1) {\n      count=1;\n    }\n else     if (count > 8) {\n      count=8;\n    }\n    int offset=i / 2;\n    if ((i & 0x01) == 0) {\n      oddCounts[offset]=count;\n      oddRoundingErrors[offset]=value - count;\n    }\n else {\n      evenCounts[offset]=count;\n      evenRoundingErrors[offset]=value - count;\n    }\n  }\n  adjustOddEvenCounts(outsideChar,numModules);\n  int oddSum=0;\n  int oddChecksumPortion=0;\n  for (int i=oddCounts.length - 1; i >= 0; i--) {\n    oddChecksumPortion*=9;\n    oddChecksumPortion+=oddCounts[i];\n    oddSum+=oddCounts[i];\n  }\n  int evenChecksumPortion=0;\n  int evenSum=0;\n  for (int i=evenCounts.length - 1; i >= 0; i--) {\n    evenChecksumPortion*=9;\n    evenChecksumPortion+=evenCounts[i];\n    evenSum+=evenCounts[i];\n  }\n  int checksumPortion=oddChecksumPortion + 3 * evenChecksumPortion;\n  if (outsideChar) {\n    if ((oddSum & 0x01) != 0 || oddSum > 12 || oddSum < 4) {\n      throw NotFoundException.getNotFoundInstance();\n    }\n    int group=(12 - oddSum) / 2;\n    int oddWidest=OUTSIDE_ODD_WIDEST[group];\n    int evenWidest=9 - oddWidest;\n    int vOdd=RSSUtils.getRSSvalue(oddCounts,oddWidest,false);\n    int vEven=RSSUtils.getRSSvalue(evenCounts,evenWidest,true);\n    int tEven=OUTSIDE_EVEN_TOTAL_SUBSET[group];\n    int gSum=OUTSIDE_GSUM[group];\n    return new DataCharacter(vOdd * tEven + vEven + gSum,checksumPortion);\n  }\n else {\n    if ((evenSum & 0x01) != 0 || evenSum > 10 || evenSum < 4) {\n      throw NotFoundException.getNotFoundInstance();\n    }\n    int group=(10 - evenSum) / 2;\n    int oddWidest=INSIDE_ODD_WIDEST[group];\n    int evenWidest=9 - oddWidest;\n    int vOdd=RSSUtils.getRSSvalue(oddCounts,oddWidest,true);\n    int vEven=RSSUtils.getRSSvalue(evenCounts,evenWidest,false);\n    int tOdd=INSIDE_ODD_TOTAL_SUBSET[group];\n    int gSum=INSIDE_GSUM[group];\n    return new DataCharacter(vEven * tOdd + vOdd + gSum,checksumPortion);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 514,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3217,
+        "startLineNumber" : 185,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 273,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "private DataCharacter decodeDataCharacter(BitArray row,FinderPattern pattern,boolean outsideChar) throws NotFoundException {\n  int[] counters=getDataCharacterCounters();\n  Arrays.fill(counters,0);\n  if (outsideChar) {\n    recordPatternInReverse(row,pattern.getStartEnd()[0],counters);\n  }\n else {\n    recordPattern(row,pattern.getStartEnd()[1],counters);\n    for (int i=0, j=counters.length - 1; i < j; i++, j--) {\n      int temp=counters[i];\n      counters[i]=counters[j];\n      counters[j]=temp;\n    }\n  }\n  int numModules=outsideChar ? 16 : 15;\n  float elementWidth=MathUtils.sum(counters) / (float)numModules;\n  int[] oddCounts=this.getOddCounts();\n  int[] evenCounts=this.getEvenCounts();\n  float[] oddRoundingErrors=this.getOddRoundingErrors();\n  float[] evenRoundingErrors=this.getEvenRoundingErrors();\n  for (int i=0; i < counters.length; i++) {\n    float value=counters[i] / elementWidth;\n    int count=(int)(value + 0.5f);\n    if (count < 1) {\n      count=1;\n    }\n else     if (count > 8) {\n      count=8;\n    }\n    int offset=i / 2;\n    if ((i & 0x01) == 0) {\n      oddCounts[offset]=count;\n      oddRoundingErrors[offset]=value - count;\n    }\n else {\n      evenCounts[offset]=count;\n      evenRoundingErrors[offset]=value - count;\n    }\n  }\n  adjustOddEvenCounts(outsideChar,numModules);\n  int oddSum=0;\n  int oddChecksumPortion=0;\n  for (int i=oddCounts.length - 1; i >= 0; i--) {\n    oddChecksumPortion*=9;\n    oddChecksumPortion+=oddCounts[i];\n    oddSum+=oddCounts[i];\n  }\n  int evenChecksumPortion=0;\n  int evenSum=0;\n  for (int i=evenCounts.length - 1; i >= 0; i--) {\n    evenChecksumPortion*=9;\n    evenChecksumPortion+=evenCounts[i];\n    evenSum+=evenCounts[i];\n  }\n  int checksumPortion=oddChecksumPortion + 3 * evenChecksumPortion;\n  if (outsideChar) {\n    if ((oddSum & 0x01) != 0 || oddSum > 12 || oddSum < 4) {\n      throw NotFoundException.getNotFoundInstance();\n    }\n    int group=(12 - oddSum) / 2;\n    int oddWidest=OUTSIDE_ODD_WIDEST[group];\n    int evenWidest=9 - oddWidest;\n    int vOdd=RSSUtils.getRSSvalue(oddCounts,oddWidest,false);\n    int vEven=RSSUtils.getRSSvalue(evenCounts,evenWidest,true);\n    int tEven=OUTSIDE_EVEN_TOTAL_SUBSET[group];\n    int gSum=OUTSIDE_GSUM[group];\n    return new DataCharacter(vOdd * tEven + vEven + gSum,checksumPortion);\n  }\n else {\n    if ((evenSum & 0x01) != 0 || evenSum > 10 || evenSum < 4) {\n      throw NotFoundException.getNotFoundInstance();\n    }\n    int group=(10 - evenSum) / 2;\n    int oddWidest=INSIDE_ODD_WIDEST[group];\n    int evenWidest=9 - oddWidest;\n    int vOdd=RSSUtils.getRSSvalue(oddCounts,oddWidest,true);\n    int vEven=RSSUtils.getRSSvalue(evenCounts,evenWidest,false);\n    int tOdd=INSIDE_ODD_TOTAL_SUBSET[group];\n    int gSum=INSIDE_GSUM[group];\n    return new DataCharacter(vEven * tOdd + vOdd + gSum,checksumPortion);\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 532,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 67,
+        "startLineNumber" : 245,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 245,
+        "endColumnNumber" : 71
+      },
+      "nodeContext" : "int checksumPortion=oddChecksumPortion + 3 * evenChecksumPortion;\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    },
+    "tokenLength" : 3,
+    "type" : "int"
+  } ],
+  "positionList" : [ {
+    "charLength" : 23,
+    "startLineNumber" : 245,
+    "startColumnNumber" : 47,
+    "endLineNumber" : 245,
+    "endColumnNumber" : 70
+  } ],
+  "layoutRelationDataList" : [ ]
+}

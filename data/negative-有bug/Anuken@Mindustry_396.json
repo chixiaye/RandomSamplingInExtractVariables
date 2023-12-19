@@ -1,0 +1,113 @@
+{
+  "id" : 396,
+  "expression" : "\"/home/anuke/Projects/Nimdustry-java/mindustry_bindings.nim\"",
+  "projectName" : "Anuken@Mindustry",
+  "commitID" : "a7188c48845dd423fc9b58bc6bcf6797f6d25b46",
+  "filePath" : "/tools/src/mindustry/tools/BindingsGenerator.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "\"/home/anuke/Projects/Nimdustry-java/mindustry_bindings.nim\"",
+    "nodeType" : "StringLiteral",
+    "nodePosition" : {
+      "charLength" : 60,
+      "startLineNumber" : 174,
+      "startColumnNumber" : 15,
+      "endLineNumber" : 174,
+      "endColumnNumber" : 75
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 68,
+        "startLineNumber" : 174,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 76
+      },
+      "nodeContext" : "Fi.get(\"/home/anuke/Projects/Nimdustry-java/mindustry_bindings.nim\")",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 99,
+        "startLineNumber" : 174,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 107
+      },
+      "nodeContext" : "Fi.get(\"/home/anuke/Projects/Nimdustry-java/mindustry_bindings.nim\").writeString(result.toString())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 9,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 100,
+        "startLineNumber" : 174,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 108
+      },
+      "nodeContext" : "Fi.get(\"/home/anuke/Projects/Nimdustry-java/mindustry_bindings.nim\").writeString(result.toString());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 6655,
+        "startLineNumber" : 26,
+        "startColumnNumber" : 59,
+        "endLineNumber" : 176,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  Seq<String> blacklist=Seq.with(\"mindustry.tools\",\"arc.backend\",\"arc.maps\",\"arc.util.serialization.Xml\",\"arc.fx\",\"arc.net\",\"arc.Net\",\"arc.freetype\");\n  Seq<Class<?>> classes=Seq.withArrays(getClasses(\"mindustry\"));\n  classes.removeAll(type -> type.isSynthetic() || type.isAnonymousClass() || type.getCanonicalName() == null || Modifier.isPrivate(type.getModifiers()) || blacklist.contains(s -> type.getName().startsWith(s)));\n  classes.addAll(Enum.class,FloatBuffer.class,IntBuffer.class,ByteBuffer.class,StringBuilder.class,Comparator.class,Comparable.class,Reader.class,Writer.class,PrintStream.class,PrintWriter.class,File.class,Charset.class,ClassLoader.class,DoubleBuffer.class,CharBuffer.class,Locale.class,LongBuffer.class,DataInputStream.class,DataOutputStream.class,Events.class,Cons.class);\n  classes.distinct();\n  classes=sorted(classes);\n  classes.removeAll(BindingsGenerator::ignore);\n  classes.removeAll(c -> !Modifier.isPublic(c.getModifiers()));\n  ObjectMap<String,Seq<Class<?>>> similars=new ObjectMap<>();\n  classes.each(c -> similars.get(c.getSimpleName(),Seq::new).add(c));\n  similars.each((key,val) -> {\n    if (val.size > 1) {\n      Log.info(\"\\n\" + key + \":\\n\"+ val.toString(\"\\n\",v -> \"- \" + v.getCanonicalName()));\n    }\n  }\n);\n  classSet=classes.asSet();\n  classSet.addAll(Object.class,Number.class,Integer.class,Double.class,Short.class,Float.class,Byte.class,Long.class,String.class,Boolean.class,Throwable.class,Exception.class,Class.class);\n  classSet.addAll(void.class,int.class,float.class,long.class,char.class,byte.class,boolean.class,double.class,short.class);\n  StringBuilder result=new StringBuilder();\n  result.append(\"import jnim, jnim/java/lang\\n\\n{.push hint[ConvFromXtoItselfNotNeeded]: off.}\\n\\n\");\n  for (  Class<?> type : classes) {\n    result.append(\"jclassDef \").append(type.getName()).append(\" of `\").append(repr(type.getSuperclass())).append(\"`\\n\");\n  }\n  result.append(\"\\n\");\n  for (  Class<?> type : classes) {\n    Seq<Executable> exec=new Seq<>();\n    Seq<Method> methods=Seq.with(type.getDeclaredMethods());\n    methods.removeAll(m -> ignore(m.getReturnType()) || !discovered(m.getReturnType()));\n    exec.addAll(methods);\n    exec.addAll(type.getDeclaredConstructors());\n    exec.removeAll(e -> !Modifier.isPublic(e.getModifiers()) || keywords.contains(e.getName()));\n    exec.removeAll(e -> Structs.contains(e.getParameterTypes(),BindingsGenerator::ignore));\n    exec.removeAll(e -> Structs.contains(e.getParameterTypes(),p -> !discovered(p)));\n    Seq<Field> fields=Seq.select(type.getDeclaredFields(),f -> Modifier.isPublic(f.getModifiers()) && !keywords.contains(f.getName()) && !ignore(f.getType())&& Modifier.isPublic(f.getType().getModifiers())&& !(f.getType().isArray() && f.getType().getComponentType().isArray())&& classSet.contains(f.getType()));\n    if (exec.size + fields.size <= 0)     continue;\n    result.append(\"jclassImpl \").append(type.getName()).append(\" of `\").append(repr(type.getSuperclass())).append(\"`\").append(\":\").append(\"\\n\");\n    for (    Field field : fields) {\n      result.append(\"  proc `\").append(field.getName()).append(\"`\");\n      result.append(\": \").append(str(field.getType()));\n      result.append(\" {.prop\");\n      if (Modifier.isStatic(field.getModifiers()))       result.append(\", `static`\");\n      if (Modifier.isStatic(field.getModifiers()))       result.append(\", `final`\");\n      result.append(\".}\\n\");\n    }\n    for (    Executable method : exec) {\n      String mname=method.getName().equals(\"<init>\") || method.getName().equals(type.getName()) ? \"new\" : method.getName();\n      if (method instanceof Method) {\n        Method m=(Method)method;\n        if (method.getParameterCount() == 0 && fields.contains(f -> f.getName().equals(method.getName()))) {\n          continue;\n        }\n        if (methods.contains(other -> other != m && m.getName().equals(other.getName()) && m.getParameterCount() == other.getParameterCount() && Arrays.equals(m.getParameterTypes(),other.getParameterTypes()) && m.getReturnType().isAssignableFrom(other.getReturnType()))) {\n          continue;\n        }\n      }\n      result.append(\"  proc `\").append(mname).append(\"`\");\n      if (method.getParameterCount() > 0) {\n        result.append(\"(\");\n        for (int i=0; i < method.getParameterCount(); i++) {\n          Class p=method.getParameterTypes()[i];\n          result.append(method.getParameters()[i].getName()).append(\": \").append(str(p));\n          if (i != method.getParameterCount() - 1) {\n            result.append(\", \");\n          }\n        }\n        result.append(\")\");\n      }\n      if (method instanceof Method) {\n        Method m=(Method)method;\n        if (!m.getReturnType().equals(void.class)) {\n          result.append(\": \").append(str(m.getReturnType()));\n        }\n      }\n      if (Modifier.isStatic(method.getModifiers())) {\n        result.append(\" {.`static`.}\");\n      }\n      result.append(\"\\n\");\n    }\n    result.append(\"\\n\");\n  }\n  result.append(\"{.pop.}\\n\");\n  Fi.get(\"/home/anuke/Projects/Nimdustry-java/mindustry_bindings.nim\").writeString(result.toString());\n  Log.info(\"Done. Classes found: @\",classes.size);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 953,
+      "astHeight" : 17
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 6710,
+        "startLineNumber" : 26,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 176,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "public static void main(String[] args) throws Exception {\n  Seq<String> blacklist=Seq.with(\"mindustry.tools\",\"arc.backend\",\"arc.maps\",\"arc.util.serialization.Xml\",\"arc.fx\",\"arc.net\",\"arc.Net\",\"arc.freetype\");\n  Seq<Class<?>> classes=Seq.withArrays(getClasses(\"mindustry\"));\n  classes.removeAll(type -> type.isSynthetic() || type.isAnonymousClass() || type.getCanonicalName() == null || Modifier.isPrivate(type.getModifiers()) || blacklist.contains(s -> type.getName().startsWith(s)));\n  classes.addAll(Enum.class,FloatBuffer.class,IntBuffer.class,ByteBuffer.class,StringBuilder.class,Comparator.class,Comparable.class,Reader.class,Writer.class,PrintStream.class,PrintWriter.class,File.class,Charset.class,ClassLoader.class,DoubleBuffer.class,CharBuffer.class,Locale.class,LongBuffer.class,DataInputStream.class,DataOutputStream.class,Events.class,Cons.class);\n  classes.distinct();\n  classes=sorted(classes);\n  classes.removeAll(BindingsGenerator::ignore);\n  classes.removeAll(c -> !Modifier.isPublic(c.getModifiers()));\n  ObjectMap<String,Seq<Class<?>>> similars=new ObjectMap<>();\n  classes.each(c -> similars.get(c.getSimpleName(),Seq::new).add(c));\n  similars.each((key,val) -> {\n    if (val.size > 1) {\n      Log.info(\"\\n\" + key + \":\\n\"+ val.toString(\"\\n\",v -> \"- \" + v.getCanonicalName()));\n    }\n  }\n);\n  classSet=classes.asSet();\n  classSet.addAll(Object.class,Number.class,Integer.class,Double.class,Short.class,Float.class,Byte.class,Long.class,String.class,Boolean.class,Throwable.class,Exception.class,Class.class);\n  classSet.addAll(void.class,int.class,float.class,long.class,char.class,byte.class,boolean.class,double.class,short.class);\n  StringBuilder result=new StringBuilder();\n  result.append(\"import jnim, jnim/java/lang\\n\\n{.push hint[ConvFromXtoItselfNotNeeded]: off.}\\n\\n\");\n  for (  Class<?> type : classes) {\n    result.append(\"jclassDef \").append(type.getName()).append(\" of `\").append(repr(type.getSuperclass())).append(\"`\\n\");\n  }\n  result.append(\"\\n\");\n  for (  Class<?> type : classes) {\n    Seq<Executable> exec=new Seq<>();\n    Seq<Method> methods=Seq.with(type.getDeclaredMethods());\n    methods.removeAll(m -> ignore(m.getReturnType()) || !discovered(m.getReturnType()));\n    exec.addAll(methods);\n    exec.addAll(type.getDeclaredConstructors());\n    exec.removeAll(e -> !Modifier.isPublic(e.getModifiers()) || keywords.contains(e.getName()));\n    exec.removeAll(e -> Structs.contains(e.getParameterTypes(),BindingsGenerator::ignore));\n    exec.removeAll(e -> Structs.contains(e.getParameterTypes(),p -> !discovered(p)));\n    Seq<Field> fields=Seq.select(type.getDeclaredFields(),f -> Modifier.isPublic(f.getModifiers()) && !keywords.contains(f.getName()) && !ignore(f.getType())&& Modifier.isPublic(f.getType().getModifiers())&& !(f.getType().isArray() && f.getType().getComponentType().isArray())&& classSet.contains(f.getType()));\n    if (exec.size + fields.size <= 0)     continue;\n    result.append(\"jclassImpl \").append(type.getName()).append(\" of `\").append(repr(type.getSuperclass())).append(\"`\").append(\":\").append(\"\\n\");\n    for (    Field field : fields) {\n      result.append(\"  proc `\").append(field.getName()).append(\"`\");\n      result.append(\": \").append(str(field.getType()));\n      result.append(\" {.prop\");\n      if (Modifier.isStatic(field.getModifiers()))       result.append(\", `static`\");\n      if (Modifier.isStatic(field.getModifiers()))       result.append(\", `final`\");\n      result.append(\".}\\n\");\n    }\n    for (    Executable method : exec) {\n      String mname=method.getName().equals(\"<init>\") || method.getName().equals(type.getName()) ? \"new\" : method.getName();\n      if (method instanceof Method) {\n        Method m=(Method)method;\n        if (method.getParameterCount() == 0 && fields.contains(f -> f.getName().equals(method.getName()))) {\n          continue;\n        }\n        if (methods.contains(other -> other != m && m.getName().equals(other.getName()) && m.getParameterCount() == other.getParameterCount() && Arrays.equals(m.getParameterTypes(),other.getParameterTypes()) && m.getReturnType().isAssignableFrom(other.getReturnType()))) {\n          continue;\n        }\n      }\n      result.append(\"  proc `\").append(mname).append(\"`\");\n      if (method.getParameterCount() > 0) {\n        result.append(\"(\");\n        for (int i=0; i < method.getParameterCount(); i++) {\n          Class p=method.getParameterTypes()[i];\n          result.append(method.getParameters()[i].getName()).append(\": \").append(str(p));\n          if (i != method.getParameterCount() - 1) {\n            result.append(\", \");\n          }\n        }\n        result.append(\")\");\n      }\n      if (method instanceof Method) {\n        Method m=(Method)method;\n        if (!m.getReturnType().equals(void.class)) {\n          result.append(\": \").append(str(m.getReturnType()));\n        }\n      }\n      if (Modifier.isStatic(method.getModifiers())) {\n        result.append(\" {.`static`.}\");\n      }\n      result.append(\"\\n\");\n    }\n    result.append(\"\\n\");\n  }\n  result.append(\"{.pop.}\\n\");\n  Fi.get(\"/home/anuke/Projects/Nimdustry-java/mindustry_bindings.nim\").writeString(result.toString());\n  Log.info(\"Done. Classes found: @\",classes.size);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 966,
+      "astHeight" : 18
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 100,
+        "startLineNumber" : 174,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 108
+      },
+      "nodeContext" : "Fi.get(\"/home/anuke/Projects/Nimdustry-java/mindustry_bindings.nim\").writeString(result.toString());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    },
+    "tokenLength" : 3,
+    "type" : "java.lang.String"
+  } ],
+  "positionList" : [ {
+    "charLength" : 60,
+    "startLineNumber" : 174,
+    "startColumnNumber" : 15,
+    "endLineNumber" : 174,
+    "endColumnNumber" : 75
+  } ],
+  "layoutRelationDataList" : [ ]
+}

@@ -1,0 +1,113 @@
+{
+  "id" : 444,
+  "expression" : "((TupleTypeInfo<?>)initialVertices.getType())",
+  "projectName" : "apache@flink",
+  "commitID" : "f8cb19e70ca7da6423dfb01b97e05c4d520c9fde",
+  "filePath" : "/flink-libraries/flink-gelly/src/main/java/org/apache/flink/graph/pregel/VertexCentricIteration.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "((TupleTypeInfo<?>)initialVertices.getType())",
+    "nodeType" : "ParenthesizedExpression",
+    "nodePosition" : {
+      "charLength" : 46,
+      "startLineNumber" : 161,
+      "startColumnNumber" : 37,
+      "endLineNumber" : 161,
+      "endColumnNumber" : 83
+    },
+    "astNodeNumber" : 9,
+    "astHeight" : 5,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 59,
+        "startLineNumber" : 161,
+        "startColumnNumber" : 37,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 96
+      },
+      "nodeContext" : "((TupleTypeInfo<?>)initialVertices.getType()).getTypeAt(0)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 12,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 69,
+        "startLineNumber" : 161,
+        "startColumnNumber" : 27,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 96
+      },
+      "nodeContext" : "keyType=((TupleTypeInfo<?>)initialVertices.getType()).getTypeAt(0)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 14,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 89,
+        "startLineNumber" : 161,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 97
+      },
+      "nodeContext" : "TypeInformation<K> keyType=((TupleTypeInfo<?>)initialVertices.getType()).getTypeAt(0);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 20,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3628,
+        "startLineNumber" : 155,
+        "startColumnNumber" : 49,
+        "endLineNumber" : 228,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (this.initialVertices == null) {\n    throw new IllegalStateException(\"The input data set has not been set.\");\n  }\n  TypeInformation<K> keyType=((TupleTypeInfo<?>)initialVertices.getType()).getTypeAt(0);\n  TypeInformation<Tuple2<K,Message>> messageTypeInfo=new TupleTypeInfo<>(keyType,messageType);\n  TypeInformation<Vertex<K,VV>> vertexType=initialVertices.getType();\n  TypeInformation<Either<Vertex<K,VV>,Tuple2<K,Message>>> intermediateTypeInfo=new EitherTypeInfo<>(vertexType,messageTypeInfo);\n  TypeInformation<Either<NullValue,Message>> nullableMsgTypeInfo=new EitherTypeInfo<>(TypeExtractor.getForClass(NullValue.class),messageType);\n  TypeInformation<Tuple2<K,Either<NullValue,Message>>> workSetTypeInfo=new TupleTypeInfo<>(keyType,nullableMsgTypeInfo);\n  DataSet<Tuple2<K,Either<NullValue,Message>>> initialWorkSet=initialVertices.map(new InitializeWorkSet<K,VV,Message>()).returns(workSetTypeInfo);\n  final DeltaIteration<Vertex<K,VV>,Tuple2<K,Either<NullValue,Message>>> iteration=initialVertices.iterateDelta(initialWorkSet,this.maximumNumberOfIterations,0);\n  setUpIteration(iteration);\n  DataSet<Tuple2<Vertex<K,VV>,Either<NullValue,Message>>> verticesWithMsgs=iteration.getSolutionSet().join(iteration.getWorkset()).where(0).equalTo(0).with(new AppendVertexState<>()).returns(new TupleTypeInfo<>(vertexType,nullableMsgTypeInfo));\n  VertexComputeUdf<K,VV,EV,Message> vertexUdf=new VertexComputeUdf<>(computeFunction,intermediateTypeInfo);\n  CoGroupOperator<?,?,Either<Vertex<K,VV>,Tuple2<K,Message>>> superstepComputation=verticesWithMsgs.coGroup(edgesWithValue).where(\"f0.f0\").equalTo(0).with(vertexUdf);\n  DataSet<Vertex<K,VV>> solutionSetDelta=superstepComputation.flatMap(new ProjectNewVertexValue<>()).returns(vertexType);\n  DataSet<Tuple2<K,Either<NullValue,Message>>> allMessages=superstepComputation.flatMap(new ProjectMessages<>()).returns(workSetTypeInfo);\n  DataSet<Tuple2<K,Either<NullValue,Message>>> newWorkSet=allMessages;\n  if (combineFunction != null) {\n    MessageCombinerUdf<K,Message> combinerUdf=new MessageCombinerUdf<>(combineFunction,workSetTypeInfo);\n    DataSet<Tuple2<K,Either<NullValue,Message>>> combinedMessages=allMessages.groupBy(0).reduceGroup(combinerUdf).setCombinable(true);\n    newWorkSet=combinedMessages;\n  }\n  superstepComputation=superstepComputation.name(\"Compute Function\");\n  if (this.configuration != null) {\n    for (    Tuple2<String,DataSet<?>> e : this.configuration.getBcastVars()) {\n      superstepComputation=superstepComputation.withBroadcastSet(e.f1,e.f0);\n    }\n  }\n  return iteration.closeWith(solutionSetDelta,newWorkSet);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 499,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4690,
+        "startLineNumber" : 139,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 228,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Creates the operator that represents this vertex-centric graph computation. <p>The Pregel iteration is mapped to delta iteration as follows. The solution set consists of the set of active vertices and the workset contains the set of messages send to vertices during the previous superstep. Initially, the workset contains a null message for each vertex. In the beginning of a superstep, the solution set is joined with the workset to produce a dataset containing tuples of vertex state and messages (vertex inbox). The superstep compute UDF is realized with a coGroup between the vertices with inbox and the graph edges. The output of the compute UDF contains both the new vertex values and the new messages produced. These are directed to the solution set delta and new workset, respectively, with subsequent flatMaps.\n * @return The operator that represents this vertex-centric graph computation.\n */\n@Override public DataSet<Vertex<K,VV>> createResult(){\n  if (this.initialVertices == null) {\n    throw new IllegalStateException(\"The input data set has not been set.\");\n  }\n  TypeInformation<K> keyType=((TupleTypeInfo<?>)initialVertices.getType()).getTypeAt(0);\n  TypeInformation<Tuple2<K,Message>> messageTypeInfo=new TupleTypeInfo<>(keyType,messageType);\n  TypeInformation<Vertex<K,VV>> vertexType=initialVertices.getType();\n  TypeInformation<Either<Vertex<K,VV>,Tuple2<K,Message>>> intermediateTypeInfo=new EitherTypeInfo<>(vertexType,messageTypeInfo);\n  TypeInformation<Either<NullValue,Message>> nullableMsgTypeInfo=new EitherTypeInfo<>(TypeExtractor.getForClass(NullValue.class),messageType);\n  TypeInformation<Tuple2<K,Either<NullValue,Message>>> workSetTypeInfo=new TupleTypeInfo<>(keyType,nullableMsgTypeInfo);\n  DataSet<Tuple2<K,Either<NullValue,Message>>> initialWorkSet=initialVertices.map(new InitializeWorkSet<K,VV,Message>()).returns(workSetTypeInfo);\n  final DeltaIteration<Vertex<K,VV>,Tuple2<K,Either<NullValue,Message>>> iteration=initialVertices.iterateDelta(initialWorkSet,this.maximumNumberOfIterations,0);\n  setUpIteration(iteration);\n  DataSet<Tuple2<Vertex<K,VV>,Either<NullValue,Message>>> verticesWithMsgs=iteration.getSolutionSet().join(iteration.getWorkset()).where(0).equalTo(0).with(new AppendVertexState<>()).returns(new TupleTypeInfo<>(vertexType,nullableMsgTypeInfo));\n  VertexComputeUdf<K,VV,EV,Message> vertexUdf=new VertexComputeUdf<>(computeFunction,intermediateTypeInfo);\n  CoGroupOperator<?,?,Either<Vertex<K,VV>,Tuple2<K,Message>>> superstepComputation=verticesWithMsgs.coGroup(edgesWithValue).where(\"f0.f0\").equalTo(0).with(vertexUdf);\n  DataSet<Vertex<K,VV>> solutionSetDelta=superstepComputation.flatMap(new ProjectNewVertexValue<>()).returns(vertexType);\n  DataSet<Tuple2<K,Either<NullValue,Message>>> allMessages=superstepComputation.flatMap(new ProjectMessages<>()).returns(workSetTypeInfo);\n  DataSet<Tuple2<K,Either<NullValue,Message>>> newWorkSet=allMessages;\n  if (combineFunction != null) {\n    MessageCombinerUdf<K,Message> combinerUdf=new MessageCombinerUdf<>(combineFunction,workSetTypeInfo);\n    DataSet<Tuple2<K,Either<NullValue,Message>>> combinedMessages=allMessages.groupBy(0).reduceGroup(combinerUdf).setCombinable(true);\n    newWorkSet=combinedMessages;\n  }\n  superstepComputation=superstepComputation.name(\"Compute Function\");\n  if (this.configuration != null) {\n    for (    Tuple2<String,DataSet<?>> e : this.configuration.getBcastVars()) {\n      superstepComputation=superstepComputation.withBroadcastSet(e.f1,e.f0);\n    }\n  }\n  return iteration.closeWith(solutionSetDelta,newWorkSet);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 515,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 89,
+        "startLineNumber" : 161,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 97
+      },
+      "nodeContext" : "TypeInformation<K> keyType=((TupleTypeInfo<?>)initialVertices.getType()).getTypeAt(0);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 20,
+      "astHeight" : 8
+    },
+    "tokenLength" : 4,
+    "type" : "org.apache.flink.api.java.typeutils.TupleTypeInfo<>"
+  } ],
+  "positionList" : [ {
+    "charLength" : 46,
+    "startLineNumber" : 161,
+    "startColumnNumber" : 37,
+    "endLineNumber" : 161,
+    "endColumnNumber" : 83
+  } ],
+  "layoutRelationDataList" : [ ]
+}

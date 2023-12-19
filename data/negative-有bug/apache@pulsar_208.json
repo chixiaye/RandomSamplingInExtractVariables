@@ -1,0 +1,126 @@
+{
+  "id" : 208,
+  "expression" : "\"Hello Pulsar!\".getBytes()",
+  "projectName" : "apache@pulsar",
+  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
+  "filePath" : "/pulsar-broker/src/test/java/org/apache/pulsar/broker/transaction/pendingack/PendingAckPersistentTest.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "\"Hello Pulsar!\".getBytes()",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 26,
+      "startLineNumber" : 121,
+      "startColumnNumber" : 26,
+      "endLineNumber" : 121,
+      "endColumnNumber" : 52
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 41,
+        "startLineNumber" : 121,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 121,
+        "endColumnNumber" : 53
+      },
+      "nodeContext" : "producer.send(\"Hello Pulsar!\".getBytes())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 42,
+        "startLineNumber" : 121,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 121,
+        "endColumnNumber" : 54
+      },
+      "nodeContext" : "producer.send(\"Hello Pulsar!\".getBytes());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 403,
+        "startLineNumber" : 120,
+        "startColumnNumber" : 47,
+        "endLineNumber" : 129,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  producer.send(\"Hello Pulsar!\".getBytes());\n  Message<byte[]> message=consumer.receive();\n  if (i % 2 == 0) {\n    consumer.acknowledgeAsync(message.getMessageId(),abortTxn).get();\n    pendingAckMessageIds.add(message.getMessageId());\n  }\n else {\n    normalAckMessageIds.add(message.getMessageId());\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 52,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 442,
+        "startLineNumber" : 120,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 129,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "for (int i=0; i < messageCount; i++) {\n  producer.send(\"Hello Pulsar!\".getBytes());\n  Message<byte[]> message=consumer.receive();\n  if (i % 2 == 0) {\n    consumer.acknowledgeAsync(message.getMessageId(),abortTxn).get();\n    pendingAckMessageIds.add(message.getMessageId());\n  }\n else {\n    normalAckMessageIds.add(message.getMessageId());\n  }\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 63,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5097,
+        "startLineNumber" : 96,
+        "startColumnNumber" : 66,
+        "endLineNumber" : 208,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  int messageCount=1000;\n  String subName=\"individual-test\";\n  @Cleanup Producer<byte[]> producer=pulsarClient.newProducer().topic(PENDING_ACK_REPLAY_TOPIC).enableBatching(true).batchingMaxMessages(200).create();\n  @Cleanup Consumer<byte[]> consumer=pulsarClient.newConsumer().topic(PENDING_ACK_REPLAY_TOPIC).subscriptionName(subName).subscriptionType(SubscriptionType.Shared).enableBatchIndexAcknowledgment(true).subscribe();\n  Transaction abortTxn=pulsarClient.newTransaction().withTransactionTimeout(30,TimeUnit.SECONDS).build().get();\n  List<MessageId> pendingAckMessageIds=new ArrayList<>();\n  List<MessageId> normalAckMessageIds=new ArrayList<>();\n  for (int i=0; i < messageCount; i++) {\n    producer.send(\"Hello Pulsar!\".getBytes());\n    Message<byte[]> message=consumer.receive();\n    if (i % 2 == 0) {\n      consumer.acknowledgeAsync(message.getMessageId(),abortTxn).get();\n      pendingAckMessageIds.add(message.getMessageId());\n    }\n else {\n      normalAckMessageIds.add(message.getMessageId());\n    }\n  }\n  admin.topics().unload(PENDING_ACK_REPLAY_TOPIC);\n  Awaitility.await().until(consumer::isConnected);\n  Transaction commitTxn=pulsarClient.newTransaction().withTransactionTimeout(30,TimeUnit.SECONDS).build().get();\n  Transaction txn=pulsarClient.newTransaction().withTransactionTimeout(30,TimeUnit.SECONDS).build().get();\n  for (int i=0; i < pendingAckMessageIds.size(); i++) {\n    try {\n      consumer.acknowledgeAsync(pendingAckMessageIds.get(i),txn).get();\n      fail();\n    }\n catch (    ExecutionException e) {\n      assertTrue(e.getCause() instanceof PulsarClientException.TransactionConflictException);\n    }\n  }\n  for (int i=0; i < normalAckMessageIds.size(); i++) {\n    consumer.acknowledgeAsync(normalAckMessageIds.get(i),commitTxn).get();\n  }\n  txn.abort().get();\n  commitTxn.commit().get();\n  abortTxn.abort().get();\n  admin.topics().unload(PENDING_ACK_REPLAY_TOPIC);\n  Awaitility.await().until(consumer::isConnected);\n  abortTxn=pulsarClient.newTransaction().withTransactionTimeout(30,TimeUnit.SECONDS).build().get();\n  commitTxn=pulsarClient.newTransaction().withTransactionTimeout(30,TimeUnit.SECONDS).build().get();\n  for (int i=0; i < normalAckMessageIds.size(); i++) {\n    try {\n      consumer.acknowledgeAsync(normalAckMessageIds.get(i),abortTxn).get();\n      fail();\n    }\n catch (    ExecutionException e) {\n      assertTrue(e.getCause() instanceof PulsarClientException.TransactionConflictException);\n    }\n  }\n  for (int i=0; i < pendingAckMessageIds.size(); i++) {\n    consumer.acknowledgeAsync(pendingAckMessageIds.get(i),commitTxn).get();\n  }\n  abortTxn.abort().get();\n  commitTxn.commit().get();\n  PersistentTopic topic=(PersistentTopic)getPulsarServiceList().get(0).getBrokerService().getTopic(TopicName.get(PENDING_ACK_REPLAY_TOPIC).toString(),false).get().get();\n  Field field=PersistentSubscription.class.getDeclaredField(\"pendingAckHandle\");\n  field.setAccessible(true);\n  PendingAckHandleImpl pendingAckHandle=(PendingAckHandleImpl)field.get(topic.getSubscription(subName));\n  field=PendingAckHandleImpl.class.getDeclaredField(\"pendingAckStoreFuture\");\n  field.setAccessible(true);\n  CompletableFuture<PendingAckStore> pendingAckStoreCompletableFuture=(CompletableFuture<PendingAckStore>)field.get(pendingAckHandle);\n  pendingAckStoreCompletableFuture.get();\n  field=MLPendingAckStore.class.getDeclaredField(\"cursor\");\n  field.setAccessible(true);\n  ManagedCursor managedCursor=(ManagedCursor)field.get(pendingAckStoreCompletableFuture.get());\n  Awaitility.await().until(() -> ((PositionImpl)managedCursor.getMarkDeletedPosition()).compareTo((PositionImpl)managedCursor.getManagedLedger().getLastConfirmedEntry()) == -1);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 596,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 5169,
+        "startLineNumber" : 95,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 208,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test public void individualPendingAckReplayTest() throws Exception {\n  int messageCount=1000;\n  String subName=\"individual-test\";\n  @Cleanup Producer<byte[]> producer=pulsarClient.newProducer().topic(PENDING_ACK_REPLAY_TOPIC).enableBatching(true).batchingMaxMessages(200).create();\n  @Cleanup Consumer<byte[]> consumer=pulsarClient.newConsumer().topic(PENDING_ACK_REPLAY_TOPIC).subscriptionName(subName).subscriptionType(SubscriptionType.Shared).enableBatchIndexAcknowledgment(true).subscribe();\n  Transaction abortTxn=pulsarClient.newTransaction().withTransactionTimeout(30,TimeUnit.SECONDS).build().get();\n  List<MessageId> pendingAckMessageIds=new ArrayList<>();\n  List<MessageId> normalAckMessageIds=new ArrayList<>();\n  for (int i=0; i < messageCount; i++) {\n    producer.send(\"Hello Pulsar!\".getBytes());\n    Message<byte[]> message=consumer.receive();\n    if (i % 2 == 0) {\n      consumer.acknowledgeAsync(message.getMessageId(),abortTxn).get();\n      pendingAckMessageIds.add(message.getMessageId());\n    }\n else {\n      normalAckMessageIds.add(message.getMessageId());\n    }\n  }\n  admin.topics().unload(PENDING_ACK_REPLAY_TOPIC);\n  Awaitility.await().until(consumer::isConnected);\n  Transaction commitTxn=pulsarClient.newTransaction().withTransactionTimeout(30,TimeUnit.SECONDS).build().get();\n  Transaction txn=pulsarClient.newTransaction().withTransactionTimeout(30,TimeUnit.SECONDS).build().get();\n  for (int i=0; i < pendingAckMessageIds.size(); i++) {\n    try {\n      consumer.acknowledgeAsync(pendingAckMessageIds.get(i),txn).get();\n      fail();\n    }\n catch (    ExecutionException e) {\n      assertTrue(e.getCause() instanceof PulsarClientException.TransactionConflictException);\n    }\n  }\n  for (int i=0; i < normalAckMessageIds.size(); i++) {\n    consumer.acknowledgeAsync(normalAckMessageIds.get(i),commitTxn).get();\n  }\n  txn.abort().get();\n  commitTxn.commit().get();\n  abortTxn.abort().get();\n  admin.topics().unload(PENDING_ACK_REPLAY_TOPIC);\n  Awaitility.await().until(consumer::isConnected);\n  abortTxn=pulsarClient.newTransaction().withTransactionTimeout(30,TimeUnit.SECONDS).build().get();\n  commitTxn=pulsarClient.newTransaction().withTransactionTimeout(30,TimeUnit.SECONDS).build().get();\n  for (int i=0; i < normalAckMessageIds.size(); i++) {\n    try {\n      consumer.acknowledgeAsync(normalAckMessageIds.get(i),abortTxn).get();\n      fail();\n    }\n catch (    ExecutionException e) {\n      assertTrue(e.getCause() instanceof PulsarClientException.TransactionConflictException);\n    }\n  }\n  for (int i=0; i < pendingAckMessageIds.size(); i++) {\n    consumer.acknowledgeAsync(pendingAckMessageIds.get(i),commitTxn).get();\n  }\n  abortTxn.abort().get();\n  commitTxn.commit().get();\n  PersistentTopic topic=(PersistentTopic)getPulsarServiceList().get(0).getBrokerService().getTopic(TopicName.get(PENDING_ACK_REPLAY_TOPIC).toString(),false).get().get();\n  Field field=PersistentSubscription.class.getDeclaredField(\"pendingAckHandle\");\n  field.setAccessible(true);\n  PendingAckHandleImpl pendingAckHandle=(PendingAckHandleImpl)field.get(topic.getSubscription(subName));\n  field=PendingAckHandleImpl.class.getDeclaredField(\"pendingAckStoreFuture\");\n  field.setAccessible(true);\n  CompletableFuture<PendingAckStore> pendingAckStoreCompletableFuture=(CompletableFuture<PendingAckStore>)field.get(pendingAckHandle);\n  pendingAckStoreCompletableFuture.get();\n  field=MLPendingAckStore.class.getDeclaredField(\"cursor\");\n  field.setAccessible(true);\n  ManagedCursor managedCursor=(ManagedCursor)field.get(pendingAckStoreCompletableFuture.get());\n  Awaitility.await().until(() -> ((PositionImpl)managedCursor.getMarkDeletedPosition()).compareTo((PositionImpl)managedCursor.getManagedLedger().getLastConfirmedEntry()) == -1);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 604,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 42,
+        "startLineNumber" : 121,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 121,
+        "endColumnNumber" : 54
+      },
+      "nodeContext" : "producer.send(\"Hello Pulsar!\".getBytes());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    },
+    "tokenLength" : 3,
+    "type" : "byte[]"
+  } ],
+  "positionList" : [ {
+    "charLength" : 26,
+    "startLineNumber" : 121,
+    "startColumnNumber" : 26,
+    "endLineNumber" : 121,
+    "endColumnNumber" : 52
+  } ],
+  "layoutRelationDataList" : [ ]
+}

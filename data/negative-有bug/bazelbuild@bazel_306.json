@@ -1,0 +1,100 @@
+{
+  "id" : 306,
+  "expression" : "cycleInfo.getPathToCycle()",
+  "projectName" : "bazelbuild@bazel",
+  "commitID" : "302971e1b3d803069ac949c0085c0d2a3916c8ab",
+  "filePath" : "/src/main/java/com/google/devtools/build/lib/skyframe/StarlarkModuleCycleReporter.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "cycleInfo.getPathToCycle()",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 26,
+      "startLineNumber" : 71,
+      "startColumnNumber" : 40,
+      "endLineNumber" : 71,
+      "endColumnNumber" : 66
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 40,
+        "startLineNumber" : 71,
+        "startColumnNumber" : 26,
+        "endLineNumber" : 71,
+        "endColumnNumber" : 66
+      },
+      "nodeContext" : "pathToCycle=cycleInfo.getPathToCycle()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 63,
+        "startLineNumber" : 71,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 71,
+        "endColumnNumber" : 67
+      },
+      "nodeContext" : "ImmutableList<SkyKey> pathToCycle=cycleInfo.getPathToCycle();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5991,
+        "startLineNumber" : 70,
+        "startColumnNumber" : 41,
+        "endLineNumber" : 194,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  ImmutableList<SkyKey> pathToCycle=cycleInfo.getPathToCycle();\n  ImmutableList<SkyKey> cycle=cycleInfo.getCycle();\n  if (pathToCycle.isEmpty()) {\n    return false;\n  }\n  SkyKey lastPathElement=pathToCycle.get(pathToCycle.size() - 1);\n  if (alreadyReported) {\n    return true;\n  }\n else   if (Iterables.all(cycle,IS_STARLARK_MODULE_SKY_KEY) && (IS_PACKAGE_SKY_KEY.apply(lastPathElement) || IS_STARLARK_MODULE_SKY_KEY.apply(lastPathElement) || IS_WORKSPACE_FILE.apply(lastPathElement))) {\n    Function<SkyKey,String> printer=input -> {\n      if (input.argument() instanceof BzlLoadValue.Key) {\n        return ((BzlLoadValue.Key)input.argument()).getLabel().toString();\n      }\n else       if (input.argument() instanceof PackageIdentifier) {\n        return ((PackageIdentifier)input.argument()) + \"/BUILD\";\n      }\n else       if (input.argument() instanceof WorkspaceFileValue.WorkspaceFileKey) {\n        return ((WorkspaceFileValue.WorkspaceFileKey)input.argument()).getPath().getRootRelativePath().toString();\n      }\n else {\n        throw new UnsupportedOperationException();\n      }\n    }\n;\n    StringBuilder cycleMessage=new StringBuilder().append(\"cycle detected in extension files: \");\n    int startIndex=pathToCycle.size() - 1;\n    while (startIndex > 0 && (IS_PACKAGE_SKY_KEY.apply(pathToCycle.get(startIndex - 1)) || IS_STARLARK_MODULE_SKY_KEY.apply(pathToCycle.get(startIndex - 1)) || IS_WORKSPACE_FILE.apply(pathToCycle.get(startIndex - 1)))) {\n      startIndex--;\n    }\n    for (int i=startIndex; i < pathToCycle.size(); i++) {\n      cycleMessage.append(\"\\n    \").append(printer.apply(pathToCycle.get(i)));\n    }\n    AbstractLabelCycleReporter.printCycle(cycleInfo.getCycle(),cycleMessage,printer);\n    eventHandler.handle(Event.error(null,cycleMessage.toString()));\n    return true;\n  }\n else   if (Iterables.all(cycle,Predicates.or(IS_PACKAGE_LOOKUP,IS_REPOSITORY_DIRECTORY))) {\n    StringBuilder cycleMessage=new StringBuilder().append(\"Circular definition of repositories:\");\n    Iterable<SkyKey> repos=Iterables.filter(cycle,IS_REPOSITORY_DIRECTORY);\n    Function<SkyKey,String> printer=input -> {\n      if (input instanceof RepositoryDirectoryValue.Key) {\n        return ((RepositoryDirectoryValue.Key)input).argument().getName();\n      }\n else {\n        throw new UnsupportedOperationException();\n      }\n    }\n;\n    AbstractLabelCycleReporter.printCycle(ImmutableList.copyOf(repos),cycleMessage,printer);\n    eventHandler.handle(Event.error(null,cycleMessage.toString()));\n    requestRepoDefinitions(eventHandler,repos);\n    return true;\n  }\n else   if (Iterables.any(cycle,IS_REPOSITORY_DIRECTORY) && Iterables.any(cycle,IS_WORKSPACE_FILE)) {\n    Iterable<SkyKey> repos=Iterables.filter(Iterables.concat(pathToCycle,cycle),IS_REPOSITORY_DIRECTORY);\n    StringBuilder message=new StringBuilder();\n    if (Iterables.any(cycle,IS_BZL_LOAD)) {\n      Label fileLabel=((BzlLoadValue.Key)Iterables.getLast(Iterables.filter(cycle,IS_BZL_LOAD))).getLabel();\n      message.append(\"Failed to load Starlark extension '\").append(fileLabel).append(\"'.\\n\");\n    }\n    message.append(\"Cycle in the workspace file detected. \").append(\"This indicates that a repository is used prior to being defined.\\n\").append(\"The following chain of repository dependencies lead to the missing definition.\\n\");\n    for (    SkyKey repo : repos) {\n      if (repo instanceof RepositoryDirectoryValue.Key) {\n        message.append(\" - \").append(((RepositoryDirectoryValue.Key)repo).argument().getName()).append(\"\\n\");\n      }\n    }\n    SkyKey missingRepo=Iterables.getLast(repos);\n    if (missingRepo instanceof RepositoryDirectoryValue.Key) {\n      message.append(\"This could either mean you have to add the '\").append(((RepositoryDirectoryValue.Key)missingRepo).argument().getName()).append(\"' repository with a statement like `http_archive` in your WORKSPACE file\").append(\" (note that transitive dependencies are not added automatically), or move\").append(\" an existing definition earlier in your WORKSPACE file.\");\n    }\n    eventHandler.handle(Event.error(message.toString()));\n    requestRepoDefinitions(eventHandler,repos);\n    return true;\n  }\n else   if (Iterables.any(cycle,IS_BZL_LOAD)) {\n    Label fileLabel=((BzlLoadValue.Key)Iterables.getLast(Iterables.filter(cycle,IS_BZL_LOAD))).getLabel();\n    eventHandler.handle(Event.error(null,\"Failed to load Starlark extension '\" + fileLabel + \"'.\\n\"));\n    return true;\n  }\n else   if (Iterables.any(cycle,IS_PACKAGE_LOOKUP)) {\n    PackageIdentifier pkg=(PackageIdentifier)Iterables.getLast(Iterables.filter(cycle,IS_PACKAGE_LOOKUP)).argument();\n    eventHandler.handle(Event.error(null,\"cannot load package '\" + pkg + \"'\"));\n    return true;\n  }\n  return false;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 635,
+      "astHeight" : 21
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 6161,
+        "startLineNumber" : 65,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 194,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "@Override public boolean maybeReportCycle(SkyKey topLevelKey,CycleInfo cycleInfo,boolean alreadyReported,ExtendedEventHandler eventHandler){\n  ImmutableList<SkyKey> pathToCycle=cycleInfo.getPathToCycle();\n  ImmutableList<SkyKey> cycle=cycleInfo.getCycle();\n  if (pathToCycle.isEmpty()) {\n    return false;\n  }\n  SkyKey lastPathElement=pathToCycle.get(pathToCycle.size() - 1);\n  if (alreadyReported) {\n    return true;\n  }\n else   if (Iterables.all(cycle,IS_STARLARK_MODULE_SKY_KEY) && (IS_PACKAGE_SKY_KEY.apply(lastPathElement) || IS_STARLARK_MODULE_SKY_KEY.apply(lastPathElement) || IS_WORKSPACE_FILE.apply(lastPathElement))) {\n    Function<SkyKey,String> printer=input -> {\n      if (input.argument() instanceof BzlLoadValue.Key) {\n        return ((BzlLoadValue.Key)input.argument()).getLabel().toString();\n      }\n else       if (input.argument() instanceof PackageIdentifier) {\n        return ((PackageIdentifier)input.argument()) + \"/BUILD\";\n      }\n else       if (input.argument() instanceof WorkspaceFileValue.WorkspaceFileKey) {\n        return ((WorkspaceFileValue.WorkspaceFileKey)input.argument()).getPath().getRootRelativePath().toString();\n      }\n else {\n        throw new UnsupportedOperationException();\n      }\n    }\n;\n    StringBuilder cycleMessage=new StringBuilder().append(\"cycle detected in extension files: \");\n    int startIndex=pathToCycle.size() - 1;\n    while (startIndex > 0 && (IS_PACKAGE_SKY_KEY.apply(pathToCycle.get(startIndex - 1)) || IS_STARLARK_MODULE_SKY_KEY.apply(pathToCycle.get(startIndex - 1)) || IS_WORKSPACE_FILE.apply(pathToCycle.get(startIndex - 1)))) {\n      startIndex--;\n    }\n    for (int i=startIndex; i < pathToCycle.size(); i++) {\n      cycleMessage.append(\"\\n    \").append(printer.apply(pathToCycle.get(i)));\n    }\n    AbstractLabelCycleReporter.printCycle(cycleInfo.getCycle(),cycleMessage,printer);\n    eventHandler.handle(Event.error(null,cycleMessage.toString()));\n    return true;\n  }\n else   if (Iterables.all(cycle,Predicates.or(IS_PACKAGE_LOOKUP,IS_REPOSITORY_DIRECTORY))) {\n    StringBuilder cycleMessage=new StringBuilder().append(\"Circular definition of repositories:\");\n    Iterable<SkyKey> repos=Iterables.filter(cycle,IS_REPOSITORY_DIRECTORY);\n    Function<SkyKey,String> printer=input -> {\n      if (input instanceof RepositoryDirectoryValue.Key) {\n        return ((RepositoryDirectoryValue.Key)input).argument().getName();\n      }\n else {\n        throw new UnsupportedOperationException();\n      }\n    }\n;\n    AbstractLabelCycleReporter.printCycle(ImmutableList.copyOf(repos),cycleMessage,printer);\n    eventHandler.handle(Event.error(null,cycleMessage.toString()));\n    requestRepoDefinitions(eventHandler,repos);\n    return true;\n  }\n else   if (Iterables.any(cycle,IS_REPOSITORY_DIRECTORY) && Iterables.any(cycle,IS_WORKSPACE_FILE)) {\n    Iterable<SkyKey> repos=Iterables.filter(Iterables.concat(pathToCycle,cycle),IS_REPOSITORY_DIRECTORY);\n    StringBuilder message=new StringBuilder();\n    if (Iterables.any(cycle,IS_BZL_LOAD)) {\n      Label fileLabel=((BzlLoadValue.Key)Iterables.getLast(Iterables.filter(cycle,IS_BZL_LOAD))).getLabel();\n      message.append(\"Failed to load Starlark extension '\").append(fileLabel).append(\"'.\\n\");\n    }\n    message.append(\"Cycle in the workspace file detected. \").append(\"This indicates that a repository is used prior to being defined.\\n\").append(\"The following chain of repository dependencies lead to the missing definition.\\n\");\n    for (    SkyKey repo : repos) {\n      if (repo instanceof RepositoryDirectoryValue.Key) {\n        message.append(\" - \").append(((RepositoryDirectoryValue.Key)repo).argument().getName()).append(\"\\n\");\n      }\n    }\n    SkyKey missingRepo=Iterables.getLast(repos);\n    if (missingRepo instanceof RepositoryDirectoryValue.Key) {\n      message.append(\"This could either mean you have to add the '\").append(((RepositoryDirectoryValue.Key)missingRepo).argument().getName()).append(\"' repository with a statement like `http_archive` in your WORKSPACE file\").append(\" (note that transitive dependencies are not added automatically), or move\").append(\" an existing definition earlier in your WORKSPACE file.\");\n    }\n    eventHandler.handle(Event.error(message.toString()));\n    requestRepoDefinitions(eventHandler,repos);\n    return true;\n  }\n else   if (Iterables.any(cycle,IS_BZL_LOAD)) {\n    Label fileLabel=((BzlLoadValue.Key)Iterables.getLast(Iterables.filter(cycle,IS_BZL_LOAD))).getLabel();\n    eventHandler.handle(Event.error(null,\"Failed to load Starlark extension '\" + fileLabel + \"'.\\n\"));\n    return true;\n  }\n else   if (Iterables.any(cycle,IS_PACKAGE_LOOKUP)) {\n    PackageIdentifier pkg=(PackageIdentifier)Iterables.getLast(Iterables.filter(cycle,IS_PACKAGE_LOOKUP)).argument();\n    eventHandler.handle(Event.error(null,\"cannot load package '\" + pkg + \"'\"));\n    return true;\n  }\n  return false;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 656,
+      "astHeight" : 22
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 63,
+        "startLineNumber" : 71,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 71,
+        "endColumnNumber" : 67
+      },
+      "nodeContext" : "ImmutableList<SkyKey> pathToCycle=cycleInfo.getPathToCycle();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 4
+    },
+    "tokenLength" : 2,
+    "type" : "com.google.devtools.build.skyframe.ImmutableList<com.google.devtools.build.skyframe.SkyKey>"
+  } ],
+  "positionList" : [ {
+    "charLength" : 26,
+    "startLineNumber" : 71,
+    "startColumnNumber" : 40,
+    "endLineNumber" : 71,
+    "endColumnNumber" : 66
+  } ],
+  "layoutRelationDataList" : [ ]
+}

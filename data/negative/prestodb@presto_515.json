@@ -1,0 +1,100 @@
+{
+  "id" : 515,
+  "expression" : "new LinkedList<>()",
+  "projectName" : "prestodb@presto",
+  "commitID" : "eff77883d0d24dc6022ecde252612d1430c9fbac",
+  "filePath" : "/presto-main/src/test/java/com/facebook/presto/operator/GroupByHashYieldAssertion.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "new LinkedList<>()",
+    "nodeType" : "ClassInstanceCreation",
+    "nodePosition" : {
+      "charLength" : 18,
+      "startLineNumber" : 78,
+      "startColumnNumber" : 28,
+      "endLineNumber" : 78,
+      "endColumnNumber" : 46
+    },
+    "astNodeNumber" : 4,
+    "astHeight" : 4,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 27,
+        "startLineNumber" : 78,
+        "startColumnNumber" : 19,
+        "endLineNumber" : 78,
+        "endColumnNumber" : 46
+      },
+      "nodeContext" : "result=new LinkedList<>()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 6,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 39,
+        "startLineNumber" : 78,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 78,
+        "endColumnNumber" : 47
+      },
+      "nodeContext" : "List<Page> result=new LinkedList<>();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 12,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 6119,
+        "startLineNumber" : 76,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 203,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  assertLessThan(additionalMemoryInBytes,1L << 21,\"additionalMemoryInBytes should be a relatively small number\");\n  List<Page> result=new LinkedList<>();\n  QueryId queryId1=new QueryId(\"test_query1\");\n  QueryId queryId2=new QueryId(\"test_query2\");\n  MemoryPool memoryPool=new MemoryPool(new MemoryPoolId(\"test\"),new DataSize(1,GIGABYTE));\n  QueryContext queryContext=new QueryContext(queryId2,new DataSize(512,MEGABYTE),new DataSize(1024,MEGABYTE),new DataSize(512,MEGABYTE),new DataSize(1,GIGABYTE),memoryPool,new TestingGcMonitor(),EXECUTOR,SCHEDULED_EXECUTOR,new DataSize(512,MEGABYTE),new SpillSpaceTracker(new DataSize(512,MEGABYTE)),listJsonCodec(TaskMemoryReservationSummary.class));\n  DriverContext driverContext=createTaskContext(queryContext,EXECUTOR,TEST_SESSION).addPipelineContext(0,true,true,false).addDriverContext();\n  Operator operator=operatorFactory.createOperator(driverContext);\n  int yieldCount=0;\n  long expectedReservedExtraBytes=0;\n  for (  Page page : input) {\n    assertTrue(operator.needsInput());\n    long reservedMemoryInBytes=memoryPool.getFreeBytes() - additionalMemoryInBytes;\n    memoryPool.reserve(queryId1,\"test\",reservedMemoryInBytes);\n    long oldMemoryUsage=operator.getOperatorContext().getDriverContext().getMemoryUsage();\n    int oldCapacity=getHashCapacity.apply(operator);\n    operator.addInput(page);\n    Page output=operator.getOutput();\n    if (output != null) {\n      result.add(output);\n    }\n    long newMemoryUsage=operator.getOperatorContext().getDriverContext().getMemoryUsage();\n    if (newMemoryUsage < new DataSize(4,MEGABYTE).toBytes()) {\n      memoryPool.free(queryId1,\"test\",reservedMemoryInBytes);\n      operator.getOutput();\n      continue;\n    }\n    long actualIncreasedMemory=newMemoryUsage - oldMemoryUsage;\n    if (operator.needsInput()) {\n      assertTrue(operator.getOperatorContext().isWaitingForMemory().isDone());\n      assertTrue(oldCapacity == getHashCapacity.apply(operator));\n      assertLessThan(actualIncreasedMemory,additionalMemoryInBytes);\n      memoryPool.free(queryId1,\"test\",reservedMemoryInBytes);\n    }\n else {\n      yieldCount++;\n      assertFalse(operator.getOperatorContext().isWaitingForMemory().isDone());\n      assertEquals(oldCapacity,(long)getHashCapacity.apply(operator));\n      if (hashKeyType == BIGINT) {\n        expectedReservedExtraBytes=oldCapacity * (long)(Long.BYTES * 1.75 + Integer.BYTES) + page.getRetainedSizeInBytes();\n      }\n else {\n        expectedReservedExtraBytes=oldCapacity * (long)(Long.BYTES * 1.75 + Integer.BYTES + Byte.BYTES) + page.getRetainedSizeInBytes();\n      }\n      assertBetweenInclusive(actualIncreasedMemory,expectedReservedExtraBytes,expectedReservedExtraBytes + additionalMemoryInBytes);\n      assertNull(operator.getOutput());\n      memoryPool.free(queryId1,\"test\",reservedMemoryInBytes);\n      output=operator.getOutput();\n      if (output != null) {\n        result.add(output);\n      }\n      assertTrue(operator.needsInput());\n      assertGreaterThan(getHashCapacity.apply(operator),oldCapacity);\n      long rehashedMemoryUsage=operator.getOperatorContext().getDriverContext().getMemoryUsage();\n      assertBetweenInclusive(rehashedMemoryUsage * 1.0 / newMemoryUsage,0.99,1.01);\n      assertTrue(operator.needsInput());\n    }\n  }\n  result.addAll(finishOperator(operator));\n  return new GroupByHashYieldResult(yieldCount,expectedReservedExtraBytes,result);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 462,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 6668,
+        "startLineNumber" : 70,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 203,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * @param operatorFactory creates an Operator that should directly or indirectly contain GroupByHash\n * @param getHashCapacity returns the hash table capacity for the input operator\n * @param additionalMemoryInBytes the memory used in addition to the GroupByHash in the operator (e.g., aggregator)\n */\npublic static GroupByHashYieldResult finishOperatorWithYieldingGroupByHash(List<Page> input,Type hashKeyType,OperatorFactory operatorFactory,Function<Operator,Integer> getHashCapacity,long additionalMemoryInBytes){\n  assertLessThan(additionalMemoryInBytes,1L << 21,\"additionalMemoryInBytes should be a relatively small number\");\n  List<Page> result=new LinkedList<>();\n  QueryId queryId1=new QueryId(\"test_query1\");\n  QueryId queryId2=new QueryId(\"test_query2\");\n  MemoryPool memoryPool=new MemoryPool(new MemoryPoolId(\"test\"),new DataSize(1,GIGABYTE));\n  QueryContext queryContext=new QueryContext(queryId2,new DataSize(512,MEGABYTE),new DataSize(1024,MEGABYTE),new DataSize(512,MEGABYTE),new DataSize(1,GIGABYTE),memoryPool,new TestingGcMonitor(),EXECUTOR,SCHEDULED_EXECUTOR,new DataSize(512,MEGABYTE),new SpillSpaceTracker(new DataSize(512,MEGABYTE)),listJsonCodec(TaskMemoryReservationSummary.class));\n  DriverContext driverContext=createTaskContext(queryContext,EXECUTOR,TEST_SESSION).addPipelineContext(0,true,true,false).addDriverContext();\n  Operator operator=operatorFactory.createOperator(driverContext);\n  int yieldCount=0;\n  long expectedReservedExtraBytes=0;\n  for (  Page page : input) {\n    assertTrue(operator.needsInput());\n    long reservedMemoryInBytes=memoryPool.getFreeBytes() - additionalMemoryInBytes;\n    memoryPool.reserve(queryId1,\"test\",reservedMemoryInBytes);\n    long oldMemoryUsage=operator.getOperatorContext().getDriverContext().getMemoryUsage();\n    int oldCapacity=getHashCapacity.apply(operator);\n    operator.addInput(page);\n    Page output=operator.getOutput();\n    if (output != null) {\n      result.add(output);\n    }\n    long newMemoryUsage=operator.getOperatorContext().getDriverContext().getMemoryUsage();\n    if (newMemoryUsage < new DataSize(4,MEGABYTE).toBytes()) {\n      memoryPool.free(queryId1,\"test\",reservedMemoryInBytes);\n      operator.getOutput();\n      continue;\n    }\n    long actualIncreasedMemory=newMemoryUsage - oldMemoryUsage;\n    if (operator.needsInput()) {\n      assertTrue(operator.getOperatorContext().isWaitingForMemory().isDone());\n      assertTrue(oldCapacity == getHashCapacity.apply(operator));\n      assertLessThan(actualIncreasedMemory,additionalMemoryInBytes);\n      memoryPool.free(queryId1,\"test\",reservedMemoryInBytes);\n    }\n else {\n      yieldCount++;\n      assertFalse(operator.getOperatorContext().isWaitingForMemory().isDone());\n      assertEquals(oldCapacity,(long)getHashCapacity.apply(operator));\n      if (hashKeyType == BIGINT) {\n        expectedReservedExtraBytes=oldCapacity * (long)(Long.BYTES * 1.75 + Integer.BYTES) + page.getRetainedSizeInBytes();\n      }\n else {\n        expectedReservedExtraBytes=oldCapacity * (long)(Long.BYTES * 1.75 + Integer.BYTES + Byte.BYTES) + page.getRetainedSizeInBytes();\n      }\n      assertBetweenInclusive(actualIncreasedMemory,expectedReservedExtraBytes,expectedReservedExtraBytes + additionalMemoryInBytes);\n      assertNull(operator.getOutput());\n      memoryPool.free(queryId1,\"test\",reservedMemoryInBytes);\n      output=operator.getOutput();\n      if (output != null) {\n        result.add(output);\n      }\n      assertTrue(operator.needsInput());\n      assertGreaterThan(getHashCapacity.apply(operator),oldCapacity);\n      long rehashedMemoryUsage=operator.getOperatorContext().getDriverContext().getMemoryUsage();\n      assertBetweenInclusive(rehashedMemoryUsage * 1.0 / newMemoryUsage,0.99,1.01);\n      assertTrue(operator.needsInput());\n    }\n  }\n  result.addAll(finishOperator(operator));\n  return new GroupByHashYieldResult(yieldCount,expectedReservedExtraBytes,result);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 496,
+      "astHeight" : 19
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 39,
+        "startLineNumber" : 78,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 78,
+        "endColumnNumber" : 47
+      },
+      "nodeContext" : "List<Page> result=new LinkedList<>();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 12,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "java.util.LinkedList<com.facebook.presto.common.Page>"
+  } ],
+  "positionList" : [ {
+    "charLength" : 18,
+    "startLineNumber" : 78,
+    "startColumnNumber" : 28,
+    "endLineNumber" : 78,
+    "endColumnNumber" : 46
+  } ],
+  "layoutRelationDataList" : [ ]
+}

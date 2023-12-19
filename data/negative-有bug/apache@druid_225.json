@@ -1,0 +1,100 @@
+{
+  "id" : 225,
+  "expression" : "rtrTestUtils.makeRemoteTaskRunner(new TestRemoteTaskRunnerConfig(new Period(\"PT3600S\")){\n  @Override public int getPendingTasksRunnerNumThreads(){\n    return 2;\n  }\n}\n)",
+  "projectName" : "apache@druid",
+  "commitID" : "f6662b4893a9b8cc8a0ebb77e63daddde882148d",
+  "filePath" : "/indexing-service/src/test/java/org/apache/druid/indexing/overlord/RemoteTaskRunnerRunPendingTasksConcurrencyTest.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "rtrTestUtils.makeRemoteTaskRunner(new TestRemoteTaskRunnerConfig(new Period(\"PT3600S\")){\n  @Override public int getPendingTasksRunnerNumThreads(){\n    return 2;\n  }\n}\n)",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 243,
+      "startLineNumber" : 64,
+      "startColumnNumber" : 23,
+      "endLineNumber" : 73,
+      "endColumnNumber" : 5
+    },
+    "astNodeNumber" : 20,
+    "astHeight" : 7,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 262,
+        "startLineNumber" : 64,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 73,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "remoteTaskRunner=rtrTestUtils.makeRemoteTaskRunner(new TestRemoteTaskRunnerConfig(new Period(\"PT3600S\")){\n  @Override public int getPendingTasksRunnerNumThreads(){\n    return 2;\n  }\n}\n)",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 22,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 263,
+        "startLineNumber" : 64,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 73,
+        "endColumnNumber" : 6
+      },
+      "nodeContext" : "remoteTaskRunner=rtrTestUtils.makeRemoteTaskRunner(new TestRemoteTaskRunnerConfig(new Period(\"PT3600S\")){\n  @Override public int getPendingTasksRunnerNumThreads(){\n    return 2;\n  }\n}\n);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 23,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3482,
+        "startLineNumber" : 60,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 136,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  rtrTestUtils.makeWorker(\"worker0\",3);\n  rtrTestUtils.makeWorker(\"worker1\",3);\n  remoteTaskRunner=rtrTestUtils.makeRemoteTaskRunner(new TestRemoteTaskRunnerConfig(new Period(\"PT3600S\")){\n    @Override public int getPendingTasksRunnerNumThreads(){\n      return 2;\n    }\n  }\n);\n  int numTasks=6;\n  ListenableFuture<TaskStatus>[] results=new ListenableFuture[numTasks];\n  Task[] tasks=new Task[numTasks];\n  for (int i=0; i < 2; i++) {\n    tasks[i]=TestTasks.unending(\"task\" + i);\n    results[i]=(remoteTaskRunner.run(tasks[i]));\n  }\n  waitForBothWorkersToHaveUnackedTasks();\n  for (int i=2; i < 5; i++) {\n    tasks[i]=TestTasks.unending(\"task\" + i);\n    results[i]=(remoteTaskRunner.run(tasks[i]));\n  }\n  mockWorkerRunningAndCompletionSuccessfulTasks(tasks[0],tasks[1]);\n  Assert.assertEquals(TaskState.SUCCESS,results[0].get().getStatusCode());\n  Assert.assertEquals(TaskState.SUCCESS,results[1].get().getStatusCode());\n  waitForBothWorkersToHaveUnackedTasks();\n  if (remoteTaskRunner.getWorkersWithUnacknowledgedTask().containsValue(tasks[2].getId()) && remoteTaskRunner.getWorkersWithUnacknowledgedTask().containsValue(tasks[3].getId())) {\n    remoteTaskRunner.shutdown(\"task4\",\"test\");\n    mockWorkerRunningAndCompletionSuccessfulTasks(tasks[3],tasks[2]);\n    Assert.assertEquals(TaskState.SUCCESS,results[3].get().getStatusCode());\n    Assert.assertEquals(TaskState.SUCCESS,results[2].get().getStatusCode());\n  }\n else   if (remoteTaskRunner.getWorkersWithUnacknowledgedTask().containsValue(tasks[3].getId()) && remoteTaskRunner.getWorkersWithUnacknowledgedTask().containsValue(tasks[4].getId())) {\n    remoteTaskRunner.shutdown(\"task2\",\"test\");\n    mockWorkerRunningAndCompletionSuccessfulTasks(tasks[4],tasks[3]);\n    Assert.assertEquals(TaskState.SUCCESS,results[4].get().getStatusCode());\n    Assert.assertEquals(TaskState.SUCCESS,results[3].get().getStatusCode());\n  }\n else   if (remoteTaskRunner.getWorkersWithUnacknowledgedTask().containsValue(tasks[4].getId()) && remoteTaskRunner.getWorkersWithUnacknowledgedTask().containsValue(tasks[2].getId())) {\n    remoteTaskRunner.shutdown(\"task3\",\"test\");\n    mockWorkerRunningAndCompletionSuccessfulTasks(tasks[4],tasks[2]);\n    Assert.assertEquals(TaskState.SUCCESS,results[4].get().getStatusCode());\n    Assert.assertEquals(TaskState.SUCCESS,results[2].get().getStatusCode());\n  }\n else {\n    throw new ISE(\"two out of three tasks 2,3 and 4 must be waiting for ack.\");\n  }\n  tasks[5]=TestTasks.unending(\"task5\");\n  results[5]=remoteTaskRunner.run(tasks[5]);\n  waitForOneWorkerToHaveUnackedTasks();\n  if (rtrTestUtils.taskAnnounced(\"worker0\",tasks[5].getId())) {\n    rtrTestUtils.mockWorkerRunningTask(\"worker0\",tasks[5]);\n    rtrTestUtils.mockWorkerCompleteSuccessfulTask(\"worker0\",tasks[5]);\n  }\n else {\n    rtrTestUtils.mockWorkerRunningTask(\"worker1\",tasks[5]);\n    rtrTestUtils.mockWorkerCompleteSuccessfulTask(\"worker1\",tasks[5]);\n  }\n  Assert.assertEquals(TaskState.SUCCESS,results[5].get().getStatusCode());\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 468,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3558,
+        "startLineNumber" : 58,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 136,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "@Test(timeout=60_000L) public void testConcurrency() throws Exception {\n  rtrTestUtils.makeWorker(\"worker0\",3);\n  rtrTestUtils.makeWorker(\"worker1\",3);\n  remoteTaskRunner=rtrTestUtils.makeRemoteTaskRunner(new TestRemoteTaskRunnerConfig(new Period(\"PT3600S\")){\n    @Override public int getPendingTasksRunnerNumThreads(){\n      return 2;\n    }\n  }\n);\n  int numTasks=6;\n  ListenableFuture<TaskStatus>[] results=new ListenableFuture[numTasks];\n  Task[] tasks=new Task[numTasks];\n  for (int i=0; i < 2; i++) {\n    tasks[i]=TestTasks.unending(\"task\" + i);\n    results[i]=(remoteTaskRunner.run(tasks[i]));\n  }\n  waitForBothWorkersToHaveUnackedTasks();\n  for (int i=2; i < 5; i++) {\n    tasks[i]=TestTasks.unending(\"task\" + i);\n    results[i]=(remoteTaskRunner.run(tasks[i]));\n  }\n  mockWorkerRunningAndCompletionSuccessfulTasks(tasks[0],tasks[1]);\n  Assert.assertEquals(TaskState.SUCCESS,results[0].get().getStatusCode());\n  Assert.assertEquals(TaskState.SUCCESS,results[1].get().getStatusCode());\n  waitForBothWorkersToHaveUnackedTasks();\n  if (remoteTaskRunner.getWorkersWithUnacknowledgedTask().containsValue(tasks[2].getId()) && remoteTaskRunner.getWorkersWithUnacknowledgedTask().containsValue(tasks[3].getId())) {\n    remoteTaskRunner.shutdown(\"task4\",\"test\");\n    mockWorkerRunningAndCompletionSuccessfulTasks(tasks[3],tasks[2]);\n    Assert.assertEquals(TaskState.SUCCESS,results[3].get().getStatusCode());\n    Assert.assertEquals(TaskState.SUCCESS,results[2].get().getStatusCode());\n  }\n else   if (remoteTaskRunner.getWorkersWithUnacknowledgedTask().containsValue(tasks[3].getId()) && remoteTaskRunner.getWorkersWithUnacknowledgedTask().containsValue(tasks[4].getId())) {\n    remoteTaskRunner.shutdown(\"task2\",\"test\");\n    mockWorkerRunningAndCompletionSuccessfulTasks(tasks[4],tasks[3]);\n    Assert.assertEquals(TaskState.SUCCESS,results[4].get().getStatusCode());\n    Assert.assertEquals(TaskState.SUCCESS,results[3].get().getStatusCode());\n  }\n else   if (remoteTaskRunner.getWorkersWithUnacknowledgedTask().containsValue(tasks[4].getId()) && remoteTaskRunner.getWorkersWithUnacknowledgedTask().containsValue(tasks[2].getId())) {\n    remoteTaskRunner.shutdown(\"task3\",\"test\");\n    mockWorkerRunningAndCompletionSuccessfulTasks(tasks[4],tasks[2]);\n    Assert.assertEquals(TaskState.SUCCESS,results[4].get().getStatusCode());\n    Assert.assertEquals(TaskState.SUCCESS,results[2].get().getStatusCode());\n  }\n else {\n    throw new ISE(\"two out of three tasks 2,3 and 4 must be waiting for ack.\");\n  }\n  tasks[5]=TestTasks.unending(\"task5\");\n  results[5]=remoteTaskRunner.run(tasks[5]);\n  waitForOneWorkerToHaveUnackedTasks();\n  if (rtrTestUtils.taskAnnounced(\"worker0\",tasks[5].getId())) {\n    rtrTestUtils.mockWorkerRunningTask(\"worker0\",tasks[5]);\n    rtrTestUtils.mockWorkerCompleteSuccessfulTask(\"worker0\",tasks[5]);\n  }\n else {\n    rtrTestUtils.mockWorkerRunningTask(\"worker1\",tasks[5]);\n    rtrTestUtils.mockWorkerCompleteSuccessfulTask(\"worker1\",tasks[5]);\n  }\n  Assert.assertEquals(TaskState.SUCCESS,results[5].get().getStatusCode());\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 479,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 263,
+        "startLineNumber" : 64,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 73,
+        "endColumnNumber" : 6
+      },
+      "nodeContext" : "remoteTaskRunner=rtrTestUtils.makeRemoteTaskRunner(new TestRemoteTaskRunnerConfig(new Period(\"PT3600S\")){\n  @Override public int getPendingTasksRunnerNumThreads(){\n    return 2;\n  }\n}\n);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 23,
+      "astHeight" : 9
+    },
+    "tokenLength" : 8,
+    "type" : "org.apache.druid.indexing.overlord.RemoteTaskRunner"
+  } ],
+  "positionList" : [ {
+    "charLength" : 243,
+    "startLineNumber" : 64,
+    "startColumnNumber" : 23,
+    "endLineNumber" : 73,
+    "endColumnNumber" : 5
+  } ],
+  "layoutRelationDataList" : [ ]
+}

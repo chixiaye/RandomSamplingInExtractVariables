@@ -1,0 +1,100 @@
+{
+  "id" : 347,
+  "expression" : "futureAdd.get()",
+  "projectName" : "redisson@redisson",
+  "commitID" : "62b5e68c05b7475e1e0f98b4161aacb35d376b97",
+  "filePath" : "/redisson/src/main/java/org/redisson/remote/SyncRemoteProxy.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "futureAdd.get()",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 98,
+      "startColumnNumber" : 21,
+      "endLineNumber" : 98,
+      "endColumnNumber" : 36
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 16,
+        "startLineNumber" : 98,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 98,
+        "endColumnNumber" : 36
+      },
+      "nodeContext" : "!futureAdd.get()",
+      "nodeType" : "PrefixExpression",
+      "astNodeNumber" : 4,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 363,
+        "startLineNumber" : 98,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 106,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "if (!futureAdd.get()) {\n  if (responseFuture != null) {\n    responseFuture.cancel(false);\n  }\n  if (ackFuture != null) {\n    ackFuture.cancel(false);\n  }\n  throw new RedisException(\"Task hasn't been added\");\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 31,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4666,
+        "startLineNumber" : 51,
+        "startColumnNumber" : 94,
+        "endLineNumber" : 141,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  if (method.getName().equals(\"toString\")) {\n    return toString;\n  }\n else   if (method.getName().equals(\"equals\")) {\n    return proxy == args[0];\n  }\n else   if (method.getName().equals(\"hashCode\")) {\n    return toString.hashCode();\n  }\n  if (!optionsCopy.isResultExpected() && !(method.getReturnType().equals(Void.class) || method.getReturnType().equals(Void.TYPE)))   throw new IllegalArgumentException(\"The noResult option only supports void return value\");\n  RequestId requestId=remoteService.generateRequestId();\n  String requestQueueName=getRequestQueueName(remoteInterface);\n  RemoteServiceRequest request=new RemoteServiceRequest(executorId,requestId.toString(),method.getName(),remoteService.getMethodSignature(method),args,optionsCopy,System.currentTimeMillis());\n  final RFuture<RemoteServiceAck> ackFuture;\n  if (optionsCopy.isAckExpected()) {\n    ackFuture=pollResponse(optionsCopy.getAckTimeoutInMillis(),requestId,false);\n  }\n else {\n    ackFuture=null;\n  }\n  final RPromise<RRemoteServiceResponse> responseFuture;\n  if (optionsCopy.isResultExpected()) {\n    long timeout=remoteService.getTimeout(optionsCopy.getExecutionTimeoutInMillis(),request);\n    responseFuture=pollResponse(timeout,requestId,false);\n  }\n else {\n    responseFuture=null;\n  }\n  RemotePromise<Object> addPromise=new RemotePromise<Object>(requestId);\n  RFuture<Boolean> futureAdd=remoteService.addAsync(requestQueueName,request,addPromise);\n  futureAdd.await();\n  if (!futureAdd.isSuccess()) {\n    if (responseFuture != null) {\n      responseFuture.cancel(false);\n    }\n    if (ackFuture != null) {\n      ackFuture.cancel(false);\n    }\n    throw futureAdd.cause();\n  }\n  if (!futureAdd.get()) {\n    if (responseFuture != null) {\n      responseFuture.cancel(false);\n    }\n    if (ackFuture != null) {\n      ackFuture.cancel(false);\n    }\n    throw new RedisException(\"Task hasn't been added\");\n  }\n  if (ackFuture != null) {\n    String ackName=remoteService.getAckName(requestId);\n    ackFuture.await(optionsCopy.getAckTimeoutInMillis());\n    RemoteServiceAck ack=ackFuture.getNow();\n    if (ack == null) {\n      RFuture<RemoteServiceAck> ackFutureAttempt=tryPollAckAgainAsync(optionsCopy,ackName,requestId);\n      ackFutureAttempt.await(optionsCopy.getAckTimeoutInMillis());\n      ack=ackFutureAttempt.getNow();\n      if (ack == null) {\n        throw new RemoteServiceAckTimeoutException(\"No ACK response after \" + optionsCopy.getAckTimeoutInMillis() + \"ms for request: \"+ request);\n      }\n    }\n    new RedissonBucket<>(commandExecutor,ackName).delete();\n  }\n  if (responseFuture != null) {\n    responseFuture.awaitUninterruptibly();\n    RemoteServiceResponse response=(RemoteServiceResponse)responseFuture.getNow();\n    if (response == null) {\n      throw new RemoteServiceTimeoutException(\"No response after \" + optionsCopy.getExecutionTimeoutInMillis() + \"ms for request: \"+ request);\n    }\n    if (response.getError() != null) {\n      throw response.getError();\n    }\n    return response.getResult();\n  }\n  return null;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 406,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.AnonymousClassDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4771,
+        "startLineNumber" : 50,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 141,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "@Override public Object invoke(Object proxy,Method method,Object[] args) throws Throwable {\n  if (method.getName().equals(\"toString\")) {\n    return toString;\n  }\n else   if (method.getName().equals(\"equals\")) {\n    return proxy == args[0];\n  }\n else   if (method.getName().equals(\"hashCode\")) {\n    return toString.hashCode();\n  }\n  if (!optionsCopy.isResultExpected() && !(method.getReturnType().equals(Void.class) || method.getReturnType().equals(Void.TYPE)))   throw new IllegalArgumentException(\"The noResult option only supports void return value\");\n  RequestId requestId=remoteService.generateRequestId();\n  String requestQueueName=getRequestQueueName(remoteInterface);\n  RemoteServiceRequest request=new RemoteServiceRequest(executorId,requestId.toString(),method.getName(),remoteService.getMethodSignature(method),args,optionsCopy,System.currentTimeMillis());\n  final RFuture<RemoteServiceAck> ackFuture;\n  if (optionsCopy.isAckExpected()) {\n    ackFuture=pollResponse(optionsCopy.getAckTimeoutInMillis(),requestId,false);\n  }\n else {\n    ackFuture=null;\n  }\n  final RPromise<RRemoteServiceResponse> responseFuture;\n  if (optionsCopy.isResultExpected()) {\n    long timeout=remoteService.getTimeout(optionsCopy.getExecutionTimeoutInMillis(),request);\n    responseFuture=pollResponse(timeout,requestId,false);\n  }\n else {\n    responseFuture=null;\n  }\n  RemotePromise<Object> addPromise=new RemotePromise<Object>(requestId);\n  RFuture<Boolean> futureAdd=remoteService.addAsync(requestQueueName,request,addPromise);\n  futureAdd.await();\n  if (!futureAdd.isSuccess()) {\n    if (responseFuture != null) {\n      responseFuture.cancel(false);\n    }\n    if (ackFuture != null) {\n      ackFuture.cancel(false);\n    }\n    throw futureAdd.cause();\n  }\n  if (!futureAdd.get()) {\n    if (responseFuture != null) {\n      responseFuture.cancel(false);\n    }\n    if (ackFuture != null) {\n      ackFuture.cancel(false);\n    }\n    throw new RedisException(\"Task hasn't been added\");\n  }\n  if (ackFuture != null) {\n    String ackName=remoteService.getAckName(requestId);\n    ackFuture.await(optionsCopy.getAckTimeoutInMillis());\n    RemoteServiceAck ack=ackFuture.getNow();\n    if (ack == null) {\n      RFuture<RemoteServiceAck> ackFutureAttempt=tryPollAckAgainAsync(optionsCopy,ackName,requestId);\n      ackFutureAttempt.await(optionsCopy.getAckTimeoutInMillis());\n      ack=ackFutureAttempt.getNow();\n      if (ack == null) {\n        throw new RemoteServiceAckTimeoutException(\"No ACK response after \" + optionsCopy.getAckTimeoutInMillis() + \"ms for request: \"+ request);\n      }\n    }\n    new RedissonBucket<>(commandExecutor,ackName).delete();\n  }\n  if (responseFuture != null) {\n    responseFuture.awaitUninterruptibly();\n    RemoteServiceResponse response=(RemoteServiceResponse)responseFuture.getNow();\n    if (response == null) {\n      throw new RemoteServiceTimeoutException(\"No response after \" + optionsCopy.getExecutionTimeoutInMillis() + \"ms for request: \"+ request);\n    }\n    if (response.getError() != null) {\n      throw response.getError();\n    }\n    return response.getResult();\n  }\n  return null;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 429,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 16,
+        "startLineNumber" : 98,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 98,
+        "endColumnNumber" : 36
+      },
+      "nodeContext" : "!futureAdd.get()",
+      "nodeType" : "PrefixExpression",
+      "astNodeNumber" : 4,
+      "astHeight" : 3
+    },
+    "tokenLength" : 2,
+    "type" : "java.lang.Boolean"
+  } ],
+  "positionList" : [ {
+    "charLength" : 15,
+    "startLineNumber" : 98,
+    "startColumnNumber" : 21,
+    "endLineNumber" : 98,
+    "endColumnNumber" : 36
+  } ],
+  "layoutRelationDataList" : [ ]
+}

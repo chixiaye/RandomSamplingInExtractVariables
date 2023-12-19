@@ -1,0 +1,299 @@
+{
+  "id" : 223,
+  "expression" : "msEntry",
+  "projectName" : "redisson@redisson",
+  "commitID" : "62b5e68c05b7475e1e0f98b4161aacb35d376b97",
+  "filePath" : "/redisson/src/main/java/org/redisson/command/RedisQueuedBatchExecutor.java",
+  "occurrences" : 2,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "msEntry",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 7,
+      "startLineNumber" : 144,
+      "startColumnNumber" : 58,
+      "endLineNumber" : 144,
+      "endColumnNumber" : 65
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 24,
+        "startLineNumber" : 144,
+        "startColumnNumber" : 42,
+        "endLineNumber" : 144,
+        "endColumnNumber" : 66
+      },
+      "nodeContext" : "connections.get(msEntry)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 42,
+        "startLineNumber" : 144,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 144,
+        "endColumnNumber" : 66
+      },
+      "nodeContext" : "connectionEntry=connections.get(msEntry)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 59,
+        "startLineNumber" : 144,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 144,
+        "endColumnNumber" : 67
+      },
+      "nodeContext" : "ConnectionEntry connectionEntry=connections.get(msEntry);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3748,
+        "startLineNumber" : 142,
+        "startColumnNumber" : 87,
+        "endLineNumber" : 205,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  MasterSlaveEntry msEntry=getEntry(source);\n  ConnectionEntry connectionEntry=connections.get(msEntry);\n  boolean syncSlaves=options.getSyncSlaves() > 0;\n  if (source.getRedirect() == Redirect.ASK) {\n    List<CommandData<?,?>> list=new ArrayList<CommandData<?,?>>(2);\n    RPromise<Void> promise=new RedissonPromise<Void>();\n    list.add(new CommandData<Void,Void>(promise,codec,RedisCommands.ASKING,new Object[]{}));\n    if (connectionEntry.isFirstCommand()) {\n      list.add(new CommandData<Void,Void>(promise,codec,RedisCommands.MULTI,new Object[]{}));\n      connectionEntry.setFirstCommand(false);\n    }\n    list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n    RPromise<Void> main=new RedissonPromise<Void>();\n    writeFuture=connection.send(new CommandsData(main,list,true,syncSlaves));\n  }\n else {\n    if (log.isDebugEnabled()) {\n      log.debug(\"acquired connection for command {} and params {} from slot {} using node {}... {}\",command,LogHelper.toString(params),source,connection.getRedisClient().getAddr(),connection);\n    }\n    if (connectionEntry.isFirstCommand()) {\n      List<CommandData<?,?>> list=new ArrayList<CommandData<?,?>>(2);\n      list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.MULTI,new Object[]{}));\n      list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n      RPromise<Void> main=new RedissonPromise<Void>();\n      writeFuture=connection.send(new CommandsData(main,list,true,syncSlaves));\n      connectionEntry.setFirstCommand(false);\n    }\n else {\n      if (RedisCommands.EXEC.getName().equals(command.getName())) {\n        Entry entry=commands.get(msEntry);\n        List<CommandData<?,?>> list=new ArrayList<>();\n        if (options.isSkipResult()) {\n          list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.CLIENT_REPLY,new Object[]{\"OFF\"}));\n        }\n        list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n        if (options.isSkipResult()) {\n          list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.CLIENT_REPLY,new Object[]{\"ON\"}));\n        }\n        if (options.getSyncSlaves() > 0) {\n          BatchCommandData<?,?> waitCommand=new BatchCommandData(RedisCommands.WAIT,new Object[]{this.options.getSyncSlaves(),this.options.getSyncTimeout()},index.incrementAndGet());\n          list.add(waitCommand);\n          entry.getCommands().add(waitCommand);\n        }\n        RPromise<Void> main=new RedissonPromise<Void>();\n        writeFuture=connection.send(new CommandsData(main,list,new ArrayList(entry.getCommands()),options.isSkipResult(),false,true,syncSlaves));\n      }\n else {\n        RPromise<Void> main=new RedissonPromise<Void>();\n        List<CommandData<?,?>> list=new ArrayList<>();\n        list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n        writeFuture=connection.send(new CommandsData(main,list,true,syncSlaves));\n      }\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 564,
+      "astHeight" : 17
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3845,
+        "startLineNumber" : 141,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 205,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override protected void sendCommand(RPromise<R> attemptPromise,RedisConnection connection){\n  MasterSlaveEntry msEntry=getEntry(source);\n  ConnectionEntry connectionEntry=connections.get(msEntry);\n  boolean syncSlaves=options.getSyncSlaves() > 0;\n  if (source.getRedirect() == Redirect.ASK) {\n    List<CommandData<?,?>> list=new ArrayList<CommandData<?,?>>(2);\n    RPromise<Void> promise=new RedissonPromise<Void>();\n    list.add(new CommandData<Void,Void>(promise,codec,RedisCommands.ASKING,new Object[]{}));\n    if (connectionEntry.isFirstCommand()) {\n      list.add(new CommandData<Void,Void>(promise,codec,RedisCommands.MULTI,new Object[]{}));\n      connectionEntry.setFirstCommand(false);\n    }\n    list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n    RPromise<Void> main=new RedissonPromise<Void>();\n    writeFuture=connection.send(new CommandsData(main,list,true,syncSlaves));\n  }\n else {\n    if (log.isDebugEnabled()) {\n      log.debug(\"acquired connection for command {} and params {} from slot {} using node {}... {}\",command,LogHelper.toString(params),source,connection.getRedisClient().getAddr(),connection);\n    }\n    if (connectionEntry.isFirstCommand()) {\n      List<CommandData<?,?>> list=new ArrayList<CommandData<?,?>>(2);\n      list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.MULTI,new Object[]{}));\n      list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n      RPromise<Void> main=new RedissonPromise<Void>();\n      writeFuture=connection.send(new CommandsData(main,list,true,syncSlaves));\n      connectionEntry.setFirstCommand(false);\n    }\n else {\n      if (RedisCommands.EXEC.getName().equals(command.getName())) {\n        Entry entry=commands.get(msEntry);\n        List<CommandData<?,?>> list=new ArrayList<>();\n        if (options.isSkipResult()) {\n          list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.CLIENT_REPLY,new Object[]{\"OFF\"}));\n        }\n        list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n        if (options.isSkipResult()) {\n          list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.CLIENT_REPLY,new Object[]{\"ON\"}));\n        }\n        if (options.getSyncSlaves() > 0) {\n          BatchCommandData<?,?> waitCommand=new BatchCommandData(RedisCommands.WAIT,new Object[]{this.options.getSyncSlaves(),this.options.getSyncTimeout()},index.incrementAndGet());\n          list.add(waitCommand);\n          entry.getCommands().add(waitCommand);\n        }\n        RPromise<Void> main=new RedissonPromise<Void>();\n        writeFuture=connection.send(new CommandsData(main,list,new ArrayList(entry.getCommands()),options.isSkipResult(),false,true,syncSlaves));\n      }\n else {\n        RPromise<Void> main=new RedissonPromise<Void>();\n        List<CommandData<?,?>> list=new ArrayList<>();\n        list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n        writeFuture=connection.send(new CommandsData(main,list,true,syncSlaves));\n      }\n    }\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 581,
+      "astHeight" : 18
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 59,
+        "startLineNumber" : 144,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 144,
+        "endColumnNumber" : 67
+      },
+      "nodeContext" : "ConnectionEntry connectionEntry=connections.get(msEntry);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.redisson.connection.MasterSlaveEntry"
+  }, {
+    "nodeContext" : "msEntry",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 7,
+      "startLineNumber" : 174,
+      "startColumnNumber" : 47,
+      "endLineNumber" : 174,
+      "endColumnNumber" : 54
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 21,
+        "startLineNumber" : 174,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 55
+      },
+      "nodeContext" : "commands.get(msEntry)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 29,
+        "startLineNumber" : 174,
+        "startColumnNumber" : 26,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 55
+      },
+      "nodeContext" : "entry=commands.get(msEntry)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 36,
+        "startLineNumber" : 174,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "Entry entry=commands.get(msEntry);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 1421,
+        "startLineNumber" : 173,
+        "startColumnNumber" : 76,
+        "endLineNumber" : 197,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "{\n  Entry entry=commands.get(msEntry);\n  List<CommandData<?,?>> list=new ArrayList<>();\n  if (options.isSkipResult()) {\n    list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.CLIENT_REPLY,new Object[]{\"OFF\"}));\n  }\n  list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n  if (options.isSkipResult()) {\n    list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.CLIENT_REPLY,new Object[]{\"ON\"}));\n  }\n  if (options.getSyncSlaves() > 0) {\n    BatchCommandData<?,?> waitCommand=new BatchCommandData(RedisCommands.WAIT,new Object[]{this.options.getSyncSlaves(),this.options.getSyncTimeout()},index.incrementAndGet());\n    list.add(waitCommand);\n    entry.getCommands().add(waitCommand);\n  }\n  RPromise<Void> main=new RedissonPromise<Void>();\n  writeFuture=connection.send(new CommandsData(main,list,new ArrayList(entry.getCommands()),options.isSkipResult(),false,true,syncSlaves));\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 198,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1839,
+        "startLineNumber" : 173,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 202,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "if (RedisCommands.EXEC.getName().equals(command.getName())) {\n  Entry entry=commands.get(msEntry);\n  List<CommandData<?,?>> list=new ArrayList<>();\n  if (options.isSkipResult()) {\n    list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.CLIENT_REPLY,new Object[]{\"OFF\"}));\n  }\n  list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n  if (options.isSkipResult()) {\n    list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.CLIENT_REPLY,new Object[]{\"ON\"}));\n  }\n  if (options.getSyncSlaves() > 0) {\n    BatchCommandData<?,?> waitCommand=new BatchCommandData(RedisCommands.WAIT,new Object[]{this.options.getSyncSlaves(),this.options.getSyncTimeout()},index.incrementAndGet());\n    list.add(waitCommand);\n    entry.getCommands().add(waitCommand);\n  }\n  RPromise<Void> main=new RedissonPromise<Void>();\n  writeFuture=connection.send(new CommandsData(main,list,new ArrayList(entry.getCommands()),options.isSkipResult(),false,true,syncSlaves));\n}\n else {\n  RPromise<Void> main=new RedissonPromise<Void>();\n  List<CommandData<?,?>> list=new ArrayList<>();\n  list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n  writeFuture=connection.send(new CommandsData(main,list,true,syncSlaves));\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 268,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 1871,
+        "startLineNumber" : 172,
+        "startColumnNumber" : 19,
+        "endLineNumber" : 203,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  if (RedisCommands.EXEC.getName().equals(command.getName())) {\n    Entry entry=commands.get(msEntry);\n    List<CommandData<?,?>> list=new ArrayList<>();\n    if (options.isSkipResult()) {\n      list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.CLIENT_REPLY,new Object[]{\"OFF\"}));\n    }\n    list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n    if (options.isSkipResult()) {\n      list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.CLIENT_REPLY,new Object[]{\"ON\"}));\n    }\n    if (options.getSyncSlaves() > 0) {\n      BatchCommandData<?,?> waitCommand=new BatchCommandData(RedisCommands.WAIT,new Object[]{this.options.getSyncSlaves(),this.options.getSyncTimeout()},index.incrementAndGet());\n      list.add(waitCommand);\n      entry.getCommands().add(waitCommand);\n    }\n    RPromise<Void> main=new RedissonPromise<Void>();\n    writeFuture=connection.send(new CommandsData(main,list,new ArrayList(entry.getCommands()),options.isSkipResult(),false,true,syncSlaves));\n  }\n else {\n    RPromise<Void> main=new RedissonPromise<Void>();\n    List<CommandData<?,?>> list=new ArrayList<>();\n    list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n    writeFuture=connection.send(new CommandsData(main,list,true,syncSlaves));\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 269,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 2449,
+        "startLineNumber" : 165,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 203,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "if (connectionEntry.isFirstCommand()) {\n  List<CommandData<?,?>> list=new ArrayList<CommandData<?,?>>(2);\n  list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.MULTI,new Object[]{}));\n  list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n  RPromise<Void> main=new RedissonPromise<Void>();\n  writeFuture=connection.send(new CommandsData(main,list,true,syncSlaves));\n  connectionEntry.setFirstCommand(false);\n}\n else {\n  if (RedisCommands.EXEC.getName().equals(command.getName())) {\n    Entry entry=commands.get(msEntry);\n    List<CommandData<?,?>> list=new ArrayList<>();\n    if (options.isSkipResult()) {\n      list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.CLIENT_REPLY,new Object[]{\"OFF\"}));\n    }\n    list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n    if (options.isSkipResult()) {\n      list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.CLIENT_REPLY,new Object[]{\"ON\"}));\n    }\n    if (options.getSyncSlaves() > 0) {\n      BatchCommandData<?,?> waitCommand=new BatchCommandData(RedisCommands.WAIT,new Object[]{this.options.getSyncSlaves(),this.options.getSyncTimeout()},index.incrementAndGet());\n      list.add(waitCommand);\n      entry.getCommands().add(waitCommand);\n    }\n    RPromise<Void> main=new RedissonPromise<Void>();\n    writeFuture=connection.send(new CommandsData(main,list,new ArrayList(entry.getCommands()),options.isSkipResult(),false,true,syncSlaves));\n  }\n else {\n    RPromise<Void> main=new RedissonPromise<Void>();\n    List<CommandData<?,?>> list=new ArrayList<>();\n    list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n    writeFuture=connection.send(new CommandsData(main,list,true,syncSlaves));\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 371,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 2772,
+        "startLineNumber" : 159,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  if (log.isDebugEnabled()) {\n    log.debug(\"acquired connection for command {} and params {} from slot {} using node {}... {}\",command,LogHelper.toString(params),source,connection.getRedisClient().getAddr(),connection);\n  }\n  if (connectionEntry.isFirstCommand()) {\n    List<CommandData<?,?>> list=new ArrayList<CommandData<?,?>>(2);\n    list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.MULTI,new Object[]{}));\n    list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n    RPromise<Void> main=new RedissonPromise<Void>();\n    writeFuture=connection.send(new CommandsData(main,list,true,syncSlaves));\n    connectionEntry.setFirstCommand(false);\n  }\n else {\n    if (RedisCommands.EXEC.getName().equals(command.getName())) {\n      Entry entry=commands.get(msEntry);\n      List<CommandData<?,?>> list=new ArrayList<>();\n      if (options.isSkipResult()) {\n        list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.CLIENT_REPLY,new Object[]{\"OFF\"}));\n      }\n      list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n      if (options.isSkipResult()) {\n        list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.CLIENT_REPLY,new Object[]{\"ON\"}));\n      }\n      if (options.getSyncSlaves() > 0) {\n        BatchCommandData<?,?> waitCommand=new BatchCommandData(RedisCommands.WAIT,new Object[]{this.options.getSyncSlaves(),this.options.getSyncTimeout()},index.incrementAndGet());\n        list.add(waitCommand);\n        entry.getCommands().add(waitCommand);\n      }\n      RPromise<Void> main=new RedissonPromise<Void>();\n      writeFuture=connection.send(new CommandsData(main,list,new ArrayList(entry.getCommands()),options.isSkipResult(),false,true,syncSlaves));\n    }\n else {\n      RPromise<Void> main=new RedissonPromise<Void>();\n      List<CommandData<?,?>> list=new ArrayList<>();\n      list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n      writeFuture=connection.send(new CommandsData(main,list,true,syncSlaves));\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 394,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 3551,
+        "startLineNumber" : 148,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (source.getRedirect() == Redirect.ASK) {\n  List<CommandData<?,?>> list=new ArrayList<CommandData<?,?>>(2);\n  RPromise<Void> promise=new RedissonPromise<Void>();\n  list.add(new CommandData<Void,Void>(promise,codec,RedisCommands.ASKING,new Object[]{}));\n  if (connectionEntry.isFirstCommand()) {\n    list.add(new CommandData<Void,Void>(promise,codec,RedisCommands.MULTI,new Object[]{}));\n    connectionEntry.setFirstCommand(false);\n  }\n  list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n  RPromise<Void> main=new RedissonPromise<Void>();\n  writeFuture=connection.send(new CommandsData(main,list,true,syncSlaves));\n}\n else {\n  if (log.isDebugEnabled()) {\n    log.debug(\"acquired connection for command {} and params {} from slot {} using node {}... {}\",command,LogHelper.toString(params),source,connection.getRedisClient().getAddr(),connection);\n  }\n  if (connectionEntry.isFirstCommand()) {\n    List<CommandData<?,?>> list=new ArrayList<CommandData<?,?>>(2);\n    list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.MULTI,new Object[]{}));\n    list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n    RPromise<Void> main=new RedissonPromise<Void>();\n    writeFuture=connection.send(new CommandsData(main,list,true,syncSlaves));\n    connectionEntry.setFirstCommand(false);\n  }\n else {\n    if (RedisCommands.EXEC.getName().equals(command.getName())) {\n      Entry entry=commands.get(msEntry);\n      List<CommandData<?,?>> list=new ArrayList<>();\n      if (options.isSkipResult()) {\n        list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.CLIENT_REPLY,new Object[]{\"OFF\"}));\n      }\n      list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n      if (options.isSkipResult()) {\n        list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.CLIENT_REPLY,new Object[]{\"ON\"}));\n      }\n      if (options.getSyncSlaves() > 0) {\n        BatchCommandData<?,?> waitCommand=new BatchCommandData(RedisCommands.WAIT,new Object[]{this.options.getSyncSlaves(),this.options.getSyncTimeout()},index.incrementAndGet());\n        list.add(waitCommand);\n        entry.getCommands().add(waitCommand);\n      }\n      RPromise<Void> main=new RedissonPromise<Void>();\n      writeFuture=connection.send(new CommandsData(main,list,new ArrayList(entry.getCommands()),options.isSkipResult(),false,true,syncSlaves));\n    }\n else {\n      RPromise<Void> main=new RedissonPromise<Void>();\n      List<CommandData<?,?>> list=new ArrayList<>();\n      list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n      writeFuture=connection.send(new CommandsData(main,list,true,syncSlaves));\n    }\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 537,
+      "astHeight" : 16
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3748,
+        "startLineNumber" : 142,
+        "startColumnNumber" : 87,
+        "endLineNumber" : 205,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  MasterSlaveEntry msEntry=getEntry(source);\n  ConnectionEntry connectionEntry=connections.get(msEntry);\n  boolean syncSlaves=options.getSyncSlaves() > 0;\n  if (source.getRedirect() == Redirect.ASK) {\n    List<CommandData<?,?>> list=new ArrayList<CommandData<?,?>>(2);\n    RPromise<Void> promise=new RedissonPromise<Void>();\n    list.add(new CommandData<Void,Void>(promise,codec,RedisCommands.ASKING,new Object[]{}));\n    if (connectionEntry.isFirstCommand()) {\n      list.add(new CommandData<Void,Void>(promise,codec,RedisCommands.MULTI,new Object[]{}));\n      connectionEntry.setFirstCommand(false);\n    }\n    list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n    RPromise<Void> main=new RedissonPromise<Void>();\n    writeFuture=connection.send(new CommandsData(main,list,true,syncSlaves));\n  }\n else {\n    if (log.isDebugEnabled()) {\n      log.debug(\"acquired connection for command {} and params {} from slot {} using node {}... {}\",command,LogHelper.toString(params),source,connection.getRedisClient().getAddr(),connection);\n    }\n    if (connectionEntry.isFirstCommand()) {\n      List<CommandData<?,?>> list=new ArrayList<CommandData<?,?>>(2);\n      list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.MULTI,new Object[]{}));\n      list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n      RPromise<Void> main=new RedissonPromise<Void>();\n      writeFuture=connection.send(new CommandsData(main,list,true,syncSlaves));\n      connectionEntry.setFirstCommand(false);\n    }\n else {\n      if (RedisCommands.EXEC.getName().equals(command.getName())) {\n        Entry entry=commands.get(msEntry);\n        List<CommandData<?,?>> list=new ArrayList<>();\n        if (options.isSkipResult()) {\n          list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.CLIENT_REPLY,new Object[]{\"OFF\"}));\n        }\n        list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n        if (options.isSkipResult()) {\n          list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.CLIENT_REPLY,new Object[]{\"ON\"}));\n        }\n        if (options.getSyncSlaves() > 0) {\n          BatchCommandData<?,?> waitCommand=new BatchCommandData(RedisCommands.WAIT,new Object[]{this.options.getSyncSlaves(),this.options.getSyncTimeout()},index.incrementAndGet());\n          list.add(waitCommand);\n          entry.getCommands().add(waitCommand);\n        }\n        RPromise<Void> main=new RedissonPromise<Void>();\n        writeFuture=connection.send(new CommandsData(main,list,new ArrayList(entry.getCommands()),options.isSkipResult(),false,true,syncSlaves));\n      }\n else {\n        RPromise<Void> main=new RedissonPromise<Void>();\n        List<CommandData<?,?>> list=new ArrayList<>();\n        list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n        writeFuture=connection.send(new CommandsData(main,list,true,syncSlaves));\n      }\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 564,
+      "astHeight" : 17
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3845,
+        "startLineNumber" : 141,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 205,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override protected void sendCommand(RPromise<R> attemptPromise,RedisConnection connection){\n  MasterSlaveEntry msEntry=getEntry(source);\n  ConnectionEntry connectionEntry=connections.get(msEntry);\n  boolean syncSlaves=options.getSyncSlaves() > 0;\n  if (source.getRedirect() == Redirect.ASK) {\n    List<CommandData<?,?>> list=new ArrayList<CommandData<?,?>>(2);\n    RPromise<Void> promise=new RedissonPromise<Void>();\n    list.add(new CommandData<Void,Void>(promise,codec,RedisCommands.ASKING,new Object[]{}));\n    if (connectionEntry.isFirstCommand()) {\n      list.add(new CommandData<Void,Void>(promise,codec,RedisCommands.MULTI,new Object[]{}));\n      connectionEntry.setFirstCommand(false);\n    }\n    list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n    RPromise<Void> main=new RedissonPromise<Void>();\n    writeFuture=connection.send(new CommandsData(main,list,true,syncSlaves));\n  }\n else {\n    if (log.isDebugEnabled()) {\n      log.debug(\"acquired connection for command {} and params {} from slot {} using node {}... {}\",command,LogHelper.toString(params),source,connection.getRedisClient().getAddr(),connection);\n    }\n    if (connectionEntry.isFirstCommand()) {\n      List<CommandData<?,?>> list=new ArrayList<CommandData<?,?>>(2);\n      list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.MULTI,new Object[]{}));\n      list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n      RPromise<Void> main=new RedissonPromise<Void>();\n      writeFuture=connection.send(new CommandsData(main,list,true,syncSlaves));\n      connectionEntry.setFirstCommand(false);\n    }\n else {\n      if (RedisCommands.EXEC.getName().equals(command.getName())) {\n        Entry entry=commands.get(msEntry);\n        List<CommandData<?,?>> list=new ArrayList<>();\n        if (options.isSkipResult()) {\n          list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.CLIENT_REPLY,new Object[]{\"OFF\"}));\n        }\n        list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n        if (options.isSkipResult()) {\n          list.add(new CommandData<Void,Void>(new RedissonPromise<Void>(),codec,RedisCommands.CLIENT_REPLY,new Object[]{\"ON\"}));\n        }\n        if (options.getSyncSlaves() > 0) {\n          BatchCommandData<?,?> waitCommand=new BatchCommandData(RedisCommands.WAIT,new Object[]{this.options.getSyncSlaves(),this.options.getSyncTimeout()},index.incrementAndGet());\n          list.add(waitCommand);\n          entry.getCommands().add(waitCommand);\n        }\n        RPromise<Void> main=new RedissonPromise<Void>();\n        writeFuture=connection.send(new CommandsData(main,list,new ArrayList(entry.getCommands()),options.isSkipResult(),false,true,syncSlaves));\n      }\n else {\n        RPromise<Void> main=new RedissonPromise<Void>();\n        List<CommandData<?,?>> list=new ArrayList<>();\n        list.add(new CommandData<V,R>(attemptPromise,codec,command,params));\n        writeFuture=connection.send(new CommandsData(main,list,true,syncSlaves));\n      }\n    }\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 581,
+      "astHeight" : 18
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 36,
+        "startLineNumber" : 174,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "Entry entry=commands.get(msEntry);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.redisson.connection.MasterSlaveEntry"
+  } ],
+  "positionList" : [ {
+    "charLength" : 7,
+    "startLineNumber" : 144,
+    "startColumnNumber" : 58,
+    "endLineNumber" : 144,
+    "endColumnNumber" : 65
+  }, {
+    "charLength" : 7,
+    "startLineNumber" : 174,
+    "startColumnNumber" : 47,
+    "endLineNumber" : 174,
+    "endColumnNumber" : 54
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 9
+  } ]
+}

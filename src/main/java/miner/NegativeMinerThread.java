@@ -18,7 +18,10 @@ import java.util.*;
 @Slf4j
 public class NegativeMinerThread extends AbstractMinerThread {
 
-    public NegativeMinerThread(String projectName, int totalRecords) {
+    //每个文件最多采集多少个
+    private int fMaxRecordsPerFile = 1;
+
+    public NegativeMinerThread(String projectName, int totalRecords ) {
         super(projectName,totalRecords);
     }
 
@@ -42,9 +45,13 @@ public class NegativeMinerThread extends AbstractMinerThread {
                 }
                 GitUtils.rollbackToCommit(gitPath, fCommitID);
                 fProjectsParser = new ProjectsParser(new Path[]{projectPath}, projectPath, projectPath);
-                if (fProjectsParser.getTargetJavaFiles().size() >= fTotalRecords) {
-                    break;
-                }
+                break;
+//                if (fProjectsParser.getTargetJavaFiles().size() >= fTotalRecords) {
+//
+//                    break;
+//                }else {
+//                    log.info("project {} has {} java files, less than {} refactorings, will try next commit",fProjectName,fProjectsParser.getTargetJavaFiles().size(),fTotalRecords);
+//                }
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (Exception e) {
@@ -82,10 +89,16 @@ public class NegativeMinerThread extends AbstractMinerThread {
         while (fRandomSelection.getCurrentRecords() < fTotalRecords) {
             String path = fRandomSelection.generateRandomObjectFromSet(targetJavaFiles);
             if (path == null) {
-                log.error("no more files to process in project {}", fProjectName);
+                log.error("no more files to process in project {}, current size: {}", fProjectName,targetJavaFiles.size());
                 break;
             }
-            CompilationUnit cu = fProjectsParser.parse(path);
+            CompilationUnit cu = null;
+            try{
+               cu = fProjectsParser.parse(path);
+            }catch (Exception e){
+                targetJavaFiles.remove(path);
+                continue;
+            }
             if (cu == null) {
                 targetJavaFiles.remove(path);
                 continue;
@@ -127,7 +140,10 @@ public class NegativeMinerThread extends AbstractMinerThread {
             fJsonFileSplitter.writeJsonArrayInSampled(r, false);
 
             fRandomSelection.incCurrentRecords();
-            targetJavaFiles.remove(path);
+            // 期望每个文件随机采一个，不足的话可以多采
+            if(targetJavaFiles.size()> fTotalRecords- fRandomSelection.getCurrentRecords()){
+                targetJavaFiles.remove(path);
+            }
             int currentRecords = fRandomSelection.getCurrentRecords();
             int process = (100 * (currentRecords)) / fTotalRecords;
             if (process % 5 == 0 && currentProcessed != (100 * (currentRecords)) / fTotalRecords) {

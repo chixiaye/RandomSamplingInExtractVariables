@@ -1,0 +1,87 @@
+{
+  "id" : 257,
+  "expression" : "remBlock.getPredecessors().size() != 1",
+  "projectName" : "skylot@jadx",
+  "commitID" : "eb2a1734d3e02c19814f628e10bf80de5fb19772",
+  "filePath" : "/jadx-core/src/main/java/jadx/core/dex/visitors/blocksmaker/BlockFinallyExtract.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "remBlock.getPredecessors().size() != 1",
+    "nodeType" : "InfixExpression",
+    "nodePosition" : {
+      "charLength" : 38,
+      "startLineNumber" : 527,
+      "startColumnNumber" : 6,
+      "endLineNumber" : 527,
+      "endColumnNumber" : 44
+    },
+    "astNodeNumber" : 7,
+    "astHeight" : 4,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 183,
+        "startLineNumber" : 527,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 530,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "if (remBlock.getPredecessors().size() != 1) {\n  LOG.warn(\"Finally extract failed: remBlock pred: {}, {}, method: {}\",remBlock,remBlock.getPredecessors(),mth);\n  return false;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 21,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3850,
+        "startLineNumber" : 519,
+        "startColumnNumber" : 81,
+        "endLineNumber" : 629,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  BlockNode remBlock=removeInfo.getStart().getFirst();\n  BlockNode startBlock=removeInfo.getStart().getSecond();\n  if (remBlock.contains(AFlag.REMOVE)) {\n    return true;\n  }\n  if (remBlock.getPredecessors().size() != 1) {\n    LOG.warn(\"Finally extract failed: remBlock pred: {}, {}, method: {}\",remBlock,remBlock.getPredecessors(),mth);\n    return false;\n  }\n  if (removeInfo.getOuts().isEmpty()) {\n    ErrorsCounter.methodWarn(mth,\"Failed to extract finally block: empty outs\");\n    return false;\n  }\n  BlockNode remBlockPred=remBlock.getPredecessors().get(0);\n  removeInfo.setStartPredecessor(remBlockPred);\n  int startSplitIndex=removeInfo.getStartSplitIndex();\n  int endSplitIndex=removeInfo.getEndSplitIndex();\n  if (removeInfo.getStart().equals(removeInfo.getEnd())) {\n    removeInfo.setEndSplitIndex(endSplitIndex - startSplitIndex);\n  }\n  if (startSplitIndex > 0) {\n    remBlock=splitBlock(mth,remBlock,startSplitIndex);\n    removeInfo.getProcessed().remove(removeInfo.getStart());\n    BlocksPair newStart=new BlocksPair(remBlock,startBlock);\n    removeInfo.getProcessed().add(newStart);\n  }\n  if (endSplitIndex > 0) {\n    BlocksPair end=removeInfo.getEnd();\n    BlockNode newOut=splitBlock(mth,end.getFirst(),endSplitIndex);\n    for (    BlockNode s : newOut.getSuccessors()) {\n      BlocksPair replaceOut=null;\n      Iterator<BlocksPair> it=removeInfo.getOuts().iterator();\n      while (it.hasNext()) {\n        BlocksPair outPair=it.next();\n        if (outPair.getFirst().equals(s)) {\n          it.remove();\n          replaceOut=new BlocksPair(newOut,outPair.getSecond());\n          break;\n        }\n      }\n      if (replaceOut != null) {\n        removeInfo.getOuts().add(replaceOut);\n      }\n    }\n  }\n  Set<BlocksPair> outs=removeInfo.getOuts();\n  if (outs.isEmpty()) {\n    throw new JadxRuntimeException(\"Failed to extract finally block: all outs is deleted\");\n  }\n  BlocksPair out=outs.iterator().next();\n  BlockNode rOut=out.getFirst();\n  BlockNode sOut=out.getSecond();\n  List<BlockNode> filtPreds=BlockUtils.filterPredecessors(sOut);\n  if (filtPreds.size() > 1) {\n    BlockNode pred=sOut.getPredecessors().get(0);\n    BlockNode newPred=BlockSplitter.insertBlockBetween(mth,pred,sOut);\n    for (    BlockNode predBlock : new ArrayList<>(sOut.getPredecessors())) {\n      if (predBlock != newPred) {\n        BlockSplitter.replaceConnection(predBlock,sOut,newPred);\n      }\n    }\n    rOut.getPredecessors().clear();\n    addIgnoredEdge(newPred,rOut);\n    connect(newPred,rOut);\n  }\n else   if (filtPreds.size() == 1) {\n    BlockNode pred=filtPreds.get(0);\n    BlockNode repl=removeInfo.getBySecond(pred);\n    if (repl == null) {\n      throw new JadxRuntimeException(\"Block not found by \" + pred + \", in \"+ removeInfo);\n    }\n    removeConnection(pred,rOut);\n    addIgnoredEdge(repl,rOut);\n    connect(repl,rOut);\n  }\n else {\n    throw new JadxRuntimeException(\"Finally extract failed, unexpected preds: \" + filtPreds + \" for \"+ sOut+ \", method: \"+ mth);\n  }\n  for (  BlockNode pred : new ArrayList<>(remBlock.getPredecessors())) {\n    BlockNode middle=insertBlockBetween(mth,pred,remBlock);\n    removeConnection(middle,remBlock);\n    connect(middle,startBlock);\n    addIgnoredEdge(middle,startBlock);\n    connect(middle,rOut);\n    BlockSplitter.replaceTarget(middle,remBlock,rOut);\n  }\n  markForRemove(mth,remBlock);\n  for (  BlocksPair pair : removeInfo.getProcessed()) {\n    markForRemove(mth,pair.getFirst());\n    BlockNode second=pair.getSecond();\n    second.updateCleanSuccessors();\n  }\n  return true;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 534,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3930,
+        "startLineNumber" : 519,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 629,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "private static boolean applyRemove(MethodNode mth,BlocksRemoveInfo removeInfo){\n  BlockNode remBlock=removeInfo.getStart().getFirst();\n  BlockNode startBlock=removeInfo.getStart().getSecond();\n  if (remBlock.contains(AFlag.REMOVE)) {\n    return true;\n  }\n  if (remBlock.getPredecessors().size() != 1) {\n    LOG.warn(\"Finally extract failed: remBlock pred: {}, {}, method: {}\",remBlock,remBlock.getPredecessors(),mth);\n    return false;\n  }\n  if (removeInfo.getOuts().isEmpty()) {\n    ErrorsCounter.methodWarn(mth,\"Failed to extract finally block: empty outs\");\n    return false;\n  }\n  BlockNode remBlockPred=remBlock.getPredecessors().get(0);\n  removeInfo.setStartPredecessor(remBlockPred);\n  int startSplitIndex=removeInfo.getStartSplitIndex();\n  int endSplitIndex=removeInfo.getEndSplitIndex();\n  if (removeInfo.getStart().equals(removeInfo.getEnd())) {\n    removeInfo.setEndSplitIndex(endSplitIndex - startSplitIndex);\n  }\n  if (startSplitIndex > 0) {\n    remBlock=splitBlock(mth,remBlock,startSplitIndex);\n    removeInfo.getProcessed().remove(removeInfo.getStart());\n    BlocksPair newStart=new BlocksPair(remBlock,startBlock);\n    removeInfo.getProcessed().add(newStart);\n  }\n  if (endSplitIndex > 0) {\n    BlocksPair end=removeInfo.getEnd();\n    BlockNode newOut=splitBlock(mth,end.getFirst(),endSplitIndex);\n    for (    BlockNode s : newOut.getSuccessors()) {\n      BlocksPair replaceOut=null;\n      Iterator<BlocksPair> it=removeInfo.getOuts().iterator();\n      while (it.hasNext()) {\n        BlocksPair outPair=it.next();\n        if (outPair.getFirst().equals(s)) {\n          it.remove();\n          replaceOut=new BlocksPair(newOut,outPair.getSecond());\n          break;\n        }\n      }\n      if (replaceOut != null) {\n        removeInfo.getOuts().add(replaceOut);\n      }\n    }\n  }\n  Set<BlocksPair> outs=removeInfo.getOuts();\n  if (outs.isEmpty()) {\n    throw new JadxRuntimeException(\"Failed to extract finally block: all outs is deleted\");\n  }\n  BlocksPair out=outs.iterator().next();\n  BlockNode rOut=out.getFirst();\n  BlockNode sOut=out.getSecond();\n  List<BlockNode> filtPreds=BlockUtils.filterPredecessors(sOut);\n  if (filtPreds.size() > 1) {\n    BlockNode pred=sOut.getPredecessors().get(0);\n    BlockNode newPred=BlockSplitter.insertBlockBetween(mth,pred,sOut);\n    for (    BlockNode predBlock : new ArrayList<>(sOut.getPredecessors())) {\n      if (predBlock != newPred) {\n        BlockSplitter.replaceConnection(predBlock,sOut,newPred);\n      }\n    }\n    rOut.getPredecessors().clear();\n    addIgnoredEdge(newPred,rOut);\n    connect(newPred,rOut);\n  }\n else   if (filtPreds.size() == 1) {\n    BlockNode pred=filtPreds.get(0);\n    BlockNode repl=removeInfo.getBySecond(pred);\n    if (repl == null) {\n      throw new JadxRuntimeException(\"Block not found by \" + pred + \", in \"+ removeInfo);\n    }\n    removeConnection(pred,rOut);\n    addIgnoredEdge(repl,rOut);\n    connect(repl,rOut);\n  }\n else {\n    throw new JadxRuntimeException(\"Finally extract failed, unexpected preds: \" + filtPreds + \" for \"+ sOut+ \", method: \"+ mth);\n  }\n  for (  BlockNode pred : new ArrayList<>(remBlock.getPredecessors())) {\n    BlockNode middle=insertBlockBetween(mth,pred,remBlock);\n    removeConnection(middle,remBlock);\n    connect(middle,startBlock);\n    addIgnoredEdge(middle,startBlock);\n    connect(middle,rOut);\n    BlockSplitter.replaceTarget(middle,remBlock,rOut);\n  }\n  markForRemove(mth,remBlock);\n  for (  BlocksPair pair : removeInfo.getProcessed()) {\n    markForRemove(mth,pair.getFirst());\n    BlockNode second=pair.getSecond();\n    second.updateCleanSuccessors();\n  }\n  return true;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 547,
+      "astHeight" : 15
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 183,
+        "startLineNumber" : 527,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 530,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "if (remBlock.getPredecessors().size() != 1) {\n  LOG.warn(\"Finally extract failed: remBlock pred: {}, {}, method: {}\",remBlock,remBlock.getPredecessors(),mth);\n  return false;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 21,
+      "astHeight" : 6
+    },
+    "tokenLength" : 5,
+    "type" : "boolean"
+  } ],
+  "positionList" : [ {
+    "charLength" : 38,
+    "startLineNumber" : 527,
+    "startColumnNumber" : 6,
+    "endLineNumber" : 527,
+    "endColumnNumber" : 44
+  } ],
+  "layoutRelationDataList" : [ ]
+}

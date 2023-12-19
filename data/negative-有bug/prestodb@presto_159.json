@@ -1,0 +1,100 @@
+{
+  "id" : 159,
+  "expression" : "materializedViewTable.getTableType().equals(MATERIALIZED_VIEW)",
+  "projectName" : "prestodb@presto",
+  "commitID" : "eff77883d0d24dc6022ecde252612d1430c9fbac",
+  "filePath" : "/presto-hive/src/main/java/com/facebook/presto/hive/HiveMetadata.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "materializedViewTable.getTableType().equals(MATERIALIZED_VIEW)",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 62,
+      "startLineNumber" : 2345,
+      "startColumnNumber" : 16,
+      "endLineNumber" : 2345,
+      "endColumnNumber" : 78
+    },
+    "astNodeNumber" : 6,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 210,
+        "startLineNumber" : 2344,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 2346,
+        "endColumnNumber" : 118
+      },
+      "nodeContext" : "checkState(materializedViewTable.getTableType().equals(MATERIALIZED_VIEW),format(\"materialized view table %s is not a materialized view\",materializedViewTable.getTableName()))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 14,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 211,
+        "startLineNumber" : 2344,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 2346,
+        "endColumnNumber" : 119
+      },
+      "nodeContext" : "checkState(materializedViewTable.getTableType().equals(MATERIALIZED_VIEW),format(\"materialized view table %s is not a materialized view\",materializedViewTable.getTableName()));\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4207,
+        "startLineNumber" : 2327,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 2387,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  MetastoreContext metastoreContext=getMetastoreContext(session);\n  ConnectorMaterializedViewDefinition viewDefinition=getMaterializedView(session,materializedViewName).orElseThrow(() -> new MaterializedViewNotFoundException(materializedViewName));\n  List<Table> baseTables=viewDefinition.getBaseTables().stream().map(baseTableName -> metastore.getTable(metastoreContext,baseTableName.getSchemaName(),baseTableName.getTableName()).orElseThrow(() -> new TableNotFoundException(baseTableName))).collect(toImmutableList());\n  baseTables.forEach(table -> checkState(table.getTableType().equals(MANAGED_TABLE),format(\"base table %s is not a managed table\",table.getTableName())));\n  Table materializedViewTable=metastore.getTable(metastoreContext,materializedViewName.getSchemaName(),materializedViewName.getTableName()).orElseThrow(() -> new MaterializedViewNotFoundException(materializedViewName));\n  checkState(materializedViewTable.getTableType().equals(MATERIALIZED_VIEW),format(\"materialized view table %s is not a materialized view\",materializedViewTable.getTableName()));\n  validateMaterializedViewPartitionColumns(metastore,metastoreContext,materializedViewTable,viewDefinition);\n  Map<String,Map<SchemaTableName,String>> directColumnMappings=viewDefinition.getDirectColumnMappingsAsMap();\n  Map<SchemaTableName,Map<String,String>> viewToBasePartitionMap=getViewToBasePartitionMap(materializedViewTable,baseTables,directColumnMappings);\n  MaterializedDataPredicates materializedDataPredicates=getMaterializedDataPredicates(metastore,metastoreContext,typeManager,materializedViewTable,timeZone);\n  if (materializedDataPredicates.getPredicateDisjuncts().isEmpty()) {\n    return new MaterializedViewStatus(NOT_MATERIALIZED);\n  }\n  Map<SchemaTableName,MaterializedDataPredicates> partitionsFromBaseTables=baseTables.stream().collect(toImmutableMap(baseTable -> new SchemaTableName(baseTable.getDatabaseName(),baseTable.getTableName()),baseTable -> {\n    MaterializedDataPredicates baseTableMaterializedPredicates=getMaterializedDataPredicates(metastore,metastoreContext,typeManager,baseTable,timeZone);\n    SchemaTableName schemaTableName=new SchemaTableName(baseTable.getDatabaseName(),baseTable.getTableName());\n    Map<String,String> viewToBaseIndirectMappedColumns=viewToBaseTableOnOuterJoinSideIndirectMappedPartitions(viewDefinition,baseTable).orElse(ImmutableMap.of());\n    return differenceDataPredicates(baseTableMaterializedPredicates,materializedDataPredicates,viewToBasePartitionMap.getOrDefault(schemaTableName,ImmutableMap.of()),viewToBaseIndirectMappedColumns);\n  }\n));\n  for (  MaterializedDataPredicates dataPredicates : partitionsFromBaseTables.values()) {\n    if (!dataPredicates.getPredicateDisjuncts().isEmpty()) {\n      if (dataPredicates.getPredicateDisjuncts().stream().mapToInt(tupleDomain -> tupleDomain.getDomains().isPresent() ? tupleDomain.getDomains().get().size() : 0).sum() > HiveSessionProperties.getMaterializedViewMissingPartitionsThreshold(session)) {\n        return new MaterializedViewStatus(TOO_MANY_PARTITIONS_MISSING,partitionsFromBaseTables);\n      }\n      return new MaterializedViewStatus(PARTIALLY_MATERIALIZED,partitionsFromBaseTables);\n    }\n  }\n  return new MaterializedViewStatus(FULLY_MATERIALIZED);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 349,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4345,
+        "startLineNumber" : 2325,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 2387,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public MaterializedViewStatus getMaterializedViewStatus(ConnectorSession session,SchemaTableName materializedViewName){\n  MetastoreContext metastoreContext=getMetastoreContext(session);\n  ConnectorMaterializedViewDefinition viewDefinition=getMaterializedView(session,materializedViewName).orElseThrow(() -> new MaterializedViewNotFoundException(materializedViewName));\n  List<Table> baseTables=viewDefinition.getBaseTables().stream().map(baseTableName -> metastore.getTable(metastoreContext,baseTableName.getSchemaName(),baseTableName.getTableName()).orElseThrow(() -> new TableNotFoundException(baseTableName))).collect(toImmutableList());\n  baseTables.forEach(table -> checkState(table.getTableType().equals(MANAGED_TABLE),format(\"base table %s is not a managed table\",table.getTableName())));\n  Table materializedViewTable=metastore.getTable(metastoreContext,materializedViewName.getSchemaName(),materializedViewName.getTableName()).orElseThrow(() -> new MaterializedViewNotFoundException(materializedViewName));\n  checkState(materializedViewTable.getTableType().equals(MATERIALIZED_VIEW),format(\"materialized view table %s is not a materialized view\",materializedViewTable.getTableName()));\n  validateMaterializedViewPartitionColumns(metastore,metastoreContext,materializedViewTable,viewDefinition);\n  Map<String,Map<SchemaTableName,String>> directColumnMappings=viewDefinition.getDirectColumnMappingsAsMap();\n  Map<SchemaTableName,Map<String,String>> viewToBasePartitionMap=getViewToBasePartitionMap(materializedViewTable,baseTables,directColumnMappings);\n  MaterializedDataPredicates materializedDataPredicates=getMaterializedDataPredicates(metastore,metastoreContext,typeManager,materializedViewTable,timeZone);\n  if (materializedDataPredicates.getPredicateDisjuncts().isEmpty()) {\n    return new MaterializedViewStatus(NOT_MATERIALIZED);\n  }\n  Map<SchemaTableName,MaterializedDataPredicates> partitionsFromBaseTables=baseTables.stream().collect(toImmutableMap(baseTable -> new SchemaTableName(baseTable.getDatabaseName(),baseTable.getTableName()),baseTable -> {\n    MaterializedDataPredicates baseTableMaterializedPredicates=getMaterializedDataPredicates(metastore,metastoreContext,typeManager,baseTable,timeZone);\n    SchemaTableName schemaTableName=new SchemaTableName(baseTable.getDatabaseName(),baseTable.getTableName());\n    Map<String,String> viewToBaseIndirectMappedColumns=viewToBaseTableOnOuterJoinSideIndirectMappedPartitions(viewDefinition,baseTable).orElse(ImmutableMap.of());\n    return differenceDataPredicates(baseTableMaterializedPredicates,materializedDataPredicates,viewToBasePartitionMap.getOrDefault(schemaTableName,ImmutableMap.of()),viewToBaseIndirectMappedColumns);\n  }\n));\n  for (  MaterializedDataPredicates dataPredicates : partitionsFromBaseTables.values()) {\n    if (!dataPredicates.getPredicateDisjuncts().isEmpty()) {\n      if (dataPredicates.getPredicateDisjuncts().stream().mapToInt(tupleDomain -> tupleDomain.getDomains().isPresent() ? tupleDomain.getDomains().get().size() : 0).sum() > HiveSessionProperties.getMaterializedViewMissingPartitionsThreshold(session)) {\n        return new MaterializedViewStatus(TOO_MANY_PARTITIONS_MISSING,partitionsFromBaseTables);\n      }\n      return new MaterializedViewStatus(PARTIALLY_MATERIALIZED,partitionsFromBaseTables);\n    }\n  }\n  return new MaterializedViewStatus(FULLY_MATERIALIZED);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 364,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 210,
+        "startLineNumber" : 2344,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 2346,
+        "endColumnNumber" : 118
+      },
+      "nodeContext" : "checkState(materializedViewTable.getTableType().equals(MATERIALIZED_VIEW),format(\"materialized view table %s is not a materialized view\",materializedViewTable.getTableName()))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 14,
+      "astHeight" : 4
+    },
+    "tokenLength" : 5,
+    "type" : "boolean"
+  } ],
+  "positionList" : [ {
+    "charLength" : 62,
+    "startLineNumber" : 2345,
+    "startColumnNumber" : 16,
+    "endLineNumber" : 2345,
+    "endColumnNumber" : 78
+  } ],
+  "layoutRelationDataList" : [ ]
+}

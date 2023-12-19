@@ -1,0 +1,113 @@
+{
+  "id" : 235,
+  "expression" : "pulsarClient.newProducer().topic(topicName).batchingMaxPublishDelay(5,TimeUnit.SECONDS).batchingMaxMessages(numMsgs).enableBatching(true).batcherBuilder(builder)",
+  "projectName" : "apache@pulsar",
+  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
+  "filePath" : "/pulsar-broker/src/test/java/org/apache/pulsar/broker/service/BatchMessageTest.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "pulsarClient.newProducer().topic(topicName).batchingMaxPublishDelay(5,TimeUnit.SECONDS).batchingMaxMessages(numMsgs).enableBatching(true).batcherBuilder(builder)",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 196,
+      "startLineNumber" : 686,
+      "startColumnNumber" : 36,
+      "endLineNumber" : 688,
+      "endColumnNumber" : 40
+    },
+    "astNodeNumber" : 21,
+    "astHeight" : 7,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 222,
+        "startLineNumber" : 686,
+        "startColumnNumber" : 36,
+        "endLineNumber" : 689,
+        "endColumnNumber" : 25
+      },
+      "nodeContext" : "pulsarClient.newProducer().topic(topicName).batchingMaxPublishDelay(5,TimeUnit.SECONDS).batchingMaxMessages(numMsgs).enableBatching(true).batcherBuilder(builder).create()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 23,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 233,
+        "startLineNumber" : 686,
+        "startColumnNumber" : 25,
+        "endLineNumber" : 689,
+        "endColumnNumber" : 25
+      },
+      "nodeContext" : "producer=pulsarClient.newProducer().topic(topicName).batchingMaxPublishDelay(5,TimeUnit.SECONDS).batchingMaxMessages(numMsgs).enableBatching(true).batcherBuilder(builder).create()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 25,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 251,
+        "startLineNumber" : 686,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 689,
+        "endColumnNumber" : 26
+      },
+      "nodeContext" : "Producer<byte[]> producer=pulsarClient.newProducer().topic(topicName).batchingMaxPublishDelay(5,TimeUnit.SECONDS).batchingMaxMessages(numMsgs).enableBatching(true).batcherBuilder(builder).create();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 32,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2474,
+        "startLineNumber" : 677,
+        "startColumnNumber" : 87,
+        "endLineNumber" : 729,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  int numMsgs=10;\n  final String topicName=\"persistent://prop/ns-abc/testConcurrentAck-\" + UUID.randomUUID();\n  final String subscriptionName=\"sub-1\";\n  Consumer<byte[]> consumer=pulsarClient.newConsumer().topic(topicName).subscriptionName(subscriptionName).subscriptionType(SubscriptionType.Shared).subscribe();\n  consumer.close();\n  Producer<byte[]> producer=pulsarClient.newProducer().topic(topicName).batchingMaxPublishDelay(5,TimeUnit.SECONDS).batchingMaxMessages(numMsgs).enableBatching(true).batcherBuilder(builder).create();\n  List<CompletableFuture<MessageId>> sendFutureList=Lists.newArrayList();\n  for (int i=0; i < numMsgs; i++) {\n    byte[] message=(\"my-message-\" + i).getBytes();\n    sendFutureList.add(producer.sendAsync(message));\n  }\n  FutureUtil.waitForAll(sendFutureList).get();\n  PersistentTopic topic=(PersistentTopic)pulsar.getBrokerService().getTopicReference(topicName).get();\n  final Consumer<byte[]> myConsumer=pulsarClient.newConsumer().topic(topicName).subscriptionName(subscriptionName).subscriptionType(SubscriptionType.Shared).subscribe();\n  ExecutorService executor=Executors.newFixedThreadPool(10);\n  final CountDownLatch latch=new CountDownLatch(numMsgs);\n  final AtomicBoolean failed=new AtomicBoolean(false);\n  for (int i=0; i < numMsgs; i++) {\n    executor.submit(() -> {\n      try {\n        Message<byte[]> msg=myConsumer.receive(1,TimeUnit.SECONDS);\n        myConsumer.acknowledge(msg);\n      }\n catch (      Exception e) {\n        failed.set(false);\n      }\n      latch.countDown();\n    }\n);\n  }\n  latch.await();\n  PersistentDispatcherMultipleConsumers dispatcher=(PersistentDispatcherMultipleConsumers)topic.getSubscription(subscriptionName).getDispatcher();\n  retryStrategically((test) -> dispatcher.getConsumers().get(0).getUnackedMessages() == 0,50,150);\n  assertEquals(dispatcher.getConsumers().get(0).getUnackedMessages(),0);\n  executor.shutdownNow();\n  myConsumer.close();\n  producer.close();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 325,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 2718,
+        "startLineNumber" : 671,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 729,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Verifies batch-message acking is thread-safe\n * @throws Exception\n */\n@Test(dataProvider=\"containerBuilder\",timeOut=3000) public void testConcurrentBatchMessageAck(BatcherBuilder builder) throws Exception {\n  int numMsgs=10;\n  final String topicName=\"persistent://prop/ns-abc/testConcurrentAck-\" + UUID.randomUUID();\n  final String subscriptionName=\"sub-1\";\n  Consumer<byte[]> consumer=pulsarClient.newConsumer().topic(topicName).subscriptionName(subscriptionName).subscriptionType(SubscriptionType.Shared).subscribe();\n  consumer.close();\n  Producer<byte[]> producer=pulsarClient.newProducer().topic(topicName).batchingMaxPublishDelay(5,TimeUnit.SECONDS).batchingMaxMessages(numMsgs).enableBatching(true).batcherBuilder(builder).create();\n  List<CompletableFuture<MessageId>> sendFutureList=Lists.newArrayList();\n  for (int i=0; i < numMsgs; i++) {\n    byte[] message=(\"my-message-\" + i).getBytes();\n    sendFutureList.add(producer.sendAsync(message));\n  }\n  FutureUtil.waitForAll(sendFutureList).get();\n  PersistentTopic topic=(PersistentTopic)pulsar.getBrokerService().getTopicReference(topicName).get();\n  final Consumer<byte[]> myConsumer=pulsarClient.newConsumer().topic(topicName).subscriptionName(subscriptionName).subscriptionType(SubscriptionType.Shared).subscribe();\n  ExecutorService executor=Executors.newFixedThreadPool(10);\n  final CountDownLatch latch=new CountDownLatch(numMsgs);\n  final AtomicBoolean failed=new AtomicBoolean(false);\n  for (int i=0; i < numMsgs; i++) {\n    executor.submit(() -> {\n      try {\n        Message<byte[]> msg=myConsumer.receive(1,TimeUnit.SECONDS);\n        myConsumer.acknowledge(msg);\n      }\n catch (      Exception e) {\n        failed.set(false);\n      }\n      latch.countDown();\n    }\n);\n  }\n  latch.await();\n  PersistentDispatcherMultipleConsumers dispatcher=(PersistentDispatcherMultipleConsumers)topic.getSubscription(subscriptionName).getDispatcher();\n  retryStrategically((test) -> dispatcher.getConsumers().get(0).getUnackedMessages() == 0,50,150);\n  assertEquals(dispatcher.getConsumers().get(0).getUnackedMessages(),0);\n  executor.shutdownNow();\n  myConsumer.close();\n  producer.close();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 344,
+      "astHeight" : 15
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 222,
+        "startLineNumber" : 686,
+        "startColumnNumber" : 36,
+        "endLineNumber" : 689,
+        "endColumnNumber" : 25
+      },
+      "nodeContext" : "pulsarClient.newProducer().topic(topicName).batchingMaxPublishDelay(5,TimeUnit.SECONDS).batchingMaxMessages(numMsgs).enableBatching(true).batcherBuilder(builder).create()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 23,
+      "astHeight" : 8
+    },
+    "tokenLength" : 14,
+    "type" : "org.apache.pulsar.client.api.ProducerBuilder<byte[]>"
+  } ],
+  "positionList" : [ {
+    "charLength" : 196,
+    "startLineNumber" : 686,
+    "startColumnNumber" : 36,
+    "endLineNumber" : 688,
+    "endColumnNumber" : 40
+  } ],
+  "layoutRelationDataList" : [ ]
+}

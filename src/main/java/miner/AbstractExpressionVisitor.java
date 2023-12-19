@@ -225,14 +225,14 @@ public abstract class AbstractExpressionVisitor extends ASTVisitor {
         // make sure it is not in method or parameter annotation
         StructuralPropertyDescriptor location = null;
         while (node != null && !(node instanceof BodyDeclaration)) {
-            location = node.getLocationInParent();
-            node = node.getParent();
             if (node instanceof LambdaExpression) {
                 break;
             }
+            location = node.getLocationInParent();
+            node = node.getParent();
         }
         if (location == MethodDeclaration.BODY_PROPERTY || location == Initializer.BODY_PROPERTY
-                || (location == LambdaExpression.BODY_PROPERTY && ((LambdaExpression) node).resolveMethodBinding() != null)) {
+                || (location == LambdaExpression.BODY_PROPERTY  )) {
             return (ASTNode) node.getStructuralProperty(location);
         }
         return null;

@@ -1,0 +1,100 @@
+{
+  "id" : 59,
+  "expression" : "ConfigurationPhase.REGISTER_BEAN",
+  "projectName" : "spring-projects@spring-framework",
+  "commitID" : "d5dab129097f98ed3148473422eb706c20fd10c9",
+  "filePath" : "/spring-context/src/main/java/org/springframework/context/annotation/ConfigurationClassBeanDefinitionReader.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "ConfigurationPhase.REGISTER_BEAN",
+    "nodeType" : "QualifiedName",
+    "nodePosition" : {
+      "charLength" : 32,
+      "startLineNumber" : 181,
+      "startColumnNumber" : 51,
+      "endLineNumber" : 181,
+      "endColumnNumber" : 83
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 78,
+        "startLineNumber" : 181,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 181,
+        "endColumnNumber" : 84
+      },
+      "nodeContext" : "this.conditionEvaluator.shouldSkip(metadata,ConfigurationPhase.REGISTER_BEAN)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 9,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 151,
+        "startLineNumber" : 181,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 184,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "if (this.conditionEvaluator.shouldSkip(metadata,ConfigurationPhase.REGISTER_BEAN)) {\n  configClass.skippedBeanMethods.add(methodName);\n  return;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 19,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4041,
+        "startLineNumber" : 175,
+        "startColumnNumber" : 70,
+        "endLineNumber" : 275,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  ConfigurationClass configClass=beanMethod.getConfigurationClass();\n  MethodMetadata metadata=beanMethod.getMetadata();\n  String methodName=metadata.getMethodName();\n  if (this.conditionEvaluator.shouldSkip(metadata,ConfigurationPhase.REGISTER_BEAN)) {\n    configClass.skippedBeanMethods.add(methodName);\n    return;\n  }\n  if (configClass.skippedBeanMethods.contains(methodName)) {\n    return;\n  }\n  AnnotationAttributes bean=AnnotationConfigUtils.attributesFor(metadata,Bean.class);\n  Assert.state(bean != null,\"No @Bean annotation attributes\");\n  List<String> names=new ArrayList<>(Arrays.asList(bean.getStringArray(\"name\")));\n  String beanName=(!names.isEmpty() ? names.remove(0) : methodName);\n  for (  String alias : names) {\n    this.registry.registerAlias(beanName,alias);\n  }\n  if (isOverriddenByExistingDefinition(beanMethod,beanName)) {\n    if (beanName.equals(beanMethod.getConfigurationClass().getBeanName())) {\n      throw new BeanDefinitionStoreException(beanMethod.getConfigurationClass().getResource().getDescription(),beanName,\"Bean name derived from @Bean method '\" + beanMethod.getMetadata().getMethodName() + \"' clashes with bean name for containing configuration class; please make those names unique!\");\n    }\n    return;\n  }\n  ConfigurationClassBeanDefinition beanDef=new ConfigurationClassBeanDefinition(configClass,metadata);\n  beanDef.setResource(configClass.getResource());\n  beanDef.setSource(this.sourceExtractor.extractSource(metadata,configClass.getResource()));\n  if (metadata.isStatic()) {\n    beanDef.setBeanClassName(configClass.getMetadata().getClassName());\n    beanDef.setFactoryMethodName(methodName);\n  }\n else {\n    beanDef.setFactoryBeanName(configClass.getBeanName());\n    beanDef.setUniqueFactoryMethodName(methodName);\n  }\n  beanDef.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_CONSTRUCTOR);\n  beanDef.setAttribute(org.springframework.beans.factory.annotation.RequiredAnnotationBeanPostProcessor.SKIP_REQUIRED_CHECK_ATTRIBUTE,Boolean.TRUE);\n  AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDef,metadata);\n  Autowire autowire=bean.getEnum(\"autowire\");\n  if (autowire.isAutowire()) {\n    beanDef.setAutowireMode(autowire.value());\n  }\n  boolean autowireCandidate=bean.getBoolean(\"autowireCandidate\");\n  if (!autowireCandidate) {\n    beanDef.setAutowireCandidate(false);\n  }\n  String initMethodName=bean.getString(\"initMethod\");\n  if (StringUtils.hasText(initMethodName)) {\n    beanDef.setInitMethodName(initMethodName);\n  }\n  String destroyMethodName=bean.getString(\"destroyMethod\");\n  beanDef.setDestroyMethodName(destroyMethodName);\n  ScopedProxyMode proxyMode=ScopedProxyMode.NO;\n  AnnotationAttributes attributes=AnnotationConfigUtils.attributesFor(metadata,Scope.class);\n  if (attributes != null) {\n    beanDef.setScope(attributes.getString(\"value\"));\n    proxyMode=attributes.getEnum(\"proxyMode\");\n    if (proxyMode == ScopedProxyMode.DEFAULT) {\n      proxyMode=ScopedProxyMode.NO;\n    }\n  }\n  BeanDefinition beanDefToRegister=beanDef;\n  if (proxyMode != ScopedProxyMode.NO) {\n    BeanDefinitionHolder proxyDef=ScopedProxyCreator.createScopedProxy(new BeanDefinitionHolder(beanDef,beanName),this.registry,proxyMode == ScopedProxyMode.TARGET_CLASS);\n    beanDefToRegister=new ConfigurationClassBeanDefinition((RootBeanDefinition)proxyDef.getBeanDefinition(),configClass,metadata);\n  }\n  if (logger.isTraceEnabled()) {\n    logger.trace(String.format(\"Registering bean definition for @Bean method %s.%s()\",configClass.getMetadata().getClassName(),beanName));\n  }\n  this.registry.registerBeanDefinition(beanName,beanDefToRegister);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 455,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4355,
+        "startLineNumber" : 170,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 275,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "/** \n * Read the given  {@link BeanMethod}, registering bean definitions with the BeanDefinitionRegistry based on its contents.\n */\n@SuppressWarnings(\"deprecation\") private void loadBeanDefinitionsForBeanMethod(BeanMethod beanMethod){\n  ConfigurationClass configClass=beanMethod.getConfigurationClass();\n  MethodMetadata metadata=beanMethod.getMetadata();\n  String methodName=metadata.getMethodName();\n  if (this.conditionEvaluator.shouldSkip(metadata,ConfigurationPhase.REGISTER_BEAN)) {\n    configClass.skippedBeanMethods.add(methodName);\n    return;\n  }\n  if (configClass.skippedBeanMethods.contains(methodName)) {\n    return;\n  }\n  AnnotationAttributes bean=AnnotationConfigUtils.attributesFor(metadata,Bean.class);\n  Assert.state(bean != null,\"No @Bean annotation attributes\");\n  List<String> names=new ArrayList<>(Arrays.asList(bean.getStringArray(\"name\")));\n  String beanName=(!names.isEmpty() ? names.remove(0) : methodName);\n  for (  String alias : names) {\n    this.registry.registerAlias(beanName,alias);\n  }\n  if (isOverriddenByExistingDefinition(beanMethod,beanName)) {\n    if (beanName.equals(beanMethod.getConfigurationClass().getBeanName())) {\n      throw new BeanDefinitionStoreException(beanMethod.getConfigurationClass().getResource().getDescription(),beanName,\"Bean name derived from @Bean method '\" + beanMethod.getMetadata().getMethodName() + \"' clashes with bean name for containing configuration class; please make those names unique!\");\n    }\n    return;\n  }\n  ConfigurationClassBeanDefinition beanDef=new ConfigurationClassBeanDefinition(configClass,metadata);\n  beanDef.setResource(configClass.getResource());\n  beanDef.setSource(this.sourceExtractor.extractSource(metadata,configClass.getResource()));\n  if (metadata.isStatic()) {\n    beanDef.setBeanClassName(configClass.getMetadata().getClassName());\n    beanDef.setFactoryMethodName(methodName);\n  }\n else {\n    beanDef.setFactoryBeanName(configClass.getBeanName());\n    beanDef.setUniqueFactoryMethodName(methodName);\n  }\n  beanDef.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_CONSTRUCTOR);\n  beanDef.setAttribute(org.springframework.beans.factory.annotation.RequiredAnnotationBeanPostProcessor.SKIP_REQUIRED_CHECK_ATTRIBUTE,Boolean.TRUE);\n  AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDef,metadata);\n  Autowire autowire=bean.getEnum(\"autowire\");\n  if (autowire.isAutowire()) {\n    beanDef.setAutowireMode(autowire.value());\n  }\n  boolean autowireCandidate=bean.getBoolean(\"autowireCandidate\");\n  if (!autowireCandidate) {\n    beanDef.setAutowireCandidate(false);\n  }\n  String initMethodName=bean.getString(\"initMethod\");\n  if (StringUtils.hasText(initMethodName)) {\n    beanDef.setInitMethodName(initMethodName);\n  }\n  String destroyMethodName=bean.getString(\"destroyMethod\");\n  beanDef.setDestroyMethodName(destroyMethodName);\n  ScopedProxyMode proxyMode=ScopedProxyMode.NO;\n  AnnotationAttributes attributes=AnnotationConfigUtils.attributesFor(metadata,Scope.class);\n  if (attributes != null) {\n    beanDef.setScope(attributes.getString(\"value\"));\n    proxyMode=attributes.getEnum(\"proxyMode\");\n    if (proxyMode == ScopedProxyMode.DEFAULT) {\n      proxyMode=ScopedProxyMode.NO;\n    }\n  }\n  BeanDefinition beanDefToRegister=beanDef;\n  if (proxyMode != ScopedProxyMode.NO) {\n    BeanDefinitionHolder proxyDef=ScopedProxyCreator.createScopedProxy(new BeanDefinitionHolder(beanDef,beanName),this.registry,proxyMode == ScopedProxyMode.TARGET_CLASS);\n    beanDefToRegister=new ConfigurationClassBeanDefinition((RootBeanDefinition)proxyDef.getBeanDefinition(),configClass,metadata);\n  }\n  if (logger.isTraceEnabled()) {\n    logger.trace(String.format(\"Registering bean definition for @Bean method %s.%s()\",configClass.getMetadata().getClassName(),beanName));\n  }\n  this.registry.registerBeanDefinition(beanName,beanDefToRegister);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 467,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 78,
+        "startLineNumber" : 181,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 181,
+        "endColumnNumber" : 84
+      },
+      "nodeContext" : "this.conditionEvaluator.shouldSkip(metadata,ConfigurationPhase.REGISTER_BEAN)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 9,
+      "astHeight" : 3
+    },
+    "tokenLength" : 3,
+    "type" : "org.springframework.context.annotation.ConfigurationCondition.ConfigurationPhase"
+  } ],
+  "positionList" : [ {
+    "charLength" : 32,
+    "startLineNumber" : 181,
+    "startColumnNumber" : 51,
+    "endLineNumber" : 181,
+    "endColumnNumber" : 83
+  } ],
+  "layoutRelationDataList" : [ ]
+}

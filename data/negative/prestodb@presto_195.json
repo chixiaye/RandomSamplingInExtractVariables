@@ -1,0 +1,363 @@
+{
+  "id" : 195,
+  "expression" : "anyBlockedOnPlacements",
+  "projectName" : "prestodb@presto",
+  "commitID" : "eff77883d0d24dc6022ecde252612d1430c9fbac",
+  "filePath" : "/presto-main/src/main/java/com/facebook/presto/execution/scheduler/SourcePartitionedScheduler.java",
+  "occurrences" : 3,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "anyBlockedOnPlacements",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 22,
+      "startLineNumber" : 353,
+      "startColumnNumber" : 12,
+      "endLineNumber" : 353,
+      "endColumnNumber" : 34
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1062,
+        "startLineNumber" : 353,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 368,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (anyBlockedOnPlacements) {\n  overallNewTasks.addAll(finalizeTaskCreationIfNecessary());\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 10942,
+        "startLineNumber" : 203,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 385,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  dropListenersFromWhenFinishedOrNewLifespansAdded();\n  int overallSplitAssignmentCount=0;\n  ImmutableSet.Builder<RemoteTask> overallNewTasks=ImmutableSet.builder();\n  List<ListenableFuture<?>> overallBlockedFutures=new ArrayList<>();\n  boolean anyBlockedOnPlacements=false;\n  boolean anyBlockedOnNextSplitBatch=false;\n  boolean anyNotBlocked=false;\n  for (  Entry<Lifespan,ScheduleGroup> entry : scheduleGroups.entrySet()) {\n    Lifespan lifespan=entry.getKey();\n    ScheduleGroup scheduleGroup=entry.getValue();\n    if (scheduleGroup.state == ScheduleGroupState.NO_MORE_SPLITS || scheduleGroup.state == ScheduleGroupState.DONE) {\n      verify(scheduleGroup.nextSplitBatchFuture == null);\n    }\n else     if (scheduleGroup.pendingSplits.isEmpty()) {\n      if (scheduleGroup.nextSplitBatchFuture == null) {\n        scheduleGroup.nextSplitBatchFuture=splitSource.getNextBatch(scheduleGroup.partitionHandle,lifespan,splitBatchSize);\n        long start=System.nanoTime();\n        addSuccessCallback(scheduleGroup.nextSplitBatchFuture,() -> stage.recordGetSplitTime(start));\n      }\n      if (scheduleGroup.nextSplitBatchFuture.isDone()) {\n        SplitBatch nextSplits=getFutureValue(scheduleGroup.nextSplitBatchFuture);\n        scheduleGroup.nextSplitBatchFuture=null;\n        scheduleGroup.pendingSplits=new HashSet<>(nextSplits.getSplits());\n        if (nextSplits.isLastBatch()) {\n          if (scheduleGroup.state == ScheduleGroupState.INITIALIZED && scheduleGroup.pendingSplits.isEmpty()) {\n            scheduleGroup.pendingSplits.add(new Split(splitSource.getConnectorId(),splitSource.getTransactionHandle(),new EmptySplit(splitSource.getConnectorId()),lifespan,NON_CACHEABLE));\n          }\n          scheduleGroup.state=ScheduleGroupState.NO_MORE_SPLITS;\n        }\n      }\n else {\n        overallBlockedFutures.add(scheduleGroup.nextSplitBatchFuture);\n        anyBlockedOnNextSplitBatch=true;\n        continue;\n      }\n    }\n    Multimap<InternalNode,Split> splitAssignment=ImmutableMultimap.of();\n    if (!scheduleGroup.pendingSplits.isEmpty()) {\n      if (!scheduleGroup.placementFuture.isDone()) {\n        anyBlockedOnPlacements=true;\n        continue;\n      }\n      if (scheduleGroup.state == ScheduleGroupState.INITIALIZED) {\n        scheduleGroup.state=ScheduleGroupState.SPLITS_ADDED;\n      }\n      if (state == State.INITIALIZED) {\n        state=State.SPLITS_ADDED;\n      }\n      SplitPlacementResult splitPlacementResult=splitPlacementPolicy.computeAssignments(scheduleGroup.pendingSplits);\n      splitAssignment=splitPlacementResult.getAssignments();\n      splitAssignment.values().forEach(scheduleGroup.pendingSplits::remove);\n      overallSplitAssignmentCount+=splitAssignment.size();\n      if (!scheduleGroup.pendingSplits.isEmpty()) {\n        scheduleGroup.placementFuture=splitPlacementResult.getBlocked();\n        overallBlockedFutures.add(scheduleGroup.placementFuture);\n        anyBlockedOnPlacements=true;\n      }\n    }\n    Multimap<InternalNode,Lifespan> noMoreSplitsNotification=ImmutableMultimap.of();\n    if (scheduleGroup.pendingSplits.isEmpty() && scheduleGroup.state == ScheduleGroupState.NO_MORE_SPLITS) {\n      scheduleGroup.state=ScheduleGroupState.DONE;\n      if (!lifespan.isTaskWide()) {\n        InternalNode node=((BucketedSplitPlacementPolicy)splitPlacementPolicy).getNodeForBucket(lifespan.getId());\n        noMoreSplitsNotification=ImmutableMultimap.of(node,lifespan);\n      }\n    }\n    overallNewTasks.addAll(assignSplits(splitAssignment,noMoreSplitsNotification));\n    if (scheduleGroup.nextSplitBatchFuture == null && scheduleGroup.pendingSplits.isEmpty() && scheduleGroup.state != ScheduleGroupState.DONE) {\n      anyNotBlocked=true;\n    }\n  }\n  if ((state == State.NO_MORE_SPLITS || state == State.FINISHED) || (!groupedExecution && lifespanAdded && scheduleGroups.isEmpty()&& splitSource.isFinished())) {\nswitch (state) {\ncase INITIALIZED:      throw new IllegalStateException(\"At least 1 split should have been scheduled for this plan node\");\ncase SPLITS_ADDED:    state=State.NO_MORE_SPLITS;\n  splitSource.close();\ncase NO_MORE_SPLITS:state=State.FINISHED;\nwhenFinishedOrNewLifespanAdded.set(null);\ncase FINISHED:return ScheduleResult.nonBlocked(true,overallNewTasks.build(),overallSplitAssignmentCount);\ndefault:throw new IllegalStateException(\"Unknown state\");\n}\n}\nif (anyNotBlocked) {\nreturn ScheduleResult.nonBlocked(false,overallNewTasks.build(),overallSplitAssignmentCount);\n}\nif (anyBlockedOnPlacements) {\noverallNewTasks.addAll(finalizeTaskCreationIfNecessary());\n}\nScheduleResult.BlockedReason blockedReason;\nif (anyBlockedOnNextSplitBatch) {\nblockedReason=anyBlockedOnPlacements ? MIXED_SPLIT_QUEUES_FULL_AND_WAITING_FOR_SOURCE : WAITING_FOR_SOURCE;\n}\n else {\nblockedReason=anyBlockedOnPlacements ? SPLIT_QUEUES_FULL : NO_ACTIVE_DRIVER_GROUP;\n}\noverallBlockedFutures.add(whenFinishedOrNewLifespanAdded);\nreturn ScheduleResult.blocked(false,overallNewTasks.build(),nonCancellationPropagating(whenAnyComplete(overallBlockedFutures)),blockedReason,overallSplitAssignmentCount);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 616,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 11006,
+        "startLineNumber" : 201,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 385,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public synchronized ScheduleResult schedule(){\n  dropListenersFromWhenFinishedOrNewLifespansAdded();\n  int overallSplitAssignmentCount=0;\n  ImmutableSet.Builder<RemoteTask> overallNewTasks=ImmutableSet.builder();\n  List<ListenableFuture<?>> overallBlockedFutures=new ArrayList<>();\n  boolean anyBlockedOnPlacements=false;\n  boolean anyBlockedOnNextSplitBatch=false;\n  boolean anyNotBlocked=false;\n  for (  Entry<Lifespan,ScheduleGroup> entry : scheduleGroups.entrySet()) {\n    Lifespan lifespan=entry.getKey();\n    ScheduleGroup scheduleGroup=entry.getValue();\n    if (scheduleGroup.state == ScheduleGroupState.NO_MORE_SPLITS || scheduleGroup.state == ScheduleGroupState.DONE) {\n      verify(scheduleGroup.nextSplitBatchFuture == null);\n    }\n else     if (scheduleGroup.pendingSplits.isEmpty()) {\n      if (scheduleGroup.nextSplitBatchFuture == null) {\n        scheduleGroup.nextSplitBatchFuture=splitSource.getNextBatch(scheduleGroup.partitionHandle,lifespan,splitBatchSize);\n        long start=System.nanoTime();\n        addSuccessCallback(scheduleGroup.nextSplitBatchFuture,() -> stage.recordGetSplitTime(start));\n      }\n      if (scheduleGroup.nextSplitBatchFuture.isDone()) {\n        SplitBatch nextSplits=getFutureValue(scheduleGroup.nextSplitBatchFuture);\n        scheduleGroup.nextSplitBatchFuture=null;\n        scheduleGroup.pendingSplits=new HashSet<>(nextSplits.getSplits());\n        if (nextSplits.isLastBatch()) {\n          if (scheduleGroup.state == ScheduleGroupState.INITIALIZED && scheduleGroup.pendingSplits.isEmpty()) {\n            scheduleGroup.pendingSplits.add(new Split(splitSource.getConnectorId(),splitSource.getTransactionHandle(),new EmptySplit(splitSource.getConnectorId()),lifespan,NON_CACHEABLE));\n          }\n          scheduleGroup.state=ScheduleGroupState.NO_MORE_SPLITS;\n        }\n      }\n else {\n        overallBlockedFutures.add(scheduleGroup.nextSplitBatchFuture);\n        anyBlockedOnNextSplitBatch=true;\n        continue;\n      }\n    }\n    Multimap<InternalNode,Split> splitAssignment=ImmutableMultimap.of();\n    if (!scheduleGroup.pendingSplits.isEmpty()) {\n      if (!scheduleGroup.placementFuture.isDone()) {\n        anyBlockedOnPlacements=true;\n        continue;\n      }\n      if (scheduleGroup.state == ScheduleGroupState.INITIALIZED) {\n        scheduleGroup.state=ScheduleGroupState.SPLITS_ADDED;\n      }\n      if (state == State.INITIALIZED) {\n        state=State.SPLITS_ADDED;\n      }\n      SplitPlacementResult splitPlacementResult=splitPlacementPolicy.computeAssignments(scheduleGroup.pendingSplits);\n      splitAssignment=splitPlacementResult.getAssignments();\n      splitAssignment.values().forEach(scheduleGroup.pendingSplits::remove);\n      overallSplitAssignmentCount+=splitAssignment.size();\n      if (!scheduleGroup.pendingSplits.isEmpty()) {\n        scheduleGroup.placementFuture=splitPlacementResult.getBlocked();\n        overallBlockedFutures.add(scheduleGroup.placementFuture);\n        anyBlockedOnPlacements=true;\n      }\n    }\n    Multimap<InternalNode,Lifespan> noMoreSplitsNotification=ImmutableMultimap.of();\n    if (scheduleGroup.pendingSplits.isEmpty() && scheduleGroup.state == ScheduleGroupState.NO_MORE_SPLITS) {\n      scheduleGroup.state=ScheduleGroupState.DONE;\n      if (!lifespan.isTaskWide()) {\n        InternalNode node=((BucketedSplitPlacementPolicy)splitPlacementPolicy).getNodeForBucket(lifespan.getId());\n        noMoreSplitsNotification=ImmutableMultimap.of(node,lifespan);\n      }\n    }\n    overallNewTasks.addAll(assignSplits(splitAssignment,noMoreSplitsNotification));\n    if (scheduleGroup.nextSplitBatchFuture == null && scheduleGroup.pendingSplits.isEmpty() && scheduleGroup.state != ScheduleGroupState.DONE) {\n      anyNotBlocked=true;\n    }\n  }\n  if ((state == State.NO_MORE_SPLITS || state == State.FINISHED) || (!groupedExecution && lifespanAdded && scheduleGroups.isEmpty()&& splitSource.isFinished())) {\nswitch (state) {\ncase INITIALIZED:      throw new IllegalStateException(\"At least 1 split should have been scheduled for this plan node\");\ncase SPLITS_ADDED:    state=State.NO_MORE_SPLITS;\n  splitSource.close();\ncase NO_MORE_SPLITS:state=State.FINISHED;\nwhenFinishedOrNewLifespanAdded.set(null);\ncase FINISHED:return ScheduleResult.nonBlocked(true,overallNewTasks.build(),overallSplitAssignmentCount);\ndefault:throw new IllegalStateException(\"Unknown state\");\n}\n}\nif (anyNotBlocked) {\nreturn ScheduleResult.nonBlocked(false,overallNewTasks.build(),overallSplitAssignmentCount);\n}\nif (anyBlockedOnPlacements) {\noverallNewTasks.addAll(finalizeTaskCreationIfNecessary());\n}\nScheduleResult.BlockedReason blockedReason;\nif (anyBlockedOnNextSplitBatch) {\nblockedReason=anyBlockedOnPlacements ? MIXED_SPLIT_QUEUES_FULL_AND_WAITING_FOR_SOURCE : WAITING_FOR_SOURCE;\n}\n else {\nblockedReason=anyBlockedOnPlacements ? SPLIT_QUEUES_FULL : NO_ACTIVE_DRIVER_GROUP;\n}\noverallBlockedFutures.add(whenFinishedOrNewLifespanAdded);\nreturn ScheduleResult.blocked(false,overallNewTasks.build(),nonCancellationPropagating(whenAnyComplete(overallBlockedFutures)),blockedReason,overallSplitAssignmentCount);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 624,
+      "astHeight" : 19
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1062,
+        "startLineNumber" : 353,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 368,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (anyBlockedOnPlacements) {\n  overallNewTasks.addAll(finalizeTaskCreationIfNecessary());\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "boolean"
+  }, {
+    "nodeContext" : "anyBlockedOnPlacements",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 22,
+      "startLineNumber" : 372,
+      "startColumnNumber" : 28,
+      "endLineNumber" : 372,
+      "endColumnNumber" : 50
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
+      "nodePosition" : {
+        "charLength" : 92,
+        "startLineNumber" : 372,
+        "startColumnNumber" : 28,
+        "endLineNumber" : 372,
+        "endColumnNumber" : 120
+      },
+      "nodeContext" : "anyBlockedOnPlacements ? MIXED_SPLIT_QUEUES_FULL_AND_WAITING_FOR_SOURCE : WAITING_FOR_SOURCE",
+      "nodeType" : "ConditionalExpression",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 108,
+        "startLineNumber" : 372,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 372,
+        "endColumnNumber" : 120
+      },
+      "nodeContext" : "blockedReason=anyBlockedOnPlacements ? MIXED_SPLIT_QUEUES_FULL_AND_WAITING_FOR_SOURCE : WAITING_FOR_SOURCE",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 109,
+        "startLineNumber" : 372,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 372,
+        "endColumnNumber" : 121
+      },
+      "nodeContext" : "blockedReason=anyBlockedOnPlacements ? MIXED_SPLIT_QUEUES_FULL_AND_WAITING_FOR_SOURCE : WAITING_FOR_SOURCE;\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 133,
+        "startLineNumber" : 371,
+        "startColumnNumber" : 40,
+        "endLineNumber" : 373,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  blockedReason=anyBlockedOnPlacements ? MIXED_SPLIT_QUEUES_FULL_AND_WAITING_FOR_SOURCE : WAITING_FOR_SOURCE;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 8,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 287,
+        "startLineNumber" : 371,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 376,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (anyBlockedOnNextSplitBatch) {\n  blockedReason=anyBlockedOnPlacements ? MIXED_SPLIT_QUEUES_FULL_AND_WAITING_FOR_SOURCE : WAITING_FOR_SOURCE;\n}\n else {\n  blockedReason=anyBlockedOnPlacements ? SPLIT_QUEUES_FULL : NO_ACTIVE_DRIVER_GROUP;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 18,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 10942,
+        "startLineNumber" : 203,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 385,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  dropListenersFromWhenFinishedOrNewLifespansAdded();\n  int overallSplitAssignmentCount=0;\n  ImmutableSet.Builder<RemoteTask> overallNewTasks=ImmutableSet.builder();\n  List<ListenableFuture<?>> overallBlockedFutures=new ArrayList<>();\n  boolean anyBlockedOnPlacements=false;\n  boolean anyBlockedOnNextSplitBatch=false;\n  boolean anyNotBlocked=false;\n  for (  Entry<Lifespan,ScheduleGroup> entry : scheduleGroups.entrySet()) {\n    Lifespan lifespan=entry.getKey();\n    ScheduleGroup scheduleGroup=entry.getValue();\n    if (scheduleGroup.state == ScheduleGroupState.NO_MORE_SPLITS || scheduleGroup.state == ScheduleGroupState.DONE) {\n      verify(scheduleGroup.nextSplitBatchFuture == null);\n    }\n else     if (scheduleGroup.pendingSplits.isEmpty()) {\n      if (scheduleGroup.nextSplitBatchFuture == null) {\n        scheduleGroup.nextSplitBatchFuture=splitSource.getNextBatch(scheduleGroup.partitionHandle,lifespan,splitBatchSize);\n        long start=System.nanoTime();\n        addSuccessCallback(scheduleGroup.nextSplitBatchFuture,() -> stage.recordGetSplitTime(start));\n      }\n      if (scheduleGroup.nextSplitBatchFuture.isDone()) {\n        SplitBatch nextSplits=getFutureValue(scheduleGroup.nextSplitBatchFuture);\n        scheduleGroup.nextSplitBatchFuture=null;\n        scheduleGroup.pendingSplits=new HashSet<>(nextSplits.getSplits());\n        if (nextSplits.isLastBatch()) {\n          if (scheduleGroup.state == ScheduleGroupState.INITIALIZED && scheduleGroup.pendingSplits.isEmpty()) {\n            scheduleGroup.pendingSplits.add(new Split(splitSource.getConnectorId(),splitSource.getTransactionHandle(),new EmptySplit(splitSource.getConnectorId()),lifespan,NON_CACHEABLE));\n          }\n          scheduleGroup.state=ScheduleGroupState.NO_MORE_SPLITS;\n        }\n      }\n else {\n        overallBlockedFutures.add(scheduleGroup.nextSplitBatchFuture);\n        anyBlockedOnNextSplitBatch=true;\n        continue;\n      }\n    }\n    Multimap<InternalNode,Split> splitAssignment=ImmutableMultimap.of();\n    if (!scheduleGroup.pendingSplits.isEmpty()) {\n      if (!scheduleGroup.placementFuture.isDone()) {\n        anyBlockedOnPlacements=true;\n        continue;\n      }\n      if (scheduleGroup.state == ScheduleGroupState.INITIALIZED) {\n        scheduleGroup.state=ScheduleGroupState.SPLITS_ADDED;\n      }\n      if (state == State.INITIALIZED) {\n        state=State.SPLITS_ADDED;\n      }\n      SplitPlacementResult splitPlacementResult=splitPlacementPolicy.computeAssignments(scheduleGroup.pendingSplits);\n      splitAssignment=splitPlacementResult.getAssignments();\n      splitAssignment.values().forEach(scheduleGroup.pendingSplits::remove);\n      overallSplitAssignmentCount+=splitAssignment.size();\n      if (!scheduleGroup.pendingSplits.isEmpty()) {\n        scheduleGroup.placementFuture=splitPlacementResult.getBlocked();\n        overallBlockedFutures.add(scheduleGroup.placementFuture);\n        anyBlockedOnPlacements=true;\n      }\n    }\n    Multimap<InternalNode,Lifespan> noMoreSplitsNotification=ImmutableMultimap.of();\n    if (scheduleGroup.pendingSplits.isEmpty() && scheduleGroup.state == ScheduleGroupState.NO_MORE_SPLITS) {\n      scheduleGroup.state=ScheduleGroupState.DONE;\n      if (!lifespan.isTaskWide()) {\n        InternalNode node=((BucketedSplitPlacementPolicy)splitPlacementPolicy).getNodeForBucket(lifespan.getId());\n        noMoreSplitsNotification=ImmutableMultimap.of(node,lifespan);\n      }\n    }\n    overallNewTasks.addAll(assignSplits(splitAssignment,noMoreSplitsNotification));\n    if (scheduleGroup.nextSplitBatchFuture == null && scheduleGroup.pendingSplits.isEmpty() && scheduleGroup.state != ScheduleGroupState.DONE) {\n      anyNotBlocked=true;\n    }\n  }\n  if ((state == State.NO_MORE_SPLITS || state == State.FINISHED) || (!groupedExecution && lifespanAdded && scheduleGroups.isEmpty()&& splitSource.isFinished())) {\nswitch (state) {\ncase INITIALIZED:      throw new IllegalStateException(\"At least 1 split should have been scheduled for this plan node\");\ncase SPLITS_ADDED:    state=State.NO_MORE_SPLITS;\n  splitSource.close();\ncase NO_MORE_SPLITS:state=State.FINISHED;\nwhenFinishedOrNewLifespanAdded.set(null);\ncase FINISHED:return ScheduleResult.nonBlocked(true,overallNewTasks.build(),overallSplitAssignmentCount);\ndefault:throw new IllegalStateException(\"Unknown state\");\n}\n}\nif (anyNotBlocked) {\nreturn ScheduleResult.nonBlocked(false,overallNewTasks.build(),overallSplitAssignmentCount);\n}\nif (anyBlockedOnPlacements) {\noverallNewTasks.addAll(finalizeTaskCreationIfNecessary());\n}\nScheduleResult.BlockedReason blockedReason;\nif (anyBlockedOnNextSplitBatch) {\nblockedReason=anyBlockedOnPlacements ? MIXED_SPLIT_QUEUES_FULL_AND_WAITING_FOR_SOURCE : WAITING_FOR_SOURCE;\n}\n else {\nblockedReason=anyBlockedOnPlacements ? SPLIT_QUEUES_FULL : NO_ACTIVE_DRIVER_GROUP;\n}\noverallBlockedFutures.add(whenFinishedOrNewLifespanAdded);\nreturn ScheduleResult.blocked(false,overallNewTasks.build(),nonCancellationPropagating(whenAnyComplete(overallBlockedFutures)),blockedReason,overallSplitAssignmentCount);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 616,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 11006,
+        "startLineNumber" : 201,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 385,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public synchronized ScheduleResult schedule(){\n  dropListenersFromWhenFinishedOrNewLifespansAdded();\n  int overallSplitAssignmentCount=0;\n  ImmutableSet.Builder<RemoteTask> overallNewTasks=ImmutableSet.builder();\n  List<ListenableFuture<?>> overallBlockedFutures=new ArrayList<>();\n  boolean anyBlockedOnPlacements=false;\n  boolean anyBlockedOnNextSplitBatch=false;\n  boolean anyNotBlocked=false;\n  for (  Entry<Lifespan,ScheduleGroup> entry : scheduleGroups.entrySet()) {\n    Lifespan lifespan=entry.getKey();\n    ScheduleGroup scheduleGroup=entry.getValue();\n    if (scheduleGroup.state == ScheduleGroupState.NO_MORE_SPLITS || scheduleGroup.state == ScheduleGroupState.DONE) {\n      verify(scheduleGroup.nextSplitBatchFuture == null);\n    }\n else     if (scheduleGroup.pendingSplits.isEmpty()) {\n      if (scheduleGroup.nextSplitBatchFuture == null) {\n        scheduleGroup.nextSplitBatchFuture=splitSource.getNextBatch(scheduleGroup.partitionHandle,lifespan,splitBatchSize);\n        long start=System.nanoTime();\n        addSuccessCallback(scheduleGroup.nextSplitBatchFuture,() -> stage.recordGetSplitTime(start));\n      }\n      if (scheduleGroup.nextSplitBatchFuture.isDone()) {\n        SplitBatch nextSplits=getFutureValue(scheduleGroup.nextSplitBatchFuture);\n        scheduleGroup.nextSplitBatchFuture=null;\n        scheduleGroup.pendingSplits=new HashSet<>(nextSplits.getSplits());\n        if (nextSplits.isLastBatch()) {\n          if (scheduleGroup.state == ScheduleGroupState.INITIALIZED && scheduleGroup.pendingSplits.isEmpty()) {\n            scheduleGroup.pendingSplits.add(new Split(splitSource.getConnectorId(),splitSource.getTransactionHandle(),new EmptySplit(splitSource.getConnectorId()),lifespan,NON_CACHEABLE));\n          }\n          scheduleGroup.state=ScheduleGroupState.NO_MORE_SPLITS;\n        }\n      }\n else {\n        overallBlockedFutures.add(scheduleGroup.nextSplitBatchFuture);\n        anyBlockedOnNextSplitBatch=true;\n        continue;\n      }\n    }\n    Multimap<InternalNode,Split> splitAssignment=ImmutableMultimap.of();\n    if (!scheduleGroup.pendingSplits.isEmpty()) {\n      if (!scheduleGroup.placementFuture.isDone()) {\n        anyBlockedOnPlacements=true;\n        continue;\n      }\n      if (scheduleGroup.state == ScheduleGroupState.INITIALIZED) {\n        scheduleGroup.state=ScheduleGroupState.SPLITS_ADDED;\n      }\n      if (state == State.INITIALIZED) {\n        state=State.SPLITS_ADDED;\n      }\n      SplitPlacementResult splitPlacementResult=splitPlacementPolicy.computeAssignments(scheduleGroup.pendingSplits);\n      splitAssignment=splitPlacementResult.getAssignments();\n      splitAssignment.values().forEach(scheduleGroup.pendingSplits::remove);\n      overallSplitAssignmentCount+=splitAssignment.size();\n      if (!scheduleGroup.pendingSplits.isEmpty()) {\n        scheduleGroup.placementFuture=splitPlacementResult.getBlocked();\n        overallBlockedFutures.add(scheduleGroup.placementFuture);\n        anyBlockedOnPlacements=true;\n      }\n    }\n    Multimap<InternalNode,Lifespan> noMoreSplitsNotification=ImmutableMultimap.of();\n    if (scheduleGroup.pendingSplits.isEmpty() && scheduleGroup.state == ScheduleGroupState.NO_MORE_SPLITS) {\n      scheduleGroup.state=ScheduleGroupState.DONE;\n      if (!lifespan.isTaskWide()) {\n        InternalNode node=((BucketedSplitPlacementPolicy)splitPlacementPolicy).getNodeForBucket(lifespan.getId());\n        noMoreSplitsNotification=ImmutableMultimap.of(node,lifespan);\n      }\n    }\n    overallNewTasks.addAll(assignSplits(splitAssignment,noMoreSplitsNotification));\n    if (scheduleGroup.nextSplitBatchFuture == null && scheduleGroup.pendingSplits.isEmpty() && scheduleGroup.state != ScheduleGroupState.DONE) {\n      anyNotBlocked=true;\n    }\n  }\n  if ((state == State.NO_MORE_SPLITS || state == State.FINISHED) || (!groupedExecution && lifespanAdded && scheduleGroups.isEmpty()&& splitSource.isFinished())) {\nswitch (state) {\ncase INITIALIZED:      throw new IllegalStateException(\"At least 1 split should have been scheduled for this plan node\");\ncase SPLITS_ADDED:    state=State.NO_MORE_SPLITS;\n  splitSource.close();\ncase NO_MORE_SPLITS:state=State.FINISHED;\nwhenFinishedOrNewLifespanAdded.set(null);\ncase FINISHED:return ScheduleResult.nonBlocked(true,overallNewTasks.build(),overallSplitAssignmentCount);\ndefault:throw new IllegalStateException(\"Unknown state\");\n}\n}\nif (anyNotBlocked) {\nreturn ScheduleResult.nonBlocked(false,overallNewTasks.build(),overallSplitAssignmentCount);\n}\nif (anyBlockedOnPlacements) {\noverallNewTasks.addAll(finalizeTaskCreationIfNecessary());\n}\nScheduleResult.BlockedReason blockedReason;\nif (anyBlockedOnNextSplitBatch) {\nblockedReason=anyBlockedOnPlacements ? MIXED_SPLIT_QUEUES_FULL_AND_WAITING_FOR_SOURCE : WAITING_FOR_SOURCE;\n}\n else {\nblockedReason=anyBlockedOnPlacements ? SPLIT_QUEUES_FULL : NO_ACTIVE_DRIVER_GROUP;\n}\noverallBlockedFutures.add(whenFinishedOrNewLifespanAdded);\nreturn ScheduleResult.blocked(false,overallNewTasks.build(),nonCancellationPropagating(whenAnyComplete(overallBlockedFutures)),blockedReason,overallSplitAssignmentCount);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 624,
+      "astHeight" : 19
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 109,
+        "startLineNumber" : 372,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 372,
+        "endColumnNumber" : 121
+      },
+      "nodeContext" : "blockedReason=anyBlockedOnPlacements ? MIXED_SPLIT_QUEUES_FULL_AND_WAITING_FOR_SOURCE : WAITING_FOR_SOURCE;\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "boolean"
+  }, {
+    "nodeContext" : "anyBlockedOnPlacements",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 22,
+      "startLineNumber" : 375,
+      "startColumnNumber" : 28,
+      "endLineNumber" : 375,
+      "endColumnNumber" : 50
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
+      "nodePosition" : {
+        "charLength" : 67,
+        "startLineNumber" : 375,
+        "startColumnNumber" : 28,
+        "endLineNumber" : 375,
+        "endColumnNumber" : 95
+      },
+      "nodeContext" : "anyBlockedOnPlacements ? SPLIT_QUEUES_FULL : NO_ACTIVE_DRIVER_GROUP",
+      "nodeType" : "ConditionalExpression",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 83,
+        "startLineNumber" : 375,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 375,
+        "endColumnNumber" : 95
+      },
+      "nodeContext" : "blockedReason=anyBlockedOnPlacements ? SPLIT_QUEUES_FULL : NO_ACTIVE_DRIVER_GROUP",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 84,
+        "startLineNumber" : 375,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 375,
+        "endColumnNumber" : 96
+      },
+      "nodeContext" : "blockedReason=anyBlockedOnPlacements ? SPLIT_QUEUES_FULL : NO_ACTIVE_DRIVER_GROUP;\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 108,
+        "startLineNumber" : 374,
+        "startColumnNumber" : 13,
+        "endLineNumber" : 376,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  blockedReason=anyBlockedOnPlacements ? SPLIT_QUEUES_FULL : NO_ACTIVE_DRIVER_GROUP;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 8,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 287,
+        "startLineNumber" : 371,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 376,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (anyBlockedOnNextSplitBatch) {\n  blockedReason=anyBlockedOnPlacements ? MIXED_SPLIT_QUEUES_FULL_AND_WAITING_FOR_SOURCE : WAITING_FOR_SOURCE;\n}\n else {\n  blockedReason=anyBlockedOnPlacements ? SPLIT_QUEUES_FULL : NO_ACTIVE_DRIVER_GROUP;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 18,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 10942,
+        "startLineNumber" : 203,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 385,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  dropListenersFromWhenFinishedOrNewLifespansAdded();\n  int overallSplitAssignmentCount=0;\n  ImmutableSet.Builder<RemoteTask> overallNewTasks=ImmutableSet.builder();\n  List<ListenableFuture<?>> overallBlockedFutures=new ArrayList<>();\n  boolean anyBlockedOnPlacements=false;\n  boolean anyBlockedOnNextSplitBatch=false;\n  boolean anyNotBlocked=false;\n  for (  Entry<Lifespan,ScheduleGroup> entry : scheduleGroups.entrySet()) {\n    Lifespan lifespan=entry.getKey();\n    ScheduleGroup scheduleGroup=entry.getValue();\n    if (scheduleGroup.state == ScheduleGroupState.NO_MORE_SPLITS || scheduleGroup.state == ScheduleGroupState.DONE) {\n      verify(scheduleGroup.nextSplitBatchFuture == null);\n    }\n else     if (scheduleGroup.pendingSplits.isEmpty()) {\n      if (scheduleGroup.nextSplitBatchFuture == null) {\n        scheduleGroup.nextSplitBatchFuture=splitSource.getNextBatch(scheduleGroup.partitionHandle,lifespan,splitBatchSize);\n        long start=System.nanoTime();\n        addSuccessCallback(scheduleGroup.nextSplitBatchFuture,() -> stage.recordGetSplitTime(start));\n      }\n      if (scheduleGroup.nextSplitBatchFuture.isDone()) {\n        SplitBatch nextSplits=getFutureValue(scheduleGroup.nextSplitBatchFuture);\n        scheduleGroup.nextSplitBatchFuture=null;\n        scheduleGroup.pendingSplits=new HashSet<>(nextSplits.getSplits());\n        if (nextSplits.isLastBatch()) {\n          if (scheduleGroup.state == ScheduleGroupState.INITIALIZED && scheduleGroup.pendingSplits.isEmpty()) {\n            scheduleGroup.pendingSplits.add(new Split(splitSource.getConnectorId(),splitSource.getTransactionHandle(),new EmptySplit(splitSource.getConnectorId()),lifespan,NON_CACHEABLE));\n          }\n          scheduleGroup.state=ScheduleGroupState.NO_MORE_SPLITS;\n        }\n      }\n else {\n        overallBlockedFutures.add(scheduleGroup.nextSplitBatchFuture);\n        anyBlockedOnNextSplitBatch=true;\n        continue;\n      }\n    }\n    Multimap<InternalNode,Split> splitAssignment=ImmutableMultimap.of();\n    if (!scheduleGroup.pendingSplits.isEmpty()) {\n      if (!scheduleGroup.placementFuture.isDone()) {\n        anyBlockedOnPlacements=true;\n        continue;\n      }\n      if (scheduleGroup.state == ScheduleGroupState.INITIALIZED) {\n        scheduleGroup.state=ScheduleGroupState.SPLITS_ADDED;\n      }\n      if (state == State.INITIALIZED) {\n        state=State.SPLITS_ADDED;\n      }\n      SplitPlacementResult splitPlacementResult=splitPlacementPolicy.computeAssignments(scheduleGroup.pendingSplits);\n      splitAssignment=splitPlacementResult.getAssignments();\n      splitAssignment.values().forEach(scheduleGroup.pendingSplits::remove);\n      overallSplitAssignmentCount+=splitAssignment.size();\n      if (!scheduleGroup.pendingSplits.isEmpty()) {\n        scheduleGroup.placementFuture=splitPlacementResult.getBlocked();\n        overallBlockedFutures.add(scheduleGroup.placementFuture);\n        anyBlockedOnPlacements=true;\n      }\n    }\n    Multimap<InternalNode,Lifespan> noMoreSplitsNotification=ImmutableMultimap.of();\n    if (scheduleGroup.pendingSplits.isEmpty() && scheduleGroup.state == ScheduleGroupState.NO_MORE_SPLITS) {\n      scheduleGroup.state=ScheduleGroupState.DONE;\n      if (!lifespan.isTaskWide()) {\n        InternalNode node=((BucketedSplitPlacementPolicy)splitPlacementPolicy).getNodeForBucket(lifespan.getId());\n        noMoreSplitsNotification=ImmutableMultimap.of(node,lifespan);\n      }\n    }\n    overallNewTasks.addAll(assignSplits(splitAssignment,noMoreSplitsNotification));\n    if (scheduleGroup.nextSplitBatchFuture == null && scheduleGroup.pendingSplits.isEmpty() && scheduleGroup.state != ScheduleGroupState.DONE) {\n      anyNotBlocked=true;\n    }\n  }\n  if ((state == State.NO_MORE_SPLITS || state == State.FINISHED) || (!groupedExecution && lifespanAdded && scheduleGroups.isEmpty()&& splitSource.isFinished())) {\nswitch (state) {\ncase INITIALIZED:      throw new IllegalStateException(\"At least 1 split should have been scheduled for this plan node\");\ncase SPLITS_ADDED:    state=State.NO_MORE_SPLITS;\n  splitSource.close();\ncase NO_MORE_SPLITS:state=State.FINISHED;\nwhenFinishedOrNewLifespanAdded.set(null);\ncase FINISHED:return ScheduleResult.nonBlocked(true,overallNewTasks.build(),overallSplitAssignmentCount);\ndefault:throw new IllegalStateException(\"Unknown state\");\n}\n}\nif (anyNotBlocked) {\nreturn ScheduleResult.nonBlocked(false,overallNewTasks.build(),overallSplitAssignmentCount);\n}\nif (anyBlockedOnPlacements) {\noverallNewTasks.addAll(finalizeTaskCreationIfNecessary());\n}\nScheduleResult.BlockedReason blockedReason;\nif (anyBlockedOnNextSplitBatch) {\nblockedReason=anyBlockedOnPlacements ? MIXED_SPLIT_QUEUES_FULL_AND_WAITING_FOR_SOURCE : WAITING_FOR_SOURCE;\n}\n else {\nblockedReason=anyBlockedOnPlacements ? SPLIT_QUEUES_FULL : NO_ACTIVE_DRIVER_GROUP;\n}\noverallBlockedFutures.add(whenFinishedOrNewLifespanAdded);\nreturn ScheduleResult.blocked(false,overallNewTasks.build(),nonCancellationPropagating(whenAnyComplete(overallBlockedFutures)),blockedReason,overallSplitAssignmentCount);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 616,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 11006,
+        "startLineNumber" : 201,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 385,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public synchronized ScheduleResult schedule(){\n  dropListenersFromWhenFinishedOrNewLifespansAdded();\n  int overallSplitAssignmentCount=0;\n  ImmutableSet.Builder<RemoteTask> overallNewTasks=ImmutableSet.builder();\n  List<ListenableFuture<?>> overallBlockedFutures=new ArrayList<>();\n  boolean anyBlockedOnPlacements=false;\n  boolean anyBlockedOnNextSplitBatch=false;\n  boolean anyNotBlocked=false;\n  for (  Entry<Lifespan,ScheduleGroup> entry : scheduleGroups.entrySet()) {\n    Lifespan lifespan=entry.getKey();\n    ScheduleGroup scheduleGroup=entry.getValue();\n    if (scheduleGroup.state == ScheduleGroupState.NO_MORE_SPLITS || scheduleGroup.state == ScheduleGroupState.DONE) {\n      verify(scheduleGroup.nextSplitBatchFuture == null);\n    }\n else     if (scheduleGroup.pendingSplits.isEmpty()) {\n      if (scheduleGroup.nextSplitBatchFuture == null) {\n        scheduleGroup.nextSplitBatchFuture=splitSource.getNextBatch(scheduleGroup.partitionHandle,lifespan,splitBatchSize);\n        long start=System.nanoTime();\n        addSuccessCallback(scheduleGroup.nextSplitBatchFuture,() -> stage.recordGetSplitTime(start));\n      }\n      if (scheduleGroup.nextSplitBatchFuture.isDone()) {\n        SplitBatch nextSplits=getFutureValue(scheduleGroup.nextSplitBatchFuture);\n        scheduleGroup.nextSplitBatchFuture=null;\n        scheduleGroup.pendingSplits=new HashSet<>(nextSplits.getSplits());\n        if (nextSplits.isLastBatch()) {\n          if (scheduleGroup.state == ScheduleGroupState.INITIALIZED && scheduleGroup.pendingSplits.isEmpty()) {\n            scheduleGroup.pendingSplits.add(new Split(splitSource.getConnectorId(),splitSource.getTransactionHandle(),new EmptySplit(splitSource.getConnectorId()),lifespan,NON_CACHEABLE));\n          }\n          scheduleGroup.state=ScheduleGroupState.NO_MORE_SPLITS;\n        }\n      }\n else {\n        overallBlockedFutures.add(scheduleGroup.nextSplitBatchFuture);\n        anyBlockedOnNextSplitBatch=true;\n        continue;\n      }\n    }\n    Multimap<InternalNode,Split> splitAssignment=ImmutableMultimap.of();\n    if (!scheduleGroup.pendingSplits.isEmpty()) {\n      if (!scheduleGroup.placementFuture.isDone()) {\n        anyBlockedOnPlacements=true;\n        continue;\n      }\n      if (scheduleGroup.state == ScheduleGroupState.INITIALIZED) {\n        scheduleGroup.state=ScheduleGroupState.SPLITS_ADDED;\n      }\n      if (state == State.INITIALIZED) {\n        state=State.SPLITS_ADDED;\n      }\n      SplitPlacementResult splitPlacementResult=splitPlacementPolicy.computeAssignments(scheduleGroup.pendingSplits);\n      splitAssignment=splitPlacementResult.getAssignments();\n      splitAssignment.values().forEach(scheduleGroup.pendingSplits::remove);\n      overallSplitAssignmentCount+=splitAssignment.size();\n      if (!scheduleGroup.pendingSplits.isEmpty()) {\n        scheduleGroup.placementFuture=splitPlacementResult.getBlocked();\n        overallBlockedFutures.add(scheduleGroup.placementFuture);\n        anyBlockedOnPlacements=true;\n      }\n    }\n    Multimap<InternalNode,Lifespan> noMoreSplitsNotification=ImmutableMultimap.of();\n    if (scheduleGroup.pendingSplits.isEmpty() && scheduleGroup.state == ScheduleGroupState.NO_MORE_SPLITS) {\n      scheduleGroup.state=ScheduleGroupState.DONE;\n      if (!lifespan.isTaskWide()) {\n        InternalNode node=((BucketedSplitPlacementPolicy)splitPlacementPolicy).getNodeForBucket(lifespan.getId());\n        noMoreSplitsNotification=ImmutableMultimap.of(node,lifespan);\n      }\n    }\n    overallNewTasks.addAll(assignSplits(splitAssignment,noMoreSplitsNotification));\n    if (scheduleGroup.nextSplitBatchFuture == null && scheduleGroup.pendingSplits.isEmpty() && scheduleGroup.state != ScheduleGroupState.DONE) {\n      anyNotBlocked=true;\n    }\n  }\n  if ((state == State.NO_MORE_SPLITS || state == State.FINISHED) || (!groupedExecution && lifespanAdded && scheduleGroups.isEmpty()&& splitSource.isFinished())) {\nswitch (state) {\ncase INITIALIZED:      throw new IllegalStateException(\"At least 1 split should have been scheduled for this plan node\");\ncase SPLITS_ADDED:    state=State.NO_MORE_SPLITS;\n  splitSource.close();\ncase NO_MORE_SPLITS:state=State.FINISHED;\nwhenFinishedOrNewLifespanAdded.set(null);\ncase FINISHED:return ScheduleResult.nonBlocked(true,overallNewTasks.build(),overallSplitAssignmentCount);\ndefault:throw new IllegalStateException(\"Unknown state\");\n}\n}\nif (anyNotBlocked) {\nreturn ScheduleResult.nonBlocked(false,overallNewTasks.build(),overallSplitAssignmentCount);\n}\nif (anyBlockedOnPlacements) {\noverallNewTasks.addAll(finalizeTaskCreationIfNecessary());\n}\nScheduleResult.BlockedReason blockedReason;\nif (anyBlockedOnNextSplitBatch) {\nblockedReason=anyBlockedOnPlacements ? MIXED_SPLIT_QUEUES_FULL_AND_WAITING_FOR_SOURCE : WAITING_FOR_SOURCE;\n}\n else {\nblockedReason=anyBlockedOnPlacements ? SPLIT_QUEUES_FULL : NO_ACTIVE_DRIVER_GROUP;\n}\noverallBlockedFutures.add(whenFinishedOrNewLifespanAdded);\nreturn ScheduleResult.blocked(false,overallNewTasks.build(),nonCancellationPropagating(whenAnyComplete(overallBlockedFutures)),blockedReason,overallSplitAssignmentCount);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 624,
+      "astHeight" : 19
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 84,
+        "startLineNumber" : 375,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 375,
+        "endColumnNumber" : 96
+      },
+      "nodeContext" : "blockedReason=anyBlockedOnPlacements ? SPLIT_QUEUES_FULL : NO_ACTIVE_DRIVER_GROUP;\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "boolean"
+  } ],
+  "positionList" : [ {
+    "charLength" : 22,
+    "startLineNumber" : 353,
+    "startColumnNumber" : 12,
+    "endLineNumber" : 353,
+    "endColumnNumber" : 34
+  }, {
+    "charLength" : 22,
+    "startLineNumber" : 372,
+    "startColumnNumber" : 28,
+    "endLineNumber" : 372,
+    "endColumnNumber" : 50
+  }, {
+    "charLength" : 22,
+    "startLineNumber" : 375,
+    "startColumnNumber" : 28,
+    "endLineNumber" : 375,
+    "endColumnNumber" : 50
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 1
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 1
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 4
+  } ]
+}
