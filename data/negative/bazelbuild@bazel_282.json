@@ -1,100 +1,113 @@
 {
   "id" : 282,
-  "expression" : "BazelAndroidSemantics",
+  "expression" : "Collectors.toList()",
   "projectName" : "bazelbuild@bazel",
-  "commitID" : "302971e1b3d803069ac949c0085c0d2a3916c8ab",
-  "filePath" : "/src/main/java/com/google/devtools/build/lib/bazel/rules/android/BazelAndroidHostServiceFixture.java",
+  "commitID" : "40c9b756d7f8bac20801e2a54e3d83b2112c80c6",
+  "filePath" : "src/main/java/com/google/devtools/build/lib/worker/WorkerSpawnRunner.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "BazelAndroidSemantics",
-    "nodeType" : "SimpleName",
+    "nodeContext" : "Collectors.toList()",
+    "nodeType" : "MethodInvocation",
     "nodePosition" : {
-      "charLength" : 21,
-      "startLineNumber" : 22,
-      "startColumnNumber" : 10,
-      "endLineNumber" : 22,
-      "endColumnNumber" : 31
+      "charLength" : 19,
+      "startLineNumber" : 569,
+      "startColumnNumber" : 55,
+      "endLineNumber" : 569,
+      "endColumnNumber" : 74
     },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
     "parentDataList" : [ {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.SuperConstructorInvocation,arguments]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
       "nodePosition" : {
-        "charLength" : 30,
-        "startLineNumber" : 22,
-        "startColumnNumber" : 10,
-        "endLineNumber" : 22,
-        "endColumnNumber" : 40
+        "charLength" : 67,
+        "startLineNumber" : 569,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 569,
+        "endColumnNumber" : 75
       },
-      "nodeContext" : "BazelAndroidSemantics.INSTANCE",
-      "nodeType" : "QualifiedName",
-      "astNodeNumber" : 3,
-      "astHeight" : 2
+      "nodeContext" : "processIds.stream().filter(p -> p > 0).collect(Collectors.toList())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 16,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 96,
+        "startLineNumber" : 568,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 569,
+        "endColumnNumber" : 75
+      },
+      "nodeContext" : "filteredProcessIds=processIds.stream().filter(p -> p > 0).collect(Collectors.toList())",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 18,
+      "astHeight" : 6
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 38,
-        "startLineNumber" : 22,
+        "charLength" : 108,
+        "startLineNumber" : 568,
         "startColumnNumber" : 4,
-        "endLineNumber" : 22,
-        "endColumnNumber" : 42
+        "endLineNumber" : 569,
+        "endColumnNumber" : 76
       },
-      "nodeContext" : "super(BazelAndroidSemantics.INSTANCE);\n",
-      "nodeType" : "SuperConstructorInvocation",
-      "astNodeNumber" : 4,
-      "astHeight" : 3
+      "nodeContext" : "List<Long> filteredProcessIds=processIds.stream().filter(p -> p > 0).collect(Collectors.toList());\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 24,
+      "astHeight" : 7
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 48,
-        "startLineNumber" : 21,
-        "startColumnNumber" : 42,
-        "endLineNumber" : 23,
+        "charLength" : 1875,
+        "startLineNumber" : 561,
+        "startColumnNumber" : 87,
+        "endLineNumber" : 615,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "{\n  super(BazelAndroidSemantics.INSTANCE);\n}\n",
+      "nodeContext" : "{\n  Map<Long,WorkerMetric.WorkerStat> pidResults=new HashMap<>();\n  if (os != OS.LINUX && os != OS.DARWIN) {\n    return pidResults;\n  }\n  List<Long> filteredProcessIds=processIds.stream().filter(p -> p > 0).collect(Collectors.toList());\n  String pids=Joiner.on(\",\").join(filteredProcessIds);\n  BufferedReader psOutput;\n  try {\n    String command=\"ps -o pid,rss -p \" + pids;\n    psOutput=new BufferedReader(new InputStreamReader(runtime.exec(new String[]{\"bash\",\"-c\",command}).getInputStream(),\"UTF-8\"));\n  }\n catch (  IOException e) {\n    logger.atWarning().withCause(e).log(\"Error while executing command for pids: %s\",pids);\n    return pidResults;\n  }\n  try {\n    Instant now=Instant.now();\n    String output=null;\n    boolean isFirst=true;\n    while ((output=psOutput.readLine()) != null) {\n      if (isFirst) {\n        isFirst=false;\n        continue;\n      }\n      List<String> line=Splitter.on(\" \").trimResults().omitEmptyStrings().splitToList(output);\n      if (line.size() != 2) {\n        logger.atWarning().log(\"Unexpected length of split line %s %d\",output,line.size());\n        continue;\n      }\n      long pid=Long.parseLong(line.get(0));\n      int memoryInKb=Integer.parseInt(line.get(1)) / 1000;\n      pidResults.put(pid,new WorkerMetric.WorkerStat(memoryInKb,now));\n    }\n  }\n catch (  IllegalArgumentException|IOException e) {\n    logger.atWarning().withCause(e).log(\"Error while parsing psOutput: %s\",psOutput);\n  }\n  return pidResults;\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 5,
-      "astHeight" : 4
+      "astNodeNumber" : 261,
+      "astHeight" : 13
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 88,
-        "startLineNumber" : 21,
+        "charLength" : 1981,
+        "startLineNumber" : 560,
         "startColumnNumber" : 2,
-        "endLineNumber" : 23,
+        "endLineNumber" : 615,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "public BazelAndroidHostServiceFixture(){\n  super(BazelAndroidSemantics.INSTANCE);\n}\n",
+      "nodeContext" : "@VisibleForTesting public Map<Long,WorkerMetric.WorkerStat> collectStats(OS os,List<Long> processIds){\n  Map<Long,WorkerMetric.WorkerStat> pidResults=new HashMap<>();\n  if (os != OS.LINUX && os != OS.DARWIN) {\n    return pidResults;\n  }\n  List<Long> filteredProcessIds=processIds.stream().filter(p -> p > 0).collect(Collectors.toList());\n  String pids=Joiner.on(\",\").join(filteredProcessIds);\n  BufferedReader psOutput;\n  try {\n    String command=\"ps -o pid,rss -p \" + pids;\n    psOutput=new BufferedReader(new InputStreamReader(runtime.exec(new String[]{\"bash\",\"-c\",command}).getInputStream(),\"UTF-8\"));\n  }\n catch (  IOException e) {\n    logger.atWarning().withCause(e).log(\"Error while executing command for pids: %s\",pids);\n    return pidResults;\n  }\n  try {\n    Instant now=Instant.now();\n    String output=null;\n    boolean isFirst=true;\n    while ((output=psOutput.readLine()) != null) {\n      if (isFirst) {\n        isFirst=false;\n        continue;\n      }\n      List<String> line=Splitter.on(\" \").trimResults().omitEmptyStrings().splitToList(output);\n      if (line.size() != 2) {\n        logger.atWarning().log(\"Unexpected length of split line %s %d\",output,line.size());\n        continue;\n      }\n      long pid=Long.parseLong(line.get(0));\n      int memoryInKb=Integer.parseInt(line.get(1)) / 1000;\n      pidResults.put(pid,new WorkerMetric.WorkerStat(memoryInKb,now));\n    }\n  }\n catch (  IllegalArgumentException|IOException e) {\n    logger.atWarning().withCause(e).log(\"Error while parsing psOutput: %s\",psOutput);\n  }\n  return pidResults;\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 8,
-      "astHeight" : 5
+      "astNodeNumber" : 286,
+      "astHeight" : 14
     } ],
     "currentLineData" : {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
       "nodePosition" : {
-        "charLength" : 38,
-        "startLineNumber" : 22,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 22,
-        "endColumnNumber" : 42
+        "charLength" : 67,
+        "startLineNumber" : 569,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 569,
+        "endColumnNumber" : 75
       },
-      "nodeContext" : "super(BazelAndroidSemantics.INSTANCE);\n",
-      "nodeType" : "SuperConstructorInvocation",
-      "astNodeNumber" : 4,
-      "astHeight" : 3
+      "nodeContext" : "processIds.stream().filter(p -> p > 0).collect(Collectors.toList())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 16,
+      "astHeight" : 5
     },
-    "tokenLength" : 1,
-    "type" : "com.google.devtools.build.lib.bazel.rules.android.BazelAndroidSemantics"
+    "tokenLength" : 2,
+    "type" : "java.util.stream.Collector<java.lang.Long,,java.util.List<java.lang.Long>>"
   } ],
   "positionList" : [ {
-    "charLength" : 21,
-    "startLineNumber" : 22,
-    "startColumnNumber" : 10,
-    "endLineNumber" : 22,
-    "endColumnNumber" : 31
+    "charLength" : 19,
+    "startLineNumber" : 569,
+    "startColumnNumber" : 55,
+    "endLineNumber" : 569,
+    "endColumnNumber" : 74
   } ],
   "layoutRelationDataList" : [ ]
 }

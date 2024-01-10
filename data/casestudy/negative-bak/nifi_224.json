@@ -1,0 +1,1045 @@
+{
+  "id" : 224,
+  "expression" : "eventHandle",
+  "projectName" : "nifi",
+  "commitID" : "944d256d3130aa37ec5473a79067270b6667ee70",
+  "filePath" : "nifi-nar-bundles/nifi-windows-event-log-bundle/nifi-windows-event-log-processors/src/main/java/org/apache/nifi/processors/windows/event/log/jna/EventSubscribeXmlRenderingCallback.java",
+  "occurrences" : 6,
+  "isArithmeticExpression" : 1,
+  "isGetTypeMethod" : 1,
+  "expressionList" : [ {
+    "nodeContext" : "eventHandle",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 11,
+      "startLineNumber" : 66,
+      "startColumnNumber" : 93,
+      "endLineNumber" : 66,
+      "endColumnNumber" : 104
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 79,
+        "startLineNumber" : 66,
+        "startColumnNumber" : 25,
+        "endLineNumber" : 66,
+        "endColumnNumber" : 104
+      },
+      "nodeContext" : "\"onEvent(\" + evtSubscribeNotifyAction + \", \"+ userContext+ \", \"+ eventHandle",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 7,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 93,
+        "startLineNumber" : 66,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 66,
+        "endColumnNumber" : 105
+      },
+      "nodeContext" : "logger.debug(\"onEvent(\" + evtSubscribeNotifyAction + \", \"+ userContext+ \", \"+ eventHandle)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 10,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 94,
+        "startLineNumber" : 66,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 66,
+        "endColumnNumber" : 106
+      },
+      "nodeContext" : "logger.debug(\"onEvent(\" + evtSubscribeNotifyAction + \", \"+ userContext+ \", \"+ eventHandle);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 118,
+        "startLineNumber" : 65,
+        "startColumnNumber" : 37,
+        "endLineNumber" : 67,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  logger.debug(\"onEvent(\" + evtSubscribeNotifyAction + \", \"+ userContext+ \", \"+ eventHandle);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 12,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 147,
+        "startLineNumber" : 65,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 67,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (logger.isDebugEnabled()) {\n  logger.debug(\"onEvent(\" + evtSubscribeNotifyAction + \", \"+ userContext+ \", \"+ eventHandle);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 16,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2327,
+        "startLineNumber" : 64,
+        "startColumnNumber" : 118,
+        "endLineNumber" : 106,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (logger.isDebugEnabled()) {\n    logger.debug(\"onEvent(\" + evtSubscribeNotifyAction + \", \"+ userContext+ \", \"+ eventHandle);\n  }\n  if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.ERROR) {\n    if (eventHandle.getPointer().getInt(0) == WEvtApi.EvtSubscribeErrors.ERROR_EVT_QUERY_RESULT_STALE) {\n      logger.error(MISSING_EVENT_MESSAGE);\n    }\n else {\n      logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0));\n    }\n  }\n else   if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.DELIVER) {\n    wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n    if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n      int newMaxSize=used.getInt(0);\n      if (newMaxSize < size || newMaxSize > maxBufferSize) {\n        logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n        return 0;\n      }\n      size=newMaxSize;\n      buffer=new Memory(size);\n      wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n    }\n    int lastError=kernel32.GetLastError();\n    if (lastError == W32Errors.ERROR_SUCCESS) {\n      int usedBytes=used.getInt(0);\n      String string=StandardCharsets.UTF_16LE.decode(buffer.getByteBuffer(0,usedBytes)).toString();\n      if (string.endsWith(\"\\u0000\")) {\n        string=string.substring(0,string.length() - 1);\n      }\n      consumer.accept(string);\n    }\n else {\n      logger.error(EVT_RENDER_RETURNED_THE_FOLLOWING_ERROR_CODE + errorLookup.getLastError() + \".\");\n    }\n  }\n  return 0;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 221,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 2455,
+        "startLineNumber" : 63,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 106,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public synchronized int onEvent(int evtSubscribeNotifyAction,WinDef.PVOID userContext,WinNT.HANDLE eventHandle){\n  if (logger.isDebugEnabled()) {\n    logger.debug(\"onEvent(\" + evtSubscribeNotifyAction + \", \"+ userContext+ \", \"+ eventHandle);\n  }\n  if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.ERROR) {\n    if (eventHandle.getPointer().getInt(0) == WEvtApi.EvtSubscribeErrors.ERROR_EVT_QUERY_RESULT_STALE) {\n      logger.error(MISSING_EVENT_MESSAGE);\n    }\n else {\n      logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0));\n    }\n  }\n else   if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.DELIVER) {\n    wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n    if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n      int newMaxSize=used.getInt(0);\n      if (newMaxSize < size || newMaxSize > maxBufferSize) {\n        logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n        return 0;\n      }\n      size=newMaxSize;\n      buffer=new Memory(size);\n      wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n    }\n    int lastError=kernel32.GetLastError();\n    if (lastError == W32Errors.ERROR_SUCCESS) {\n      int usedBytes=used.getInt(0);\n      String string=StandardCharsets.UTF_16LE.decode(buffer.getByteBuffer(0,usedBytes)).toString();\n      if (string.endsWith(\"\\u0000\")) {\n        string=string.substring(0,string.length() - 1);\n      }\n      consumer.accept(string);\n    }\n else {\n      logger.error(EVT_RENDER_RETURNED_THE_FOLLOWING_ERROR_CODE + errorLookup.getLastError() + \".\");\n    }\n  }\n  return 0;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 243,
+      "astHeight" : 15
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 94,
+        "startLineNumber" : 66,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 66,
+        "endColumnNumber" : 106
+      },
+      "nodeContext" : "logger.debug(\"onEvent(\" + evtSubscribeNotifyAction + \", \"+ userContext+ \", \"+ eventHandle);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "WinNT.HANDLE"
+  }, {
+    "nodeContext" : "eventHandle",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 11,
+      "startLineNumber" : 70,
+      "startColumnNumber" : 16,
+      "endLineNumber" : 70,
+      "endColumnNumber" : 27
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 24,
+        "startLineNumber" : 70,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 70,
+        "endColumnNumber" : 40
+      },
+      "nodeContext" : "eventHandle.getPointer()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 34,
+        "startLineNumber" : 70,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 70,
+        "endColumnNumber" : 50
+      },
+      "nodeContext" : "eventHandle.getPointer().getInt(0)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 93,
+        "startLineNumber" : 70,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 70,
+        "endColumnNumber" : 109
+      },
+      "nodeContext" : "eventHandle.getPointer().getInt(0) == WEvtApi.EvtSubscribeErrors.ERROR_EVT_QUERY_RESULT_STALE",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 12,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 291,
+        "startLineNumber" : 70,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 74,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "if (eventHandle.getPointer().getInt(0) == WEvtApi.EvtSubscribeErrors.ERROR_EVT_QUERY_RESULT_STALE) {\n  logger.error(MISSING_EVENT_MESSAGE);\n}\n else {\n  logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0));\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 32,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 315,
+        "startLineNumber" : 69,
+        "startColumnNumber" : 80,
+        "endLineNumber" : 75,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  if (eventHandle.getPointer().getInt(0) == WEvtApi.EvtSubscribeErrors.ERROR_EVT_QUERY_RESULT_STALE) {\n    logger.error(MISSING_EVENT_MESSAGE);\n  }\n else {\n    logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0));\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 33,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 2032,
+        "startLineNumber" : 69,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 103,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.ERROR) {\n  if (eventHandle.getPointer().getInt(0) == WEvtApi.EvtSubscribeErrors.ERROR_EVT_QUERY_RESULT_STALE) {\n    logger.error(MISSING_EVENT_MESSAGE);\n  }\n else {\n    logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0));\n  }\n}\n else if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.DELIVER) {\n  wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n  if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n    int newMaxSize=used.getInt(0);\n    if (newMaxSize < size || newMaxSize > maxBufferSize) {\n      logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n      return 0;\n    }\n    size=newMaxSize;\n    buffer=new Memory(size);\n    wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n  }\n  int lastError=kernel32.GetLastError();\n  if (lastError == W32Errors.ERROR_SUCCESS) {\n    int usedBytes=used.getInt(0);\n    String string=StandardCharsets.UTF_16LE.decode(buffer.getByteBuffer(0,usedBytes)).toString();\n    if (string.endsWith(\"\\u0000\")) {\n      string=string.substring(0,string.length() - 1);\n    }\n    consumer.accept(string);\n  }\n else {\n    logger.error(EVT_RENDER_RETURNED_THE_FOLLOWING_ERROR_CODE + errorLookup.getLastError() + \".\");\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 202,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2327,
+        "startLineNumber" : 64,
+        "startColumnNumber" : 118,
+        "endLineNumber" : 106,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (logger.isDebugEnabled()) {\n    logger.debug(\"onEvent(\" + evtSubscribeNotifyAction + \", \"+ userContext+ \", \"+ eventHandle);\n  }\n  if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.ERROR) {\n    if (eventHandle.getPointer().getInt(0) == WEvtApi.EvtSubscribeErrors.ERROR_EVT_QUERY_RESULT_STALE) {\n      logger.error(MISSING_EVENT_MESSAGE);\n    }\n else {\n      logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0));\n    }\n  }\n else   if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.DELIVER) {\n    wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n    if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n      int newMaxSize=used.getInt(0);\n      if (newMaxSize < size || newMaxSize > maxBufferSize) {\n        logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n        return 0;\n      }\n      size=newMaxSize;\n      buffer=new Memory(size);\n      wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n    }\n    int lastError=kernel32.GetLastError();\n    if (lastError == W32Errors.ERROR_SUCCESS) {\n      int usedBytes=used.getInt(0);\n      String string=StandardCharsets.UTF_16LE.decode(buffer.getByteBuffer(0,usedBytes)).toString();\n      if (string.endsWith(\"\\u0000\")) {\n        string=string.substring(0,string.length() - 1);\n      }\n      consumer.accept(string);\n    }\n else {\n      logger.error(EVT_RENDER_RETURNED_THE_FOLLOWING_ERROR_CODE + errorLookup.getLastError() + \".\");\n    }\n  }\n  return 0;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 221,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 2455,
+        "startLineNumber" : 63,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 106,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public synchronized int onEvent(int evtSubscribeNotifyAction,WinDef.PVOID userContext,WinNT.HANDLE eventHandle){\n  if (logger.isDebugEnabled()) {\n    logger.debug(\"onEvent(\" + evtSubscribeNotifyAction + \", \"+ userContext+ \", \"+ eventHandle);\n  }\n  if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.ERROR) {\n    if (eventHandle.getPointer().getInt(0) == WEvtApi.EvtSubscribeErrors.ERROR_EVT_QUERY_RESULT_STALE) {\n      logger.error(MISSING_EVENT_MESSAGE);\n    }\n else {\n      logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0));\n    }\n  }\n else   if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.DELIVER) {\n    wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n    if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n      int newMaxSize=used.getInt(0);\n      if (newMaxSize < size || newMaxSize > maxBufferSize) {\n        logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n        return 0;\n      }\n      size=newMaxSize;\n      buffer=new Memory(size);\n      wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n    }\n    int lastError=kernel32.GetLastError();\n    if (lastError == W32Errors.ERROR_SUCCESS) {\n      int usedBytes=used.getInt(0);\n      String string=StandardCharsets.UTF_16LE.decode(buffer.getByteBuffer(0,usedBytes)).toString();\n      if (string.endsWith(\"\\u0000\")) {\n        string=string.substring(0,string.length() - 1);\n      }\n      consumer.accept(string);\n    }\n else {\n      logger.error(EVT_RENDER_RETURNED_THE_FOLLOWING_ERROR_CODE + errorLookup.getLastError() + \".\");\n    }\n  }\n  return 0;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 243,
+      "astHeight" : 15
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 93,
+        "startLineNumber" : 70,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 70,
+        "endColumnNumber" : 109
+      },
+      "nodeContext" : "eventHandle.getPointer().getInt(0) == WEvtApi.EvtSubscribeErrors.ERROR_EVT_QUERY_RESULT_STALE",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 12,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "WinNT.HANDLE"
+  }, {
+    "nodeContext" : "eventHandle",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 11,
+      "startLineNumber" : 73,
+      "startColumnNumber" : 66,
+      "endLineNumber" : 73,
+      "endColumnNumber" : 77
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 24,
+        "startLineNumber" : 73,
+        "startColumnNumber" : 66,
+        "endLineNumber" : 73,
+        "endColumnNumber" : 90
+      },
+      "nodeContext" : "eventHandle.getPointer()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,rightOperand]",
+      "nodePosition" : {
+        "charLength" : 34,
+        "startLineNumber" : 73,
+        "startColumnNumber" : 66,
+        "endLineNumber" : 73,
+        "endColumnNumber" : 100
+      },
+      "nodeContext" : "eventHandle.getPointer().getInt(0)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 71,
+        "startLineNumber" : 73,
+        "startColumnNumber" : 29,
+        "endLineNumber" : 73,
+        "endColumnNumber" : 100
+      },
+      "nodeContext" : "RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0)",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 85,
+        "startLineNumber" : 73,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 73,
+        "endColumnNumber" : 101
+      },
+      "nodeContext" : "logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 11,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 86,
+        "startLineNumber" : 73,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 73,
+        "endColumnNumber" : 102
+      },
+      "nodeContext" : "logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0));\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 12,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 118,
+        "startLineNumber" : 72,
+        "startColumnNumber" : 19,
+        "endLineNumber" : 74,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0));\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 13,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 291,
+        "startLineNumber" : 70,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 74,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "if (eventHandle.getPointer().getInt(0) == WEvtApi.EvtSubscribeErrors.ERROR_EVT_QUERY_RESULT_STALE) {\n  logger.error(MISSING_EVENT_MESSAGE);\n}\n else {\n  logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0));\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 32,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 315,
+        "startLineNumber" : 69,
+        "startColumnNumber" : 80,
+        "endLineNumber" : 75,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  if (eventHandle.getPointer().getInt(0) == WEvtApi.EvtSubscribeErrors.ERROR_EVT_QUERY_RESULT_STALE) {\n    logger.error(MISSING_EVENT_MESSAGE);\n  }\n else {\n    logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0));\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 33,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 2032,
+        "startLineNumber" : 69,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 103,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.ERROR) {\n  if (eventHandle.getPointer().getInt(0) == WEvtApi.EvtSubscribeErrors.ERROR_EVT_QUERY_RESULT_STALE) {\n    logger.error(MISSING_EVENT_MESSAGE);\n  }\n else {\n    logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0));\n  }\n}\n else if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.DELIVER) {\n  wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n  if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n    int newMaxSize=used.getInt(0);\n    if (newMaxSize < size || newMaxSize > maxBufferSize) {\n      logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n      return 0;\n    }\n    size=newMaxSize;\n    buffer=new Memory(size);\n    wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n  }\n  int lastError=kernel32.GetLastError();\n  if (lastError == W32Errors.ERROR_SUCCESS) {\n    int usedBytes=used.getInt(0);\n    String string=StandardCharsets.UTF_16LE.decode(buffer.getByteBuffer(0,usedBytes)).toString();\n    if (string.endsWith(\"\\u0000\")) {\n      string=string.substring(0,string.length() - 1);\n    }\n    consumer.accept(string);\n  }\n else {\n    logger.error(EVT_RENDER_RETURNED_THE_FOLLOWING_ERROR_CODE + errorLookup.getLastError() + \".\");\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 202,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2327,
+        "startLineNumber" : 64,
+        "startColumnNumber" : 118,
+        "endLineNumber" : 106,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (logger.isDebugEnabled()) {\n    logger.debug(\"onEvent(\" + evtSubscribeNotifyAction + \", \"+ userContext+ \", \"+ eventHandle);\n  }\n  if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.ERROR) {\n    if (eventHandle.getPointer().getInt(0) == WEvtApi.EvtSubscribeErrors.ERROR_EVT_QUERY_RESULT_STALE) {\n      logger.error(MISSING_EVENT_MESSAGE);\n    }\n else {\n      logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0));\n    }\n  }\n else   if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.DELIVER) {\n    wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n    if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n      int newMaxSize=used.getInt(0);\n      if (newMaxSize < size || newMaxSize > maxBufferSize) {\n        logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n        return 0;\n      }\n      size=newMaxSize;\n      buffer=new Memory(size);\n      wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n    }\n    int lastError=kernel32.GetLastError();\n    if (lastError == W32Errors.ERROR_SUCCESS) {\n      int usedBytes=used.getInt(0);\n      String string=StandardCharsets.UTF_16LE.decode(buffer.getByteBuffer(0,usedBytes)).toString();\n      if (string.endsWith(\"\\u0000\")) {\n        string=string.substring(0,string.length() - 1);\n      }\n      consumer.accept(string);\n    }\n else {\n      logger.error(EVT_RENDER_RETURNED_THE_FOLLOWING_ERROR_CODE + errorLookup.getLastError() + \".\");\n    }\n  }\n  return 0;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 221,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 2455,
+        "startLineNumber" : 63,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 106,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public synchronized int onEvent(int evtSubscribeNotifyAction,WinDef.PVOID userContext,WinNT.HANDLE eventHandle){\n  if (logger.isDebugEnabled()) {\n    logger.debug(\"onEvent(\" + evtSubscribeNotifyAction + \", \"+ userContext+ \", \"+ eventHandle);\n  }\n  if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.ERROR) {\n    if (eventHandle.getPointer().getInt(0) == WEvtApi.EvtSubscribeErrors.ERROR_EVT_QUERY_RESULT_STALE) {\n      logger.error(MISSING_EVENT_MESSAGE);\n    }\n else {\n      logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0));\n    }\n  }\n else   if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.DELIVER) {\n    wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n    if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n      int newMaxSize=used.getInt(0);\n      if (newMaxSize < size || newMaxSize > maxBufferSize) {\n        logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n        return 0;\n      }\n      size=newMaxSize;\n      buffer=new Memory(size);\n      wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n    }\n    int lastError=kernel32.GetLastError();\n    if (lastError == W32Errors.ERROR_SUCCESS) {\n      int usedBytes=used.getInt(0);\n      String string=StandardCharsets.UTF_16LE.decode(buffer.getByteBuffer(0,usedBytes)).toString();\n      if (string.endsWith(\"\\u0000\")) {\n        string=string.substring(0,string.length() - 1);\n      }\n      consumer.accept(string);\n    }\n else {\n      logger.error(EVT_RENDER_RETURNED_THE_FOLLOWING_ERROR_CODE + errorLookup.getLastError() + \".\");\n    }\n  }\n  return 0;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 243,
+      "astHeight" : 15
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 86,
+        "startLineNumber" : 73,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 73,
+        "endColumnNumber" : 102
+      },
+      "nodeContext" : "logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0));\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 12,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "WinNT.HANDLE"
+  }, {
+    "nodeContext" : "eventHandle",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 11,
+      "startLineNumber" : 76,
+      "startColumnNumber" : 36,
+      "endLineNumber" : 76,
+      "endColumnNumber" : 47
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 105,
+        "startLineNumber" : 76,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 76,
+        "endColumnNumber" : 117
+      },
+      "nodeContext" : "wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 14,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 106,
+        "startLineNumber" : 76,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 76,
+        "endColumnNumber" : 118
+      },
+      "nodeContext" : "wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 1565,
+        "startLineNumber" : 75,
+        "startColumnNumber" : 89,
+        "endLineNumber" : 103,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n  if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n    int newMaxSize=used.getInt(0);\n    if (newMaxSize < size || newMaxSize > maxBufferSize) {\n      logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n      return 0;\n    }\n    size=newMaxSize;\n    buffer=new Memory(size);\n    wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n  }\n  int lastError=kernel32.GetLastError();\n  if (lastError == W32Errors.ERROR_SUCCESS) {\n    int usedBytes=used.getInt(0);\n    String string=StandardCharsets.UTF_16LE.decode(buffer.getByteBuffer(0,usedBytes)).toString();\n    if (string.endsWith(\"\\u0000\")) {\n      string=string.substring(0,string.length() - 1);\n    }\n    consumer.accept(string);\n  }\n else {\n    logger.error(EVT_RENDER_RETURNED_THE_FOLLOWING_ERROR_CODE + errorLookup.getLastError() + \".\");\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 153,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 1639,
+        "startLineNumber" : 75,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 103,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.DELIVER) {\n  wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n  if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n    int newMaxSize=used.getInt(0);\n    if (newMaxSize < size || newMaxSize > maxBufferSize) {\n      logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n      return 0;\n    }\n    size=newMaxSize;\n    buffer=new Memory(size);\n    wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n  }\n  int lastError=kernel32.GetLastError();\n  if (lastError == W32Errors.ERROR_SUCCESS) {\n    int usedBytes=used.getInt(0);\n    String string=StandardCharsets.UTF_16LE.decode(buffer.getByteBuffer(0,usedBytes)).toString();\n    if (string.endsWith(\"\\u0000\")) {\n      string=string.substring(0,string.length() - 1);\n    }\n    consumer.accept(string);\n  }\n else {\n    logger.error(EVT_RENDER_RETURNED_THE_FOLLOWING_ERROR_CODE + errorLookup.getLastError() + \".\");\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 161,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 2032,
+        "startLineNumber" : 69,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 103,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.ERROR) {\n  if (eventHandle.getPointer().getInt(0) == WEvtApi.EvtSubscribeErrors.ERROR_EVT_QUERY_RESULT_STALE) {\n    logger.error(MISSING_EVENT_MESSAGE);\n  }\n else {\n    logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0));\n  }\n}\n else if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.DELIVER) {\n  wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n  if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n    int newMaxSize=used.getInt(0);\n    if (newMaxSize < size || newMaxSize > maxBufferSize) {\n      logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n      return 0;\n    }\n    size=newMaxSize;\n    buffer=new Memory(size);\n    wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n  }\n  int lastError=kernel32.GetLastError();\n  if (lastError == W32Errors.ERROR_SUCCESS) {\n    int usedBytes=used.getInt(0);\n    String string=StandardCharsets.UTF_16LE.decode(buffer.getByteBuffer(0,usedBytes)).toString();\n    if (string.endsWith(\"\\u0000\")) {\n      string=string.substring(0,string.length() - 1);\n    }\n    consumer.accept(string);\n  }\n else {\n    logger.error(EVT_RENDER_RETURNED_THE_FOLLOWING_ERROR_CODE + errorLookup.getLastError() + \".\");\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 202,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2327,
+        "startLineNumber" : 64,
+        "startColumnNumber" : 118,
+        "endLineNumber" : 106,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (logger.isDebugEnabled()) {\n    logger.debug(\"onEvent(\" + evtSubscribeNotifyAction + \", \"+ userContext+ \", \"+ eventHandle);\n  }\n  if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.ERROR) {\n    if (eventHandle.getPointer().getInt(0) == WEvtApi.EvtSubscribeErrors.ERROR_EVT_QUERY_RESULT_STALE) {\n      logger.error(MISSING_EVENT_MESSAGE);\n    }\n else {\n      logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0));\n    }\n  }\n else   if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.DELIVER) {\n    wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n    if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n      int newMaxSize=used.getInt(0);\n      if (newMaxSize < size || newMaxSize > maxBufferSize) {\n        logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n        return 0;\n      }\n      size=newMaxSize;\n      buffer=new Memory(size);\n      wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n    }\n    int lastError=kernel32.GetLastError();\n    if (lastError == W32Errors.ERROR_SUCCESS) {\n      int usedBytes=used.getInt(0);\n      String string=StandardCharsets.UTF_16LE.decode(buffer.getByteBuffer(0,usedBytes)).toString();\n      if (string.endsWith(\"\\u0000\")) {\n        string=string.substring(0,string.length() - 1);\n      }\n      consumer.accept(string);\n    }\n else {\n      logger.error(EVT_RENDER_RETURNED_THE_FOLLOWING_ERROR_CODE + errorLookup.getLastError() + \".\");\n    }\n  }\n  return 0;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 221,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 2455,
+        "startLineNumber" : 63,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 106,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public synchronized int onEvent(int evtSubscribeNotifyAction,WinDef.PVOID userContext,WinNT.HANDLE eventHandle){\n  if (logger.isDebugEnabled()) {\n    logger.debug(\"onEvent(\" + evtSubscribeNotifyAction + \", \"+ userContext+ \", \"+ eventHandle);\n  }\n  if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.ERROR) {\n    if (eventHandle.getPointer().getInt(0) == WEvtApi.EvtSubscribeErrors.ERROR_EVT_QUERY_RESULT_STALE) {\n      logger.error(MISSING_EVENT_MESSAGE);\n    }\n else {\n      logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0));\n    }\n  }\n else   if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.DELIVER) {\n    wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n    if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n      int newMaxSize=used.getInt(0);\n      if (newMaxSize < size || newMaxSize > maxBufferSize) {\n        logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n        return 0;\n      }\n      size=newMaxSize;\n      buffer=new Memory(size);\n      wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n    }\n    int lastError=kernel32.GetLastError();\n    if (lastError == W32Errors.ERROR_SUCCESS) {\n      int usedBytes=used.getInt(0);\n      String string=StandardCharsets.UTF_16LE.decode(buffer.getByteBuffer(0,usedBytes)).toString();\n      if (string.endsWith(\"\\u0000\")) {\n        string=string.substring(0,string.length() - 1);\n      }\n      consumer.accept(string);\n    }\n else {\n      logger.error(EVT_RENDER_RETURNED_THE_FOLLOWING_ERROR_CODE + errorLookup.getLastError() + \".\");\n    }\n  }\n  return 0;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 243,
+      "astHeight" : 15
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 106,
+        "startLineNumber" : 76,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 76,
+        "endColumnNumber" : 118
+      },
+      "nodeContext" : "wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "WinNT.HANDLE"
+  }, {
+    "nodeContext" : "eventHandle",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 11,
+      "startLineNumber" : 83,
+      "startColumnNumber" : 53,
+      "endLineNumber" : 83,
+      "endColumnNumber" : 64
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 104,
+        "startLineNumber" : 83,
+        "startColumnNumber" : 33,
+        "endLineNumber" : 83,
+        "endColumnNumber" : 137
+      },
+      "nodeContext" : "\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\"",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 6,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 118,
+        "startLineNumber" : 83,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 83,
+        "endColumnNumber" : 138
+      },
+      "nodeContext" : "logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\")",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 9,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 119,
+        "startLineNumber" : 83,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 83,
+        "endColumnNumber" : 139
+      },
+      "nodeContext" : "logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 305,
+        "startLineNumber" : 82,
+        "startColumnNumber" : 69,
+        "endLineNumber" : 86,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "{\n  logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n  return 0;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 13,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 358,
+        "startLineNumber" : 82,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 86,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "if (newMaxSize < size || newMaxSize > maxBufferSize) {\n  logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n  return 0;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 21,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 689,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 80,
+        "endLineNumber" : 90,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  int newMaxSize=used.getInt(0);\n  if (newMaxSize < size || newMaxSize > maxBufferSize) {\n    logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n    return 0;\n  }\n  size=newMaxSize;\n  buffer=new Memory(size);\n  wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 56,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 757,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 90,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n  int newMaxSize=used.getInt(0);\n  if (newMaxSize < size || newMaxSize > maxBufferSize) {\n    logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n    return 0;\n  }\n  size=newMaxSize;\n  buffer=new Memory(size);\n  wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 64,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 1565,
+        "startLineNumber" : 75,
+        "startColumnNumber" : 89,
+        "endLineNumber" : 103,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n  if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n    int newMaxSize=used.getInt(0);\n    if (newMaxSize < size || newMaxSize > maxBufferSize) {\n      logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n      return 0;\n    }\n    size=newMaxSize;\n    buffer=new Memory(size);\n    wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n  }\n  int lastError=kernel32.GetLastError();\n  if (lastError == W32Errors.ERROR_SUCCESS) {\n    int usedBytes=used.getInt(0);\n    String string=StandardCharsets.UTF_16LE.decode(buffer.getByteBuffer(0,usedBytes)).toString();\n    if (string.endsWith(\"\\u0000\")) {\n      string=string.substring(0,string.length() - 1);\n    }\n    consumer.accept(string);\n  }\n else {\n    logger.error(EVT_RENDER_RETURNED_THE_FOLLOWING_ERROR_CODE + errorLookup.getLastError() + \".\");\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 153,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 1639,
+        "startLineNumber" : 75,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 103,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.DELIVER) {\n  wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n  if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n    int newMaxSize=used.getInt(0);\n    if (newMaxSize < size || newMaxSize > maxBufferSize) {\n      logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n      return 0;\n    }\n    size=newMaxSize;\n    buffer=new Memory(size);\n    wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n  }\n  int lastError=kernel32.GetLastError();\n  if (lastError == W32Errors.ERROR_SUCCESS) {\n    int usedBytes=used.getInt(0);\n    String string=StandardCharsets.UTF_16LE.decode(buffer.getByteBuffer(0,usedBytes)).toString();\n    if (string.endsWith(\"\\u0000\")) {\n      string=string.substring(0,string.length() - 1);\n    }\n    consumer.accept(string);\n  }\n else {\n    logger.error(EVT_RENDER_RETURNED_THE_FOLLOWING_ERROR_CODE + errorLookup.getLastError() + \".\");\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 161,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 2032,
+        "startLineNumber" : 69,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 103,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.ERROR) {\n  if (eventHandle.getPointer().getInt(0) == WEvtApi.EvtSubscribeErrors.ERROR_EVT_QUERY_RESULT_STALE) {\n    logger.error(MISSING_EVENT_MESSAGE);\n  }\n else {\n    logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0));\n  }\n}\n else if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.DELIVER) {\n  wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n  if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n    int newMaxSize=used.getInt(0);\n    if (newMaxSize < size || newMaxSize > maxBufferSize) {\n      logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n      return 0;\n    }\n    size=newMaxSize;\n    buffer=new Memory(size);\n    wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n  }\n  int lastError=kernel32.GetLastError();\n  if (lastError == W32Errors.ERROR_SUCCESS) {\n    int usedBytes=used.getInt(0);\n    String string=StandardCharsets.UTF_16LE.decode(buffer.getByteBuffer(0,usedBytes)).toString();\n    if (string.endsWith(\"\\u0000\")) {\n      string=string.substring(0,string.length() - 1);\n    }\n    consumer.accept(string);\n  }\n else {\n    logger.error(EVT_RENDER_RETURNED_THE_FOLLOWING_ERROR_CODE + errorLookup.getLastError() + \".\");\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 202,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2327,
+        "startLineNumber" : 64,
+        "startColumnNumber" : 118,
+        "endLineNumber" : 106,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (logger.isDebugEnabled()) {\n    logger.debug(\"onEvent(\" + evtSubscribeNotifyAction + \", \"+ userContext+ \", \"+ eventHandle);\n  }\n  if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.ERROR) {\n    if (eventHandle.getPointer().getInt(0) == WEvtApi.EvtSubscribeErrors.ERROR_EVT_QUERY_RESULT_STALE) {\n      logger.error(MISSING_EVENT_MESSAGE);\n    }\n else {\n      logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0));\n    }\n  }\n else   if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.DELIVER) {\n    wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n    if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n      int newMaxSize=used.getInt(0);\n      if (newMaxSize < size || newMaxSize > maxBufferSize) {\n        logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n        return 0;\n      }\n      size=newMaxSize;\n      buffer=new Memory(size);\n      wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n    }\n    int lastError=kernel32.GetLastError();\n    if (lastError == W32Errors.ERROR_SUCCESS) {\n      int usedBytes=used.getInt(0);\n      String string=StandardCharsets.UTF_16LE.decode(buffer.getByteBuffer(0,usedBytes)).toString();\n      if (string.endsWith(\"\\u0000\")) {\n        string=string.substring(0,string.length() - 1);\n      }\n      consumer.accept(string);\n    }\n else {\n      logger.error(EVT_RENDER_RETURNED_THE_FOLLOWING_ERROR_CODE + errorLookup.getLastError() + \".\");\n    }\n  }\n  return 0;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 221,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 2455,
+        "startLineNumber" : 63,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 106,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public synchronized int onEvent(int evtSubscribeNotifyAction,WinDef.PVOID userContext,WinNT.HANDLE eventHandle){\n  if (logger.isDebugEnabled()) {\n    logger.debug(\"onEvent(\" + evtSubscribeNotifyAction + \", \"+ userContext+ \", \"+ eventHandle);\n  }\n  if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.ERROR) {\n    if (eventHandle.getPointer().getInt(0) == WEvtApi.EvtSubscribeErrors.ERROR_EVT_QUERY_RESULT_STALE) {\n      logger.error(MISSING_EVENT_MESSAGE);\n    }\n else {\n      logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0));\n    }\n  }\n else   if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.DELIVER) {\n    wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n    if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n      int newMaxSize=used.getInt(0);\n      if (newMaxSize < size || newMaxSize > maxBufferSize) {\n        logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n        return 0;\n      }\n      size=newMaxSize;\n      buffer=new Memory(size);\n      wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n    }\n    int lastError=kernel32.GetLastError();\n    if (lastError == W32Errors.ERROR_SUCCESS) {\n      int usedBytes=used.getInt(0);\n      String string=StandardCharsets.UTF_16LE.decode(buffer.getByteBuffer(0,usedBytes)).toString();\n      if (string.endsWith(\"\\u0000\")) {\n        string=string.substring(0,string.length() - 1);\n      }\n      consumer.accept(string);\n    }\n else {\n      logger.error(EVT_RENDER_RETURNED_THE_FOLLOWING_ERROR_CODE + errorLookup.getLastError() + \".\");\n    }\n  }\n  return 0;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 243,
+      "astHeight" : 15
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 119,
+        "startLineNumber" : 83,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 83,
+        "endColumnNumber" : 139
+      },
+      "nodeContext" : "logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "WinNT.HANDLE"
+  }, {
+    "nodeContext" : "eventHandle",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 11,
+      "startLineNumber" : 89,
+      "startColumnNumber" : 40,
+      "endLineNumber" : 89,
+      "endColumnNumber" : 51
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 105,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 89,
+        "endColumnNumber" : 121
+      },
+      "nodeContext" : "wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 14,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 106,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 89,
+        "endColumnNumber" : 122
+      },
+      "nodeContext" : "wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 689,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 80,
+        "endLineNumber" : 90,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  int newMaxSize=used.getInt(0);\n  if (newMaxSize < size || newMaxSize > maxBufferSize) {\n    logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n    return 0;\n  }\n  size=newMaxSize;\n  buffer=new Memory(size);\n  wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 56,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 757,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 90,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n  int newMaxSize=used.getInt(0);\n  if (newMaxSize < size || newMaxSize > maxBufferSize) {\n    logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n    return 0;\n  }\n  size=newMaxSize;\n  buffer=new Memory(size);\n  wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 64,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 1565,
+        "startLineNumber" : 75,
+        "startColumnNumber" : 89,
+        "endLineNumber" : 103,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n  if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n    int newMaxSize=used.getInt(0);\n    if (newMaxSize < size || newMaxSize > maxBufferSize) {\n      logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n      return 0;\n    }\n    size=newMaxSize;\n    buffer=new Memory(size);\n    wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n  }\n  int lastError=kernel32.GetLastError();\n  if (lastError == W32Errors.ERROR_SUCCESS) {\n    int usedBytes=used.getInt(0);\n    String string=StandardCharsets.UTF_16LE.decode(buffer.getByteBuffer(0,usedBytes)).toString();\n    if (string.endsWith(\"\\u0000\")) {\n      string=string.substring(0,string.length() - 1);\n    }\n    consumer.accept(string);\n  }\n else {\n    logger.error(EVT_RENDER_RETURNED_THE_FOLLOWING_ERROR_CODE + errorLookup.getLastError() + \".\");\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 153,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 1639,
+        "startLineNumber" : 75,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 103,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.DELIVER) {\n  wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n  if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n    int newMaxSize=used.getInt(0);\n    if (newMaxSize < size || newMaxSize > maxBufferSize) {\n      logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n      return 0;\n    }\n    size=newMaxSize;\n    buffer=new Memory(size);\n    wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n  }\n  int lastError=kernel32.GetLastError();\n  if (lastError == W32Errors.ERROR_SUCCESS) {\n    int usedBytes=used.getInt(0);\n    String string=StandardCharsets.UTF_16LE.decode(buffer.getByteBuffer(0,usedBytes)).toString();\n    if (string.endsWith(\"\\u0000\")) {\n      string=string.substring(0,string.length() - 1);\n    }\n    consumer.accept(string);\n  }\n else {\n    logger.error(EVT_RENDER_RETURNED_THE_FOLLOWING_ERROR_CODE + errorLookup.getLastError() + \".\");\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 161,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 2032,
+        "startLineNumber" : 69,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 103,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.ERROR) {\n  if (eventHandle.getPointer().getInt(0) == WEvtApi.EvtSubscribeErrors.ERROR_EVT_QUERY_RESULT_STALE) {\n    logger.error(MISSING_EVENT_MESSAGE);\n  }\n else {\n    logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0));\n  }\n}\n else if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.DELIVER) {\n  wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n  if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n    int newMaxSize=used.getInt(0);\n    if (newMaxSize < size || newMaxSize > maxBufferSize) {\n      logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n      return 0;\n    }\n    size=newMaxSize;\n    buffer=new Memory(size);\n    wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n  }\n  int lastError=kernel32.GetLastError();\n  if (lastError == W32Errors.ERROR_SUCCESS) {\n    int usedBytes=used.getInt(0);\n    String string=StandardCharsets.UTF_16LE.decode(buffer.getByteBuffer(0,usedBytes)).toString();\n    if (string.endsWith(\"\\u0000\")) {\n      string=string.substring(0,string.length() - 1);\n    }\n    consumer.accept(string);\n  }\n else {\n    logger.error(EVT_RENDER_RETURNED_THE_FOLLOWING_ERROR_CODE + errorLookup.getLastError() + \".\");\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 202,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2327,
+        "startLineNumber" : 64,
+        "startColumnNumber" : 118,
+        "endLineNumber" : 106,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (logger.isDebugEnabled()) {\n    logger.debug(\"onEvent(\" + evtSubscribeNotifyAction + \", \"+ userContext+ \", \"+ eventHandle);\n  }\n  if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.ERROR) {\n    if (eventHandle.getPointer().getInt(0) == WEvtApi.EvtSubscribeErrors.ERROR_EVT_QUERY_RESULT_STALE) {\n      logger.error(MISSING_EVENT_MESSAGE);\n    }\n else {\n      logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0));\n    }\n  }\n else   if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.DELIVER) {\n    wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n    if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n      int newMaxSize=used.getInt(0);\n      if (newMaxSize < size || newMaxSize > maxBufferSize) {\n        logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n        return 0;\n      }\n      size=newMaxSize;\n      buffer=new Memory(size);\n      wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n    }\n    int lastError=kernel32.GetLastError();\n    if (lastError == W32Errors.ERROR_SUCCESS) {\n      int usedBytes=used.getInt(0);\n      String string=StandardCharsets.UTF_16LE.decode(buffer.getByteBuffer(0,usedBytes)).toString();\n      if (string.endsWith(\"\\u0000\")) {\n        string=string.substring(0,string.length() - 1);\n      }\n      consumer.accept(string);\n    }\n else {\n      logger.error(EVT_RENDER_RETURNED_THE_FOLLOWING_ERROR_CODE + errorLookup.getLastError() + \".\");\n    }\n  }\n  return 0;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 221,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 2455,
+        "startLineNumber" : 63,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 106,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public synchronized int onEvent(int evtSubscribeNotifyAction,WinDef.PVOID userContext,WinNT.HANDLE eventHandle){\n  if (logger.isDebugEnabled()) {\n    logger.debug(\"onEvent(\" + evtSubscribeNotifyAction + \", \"+ userContext+ \", \"+ eventHandle);\n  }\n  if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.ERROR) {\n    if (eventHandle.getPointer().getInt(0) == WEvtApi.EvtSubscribeErrors.ERROR_EVT_QUERY_RESULT_STALE) {\n      logger.error(MISSING_EVENT_MESSAGE);\n    }\n else {\n      logger.error(RECEIVED_THE_FOLLOWING_WIN32_ERROR + eventHandle.getPointer().getInt(0));\n    }\n  }\n else   if (evtSubscribeNotifyAction == WEvtApi.EvtSubscribeNotifyAction.DELIVER) {\n    wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n    if (kernel32.GetLastError() == W32Errors.ERROR_INSUFFICIENT_BUFFER) {\n      int newMaxSize=used.getInt(0);\n      if (newMaxSize < size || newMaxSize > maxBufferSize) {\n        logger.error(\"Dropping event \" + eventHandle + \" because it couldn't be rendered within \"+ maxBufferSize+ \" bytes.\");\n        return 0;\n      }\n      size=newMaxSize;\n      buffer=new Memory(size);\n      wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n    }\n    int lastError=kernel32.GetLastError();\n    if (lastError == W32Errors.ERROR_SUCCESS) {\n      int usedBytes=used.getInt(0);\n      String string=StandardCharsets.UTF_16LE.decode(buffer.getByteBuffer(0,usedBytes)).toString();\n      if (string.endsWith(\"\\u0000\")) {\n        string=string.substring(0,string.length() - 1);\n      }\n      consumer.accept(string);\n    }\n else {\n      logger.error(EVT_RENDER_RETURNED_THE_FOLLOWING_ERROR_CODE + errorLookup.getLastError() + \".\");\n    }\n  }\n  return 0;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 243,
+      "astHeight" : 15
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 106,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 89,
+        "endColumnNumber" : 122
+      },
+      "nodeContext" : "wEvtApi.EvtRender(null,eventHandle,WEvtApi.EvtRenderFlags.EVENT_XML,size,buffer,used,propertyCount);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "WinNT.HANDLE"
+  } ],
+  "positionList" : [ {
+    "charLength" : 11,
+    "startLineNumber" : 66,
+    "startColumnNumber" : 93,
+    "endLineNumber" : 66,
+    "endColumnNumber" : 104
+  }, {
+    "charLength" : 11,
+    "startLineNumber" : 70,
+    "startColumnNumber" : 16,
+    "endLineNumber" : 70,
+    "endColumnNumber" : 27
+  }, {
+    "charLength" : 11,
+    "startLineNumber" : 73,
+    "startColumnNumber" : 66,
+    "endLineNumber" : 73,
+    "endColumnNumber" : 77
+  }, {
+    "charLength" : 11,
+    "startLineNumber" : 76,
+    "startColumnNumber" : 36,
+    "endLineNumber" : 76,
+    "endColumnNumber" : 47
+  }, {
+    "charLength" : 11,
+    "startLineNumber" : 83,
+    "startColumnNumber" : 53,
+    "endLineNumber" : 83,
+    "endColumnNumber" : 64
+  }, {
+    "charLength" : 11,
+    "startLineNumber" : 89,
+    "startColumnNumber" : 40,
+    "endLineNumber" : 89,
+    "endColumnNumber" : 51
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 3,
+    "layout" : 5
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 4,
+    "layout" : 5
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 5,
+    "layout" : 5
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 6
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 3,
+    "layout" : 5
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 4,
+    "layout" : 5
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 5,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 9
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 6
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 3,
+    "layout" : 8
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 4,
+    "layout" : 8
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 5,
+    "layout" : 8
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 4,
+    "layout" : 2
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 5,
+    "layout" : 2
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 0,
+    "layout" : 10
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 1,
+    "layout" : 9
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 2,
+    "layout" : 9
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 3,
+    "layout" : 7
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 5,
+    "layout" : 5
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 0,
+    "layout" : 7
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 1,
+    "layout" : 6
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 2,
+    "layout" : 6
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 4,
+    "layout" : 2
+  } ]
+}

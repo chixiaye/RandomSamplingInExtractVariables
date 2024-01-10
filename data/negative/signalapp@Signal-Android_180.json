@@ -1,325 +1,1284 @@
 {
   "id" : 180,
-  "expression" : "uri",
+  "expression" : "context",
   "projectName" : "signalapp@Signal-Android",
-  "commitID" : "7e91132e7ed62a58b5f347de252ab1eda3f43b90",
-  "filePath" : "/app/src/main/java/org/thoughtcrime/securesms/service/UpdateApkReadyListener.java",
-  "occurrences" : 2,
+  "commitID" : "2068fa80416a11892d4665e3656be70df4512340",
+  "filePath" : "app/src/main/java/org/thoughtcrime/securesms/messages/GroupSendUtil.java",
+  "occurrences" : 8,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "uri",
+    "nodeContext" : "context",
     "nodeType" : "SimpleName",
     "nodePosition" : {
-      "charLength" : 3,
-      "startLineNumber" : 45,
-      "startColumnNumber" : 12,
-      "endLineNumber" : 45,
-      "endColumnNumber" : 15
+      "charLength" : 7,
+      "startLineNumber" : 140,
+      "startColumnNumber" : 58,
+      "endLineNumber" : 140,
+      "endColumnNumber" : 65
     },
     "astNodeNumber" : 1,
     "astHeight" : 1,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
       "nodePosition" : {
-        "charLength" : 11,
-        "startLineNumber" : 45,
-        "startColumnNumber" : 12,
-        "endLineNumber" : 45,
-        "endColumnNumber" : 23
+        "charLength" : 38,
+        "startLineNumber" : 140,
+        "startColumnNumber" : 40,
+        "endLineNumber" : 140,
+        "endColumnNumber" : 78
       },
-      "nodeContext" : "uri == null",
-      "nodeType" : "InfixExpression",
-      "astNodeNumber" : 3,
-      "astHeight" : 2
+      "nodeContext" : "new RecipientData(context,allTargets)",
+      "nodeType" : "ClassInstanceCreation",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 52,
+        "startLineNumber" : 140,
+        "startColumnNumber" : 26,
+        "endLineNumber" : 140,
+        "endColumnNumber" : 78
+      },
+      "nodeContext" : "recipients=new RecipientData(context,allTargets)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 101,
-        "startLineNumber" : 45,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 48,
-        "endColumnNumber" : 9
+        "charLength" : 75,
+        "startLineNumber" : 140,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 140,
+        "endColumnNumber" : 79
       },
-      "nodeContext" : "if (uri == null) {\n  Log.w(TAG,\"Downloaded local URI is null?\");\n  return;\n}\n",
-      "nodeType" : "IfStatement",
+      "nodeContext" : "RecipientData recipients=new RecipientData(context,allTargets);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 6859,
+        "startLineNumber" : 139,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 266,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  RecipientData recipients=new RecipientData(context,allTargets);\n  Optional<GroupRecord> groupRecord=groupId != null ? DatabaseFactory.getGroupDatabase(context).getGroup(groupId) : Optional.absent();\n  List<Recipient> senderKeyTargets=new LinkedList<>();\n  List<Recipient> legacyTargets=new LinkedList<>();\n  for (  Recipient recipient : allTargets) {\n    Optional<UnidentifiedAccessPair> access=recipients.getAccessPair(recipient.getId());\n    boolean validMembership=groupRecord.isPresent() && groupRecord.get().getMembers().contains(recipient.getId());\n    if (recipient.getSenderKeyCapability() == Recipient.Capability.SUPPORTED && recipient.hasUuid() && access.isPresent() && access.get().getTargetUnidentifiedAccess().isPresent() && validMembership) {\n      senderKeyTargets.add(recipient);\n    }\n else {\n      legacyTargets.add(recipient);\n    }\n  }\n  if (FeatureFlags.senderKey()) {\n    if (groupId == null) {\n      Log.i(TAG,\"Recipients not in a group. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (Recipient.self().getSenderKeyCapability() != Recipient.Capability.SUPPORTED) {\n      Log.i(TAG,\"All of our devices do not support sender key. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (SignalStore.internalValues().removeSenderKeyMinimum()) {\n      Log.i(TAG,\"Sender key minimum removed. Using for \" + senderKeyTargets.size() + \" recipients.\");\n    }\n else     if (senderKeyTargets.size() < 2) {\n      Log.i(TAG,\"Too few sender-key-capable users (\" + senderKeyTargets.size() + \"). Doing all legacy sends.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else {\n      Log.i(TAG,\"Can use sender key for \" + senderKeyTargets.size() + \"/\"+ allTargets.size()+ \" recipients.\");\n    }\n  }\n else {\n    Log.i(TAG,\"Feature flag disabled. Using legacy.\");\n    legacyTargets.addAll(senderKeyTargets);\n    senderKeyTargets.clear();\n  }\n  List<SendMessageResult> allResults=new ArrayList<>(allTargets.size());\n  SignalServiceMessageSender messageSender=ApplicationDependencies.getSignalServiceMessageSender();\n  if (senderKeyTargets.size() > 0 && groupId != null) {\n    DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n    long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n    long keyAge=System.currentTimeMillis() - keyCreateTime;\n    if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n      Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n      SenderKeyUtil.rotateOurKey(context,distributionId);\n    }\n    try {\n      List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n      List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n      List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n      allResults.addAll(results);\n      int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n      Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n      if (sendOperation.shouldIncludeInMessageLog()) {\n        DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n      }\n    }\n catch (    InvalidUnidentifiedAccessHeaderException e) {\n      Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    NoSessionException e) {\n      Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    InvalidKeyException e) {\n      Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\n  }\n  if (cancelationSignal != null && cancelationSignal.isCanceled()) {\n    throw new CancelationException();\n  }\n  boolean onlyTargetIsSelfWithLinkedDevice=legacyTargets.isEmpty() && senderKeyTargets.isEmpty() && TextSecurePreferences.isMultiDevice(context);\n  if (legacyTargets.size() > 0 || onlyTargetIsSelfWithLinkedDevice) {\n    if (legacyTargets.size() > 0) {\n      Log.i(TAG,\"Need to do \" + legacyTargets.size() + \" legacy sends.\");\n    }\n else {\n      Log.i(TAG,\"Need to do a legacy send to send a sync message for a group of only ourselves.\");\n    }\n    List<SignalServiceAddress> targets=legacyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<Optional<UnidentifiedAccessPair>> access=legacyTargets.stream().map(r -> recipients.getAccessPair(r.getId())).collect(Collectors.toList());\n    boolean recipientUpdate=isRecipientUpdate || allResults.size() > 0;\n    final MessageSendLogDatabase messageLogDatabase=DatabaseFactory.getMessageLogDatabase(context);\n    final AtomicLong entryId=new AtomicLong(-1);\n    final boolean includeInMessageLog=sendOperation.shouldIncludeInMessageLog();\n    List<SendMessageResult> results=sendOperation.sendLegacy(messageSender,targets,access,recipientUpdate,result -> {\n      if (!includeInMessageLog) {\n        return;\n      }\nsynchronized (entryId) {\n        if (entryId.get() == -1) {\n          entryId.set(messageLogDatabase.insertIfPossible(recipients.requireRecipientId(result.getAddress()),sendOperation.getSentTimestamp(),result,sendOperation.getContentHint(),sendOperation.getRelatedMessageId()));\n        }\n else {\n          messageLogDatabase.addRecipientToExistingEntryIfPossible(entryId.get(),recipients.requireRecipientId(result.getAddress()),result);\n        }\n      }\n    }\n,cancelationSignal);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using 1:1 to \" + successCount + \"/\"+ targets.size()+ \" legacy targets.\");\n  }\n  return allResults;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 815,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 7926,
+        "startLineNumber" : 124,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 266,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "/** \n * Handles all of the logic of sending to a group. Will do sender key sends and legacy 1:1 sends as-needed, and give you back a list of {@link SendMessageResult}s just like we're used to.\n * @param groupId The groupId of the group you're sending to, or null if you're sending to a collection of recipients not joined by a group.\n * @param isRecipientUpdate True if you've already sent this message to some recipients in the past, otherwise false.\n */\n@WorkerThread private static List<SendMessageResult> sendMessage(@NonNull Context context,@Nullable GroupId.V2 groupId,@NonNull List<Recipient> allTargets,boolean isRecipientUpdate,@NonNull SendOperation sendOperation,@Nullable CancelationSignal cancelationSignal) throws IOException, UntrustedIdentityException {\n  RecipientData recipients=new RecipientData(context,allTargets);\n  Optional<GroupRecord> groupRecord=groupId != null ? DatabaseFactory.getGroupDatabase(context).getGroup(groupId) : Optional.absent();\n  List<Recipient> senderKeyTargets=new LinkedList<>();\n  List<Recipient> legacyTargets=new LinkedList<>();\n  for (  Recipient recipient : allTargets) {\n    Optional<UnidentifiedAccessPair> access=recipients.getAccessPair(recipient.getId());\n    boolean validMembership=groupRecord.isPresent() && groupRecord.get().getMembers().contains(recipient.getId());\n    if (recipient.getSenderKeyCapability() == Recipient.Capability.SUPPORTED && recipient.hasUuid() && access.isPresent() && access.get().getTargetUnidentifiedAccess().isPresent() && validMembership) {\n      senderKeyTargets.add(recipient);\n    }\n else {\n      legacyTargets.add(recipient);\n    }\n  }\n  if (FeatureFlags.senderKey()) {\n    if (groupId == null) {\n      Log.i(TAG,\"Recipients not in a group. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (Recipient.self().getSenderKeyCapability() != Recipient.Capability.SUPPORTED) {\n      Log.i(TAG,\"All of our devices do not support sender key. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (SignalStore.internalValues().removeSenderKeyMinimum()) {\n      Log.i(TAG,\"Sender key minimum removed. Using for \" + senderKeyTargets.size() + \" recipients.\");\n    }\n else     if (senderKeyTargets.size() < 2) {\n      Log.i(TAG,\"Too few sender-key-capable users (\" + senderKeyTargets.size() + \"). Doing all legacy sends.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else {\n      Log.i(TAG,\"Can use sender key for \" + senderKeyTargets.size() + \"/\"+ allTargets.size()+ \" recipients.\");\n    }\n  }\n else {\n    Log.i(TAG,\"Feature flag disabled. Using legacy.\");\n    legacyTargets.addAll(senderKeyTargets);\n    senderKeyTargets.clear();\n  }\n  List<SendMessageResult> allResults=new ArrayList<>(allTargets.size());\n  SignalServiceMessageSender messageSender=ApplicationDependencies.getSignalServiceMessageSender();\n  if (senderKeyTargets.size() > 0 && groupId != null) {\n    DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n    long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n    long keyAge=System.currentTimeMillis() - keyCreateTime;\n    if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n      Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n      SenderKeyUtil.rotateOurKey(context,distributionId);\n    }\n    try {\n      List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n      List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n      List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n      allResults.addAll(results);\n      int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n      Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n      if (sendOperation.shouldIncludeInMessageLog()) {\n        DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n      }\n    }\n catch (    InvalidUnidentifiedAccessHeaderException e) {\n      Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    NoSessionException e) {\n      Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    InvalidKeyException e) {\n      Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\n  }\n  if (cancelationSignal != null && cancelationSignal.isCanceled()) {\n    throw new CancelationException();\n  }\n  boolean onlyTargetIsSelfWithLinkedDevice=legacyTargets.isEmpty() && senderKeyTargets.isEmpty() && TextSecurePreferences.isMultiDevice(context);\n  if (legacyTargets.size() > 0 || onlyTargetIsSelfWithLinkedDevice) {\n    if (legacyTargets.size() > 0) {\n      Log.i(TAG,\"Need to do \" + legacyTargets.size() + \" legacy sends.\");\n    }\n else {\n      Log.i(TAG,\"Need to do a legacy send to send a sync message for a group of only ourselves.\");\n    }\n    List<SignalServiceAddress> targets=legacyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<Optional<UnidentifiedAccessPair>> access=legacyTargets.stream().map(r -> recipients.getAccessPair(r.getId())).collect(Collectors.toList());\n    boolean recipientUpdate=isRecipientUpdate || allResults.size() > 0;\n    final MessageSendLogDatabase messageLogDatabase=DatabaseFactory.getMessageLogDatabase(context);\n    final AtomicLong entryId=new AtomicLong(-1);\n    final boolean includeInMessageLog=sendOperation.shouldIncludeInMessageLog();\n    List<SendMessageResult> results=sendOperation.sendLegacy(messageSender,targets,access,recipientUpdate,result -> {\n      if (!includeInMessageLog) {\n        return;\n      }\nsynchronized (entryId) {\n        if (entryId.get() == -1) {\n          entryId.set(messageLogDatabase.insertIfPossible(recipients.requireRecipientId(result.getAddress()),sendOperation.getSentTimestamp(),result,sendOperation.getContentHint(),sendOperation.getRelatedMessageId()));\n        }\n else {\n          messageLogDatabase.addRecipientToExistingEntryIfPossible(entryId.get(),recipients.requireRecipientId(result.getAddress()),result);\n        }\n      }\n    }\n,cancelationSignal);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using 1:1 to \" + successCount + \"/\"+ targets.size()+ \" legacy targets.\");\n  }\n  return allResults;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 869,
+      "astHeight" : 19
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 75,
+        "startLineNumber" : 140,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 140,
+        "endColumnNumber" : 79
+      },
+      "nodeContext" : "RecipientData recipients=new RecipientData(context,allTargets);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "org.thoughtcrime.securesms.messages.Context"
+  }, {
+    "nodeContext" : "context",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 7,
+      "startLineNumber" : 141,
+      "startColumnNumber" : 91,
+      "endLineNumber" : 141,
+      "endColumnNumber" : 98
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 41,
+        "startLineNumber" : 141,
+        "startColumnNumber" : 58,
+        "endLineNumber" : 141,
+        "endColumnNumber" : 99
+      },
+      "nodeContext" : "DatabaseFactory.getGroupDatabase(context)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ConditionalExpression,thenExpression]",
+      "nodePosition" : {
+        "charLength" : 59,
+        "startLineNumber" : 141,
+        "startColumnNumber" : 58,
+        "endLineNumber" : 141,
+        "endColumnNumber" : 117
+      },
+      "nodeContext" : "DatabaseFactory.getGroupDatabase(context).getGroup(groupId)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 97,
+        "startLineNumber" : 141,
+        "startColumnNumber" : 40,
+        "endLineNumber" : 141,
+        "endColumnNumber" : 137
+      },
+      "nodeContext" : "groupId != null ? DatabaseFactory.getGroupDatabase(context).getGroup(groupId) : Optional.absent()",
+      "nodeType" : "ConditionalExpression",
+      "astNodeNumber" : 14,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 111,
+        "startLineNumber" : 141,
+        "startColumnNumber" : 26,
+        "endLineNumber" : 141,
+        "endColumnNumber" : 137
+      },
+      "nodeContext" : "groupRecord=groupId != null ? DatabaseFactory.getGroupDatabase(context).getGroup(groupId) : Optional.absent()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 16,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 134,
+        "startLineNumber" : 141,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 141,
+        "endColumnNumber" : 138
+      },
+      "nodeContext" : "Optional<GroupRecord> groupRecord=groupId != null ? DatabaseFactory.getGroupDatabase(context).getGroup(groupId) : Optional.absent();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 22,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 6859,
+        "startLineNumber" : 139,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 266,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  RecipientData recipients=new RecipientData(context,allTargets);\n  Optional<GroupRecord> groupRecord=groupId != null ? DatabaseFactory.getGroupDatabase(context).getGroup(groupId) : Optional.absent();\n  List<Recipient> senderKeyTargets=new LinkedList<>();\n  List<Recipient> legacyTargets=new LinkedList<>();\n  for (  Recipient recipient : allTargets) {\n    Optional<UnidentifiedAccessPair> access=recipients.getAccessPair(recipient.getId());\n    boolean validMembership=groupRecord.isPresent() && groupRecord.get().getMembers().contains(recipient.getId());\n    if (recipient.getSenderKeyCapability() == Recipient.Capability.SUPPORTED && recipient.hasUuid() && access.isPresent() && access.get().getTargetUnidentifiedAccess().isPresent() && validMembership) {\n      senderKeyTargets.add(recipient);\n    }\n else {\n      legacyTargets.add(recipient);\n    }\n  }\n  if (FeatureFlags.senderKey()) {\n    if (groupId == null) {\n      Log.i(TAG,\"Recipients not in a group. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (Recipient.self().getSenderKeyCapability() != Recipient.Capability.SUPPORTED) {\n      Log.i(TAG,\"All of our devices do not support sender key. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (SignalStore.internalValues().removeSenderKeyMinimum()) {\n      Log.i(TAG,\"Sender key minimum removed. Using for \" + senderKeyTargets.size() + \" recipients.\");\n    }\n else     if (senderKeyTargets.size() < 2) {\n      Log.i(TAG,\"Too few sender-key-capable users (\" + senderKeyTargets.size() + \"). Doing all legacy sends.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else {\n      Log.i(TAG,\"Can use sender key for \" + senderKeyTargets.size() + \"/\"+ allTargets.size()+ \" recipients.\");\n    }\n  }\n else {\n    Log.i(TAG,\"Feature flag disabled. Using legacy.\");\n    legacyTargets.addAll(senderKeyTargets);\n    senderKeyTargets.clear();\n  }\n  List<SendMessageResult> allResults=new ArrayList<>(allTargets.size());\n  SignalServiceMessageSender messageSender=ApplicationDependencies.getSignalServiceMessageSender();\n  if (senderKeyTargets.size() > 0 && groupId != null) {\n    DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n    long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n    long keyAge=System.currentTimeMillis() - keyCreateTime;\n    if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n      Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n      SenderKeyUtil.rotateOurKey(context,distributionId);\n    }\n    try {\n      List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n      List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n      List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n      allResults.addAll(results);\n      int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n      Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n      if (sendOperation.shouldIncludeInMessageLog()) {\n        DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n      }\n    }\n catch (    InvalidUnidentifiedAccessHeaderException e) {\n      Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    NoSessionException e) {\n      Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    InvalidKeyException e) {\n      Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\n  }\n  if (cancelationSignal != null && cancelationSignal.isCanceled()) {\n    throw new CancelationException();\n  }\n  boolean onlyTargetIsSelfWithLinkedDevice=legacyTargets.isEmpty() && senderKeyTargets.isEmpty() && TextSecurePreferences.isMultiDevice(context);\n  if (legacyTargets.size() > 0 || onlyTargetIsSelfWithLinkedDevice) {\n    if (legacyTargets.size() > 0) {\n      Log.i(TAG,\"Need to do \" + legacyTargets.size() + \" legacy sends.\");\n    }\n else {\n      Log.i(TAG,\"Need to do a legacy send to send a sync message for a group of only ourselves.\");\n    }\n    List<SignalServiceAddress> targets=legacyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<Optional<UnidentifiedAccessPair>> access=legacyTargets.stream().map(r -> recipients.getAccessPair(r.getId())).collect(Collectors.toList());\n    boolean recipientUpdate=isRecipientUpdate || allResults.size() > 0;\n    final MessageSendLogDatabase messageLogDatabase=DatabaseFactory.getMessageLogDatabase(context);\n    final AtomicLong entryId=new AtomicLong(-1);\n    final boolean includeInMessageLog=sendOperation.shouldIncludeInMessageLog();\n    List<SendMessageResult> results=sendOperation.sendLegacy(messageSender,targets,access,recipientUpdate,result -> {\n      if (!includeInMessageLog) {\n        return;\n      }\nsynchronized (entryId) {\n        if (entryId.get() == -1) {\n          entryId.set(messageLogDatabase.insertIfPossible(recipients.requireRecipientId(result.getAddress()),sendOperation.getSentTimestamp(),result,sendOperation.getContentHint(),sendOperation.getRelatedMessageId()));\n        }\n else {\n          messageLogDatabase.addRecipientToExistingEntryIfPossible(entryId.get(),recipients.requireRecipientId(result.getAddress()),result);\n        }\n      }\n    }\n,cancelationSignal);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using 1:1 to \" + successCount + \"/\"+ targets.size()+ \" legacy targets.\");\n  }\n  return allResults;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 815,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 7926,
+        "startLineNumber" : 124,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 266,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "/** \n * Handles all of the logic of sending to a group. Will do sender key sends and legacy 1:1 sends as-needed, and give you back a list of {@link SendMessageResult}s just like we're used to.\n * @param groupId The groupId of the group you're sending to, or null if you're sending to a collection of recipients not joined by a group.\n * @param isRecipientUpdate True if you've already sent this message to some recipients in the past, otherwise false.\n */\n@WorkerThread private static List<SendMessageResult> sendMessage(@NonNull Context context,@Nullable GroupId.V2 groupId,@NonNull List<Recipient> allTargets,boolean isRecipientUpdate,@NonNull SendOperation sendOperation,@Nullable CancelationSignal cancelationSignal) throws IOException, UntrustedIdentityException {\n  RecipientData recipients=new RecipientData(context,allTargets);\n  Optional<GroupRecord> groupRecord=groupId != null ? DatabaseFactory.getGroupDatabase(context).getGroup(groupId) : Optional.absent();\n  List<Recipient> senderKeyTargets=new LinkedList<>();\n  List<Recipient> legacyTargets=new LinkedList<>();\n  for (  Recipient recipient : allTargets) {\n    Optional<UnidentifiedAccessPair> access=recipients.getAccessPair(recipient.getId());\n    boolean validMembership=groupRecord.isPresent() && groupRecord.get().getMembers().contains(recipient.getId());\n    if (recipient.getSenderKeyCapability() == Recipient.Capability.SUPPORTED && recipient.hasUuid() && access.isPresent() && access.get().getTargetUnidentifiedAccess().isPresent() && validMembership) {\n      senderKeyTargets.add(recipient);\n    }\n else {\n      legacyTargets.add(recipient);\n    }\n  }\n  if (FeatureFlags.senderKey()) {\n    if (groupId == null) {\n      Log.i(TAG,\"Recipients not in a group. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (Recipient.self().getSenderKeyCapability() != Recipient.Capability.SUPPORTED) {\n      Log.i(TAG,\"All of our devices do not support sender key. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (SignalStore.internalValues().removeSenderKeyMinimum()) {\n      Log.i(TAG,\"Sender key minimum removed. Using for \" + senderKeyTargets.size() + \" recipients.\");\n    }\n else     if (senderKeyTargets.size() < 2) {\n      Log.i(TAG,\"Too few sender-key-capable users (\" + senderKeyTargets.size() + \"). Doing all legacy sends.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else {\n      Log.i(TAG,\"Can use sender key for \" + senderKeyTargets.size() + \"/\"+ allTargets.size()+ \" recipients.\");\n    }\n  }\n else {\n    Log.i(TAG,\"Feature flag disabled. Using legacy.\");\n    legacyTargets.addAll(senderKeyTargets);\n    senderKeyTargets.clear();\n  }\n  List<SendMessageResult> allResults=new ArrayList<>(allTargets.size());\n  SignalServiceMessageSender messageSender=ApplicationDependencies.getSignalServiceMessageSender();\n  if (senderKeyTargets.size() > 0 && groupId != null) {\n    DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n    long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n    long keyAge=System.currentTimeMillis() - keyCreateTime;\n    if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n      Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n      SenderKeyUtil.rotateOurKey(context,distributionId);\n    }\n    try {\n      List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n      List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n      List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n      allResults.addAll(results);\n      int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n      Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n      if (sendOperation.shouldIncludeInMessageLog()) {\n        DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n      }\n    }\n catch (    InvalidUnidentifiedAccessHeaderException e) {\n      Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    NoSessionException e) {\n      Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    InvalidKeyException e) {\n      Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\n  }\n  if (cancelationSignal != null && cancelationSignal.isCanceled()) {\n    throw new CancelationException();\n  }\n  boolean onlyTargetIsSelfWithLinkedDevice=legacyTargets.isEmpty() && senderKeyTargets.isEmpty() && TextSecurePreferences.isMultiDevice(context);\n  if (legacyTargets.size() > 0 || onlyTargetIsSelfWithLinkedDevice) {\n    if (legacyTargets.size() > 0) {\n      Log.i(TAG,\"Need to do \" + legacyTargets.size() + \" legacy sends.\");\n    }\n else {\n      Log.i(TAG,\"Need to do a legacy send to send a sync message for a group of only ourselves.\");\n    }\n    List<SignalServiceAddress> targets=legacyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<Optional<UnidentifiedAccessPair>> access=legacyTargets.stream().map(r -> recipients.getAccessPair(r.getId())).collect(Collectors.toList());\n    boolean recipientUpdate=isRecipientUpdate || allResults.size() > 0;\n    final MessageSendLogDatabase messageLogDatabase=DatabaseFactory.getMessageLogDatabase(context);\n    final AtomicLong entryId=new AtomicLong(-1);\n    final boolean includeInMessageLog=sendOperation.shouldIncludeInMessageLog();\n    List<SendMessageResult> results=sendOperation.sendLegacy(messageSender,targets,access,recipientUpdate,result -> {\n      if (!includeInMessageLog) {\n        return;\n      }\nsynchronized (entryId) {\n        if (entryId.get() == -1) {\n          entryId.set(messageLogDatabase.insertIfPossible(recipients.requireRecipientId(result.getAddress()),sendOperation.getSentTimestamp(),result,sendOperation.getContentHint(),sendOperation.getRelatedMessageId()));\n        }\n else {\n          messageLogDatabase.addRecipientToExistingEntryIfPossible(entryId.get(),recipients.requireRecipientId(result.getAddress()),result);\n        }\n      }\n    }\n,cancelationSignal);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using 1:1 to \" + successCount + \"/\"+ targets.size()+ \" legacy targets.\");\n  }\n  return allResults;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 869,
+      "astHeight" : 19
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 134,
+        "startLineNumber" : 141,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 141,
+        "endColumnNumber" : 138
+      },
+      "nodeContext" : "Optional<GroupRecord> groupRecord=groupId != null ? DatabaseFactory.getGroupDatabase(context).getGroup(groupId) : Optional.absent();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 22,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "org.thoughtcrime.securesms.messages.Context"
+  }, {
+    "nodeContext" : "context",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 7,
+      "startLineNumber" : 190,
+      "startColumnNumber" : 71,
+      "endLineNumber" : 190,
+      "endColumnNumber" : 78
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 41,
+        "startLineNumber" : 190,
+        "startColumnNumber" : 38,
+        "endLineNumber" : 190,
+        "endColumnNumber" : 79
+      },
+      "nodeContext" : "DatabaseFactory.getGroupDatabase(context)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 76,
+        "startLineNumber" : 190,
+        "startColumnNumber" : 38,
+        "endLineNumber" : 190,
+        "endColumnNumber" : 114
+      },
+      "nodeContext" : "DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 93,
+        "startLineNumber" : 190,
+        "startColumnNumber" : 21,
+        "endLineNumber" : 190,
+        "endColumnNumber" : 114
+      },
+      "nodeContext" : "distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 109,
+        "startLineNumber" : 190,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 190,
+        "endColumnNumber" : 115
+      },
+      "nodeContext" : "DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n",
+      "nodeType" : "VariableDeclarationStatement",
       "astNodeNumber" : 12,
       "astHeight" : 5
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
       "nodePosition" : {
-        "charLength" : 492,
-        "startLineNumber" : 41,
-        "startColumnNumber" : 79,
-        "endLineNumber" : 55,
-        "endColumnNumber" : 7
-      },
-      "nodeContext" : "{\n  Uri uri=getLocalUriForDownloadId(context,downloadId);\n  String encodedDigest=TextSecurePreferences.getUpdateApkDigest(context);\n  if (uri == null) {\n    Log.w(TAG,\"Downloaded local URI is null?\");\n    return;\n  }\n  if (isMatchingDigest(context,downloadId,encodedDigest)) {\n    displayInstallNotification(context,uri);\n  }\n else {\n    Log.w(TAG,\"Downloaded APK doesn't match digest...\");\n  }\n}\n",
-      "nodeType" : "Block",
-      "astNodeNumber" : 50,
-      "astHeight" : 6
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 565,
-        "startLineNumber" : 41,
-        "startColumnNumber" : 6,
-        "endLineNumber" : 55,
-        "endColumnNumber" : 7
-      },
-      "nodeContext" : "if (downloadId == TextSecurePreferences.getUpdateApkDownloadId(context)) {\n  Uri uri=getLocalUriForDownloadId(context,downloadId);\n  String encodedDigest=TextSecurePreferences.getUpdateApkDigest(context);\n  if (uri == null) {\n    Log.w(TAG,\"Downloaded local URI is null?\");\n    return;\n  }\n  if (isMatchingDigest(context,downloadId,encodedDigest)) {\n    displayInstallNotification(context,uri);\n  }\n else {\n    Log.w(TAG,\"Downloaded APK doesn't match digest...\");\n  }\n}\n",
-      "nodeType" : "IfStatement",
-      "astNodeNumber" : 57,
-      "astHeight" : 7
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
-      "nodePosition" : {
-        "charLength" : 664,
-        "startLineNumber" : 38,
-        "startColumnNumber" : 77,
-        "endLineNumber" : 56,
+        "charLength" : 2046,
+        "startLineNumber" : 189,
+        "startColumnNumber" : 56,
+        "endLineNumber" : 222,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  long downloadId=intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID,-2);\n  if (downloadId == TextSecurePreferences.getUpdateApkDownloadId(context)) {\n    Uri uri=getLocalUriForDownloadId(context,downloadId);\n    String encodedDigest=TextSecurePreferences.getUpdateApkDigest(context);\n    if (uri == null) {\n      Log.w(TAG,\"Downloaded local URI is null?\");\n      return;\n    }\n    if (isMatchingDigest(context,downloadId,encodedDigest)) {\n      displayInstallNotification(context,uri);\n    }\n else {\n      Log.w(TAG,\"Downloaded APK doesn't match digest...\");\n    }\n  }\n}\n",
+      "nodeContext" : "{\n  DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n  long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n  long keyAge=System.currentTimeMillis() - keyCreateTime;\n  if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n    Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n    SenderKeyUtil.rotateOurKey(context,distributionId);\n  }\n  try {\n    List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n    List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n    if (sendOperation.shouldIncludeInMessageLog()) {\n      DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n    }\n  }\n catch (  InvalidUnidentifiedAccessHeaderException e) {\n    Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\ncatch (  NoSessionException e) {\n    Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\ncatch (  InvalidKeyException e) {\n    Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 70,
-      "astHeight" : 8
+      "astNodeNumber" : 247,
+      "astHeight" : 11
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 737,
-        "startLineNumber" : 38,
+        "charLength" : 2098,
+        "startLineNumber" : 189,
         "startColumnNumber" : 4,
-        "endLineNumber" : 56,
+        "endLineNumber" : 222,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(intent.getAction())) {\n  long downloadId=intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID,-2);\n  if (downloadId == TextSecurePreferences.getUpdateApkDownloadId(context)) {\n    Uri uri=getLocalUriForDownloadId(context,downloadId);\n    String encodedDigest=TextSecurePreferences.getUpdateApkDigest(context);\n    if (uri == null) {\n      Log.w(TAG,\"Downloaded local URI is null?\");\n      return;\n    }\n    if (isMatchingDigest(context,downloadId,encodedDigest)) {\n      displayInstallNotification(context,uri);\n    }\n else {\n      Log.w(TAG,\"Downloaded APK doesn't match digest...\");\n    }\n  }\n}\n",
+      "nodeContext" : "if (senderKeyTargets.size() > 0 && groupId != null) {\n  DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n  long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n  long keyAge=System.currentTimeMillis() - keyCreateTime;\n  if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n    Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n    SenderKeyUtil.rotateOurKey(context,distributionId);\n  }\n  try {\n    List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n    List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n    if (sendOperation.shouldIncludeInMessageLog()) {\n      DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n    }\n  }\n catch (  InvalidUnidentifiedAccessHeaderException e) {\n    Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\ncatch (  NoSessionException e) {\n    Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\ncatch (  InvalidKeyException e) {\n    Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\n}\n",
       "nodeType" : "IfStatement",
-      "astNodeNumber" : 79,
-      "astHeight" : 9
+      "astNodeNumber" : 257,
+      "astHeight" : 12
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 779,
-        "startLineNumber" : 35,
-        "startColumnNumber" : 56,
-        "endLineNumber" : 57,
+        "charLength" : 6859,
+        "startLineNumber" : 139,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 266,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "{\n  Log.i(TAG,\"onReceive()\");\n  if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(intent.getAction())) {\n    long downloadId=intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID,-2);\n    if (downloadId == TextSecurePreferences.getUpdateApkDownloadId(context)) {\n      Uri uri=getLocalUriForDownloadId(context,downloadId);\n      String encodedDigest=TextSecurePreferences.getUpdateApkDigest(context);\n      if (uri == null) {\n        Log.w(TAG,\"Downloaded local URI is null?\");\n        return;\n      }\n      if (isMatchingDigest(context,downloadId,encodedDigest)) {\n        displayInstallNotification(context,uri);\n      }\n else {\n        Log.w(TAG,\"Downloaded APK doesn't match digest...\");\n      }\n    }\n  }\n}\n",
+      "nodeContext" : "{\n  RecipientData recipients=new RecipientData(context,allTargets);\n  Optional<GroupRecord> groupRecord=groupId != null ? DatabaseFactory.getGroupDatabase(context).getGroup(groupId) : Optional.absent();\n  List<Recipient> senderKeyTargets=new LinkedList<>();\n  List<Recipient> legacyTargets=new LinkedList<>();\n  for (  Recipient recipient : allTargets) {\n    Optional<UnidentifiedAccessPair> access=recipients.getAccessPair(recipient.getId());\n    boolean validMembership=groupRecord.isPresent() && groupRecord.get().getMembers().contains(recipient.getId());\n    if (recipient.getSenderKeyCapability() == Recipient.Capability.SUPPORTED && recipient.hasUuid() && access.isPresent() && access.get().getTargetUnidentifiedAccess().isPresent() && validMembership) {\n      senderKeyTargets.add(recipient);\n    }\n else {\n      legacyTargets.add(recipient);\n    }\n  }\n  if (FeatureFlags.senderKey()) {\n    if (groupId == null) {\n      Log.i(TAG,\"Recipients not in a group. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (Recipient.self().getSenderKeyCapability() != Recipient.Capability.SUPPORTED) {\n      Log.i(TAG,\"All of our devices do not support sender key. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (SignalStore.internalValues().removeSenderKeyMinimum()) {\n      Log.i(TAG,\"Sender key minimum removed. Using for \" + senderKeyTargets.size() + \" recipients.\");\n    }\n else     if (senderKeyTargets.size() < 2) {\n      Log.i(TAG,\"Too few sender-key-capable users (\" + senderKeyTargets.size() + \"). Doing all legacy sends.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else {\n      Log.i(TAG,\"Can use sender key for \" + senderKeyTargets.size() + \"/\"+ allTargets.size()+ \" recipients.\");\n    }\n  }\n else {\n    Log.i(TAG,\"Feature flag disabled. Using legacy.\");\n    legacyTargets.addAll(senderKeyTargets);\n    senderKeyTargets.clear();\n  }\n  List<SendMessageResult> allResults=new ArrayList<>(allTargets.size());\n  SignalServiceMessageSender messageSender=ApplicationDependencies.getSignalServiceMessageSender();\n  if (senderKeyTargets.size() > 0 && groupId != null) {\n    DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n    long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n    long keyAge=System.currentTimeMillis() - keyCreateTime;\n    if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n      Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n      SenderKeyUtil.rotateOurKey(context,distributionId);\n    }\n    try {\n      List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n      List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n      List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n      allResults.addAll(results);\n      int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n      Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n      if (sendOperation.shouldIncludeInMessageLog()) {\n        DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n      }\n    }\n catch (    InvalidUnidentifiedAccessHeaderException e) {\n      Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    NoSessionException e) {\n      Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    InvalidKeyException e) {\n      Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\n  }\n  if (cancelationSignal != null && cancelationSignal.isCanceled()) {\n    throw new CancelationException();\n  }\n  boolean onlyTargetIsSelfWithLinkedDevice=legacyTargets.isEmpty() && senderKeyTargets.isEmpty() && TextSecurePreferences.isMultiDevice(context);\n  if (legacyTargets.size() > 0 || onlyTargetIsSelfWithLinkedDevice) {\n    if (legacyTargets.size() > 0) {\n      Log.i(TAG,\"Need to do \" + legacyTargets.size() + \" legacy sends.\");\n    }\n else {\n      Log.i(TAG,\"Need to do a legacy send to send a sync message for a group of only ourselves.\");\n    }\n    List<SignalServiceAddress> targets=legacyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<Optional<UnidentifiedAccessPair>> access=legacyTargets.stream().map(r -> recipients.getAccessPair(r.getId())).collect(Collectors.toList());\n    boolean recipientUpdate=isRecipientUpdate || allResults.size() > 0;\n    final MessageSendLogDatabase messageLogDatabase=DatabaseFactory.getMessageLogDatabase(context);\n    final AtomicLong entryId=new AtomicLong(-1);\n    final boolean includeInMessageLog=sendOperation.shouldIncludeInMessageLog();\n    List<SendMessageResult> results=sendOperation.sendLegacy(messageSender,targets,access,recipientUpdate,result -> {\n      if (!includeInMessageLog) {\n        return;\n      }\nsynchronized (entryId) {\n        if (entryId.get() == -1) {\n          entryId.set(messageLogDatabase.insertIfPossible(recipients.requireRecipientId(result.getAddress()),sendOperation.getSentTimestamp(),result,sendOperation.getContentHint(),sendOperation.getRelatedMessageId()));\n        }\n else {\n          messageLogDatabase.addRecipientToExistingEntryIfPossible(entryId.get(),recipients.requireRecipientId(result.getAddress()),result);\n        }\n      }\n    }\n,cancelationSignal);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using 1:1 to \" + successCount + \"/\"+ targets.size()+ \" legacy targets.\");\n  }\n  return allResults;\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 86,
-      "astHeight" : 10
+      "astNodeNumber" : 815,
+      "astHeight" : 18
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 845,
-        "startLineNumber" : 34,
+        "charLength" : 7926,
+        "startLineNumber" : 124,
         "startColumnNumber" : 2,
-        "endLineNumber" : 57,
+        "endLineNumber" : 266,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "@Override public void onReceive(Context context,Intent intent){\n  Log.i(TAG,\"onReceive()\");\n  if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(intent.getAction())) {\n    long downloadId=intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID,-2);\n    if (downloadId == TextSecurePreferences.getUpdateApkDownloadId(context)) {\n      Uri uri=getLocalUriForDownloadId(context,downloadId);\n      String encodedDigest=TextSecurePreferences.getUpdateApkDigest(context);\n      if (uri == null) {\n        Log.w(TAG,\"Downloaded local URI is null?\");\n        return;\n      }\n      if (isMatchingDigest(context,downloadId,encodedDigest)) {\n        displayInstallNotification(context,uri);\n      }\n else {\n        Log.w(TAG,\"Downloaded APK doesn't match digest...\");\n      }\n    }\n  }\n}\n",
+      "nodeContext" : "/** \n * Handles all of the logic of sending to a group. Will do sender key sends and legacy 1:1 sends as-needed, and give you back a list of {@link SendMessageResult}s just like we're used to.\n * @param groupId The groupId of the group you're sending to, or null if you're sending to a collection of recipients not joined by a group.\n * @param isRecipientUpdate True if you've already sent this message to some recipients in the past, otherwise false.\n */\n@WorkerThread private static List<SendMessageResult> sendMessage(@NonNull Context context,@Nullable GroupId.V2 groupId,@NonNull List<Recipient> allTargets,boolean isRecipientUpdate,@NonNull SendOperation sendOperation,@Nullable CancelationSignal cancelationSignal) throws IOException, UntrustedIdentityException {\n  RecipientData recipients=new RecipientData(context,allTargets);\n  Optional<GroupRecord> groupRecord=groupId != null ? DatabaseFactory.getGroupDatabase(context).getGroup(groupId) : Optional.absent();\n  List<Recipient> senderKeyTargets=new LinkedList<>();\n  List<Recipient> legacyTargets=new LinkedList<>();\n  for (  Recipient recipient : allTargets) {\n    Optional<UnidentifiedAccessPair> access=recipients.getAccessPair(recipient.getId());\n    boolean validMembership=groupRecord.isPresent() && groupRecord.get().getMembers().contains(recipient.getId());\n    if (recipient.getSenderKeyCapability() == Recipient.Capability.SUPPORTED && recipient.hasUuid() && access.isPresent() && access.get().getTargetUnidentifiedAccess().isPresent() && validMembership) {\n      senderKeyTargets.add(recipient);\n    }\n else {\n      legacyTargets.add(recipient);\n    }\n  }\n  if (FeatureFlags.senderKey()) {\n    if (groupId == null) {\n      Log.i(TAG,\"Recipients not in a group. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (Recipient.self().getSenderKeyCapability() != Recipient.Capability.SUPPORTED) {\n      Log.i(TAG,\"All of our devices do not support sender key. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (SignalStore.internalValues().removeSenderKeyMinimum()) {\n      Log.i(TAG,\"Sender key minimum removed. Using for \" + senderKeyTargets.size() + \" recipients.\");\n    }\n else     if (senderKeyTargets.size() < 2) {\n      Log.i(TAG,\"Too few sender-key-capable users (\" + senderKeyTargets.size() + \"). Doing all legacy sends.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else {\n      Log.i(TAG,\"Can use sender key for \" + senderKeyTargets.size() + \"/\"+ allTargets.size()+ \" recipients.\");\n    }\n  }\n else {\n    Log.i(TAG,\"Feature flag disabled. Using legacy.\");\n    legacyTargets.addAll(senderKeyTargets);\n    senderKeyTargets.clear();\n  }\n  List<SendMessageResult> allResults=new ArrayList<>(allTargets.size());\n  SignalServiceMessageSender messageSender=ApplicationDependencies.getSignalServiceMessageSender();\n  if (senderKeyTargets.size() > 0 && groupId != null) {\n    DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n    long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n    long keyAge=System.currentTimeMillis() - keyCreateTime;\n    if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n      Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n      SenderKeyUtil.rotateOurKey(context,distributionId);\n    }\n    try {\n      List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n      List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n      List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n      allResults.addAll(results);\n      int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n      Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n      if (sendOperation.shouldIncludeInMessageLog()) {\n        DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n      }\n    }\n catch (    InvalidUnidentifiedAccessHeaderException e) {\n      Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    NoSessionException e) {\n      Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    InvalidKeyException e) {\n      Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\n  }\n  if (cancelationSignal != null && cancelationSignal.isCanceled()) {\n    throw new CancelationException();\n  }\n  boolean onlyTargetIsSelfWithLinkedDevice=legacyTargets.isEmpty() && senderKeyTargets.isEmpty() && TextSecurePreferences.isMultiDevice(context);\n  if (legacyTargets.size() > 0 || onlyTargetIsSelfWithLinkedDevice) {\n    if (legacyTargets.size() > 0) {\n      Log.i(TAG,\"Need to do \" + legacyTargets.size() + \" legacy sends.\");\n    }\n else {\n      Log.i(TAG,\"Need to do a legacy send to send a sync message for a group of only ourselves.\");\n    }\n    List<SignalServiceAddress> targets=legacyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<Optional<UnidentifiedAccessPair>> access=legacyTargets.stream().map(r -> recipients.getAccessPair(r.getId())).collect(Collectors.toList());\n    boolean recipientUpdate=isRecipientUpdate || allResults.size() > 0;\n    final MessageSendLogDatabase messageLogDatabase=DatabaseFactory.getMessageLogDatabase(context);\n    final AtomicLong entryId=new AtomicLong(-1);\n    final boolean includeInMessageLog=sendOperation.shouldIncludeInMessageLog();\n    List<SendMessageResult> results=sendOperation.sendLegacy(messageSender,targets,access,recipientUpdate,result -> {\n      if (!includeInMessageLog) {\n        return;\n      }\nsynchronized (entryId) {\n        if (entryId.get() == -1) {\n          entryId.set(messageLogDatabase.insertIfPossible(recipients.requireRecipientId(result.getAddress()),sendOperation.getSentTimestamp(),result,sendOperation.getContentHint(),sendOperation.getRelatedMessageId()));\n        }\n else {\n          messageLogDatabase.addRecipientToExistingEntryIfPossible(entryId.get(),recipients.requireRecipientId(result.getAddress()),result);\n        }\n      }\n    }\n,cancelationSignal);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using 1:1 to \" + successCount + \"/\"+ targets.size()+ \" legacy targets.\");\n  }\n  return allResults;\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 100,
-      "astHeight" : 11
+      "astNodeNumber" : 869,
+      "astHeight" : 19
     } ],
     "currentLineData" : {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 11,
-        "startLineNumber" : 45,
-        "startColumnNumber" : 12,
-        "endLineNumber" : 45,
-        "endColumnNumber" : 23
+        "charLength" : 109,
+        "startLineNumber" : 190,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 190,
+        "endColumnNumber" : 115
       },
-      "nodeContext" : "uri == null",
-      "nodeType" : "InfixExpression",
-      "astNodeNumber" : 3,
-      "astHeight" : 2
+      "nodeContext" : "DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 12,
+      "astHeight" : 5
     },
     "tokenLength" : 1,
-    "type" : "org.thoughtcrime.securesms.service.Uri"
+    "type" : "org.thoughtcrime.securesms.messages.Context"
   }, {
-    "nodeContext" : "uri",
+    "nodeContext" : "context",
     "nodeType" : "SimpleName",
     "nodePosition" : {
-      "charLength" : 3,
-      "startLineNumber" : 51,
-      "startColumnNumber" : 46,
-      "endLineNumber" : 51,
-      "endColumnNumber" : 49
+      "charLength" : 7,
+      "startLineNumber" : 191,
+      "startColumnNumber" : 75,
+      "endLineNumber" : 191,
+      "endColumnNumber" : 82
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 61,
+        "startLineNumber" : 191,
+        "startColumnNumber" : 38,
+        "endLineNumber" : 191,
+        "endColumnNumber" : 99
+      },
+      "nodeContext" : "SenderKeyUtil.getCreateTimeForOurKey(context,distributionId)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 5,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 78,
+        "startLineNumber" : 191,
+        "startColumnNumber" : 21,
+        "endLineNumber" : 191,
+        "endColumnNumber" : 99
+      },
+      "nodeContext" : "keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 94,
+        "startLineNumber" : 191,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 191,
+        "endColumnNumber" : 100
+      },
+      "nodeContext" : "long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 2046,
+        "startLineNumber" : 189,
+        "startColumnNumber" : 56,
+        "endLineNumber" : 222,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n  long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n  long keyAge=System.currentTimeMillis() - keyCreateTime;\n  if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n    Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n    SenderKeyUtil.rotateOurKey(context,distributionId);\n  }\n  try {\n    List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n    List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n    if (sendOperation.shouldIncludeInMessageLog()) {\n      DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n    }\n  }\n catch (  InvalidUnidentifiedAccessHeaderException e) {\n    Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\ncatch (  NoSessionException e) {\n    Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\ncatch (  InvalidKeyException e) {\n    Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 247,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 2098,
+        "startLineNumber" : 189,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 222,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "if (senderKeyTargets.size() > 0 && groupId != null) {\n  DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n  long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n  long keyAge=System.currentTimeMillis() - keyCreateTime;\n  if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n    Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n    SenderKeyUtil.rotateOurKey(context,distributionId);\n  }\n  try {\n    List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n    List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n    if (sendOperation.shouldIncludeInMessageLog()) {\n      DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n    }\n  }\n catch (  InvalidUnidentifiedAccessHeaderException e) {\n    Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\ncatch (  NoSessionException e) {\n    Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\ncatch (  InvalidKeyException e) {\n    Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 257,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 6859,
+        "startLineNumber" : 139,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 266,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  RecipientData recipients=new RecipientData(context,allTargets);\n  Optional<GroupRecord> groupRecord=groupId != null ? DatabaseFactory.getGroupDatabase(context).getGroup(groupId) : Optional.absent();\n  List<Recipient> senderKeyTargets=new LinkedList<>();\n  List<Recipient> legacyTargets=new LinkedList<>();\n  for (  Recipient recipient : allTargets) {\n    Optional<UnidentifiedAccessPair> access=recipients.getAccessPair(recipient.getId());\n    boolean validMembership=groupRecord.isPresent() && groupRecord.get().getMembers().contains(recipient.getId());\n    if (recipient.getSenderKeyCapability() == Recipient.Capability.SUPPORTED && recipient.hasUuid() && access.isPresent() && access.get().getTargetUnidentifiedAccess().isPresent() && validMembership) {\n      senderKeyTargets.add(recipient);\n    }\n else {\n      legacyTargets.add(recipient);\n    }\n  }\n  if (FeatureFlags.senderKey()) {\n    if (groupId == null) {\n      Log.i(TAG,\"Recipients not in a group. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (Recipient.self().getSenderKeyCapability() != Recipient.Capability.SUPPORTED) {\n      Log.i(TAG,\"All of our devices do not support sender key. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (SignalStore.internalValues().removeSenderKeyMinimum()) {\n      Log.i(TAG,\"Sender key minimum removed. Using for \" + senderKeyTargets.size() + \" recipients.\");\n    }\n else     if (senderKeyTargets.size() < 2) {\n      Log.i(TAG,\"Too few sender-key-capable users (\" + senderKeyTargets.size() + \"). Doing all legacy sends.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else {\n      Log.i(TAG,\"Can use sender key for \" + senderKeyTargets.size() + \"/\"+ allTargets.size()+ \" recipients.\");\n    }\n  }\n else {\n    Log.i(TAG,\"Feature flag disabled. Using legacy.\");\n    legacyTargets.addAll(senderKeyTargets);\n    senderKeyTargets.clear();\n  }\n  List<SendMessageResult> allResults=new ArrayList<>(allTargets.size());\n  SignalServiceMessageSender messageSender=ApplicationDependencies.getSignalServiceMessageSender();\n  if (senderKeyTargets.size() > 0 && groupId != null) {\n    DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n    long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n    long keyAge=System.currentTimeMillis() - keyCreateTime;\n    if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n      Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n      SenderKeyUtil.rotateOurKey(context,distributionId);\n    }\n    try {\n      List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n      List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n      List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n      allResults.addAll(results);\n      int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n      Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n      if (sendOperation.shouldIncludeInMessageLog()) {\n        DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n      }\n    }\n catch (    InvalidUnidentifiedAccessHeaderException e) {\n      Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    NoSessionException e) {\n      Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    InvalidKeyException e) {\n      Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\n  }\n  if (cancelationSignal != null && cancelationSignal.isCanceled()) {\n    throw new CancelationException();\n  }\n  boolean onlyTargetIsSelfWithLinkedDevice=legacyTargets.isEmpty() && senderKeyTargets.isEmpty() && TextSecurePreferences.isMultiDevice(context);\n  if (legacyTargets.size() > 0 || onlyTargetIsSelfWithLinkedDevice) {\n    if (legacyTargets.size() > 0) {\n      Log.i(TAG,\"Need to do \" + legacyTargets.size() + \" legacy sends.\");\n    }\n else {\n      Log.i(TAG,\"Need to do a legacy send to send a sync message for a group of only ourselves.\");\n    }\n    List<SignalServiceAddress> targets=legacyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<Optional<UnidentifiedAccessPair>> access=legacyTargets.stream().map(r -> recipients.getAccessPair(r.getId())).collect(Collectors.toList());\n    boolean recipientUpdate=isRecipientUpdate || allResults.size() > 0;\n    final MessageSendLogDatabase messageLogDatabase=DatabaseFactory.getMessageLogDatabase(context);\n    final AtomicLong entryId=new AtomicLong(-1);\n    final boolean includeInMessageLog=sendOperation.shouldIncludeInMessageLog();\n    List<SendMessageResult> results=sendOperation.sendLegacy(messageSender,targets,access,recipientUpdate,result -> {\n      if (!includeInMessageLog) {\n        return;\n      }\nsynchronized (entryId) {\n        if (entryId.get() == -1) {\n          entryId.set(messageLogDatabase.insertIfPossible(recipients.requireRecipientId(result.getAddress()),sendOperation.getSentTimestamp(),result,sendOperation.getContentHint(),sendOperation.getRelatedMessageId()));\n        }\n else {\n          messageLogDatabase.addRecipientToExistingEntryIfPossible(entryId.get(),recipients.requireRecipientId(result.getAddress()),result);\n        }\n      }\n    }\n,cancelationSignal);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using 1:1 to \" + successCount + \"/\"+ targets.size()+ \" legacy targets.\");\n  }\n  return allResults;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 815,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 7926,
+        "startLineNumber" : 124,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 266,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "/** \n * Handles all of the logic of sending to a group. Will do sender key sends and legacy 1:1 sends as-needed, and give you back a list of {@link SendMessageResult}s just like we're used to.\n * @param groupId The groupId of the group you're sending to, or null if you're sending to a collection of recipients not joined by a group.\n * @param isRecipientUpdate True if you've already sent this message to some recipients in the past, otherwise false.\n */\n@WorkerThread private static List<SendMessageResult> sendMessage(@NonNull Context context,@Nullable GroupId.V2 groupId,@NonNull List<Recipient> allTargets,boolean isRecipientUpdate,@NonNull SendOperation sendOperation,@Nullable CancelationSignal cancelationSignal) throws IOException, UntrustedIdentityException {\n  RecipientData recipients=new RecipientData(context,allTargets);\n  Optional<GroupRecord> groupRecord=groupId != null ? DatabaseFactory.getGroupDatabase(context).getGroup(groupId) : Optional.absent();\n  List<Recipient> senderKeyTargets=new LinkedList<>();\n  List<Recipient> legacyTargets=new LinkedList<>();\n  for (  Recipient recipient : allTargets) {\n    Optional<UnidentifiedAccessPair> access=recipients.getAccessPair(recipient.getId());\n    boolean validMembership=groupRecord.isPresent() && groupRecord.get().getMembers().contains(recipient.getId());\n    if (recipient.getSenderKeyCapability() == Recipient.Capability.SUPPORTED && recipient.hasUuid() && access.isPresent() && access.get().getTargetUnidentifiedAccess().isPresent() && validMembership) {\n      senderKeyTargets.add(recipient);\n    }\n else {\n      legacyTargets.add(recipient);\n    }\n  }\n  if (FeatureFlags.senderKey()) {\n    if (groupId == null) {\n      Log.i(TAG,\"Recipients not in a group. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (Recipient.self().getSenderKeyCapability() != Recipient.Capability.SUPPORTED) {\n      Log.i(TAG,\"All of our devices do not support sender key. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (SignalStore.internalValues().removeSenderKeyMinimum()) {\n      Log.i(TAG,\"Sender key minimum removed. Using for \" + senderKeyTargets.size() + \" recipients.\");\n    }\n else     if (senderKeyTargets.size() < 2) {\n      Log.i(TAG,\"Too few sender-key-capable users (\" + senderKeyTargets.size() + \"). Doing all legacy sends.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else {\n      Log.i(TAG,\"Can use sender key for \" + senderKeyTargets.size() + \"/\"+ allTargets.size()+ \" recipients.\");\n    }\n  }\n else {\n    Log.i(TAG,\"Feature flag disabled. Using legacy.\");\n    legacyTargets.addAll(senderKeyTargets);\n    senderKeyTargets.clear();\n  }\n  List<SendMessageResult> allResults=new ArrayList<>(allTargets.size());\n  SignalServiceMessageSender messageSender=ApplicationDependencies.getSignalServiceMessageSender();\n  if (senderKeyTargets.size() > 0 && groupId != null) {\n    DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n    long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n    long keyAge=System.currentTimeMillis() - keyCreateTime;\n    if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n      Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n      SenderKeyUtil.rotateOurKey(context,distributionId);\n    }\n    try {\n      List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n      List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n      List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n      allResults.addAll(results);\n      int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n      Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n      if (sendOperation.shouldIncludeInMessageLog()) {\n        DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n      }\n    }\n catch (    InvalidUnidentifiedAccessHeaderException e) {\n      Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    NoSessionException e) {\n      Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    InvalidKeyException e) {\n      Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\n  }\n  if (cancelationSignal != null && cancelationSignal.isCanceled()) {\n    throw new CancelationException();\n  }\n  boolean onlyTargetIsSelfWithLinkedDevice=legacyTargets.isEmpty() && senderKeyTargets.isEmpty() && TextSecurePreferences.isMultiDevice(context);\n  if (legacyTargets.size() > 0 || onlyTargetIsSelfWithLinkedDevice) {\n    if (legacyTargets.size() > 0) {\n      Log.i(TAG,\"Need to do \" + legacyTargets.size() + \" legacy sends.\");\n    }\n else {\n      Log.i(TAG,\"Need to do a legacy send to send a sync message for a group of only ourselves.\");\n    }\n    List<SignalServiceAddress> targets=legacyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<Optional<UnidentifiedAccessPair>> access=legacyTargets.stream().map(r -> recipients.getAccessPair(r.getId())).collect(Collectors.toList());\n    boolean recipientUpdate=isRecipientUpdate || allResults.size() > 0;\n    final MessageSendLogDatabase messageLogDatabase=DatabaseFactory.getMessageLogDatabase(context);\n    final AtomicLong entryId=new AtomicLong(-1);\n    final boolean includeInMessageLog=sendOperation.shouldIncludeInMessageLog();\n    List<SendMessageResult> results=sendOperation.sendLegacy(messageSender,targets,access,recipientUpdate,result -> {\n      if (!includeInMessageLog) {\n        return;\n      }\nsynchronized (entryId) {\n        if (entryId.get() == -1) {\n          entryId.set(messageLogDatabase.insertIfPossible(recipients.requireRecipientId(result.getAddress()),sendOperation.getSentTimestamp(),result,sendOperation.getContentHint(),sendOperation.getRelatedMessageId()));\n        }\n else {\n          messageLogDatabase.addRecipientToExistingEntryIfPossible(entryId.get(),recipients.requireRecipientId(result.getAddress()),result);\n        }\n      }\n    }\n,cancelationSignal);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using 1:1 to \" + successCount + \"/\"+ targets.size()+ \" legacy targets.\");\n  }\n  return allResults;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 869,
+      "astHeight" : 19
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 94,
+        "startLineNumber" : 191,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 191,
+        "endColumnNumber" : 100
+      },
+      "nodeContext" : "long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.thoughtcrime.securesms.messages.Context"
+  }, {
+    "nodeContext" : "context",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 7,
+      "startLineNumber" : 196,
+      "startColumnNumber" : 35,
+      "endLineNumber" : 196,
+      "endColumnNumber" : 42
     },
     "astNodeNumber" : 1,
     "astHeight" : 1,
     "parentDataList" : [ {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
       "nodePosition" : {
-        "charLength" : 40,
-        "startLineNumber" : 51,
-        "startColumnNumber" : 10,
-        "endLineNumber" : 51,
-        "endColumnNumber" : 50
+        "charLength" : 51,
+        "startLineNumber" : 196,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 196,
+        "endColumnNumber" : 59
       },
-      "nodeContext" : "displayInstallNotification(context,uri)",
+      "nodeContext" : "SenderKeyUtil.rotateOurKey(context,distributionId)",
       "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 4,
+      "astNodeNumber" : 5,
       "astHeight" : 2
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 41,
-        "startLineNumber" : 51,
-        "startColumnNumber" : 10,
-        "endLineNumber" : 51,
-        "endColumnNumber" : 51
+        "charLength" : 52,
+        "startLineNumber" : 196,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 196,
+        "endColumnNumber" : 60
       },
-      "nodeContext" : "displayInstallNotification(context,uri);\n",
+      "nodeContext" : "SenderKeyUtil.rotateOurKey(context,distributionId);\n",
       "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 5,
+      "astNodeNumber" : 6,
       "astHeight" : 3
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
       "nodePosition" : {
-        "charLength" : 63,
-        "startLineNumber" : 50,
-        "startColumnNumber" : 66,
-        "endLineNumber" : 52,
-        "endColumnNumber" : 9
-      },
-      "nodeContext" : "{\n  displayInstallNotification(context,uri);\n}\n",
-      "nodeType" : "Block",
-      "astNodeNumber" : 6,
-      "astHeight" : 4
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 202,
-        "startLineNumber" : 50,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 54,
-        "endColumnNumber" : 9
-      },
-      "nodeContext" : "if (isMatchingDigest(context,downloadId,encodedDigest)) {\n  displayInstallNotification(context,uri);\n}\n else {\n  Log.w(TAG,\"Downloaded APK doesn't match digest...\");\n}\n",
-      "nodeType" : "IfStatement",
-      "astNodeNumber" : 19,
-      "astHeight" : 5
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
-      "nodePosition" : {
-        "charLength" : 492,
-        "startLineNumber" : 41,
-        "startColumnNumber" : 79,
-        "endLineNumber" : 55,
+        "charLength" : 188,
+        "startLineNumber" : 194,
+        "startColumnNumber" : 55,
+        "endLineNumber" : 197,
         "endColumnNumber" : 7
       },
-      "nodeContext" : "{\n  Uri uri=getLocalUriForDownloadId(context,downloadId);\n  String encodedDigest=TextSecurePreferences.getUpdateApkDigest(context);\n  if (uri == null) {\n    Log.w(TAG,\"Downloaded local URI is null?\");\n    return;\n  }\n  if (isMatchingDigest(context,downloadId,encodedDigest)) {\n    displayInstallNotification(context,uri);\n  }\n else {\n    Log.w(TAG,\"Downloaded APK doesn't match digest...\");\n  }\n}\n",
+      "nodeContext" : "{\n  Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n  SenderKeyUtil.rotateOurKey(context,distributionId);\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 50,
-      "astHeight" : 6
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 565,
-        "startLineNumber" : 41,
-        "startColumnNumber" : 6,
-        "endLineNumber" : 55,
-        "endColumnNumber" : 7
-      },
-      "nodeContext" : "if (downloadId == TextSecurePreferences.getUpdateApkDownloadId(context)) {\n  Uri uri=getLocalUriForDownloadId(context,downloadId);\n  String encodedDigest=TextSecurePreferences.getUpdateApkDigest(context);\n  if (uri == null) {\n    Log.w(TAG,\"Downloaded local URI is null?\");\n    return;\n  }\n  if (isMatchingDigest(context,downloadId,encodedDigest)) {\n    displayInstallNotification(context,uri);\n  }\n else {\n    Log.w(TAG,\"Downloaded APK doesn't match digest...\");\n  }\n}\n",
-      "nodeType" : "IfStatement",
-      "astNodeNumber" : 57,
+      "astNodeNumber" : 24,
       "astHeight" : 7
     }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 237,
+        "startLineNumber" : 194,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 197,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n  Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n  SenderKeyUtil.rotateOurKey(context,distributionId);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 33,
+      "astHeight" : 8
+    }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
       "nodePosition" : {
-        "charLength" : 664,
-        "startLineNumber" : 38,
-        "startColumnNumber" : 77,
-        "endLineNumber" : 56,
+        "charLength" : 2046,
+        "startLineNumber" : 189,
+        "startColumnNumber" : 56,
+        "endLineNumber" : 222,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  long downloadId=intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID,-2);\n  if (downloadId == TextSecurePreferences.getUpdateApkDownloadId(context)) {\n    Uri uri=getLocalUriForDownloadId(context,downloadId);\n    String encodedDigest=TextSecurePreferences.getUpdateApkDigest(context);\n    if (uri == null) {\n      Log.w(TAG,\"Downloaded local URI is null?\");\n      return;\n    }\n    if (isMatchingDigest(context,downloadId,encodedDigest)) {\n      displayInstallNotification(context,uri);\n    }\n else {\n      Log.w(TAG,\"Downloaded APK doesn't match digest...\");\n    }\n  }\n}\n",
+      "nodeContext" : "{\n  DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n  long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n  long keyAge=System.currentTimeMillis() - keyCreateTime;\n  if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n    Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n    SenderKeyUtil.rotateOurKey(context,distributionId);\n  }\n  try {\n    List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n    List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n    if (sendOperation.shouldIncludeInMessageLog()) {\n      DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n    }\n  }\n catch (  InvalidUnidentifiedAccessHeaderException e) {\n    Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\ncatch (  NoSessionException e) {\n    Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\ncatch (  InvalidKeyException e) {\n    Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 70,
-      "astHeight" : 8
+      "astNodeNumber" : 247,
+      "astHeight" : 11
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 737,
-        "startLineNumber" : 38,
+        "charLength" : 2098,
+        "startLineNumber" : 189,
         "startColumnNumber" : 4,
-        "endLineNumber" : 56,
+        "endLineNumber" : 222,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(intent.getAction())) {\n  long downloadId=intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID,-2);\n  if (downloadId == TextSecurePreferences.getUpdateApkDownloadId(context)) {\n    Uri uri=getLocalUriForDownloadId(context,downloadId);\n    String encodedDigest=TextSecurePreferences.getUpdateApkDigest(context);\n    if (uri == null) {\n      Log.w(TAG,\"Downloaded local URI is null?\");\n      return;\n    }\n    if (isMatchingDigest(context,downloadId,encodedDigest)) {\n      displayInstallNotification(context,uri);\n    }\n else {\n      Log.w(TAG,\"Downloaded APK doesn't match digest...\");\n    }\n  }\n}\n",
+      "nodeContext" : "if (senderKeyTargets.size() > 0 && groupId != null) {\n  DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n  long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n  long keyAge=System.currentTimeMillis() - keyCreateTime;\n  if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n    Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n    SenderKeyUtil.rotateOurKey(context,distributionId);\n  }\n  try {\n    List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n    List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n    if (sendOperation.shouldIncludeInMessageLog()) {\n      DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n    }\n  }\n catch (  InvalidUnidentifiedAccessHeaderException e) {\n    Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\ncatch (  NoSessionException e) {\n    Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\ncatch (  InvalidKeyException e) {\n    Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\n}\n",
       "nodeType" : "IfStatement",
-      "astNodeNumber" : 79,
-      "astHeight" : 9
+      "astNodeNumber" : 257,
+      "astHeight" : 12
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 779,
-        "startLineNumber" : 35,
-        "startColumnNumber" : 56,
-        "endLineNumber" : 57,
+        "charLength" : 6859,
+        "startLineNumber" : 139,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 266,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "{\n  Log.i(TAG,\"onReceive()\");\n  if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(intent.getAction())) {\n    long downloadId=intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID,-2);\n    if (downloadId == TextSecurePreferences.getUpdateApkDownloadId(context)) {\n      Uri uri=getLocalUriForDownloadId(context,downloadId);\n      String encodedDigest=TextSecurePreferences.getUpdateApkDigest(context);\n      if (uri == null) {\n        Log.w(TAG,\"Downloaded local URI is null?\");\n        return;\n      }\n      if (isMatchingDigest(context,downloadId,encodedDigest)) {\n        displayInstallNotification(context,uri);\n      }\n else {\n        Log.w(TAG,\"Downloaded APK doesn't match digest...\");\n      }\n    }\n  }\n}\n",
+      "nodeContext" : "{\n  RecipientData recipients=new RecipientData(context,allTargets);\n  Optional<GroupRecord> groupRecord=groupId != null ? DatabaseFactory.getGroupDatabase(context).getGroup(groupId) : Optional.absent();\n  List<Recipient> senderKeyTargets=new LinkedList<>();\n  List<Recipient> legacyTargets=new LinkedList<>();\n  for (  Recipient recipient : allTargets) {\n    Optional<UnidentifiedAccessPair> access=recipients.getAccessPair(recipient.getId());\n    boolean validMembership=groupRecord.isPresent() && groupRecord.get().getMembers().contains(recipient.getId());\n    if (recipient.getSenderKeyCapability() == Recipient.Capability.SUPPORTED && recipient.hasUuid() && access.isPresent() && access.get().getTargetUnidentifiedAccess().isPresent() && validMembership) {\n      senderKeyTargets.add(recipient);\n    }\n else {\n      legacyTargets.add(recipient);\n    }\n  }\n  if (FeatureFlags.senderKey()) {\n    if (groupId == null) {\n      Log.i(TAG,\"Recipients not in a group. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (Recipient.self().getSenderKeyCapability() != Recipient.Capability.SUPPORTED) {\n      Log.i(TAG,\"All of our devices do not support sender key. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (SignalStore.internalValues().removeSenderKeyMinimum()) {\n      Log.i(TAG,\"Sender key minimum removed. Using for \" + senderKeyTargets.size() + \" recipients.\");\n    }\n else     if (senderKeyTargets.size() < 2) {\n      Log.i(TAG,\"Too few sender-key-capable users (\" + senderKeyTargets.size() + \"). Doing all legacy sends.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else {\n      Log.i(TAG,\"Can use sender key for \" + senderKeyTargets.size() + \"/\"+ allTargets.size()+ \" recipients.\");\n    }\n  }\n else {\n    Log.i(TAG,\"Feature flag disabled. Using legacy.\");\n    legacyTargets.addAll(senderKeyTargets);\n    senderKeyTargets.clear();\n  }\n  List<SendMessageResult> allResults=new ArrayList<>(allTargets.size());\n  SignalServiceMessageSender messageSender=ApplicationDependencies.getSignalServiceMessageSender();\n  if (senderKeyTargets.size() > 0 && groupId != null) {\n    DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n    long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n    long keyAge=System.currentTimeMillis() - keyCreateTime;\n    if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n      Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n      SenderKeyUtil.rotateOurKey(context,distributionId);\n    }\n    try {\n      List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n      List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n      List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n      allResults.addAll(results);\n      int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n      Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n      if (sendOperation.shouldIncludeInMessageLog()) {\n        DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n      }\n    }\n catch (    InvalidUnidentifiedAccessHeaderException e) {\n      Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    NoSessionException e) {\n      Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    InvalidKeyException e) {\n      Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\n  }\n  if (cancelationSignal != null && cancelationSignal.isCanceled()) {\n    throw new CancelationException();\n  }\n  boolean onlyTargetIsSelfWithLinkedDevice=legacyTargets.isEmpty() && senderKeyTargets.isEmpty() && TextSecurePreferences.isMultiDevice(context);\n  if (legacyTargets.size() > 0 || onlyTargetIsSelfWithLinkedDevice) {\n    if (legacyTargets.size() > 0) {\n      Log.i(TAG,\"Need to do \" + legacyTargets.size() + \" legacy sends.\");\n    }\n else {\n      Log.i(TAG,\"Need to do a legacy send to send a sync message for a group of only ourselves.\");\n    }\n    List<SignalServiceAddress> targets=legacyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<Optional<UnidentifiedAccessPair>> access=legacyTargets.stream().map(r -> recipients.getAccessPair(r.getId())).collect(Collectors.toList());\n    boolean recipientUpdate=isRecipientUpdate || allResults.size() > 0;\n    final MessageSendLogDatabase messageLogDatabase=DatabaseFactory.getMessageLogDatabase(context);\n    final AtomicLong entryId=new AtomicLong(-1);\n    final boolean includeInMessageLog=sendOperation.shouldIncludeInMessageLog();\n    List<SendMessageResult> results=sendOperation.sendLegacy(messageSender,targets,access,recipientUpdate,result -> {\n      if (!includeInMessageLog) {\n        return;\n      }\nsynchronized (entryId) {\n        if (entryId.get() == -1) {\n          entryId.set(messageLogDatabase.insertIfPossible(recipients.requireRecipientId(result.getAddress()),sendOperation.getSentTimestamp(),result,sendOperation.getContentHint(),sendOperation.getRelatedMessageId()));\n        }\n else {\n          messageLogDatabase.addRecipientToExistingEntryIfPossible(entryId.get(),recipients.requireRecipientId(result.getAddress()),result);\n        }\n      }\n    }\n,cancelationSignal);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using 1:1 to \" + successCount + \"/\"+ targets.size()+ \" legacy targets.\");\n  }\n  return allResults;\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 86,
-      "astHeight" : 10
+      "astNodeNumber" : 815,
+      "astHeight" : 18
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 845,
-        "startLineNumber" : 34,
+        "charLength" : 7926,
+        "startLineNumber" : 124,
         "startColumnNumber" : 2,
-        "endLineNumber" : 57,
+        "endLineNumber" : 266,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "@Override public void onReceive(Context context,Intent intent){\n  Log.i(TAG,\"onReceive()\");\n  if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(intent.getAction())) {\n    long downloadId=intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID,-2);\n    if (downloadId == TextSecurePreferences.getUpdateApkDownloadId(context)) {\n      Uri uri=getLocalUriForDownloadId(context,downloadId);\n      String encodedDigest=TextSecurePreferences.getUpdateApkDigest(context);\n      if (uri == null) {\n        Log.w(TAG,\"Downloaded local URI is null?\");\n        return;\n      }\n      if (isMatchingDigest(context,downloadId,encodedDigest)) {\n        displayInstallNotification(context,uri);\n      }\n else {\n        Log.w(TAG,\"Downloaded APK doesn't match digest...\");\n      }\n    }\n  }\n}\n",
+      "nodeContext" : "/** \n * Handles all of the logic of sending to a group. Will do sender key sends and legacy 1:1 sends as-needed, and give you back a list of {@link SendMessageResult}s just like we're used to.\n * @param groupId The groupId of the group you're sending to, or null if you're sending to a collection of recipients not joined by a group.\n * @param isRecipientUpdate True if you've already sent this message to some recipients in the past, otherwise false.\n */\n@WorkerThread private static List<SendMessageResult> sendMessage(@NonNull Context context,@Nullable GroupId.V2 groupId,@NonNull List<Recipient> allTargets,boolean isRecipientUpdate,@NonNull SendOperation sendOperation,@Nullable CancelationSignal cancelationSignal) throws IOException, UntrustedIdentityException {\n  RecipientData recipients=new RecipientData(context,allTargets);\n  Optional<GroupRecord> groupRecord=groupId != null ? DatabaseFactory.getGroupDatabase(context).getGroup(groupId) : Optional.absent();\n  List<Recipient> senderKeyTargets=new LinkedList<>();\n  List<Recipient> legacyTargets=new LinkedList<>();\n  for (  Recipient recipient : allTargets) {\n    Optional<UnidentifiedAccessPair> access=recipients.getAccessPair(recipient.getId());\n    boolean validMembership=groupRecord.isPresent() && groupRecord.get().getMembers().contains(recipient.getId());\n    if (recipient.getSenderKeyCapability() == Recipient.Capability.SUPPORTED && recipient.hasUuid() && access.isPresent() && access.get().getTargetUnidentifiedAccess().isPresent() && validMembership) {\n      senderKeyTargets.add(recipient);\n    }\n else {\n      legacyTargets.add(recipient);\n    }\n  }\n  if (FeatureFlags.senderKey()) {\n    if (groupId == null) {\n      Log.i(TAG,\"Recipients not in a group. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (Recipient.self().getSenderKeyCapability() != Recipient.Capability.SUPPORTED) {\n      Log.i(TAG,\"All of our devices do not support sender key. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (SignalStore.internalValues().removeSenderKeyMinimum()) {\n      Log.i(TAG,\"Sender key minimum removed. Using for \" + senderKeyTargets.size() + \" recipients.\");\n    }\n else     if (senderKeyTargets.size() < 2) {\n      Log.i(TAG,\"Too few sender-key-capable users (\" + senderKeyTargets.size() + \"). Doing all legacy sends.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else {\n      Log.i(TAG,\"Can use sender key for \" + senderKeyTargets.size() + \"/\"+ allTargets.size()+ \" recipients.\");\n    }\n  }\n else {\n    Log.i(TAG,\"Feature flag disabled. Using legacy.\");\n    legacyTargets.addAll(senderKeyTargets);\n    senderKeyTargets.clear();\n  }\n  List<SendMessageResult> allResults=new ArrayList<>(allTargets.size());\n  SignalServiceMessageSender messageSender=ApplicationDependencies.getSignalServiceMessageSender();\n  if (senderKeyTargets.size() > 0 && groupId != null) {\n    DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n    long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n    long keyAge=System.currentTimeMillis() - keyCreateTime;\n    if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n      Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n      SenderKeyUtil.rotateOurKey(context,distributionId);\n    }\n    try {\n      List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n      List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n      List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n      allResults.addAll(results);\n      int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n      Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n      if (sendOperation.shouldIncludeInMessageLog()) {\n        DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n      }\n    }\n catch (    InvalidUnidentifiedAccessHeaderException e) {\n      Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    NoSessionException e) {\n      Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    InvalidKeyException e) {\n      Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\n  }\n  if (cancelationSignal != null && cancelationSignal.isCanceled()) {\n    throw new CancelationException();\n  }\n  boolean onlyTargetIsSelfWithLinkedDevice=legacyTargets.isEmpty() && senderKeyTargets.isEmpty() && TextSecurePreferences.isMultiDevice(context);\n  if (legacyTargets.size() > 0 || onlyTargetIsSelfWithLinkedDevice) {\n    if (legacyTargets.size() > 0) {\n      Log.i(TAG,\"Need to do \" + legacyTargets.size() + \" legacy sends.\");\n    }\n else {\n      Log.i(TAG,\"Need to do a legacy send to send a sync message for a group of only ourselves.\");\n    }\n    List<SignalServiceAddress> targets=legacyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<Optional<UnidentifiedAccessPair>> access=legacyTargets.stream().map(r -> recipients.getAccessPair(r.getId())).collect(Collectors.toList());\n    boolean recipientUpdate=isRecipientUpdate || allResults.size() > 0;\n    final MessageSendLogDatabase messageLogDatabase=DatabaseFactory.getMessageLogDatabase(context);\n    final AtomicLong entryId=new AtomicLong(-1);\n    final boolean includeInMessageLog=sendOperation.shouldIncludeInMessageLog();\n    List<SendMessageResult> results=sendOperation.sendLegacy(messageSender,targets,access,recipientUpdate,result -> {\n      if (!includeInMessageLog) {\n        return;\n      }\nsynchronized (entryId) {\n        if (entryId.get() == -1) {\n          entryId.set(messageLogDatabase.insertIfPossible(recipients.requireRecipientId(result.getAddress()),sendOperation.getSentTimestamp(),result,sendOperation.getContentHint(),sendOperation.getRelatedMessageId()));\n        }\n else {\n          messageLogDatabase.addRecipientToExistingEntryIfPossible(entryId.get(),recipients.requireRecipientId(result.getAddress()),result);\n        }\n      }\n    }\n,cancelationSignal);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using 1:1 to \" + successCount + \"/\"+ targets.size()+ \" legacy targets.\");\n  }\n  return allResults;\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 100,
-      "astHeight" : 11
+      "astNodeNumber" : 869,
+      "astHeight" : 19
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 41,
-        "startLineNumber" : 51,
-        "startColumnNumber" : 10,
-        "endLineNumber" : 51,
-        "endColumnNumber" : 51
+        "charLength" : 52,
+        "startLineNumber" : 196,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 196,
+        "endColumnNumber" : 60
       },
-      "nodeContext" : "displayInstallNotification(context,uri);\n",
+      "nodeContext" : "SenderKeyUtil.rotateOurKey(context,distributionId);\n",
       "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 5,
+      "astNodeNumber" : 6,
       "astHeight" : 3
     },
     "tokenLength" : 1,
-    "type" : "org.thoughtcrime.securesms.service.Uri"
+    "type" : "org.thoughtcrime.securesms.messages.Context"
+  }, {
+    "nodeContext" : "context",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 7,
+      "startLineNumber" : 210,
+      "startColumnNumber" : 48,
+      "endLineNumber" : 210,
+      "endColumnNumber" : 55
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 46,
+        "startLineNumber" : 210,
+        "startColumnNumber" : 10,
+        "endLineNumber" : 210,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "DatabaseFactory.getMessageLogDatabase(context)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 193,
+        "startLineNumber" : 210,
+        "startColumnNumber" : 10,
+        "endLineNumber" : 210,
+        "endColumnNumber" : 203
+      },
+      "nodeContext" : "DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 17,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 194,
+        "startLineNumber" : 210,
+        "startColumnNumber" : 10,
+        "endLineNumber" : 210,
+        "endColumnNumber" : 204
+      },
+      "nodeContext" : "DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 18,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 216,
+        "startLineNumber" : 209,
+        "startColumnNumber" : 55,
+        "endLineNumber" : 211,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 19,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 263,
+        "startLineNumber" : 209,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 211,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (sendOperation.shouldIncludeInMessageLog()) {\n  DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 23,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 977,
+        "startLineNumber" : 199,
+        "startColumnNumber" : 10,
+        "endLineNumber" : 212,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "{\n  List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n  List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n  List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n  allResults.addAll(results);\n  int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n  Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n  if (sendOperation.shouldIncludeInMessageLog()) {\n    DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 128,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1487,
+        "startLineNumber" : 199,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 221,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "try {\n  List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n  List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n  List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n  allResults.addAll(results);\n  int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n  Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n  if (sendOperation.shouldIncludeInMessageLog()) {\n    DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n  }\n}\n catch (InvalidUnidentifiedAccessHeaderException e) {\n  Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n  legacyTargets.addAll(senderKeyTargets);\n}\ncatch (NoSessionException e) {\n  Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n  legacyTargets.addAll(senderKeyTargets);\n}\ncatch (InvalidKeyException e) {\n  Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n  legacyTargets.addAll(senderKeyTargets);\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 183,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 2046,
+        "startLineNumber" : 189,
+        "startColumnNumber" : 56,
+        "endLineNumber" : 222,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n  long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n  long keyAge=System.currentTimeMillis() - keyCreateTime;\n  if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n    Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n    SenderKeyUtil.rotateOurKey(context,distributionId);\n  }\n  try {\n    List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n    List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n    if (sendOperation.shouldIncludeInMessageLog()) {\n      DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n    }\n  }\n catch (  InvalidUnidentifiedAccessHeaderException e) {\n    Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\ncatch (  NoSessionException e) {\n    Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\ncatch (  InvalidKeyException e) {\n    Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 247,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 2098,
+        "startLineNumber" : 189,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 222,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "if (senderKeyTargets.size() > 0 && groupId != null) {\n  DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n  long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n  long keyAge=System.currentTimeMillis() - keyCreateTime;\n  if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n    Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n    SenderKeyUtil.rotateOurKey(context,distributionId);\n  }\n  try {\n    List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n    List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n    if (sendOperation.shouldIncludeInMessageLog()) {\n      DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n    }\n  }\n catch (  InvalidUnidentifiedAccessHeaderException e) {\n    Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\ncatch (  NoSessionException e) {\n    Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\ncatch (  InvalidKeyException e) {\n    Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 257,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 6859,
+        "startLineNumber" : 139,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 266,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  RecipientData recipients=new RecipientData(context,allTargets);\n  Optional<GroupRecord> groupRecord=groupId != null ? DatabaseFactory.getGroupDatabase(context).getGroup(groupId) : Optional.absent();\n  List<Recipient> senderKeyTargets=new LinkedList<>();\n  List<Recipient> legacyTargets=new LinkedList<>();\n  for (  Recipient recipient : allTargets) {\n    Optional<UnidentifiedAccessPair> access=recipients.getAccessPair(recipient.getId());\n    boolean validMembership=groupRecord.isPresent() && groupRecord.get().getMembers().contains(recipient.getId());\n    if (recipient.getSenderKeyCapability() == Recipient.Capability.SUPPORTED && recipient.hasUuid() && access.isPresent() && access.get().getTargetUnidentifiedAccess().isPresent() && validMembership) {\n      senderKeyTargets.add(recipient);\n    }\n else {\n      legacyTargets.add(recipient);\n    }\n  }\n  if (FeatureFlags.senderKey()) {\n    if (groupId == null) {\n      Log.i(TAG,\"Recipients not in a group. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (Recipient.self().getSenderKeyCapability() != Recipient.Capability.SUPPORTED) {\n      Log.i(TAG,\"All of our devices do not support sender key. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (SignalStore.internalValues().removeSenderKeyMinimum()) {\n      Log.i(TAG,\"Sender key minimum removed. Using for \" + senderKeyTargets.size() + \" recipients.\");\n    }\n else     if (senderKeyTargets.size() < 2) {\n      Log.i(TAG,\"Too few sender-key-capable users (\" + senderKeyTargets.size() + \"). Doing all legacy sends.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else {\n      Log.i(TAG,\"Can use sender key for \" + senderKeyTargets.size() + \"/\"+ allTargets.size()+ \" recipients.\");\n    }\n  }\n else {\n    Log.i(TAG,\"Feature flag disabled. Using legacy.\");\n    legacyTargets.addAll(senderKeyTargets);\n    senderKeyTargets.clear();\n  }\n  List<SendMessageResult> allResults=new ArrayList<>(allTargets.size());\n  SignalServiceMessageSender messageSender=ApplicationDependencies.getSignalServiceMessageSender();\n  if (senderKeyTargets.size() > 0 && groupId != null) {\n    DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n    long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n    long keyAge=System.currentTimeMillis() - keyCreateTime;\n    if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n      Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n      SenderKeyUtil.rotateOurKey(context,distributionId);\n    }\n    try {\n      List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n      List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n      List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n      allResults.addAll(results);\n      int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n      Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n      if (sendOperation.shouldIncludeInMessageLog()) {\n        DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n      }\n    }\n catch (    InvalidUnidentifiedAccessHeaderException e) {\n      Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    NoSessionException e) {\n      Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    InvalidKeyException e) {\n      Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\n  }\n  if (cancelationSignal != null && cancelationSignal.isCanceled()) {\n    throw new CancelationException();\n  }\n  boolean onlyTargetIsSelfWithLinkedDevice=legacyTargets.isEmpty() && senderKeyTargets.isEmpty() && TextSecurePreferences.isMultiDevice(context);\n  if (legacyTargets.size() > 0 || onlyTargetIsSelfWithLinkedDevice) {\n    if (legacyTargets.size() > 0) {\n      Log.i(TAG,\"Need to do \" + legacyTargets.size() + \" legacy sends.\");\n    }\n else {\n      Log.i(TAG,\"Need to do a legacy send to send a sync message for a group of only ourselves.\");\n    }\n    List<SignalServiceAddress> targets=legacyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<Optional<UnidentifiedAccessPair>> access=legacyTargets.stream().map(r -> recipients.getAccessPair(r.getId())).collect(Collectors.toList());\n    boolean recipientUpdate=isRecipientUpdate || allResults.size() > 0;\n    final MessageSendLogDatabase messageLogDatabase=DatabaseFactory.getMessageLogDatabase(context);\n    final AtomicLong entryId=new AtomicLong(-1);\n    final boolean includeInMessageLog=sendOperation.shouldIncludeInMessageLog();\n    List<SendMessageResult> results=sendOperation.sendLegacy(messageSender,targets,access,recipientUpdate,result -> {\n      if (!includeInMessageLog) {\n        return;\n      }\nsynchronized (entryId) {\n        if (entryId.get() == -1) {\n          entryId.set(messageLogDatabase.insertIfPossible(recipients.requireRecipientId(result.getAddress()),sendOperation.getSentTimestamp(),result,sendOperation.getContentHint(),sendOperation.getRelatedMessageId()));\n        }\n else {\n          messageLogDatabase.addRecipientToExistingEntryIfPossible(entryId.get(),recipients.requireRecipientId(result.getAddress()),result);\n        }\n      }\n    }\n,cancelationSignal);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using 1:1 to \" + successCount + \"/\"+ targets.size()+ \" legacy targets.\");\n  }\n  return allResults;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 815,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 7926,
+        "startLineNumber" : 124,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 266,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "/** \n * Handles all of the logic of sending to a group. Will do sender key sends and legacy 1:1 sends as-needed, and give you back a list of {@link SendMessageResult}s just like we're used to.\n * @param groupId The groupId of the group you're sending to, or null if you're sending to a collection of recipients not joined by a group.\n * @param isRecipientUpdate True if you've already sent this message to some recipients in the past, otherwise false.\n */\n@WorkerThread private static List<SendMessageResult> sendMessage(@NonNull Context context,@Nullable GroupId.V2 groupId,@NonNull List<Recipient> allTargets,boolean isRecipientUpdate,@NonNull SendOperation sendOperation,@Nullable CancelationSignal cancelationSignal) throws IOException, UntrustedIdentityException {\n  RecipientData recipients=new RecipientData(context,allTargets);\n  Optional<GroupRecord> groupRecord=groupId != null ? DatabaseFactory.getGroupDatabase(context).getGroup(groupId) : Optional.absent();\n  List<Recipient> senderKeyTargets=new LinkedList<>();\n  List<Recipient> legacyTargets=new LinkedList<>();\n  for (  Recipient recipient : allTargets) {\n    Optional<UnidentifiedAccessPair> access=recipients.getAccessPair(recipient.getId());\n    boolean validMembership=groupRecord.isPresent() && groupRecord.get().getMembers().contains(recipient.getId());\n    if (recipient.getSenderKeyCapability() == Recipient.Capability.SUPPORTED && recipient.hasUuid() && access.isPresent() && access.get().getTargetUnidentifiedAccess().isPresent() && validMembership) {\n      senderKeyTargets.add(recipient);\n    }\n else {\n      legacyTargets.add(recipient);\n    }\n  }\n  if (FeatureFlags.senderKey()) {\n    if (groupId == null) {\n      Log.i(TAG,\"Recipients not in a group. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (Recipient.self().getSenderKeyCapability() != Recipient.Capability.SUPPORTED) {\n      Log.i(TAG,\"All of our devices do not support sender key. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (SignalStore.internalValues().removeSenderKeyMinimum()) {\n      Log.i(TAG,\"Sender key minimum removed. Using for \" + senderKeyTargets.size() + \" recipients.\");\n    }\n else     if (senderKeyTargets.size() < 2) {\n      Log.i(TAG,\"Too few sender-key-capable users (\" + senderKeyTargets.size() + \"). Doing all legacy sends.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else {\n      Log.i(TAG,\"Can use sender key for \" + senderKeyTargets.size() + \"/\"+ allTargets.size()+ \" recipients.\");\n    }\n  }\n else {\n    Log.i(TAG,\"Feature flag disabled. Using legacy.\");\n    legacyTargets.addAll(senderKeyTargets);\n    senderKeyTargets.clear();\n  }\n  List<SendMessageResult> allResults=new ArrayList<>(allTargets.size());\n  SignalServiceMessageSender messageSender=ApplicationDependencies.getSignalServiceMessageSender();\n  if (senderKeyTargets.size() > 0 && groupId != null) {\n    DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n    long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n    long keyAge=System.currentTimeMillis() - keyCreateTime;\n    if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n      Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n      SenderKeyUtil.rotateOurKey(context,distributionId);\n    }\n    try {\n      List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n      List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n      List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n      allResults.addAll(results);\n      int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n      Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n      if (sendOperation.shouldIncludeInMessageLog()) {\n        DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n      }\n    }\n catch (    InvalidUnidentifiedAccessHeaderException e) {\n      Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    NoSessionException e) {\n      Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    InvalidKeyException e) {\n      Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\n  }\n  if (cancelationSignal != null && cancelationSignal.isCanceled()) {\n    throw new CancelationException();\n  }\n  boolean onlyTargetIsSelfWithLinkedDevice=legacyTargets.isEmpty() && senderKeyTargets.isEmpty() && TextSecurePreferences.isMultiDevice(context);\n  if (legacyTargets.size() > 0 || onlyTargetIsSelfWithLinkedDevice) {\n    if (legacyTargets.size() > 0) {\n      Log.i(TAG,\"Need to do \" + legacyTargets.size() + \" legacy sends.\");\n    }\n else {\n      Log.i(TAG,\"Need to do a legacy send to send a sync message for a group of only ourselves.\");\n    }\n    List<SignalServiceAddress> targets=legacyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<Optional<UnidentifiedAccessPair>> access=legacyTargets.stream().map(r -> recipients.getAccessPair(r.getId())).collect(Collectors.toList());\n    boolean recipientUpdate=isRecipientUpdate || allResults.size() > 0;\n    final MessageSendLogDatabase messageLogDatabase=DatabaseFactory.getMessageLogDatabase(context);\n    final AtomicLong entryId=new AtomicLong(-1);\n    final boolean includeInMessageLog=sendOperation.shouldIncludeInMessageLog();\n    List<SendMessageResult> results=sendOperation.sendLegacy(messageSender,targets,access,recipientUpdate,result -> {\n      if (!includeInMessageLog) {\n        return;\n      }\nsynchronized (entryId) {\n        if (entryId.get() == -1) {\n          entryId.set(messageLogDatabase.insertIfPossible(recipients.requireRecipientId(result.getAddress()),sendOperation.getSentTimestamp(),result,sendOperation.getContentHint(),sendOperation.getRelatedMessageId()));\n        }\n else {\n          messageLogDatabase.addRecipientToExistingEntryIfPossible(entryId.get(),recipients.requireRecipientId(result.getAddress()),result);\n        }\n      }\n    }\n,cancelationSignal);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using 1:1 to \" + successCount + \"/\"+ targets.size()+ \" legacy targets.\");\n  }\n  return allResults;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 869,
+      "astHeight" : 19
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 194,
+        "startLineNumber" : 210,
+        "startColumnNumber" : 10,
+        "endLineNumber" : 210,
+        "endColumnNumber" : 204
+      },
+      "nodeContext" : "DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 18,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.thoughtcrime.securesms.messages.Context"
+  }, {
+    "nodeContext" : "context",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 7,
+      "startLineNumber" : 228,
+      "startColumnNumber" : 140,
+      "endLineNumber" : 228,
+      "endColumnNumber" : 147
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.InfixExpression,extendedOperands]",
+      "nodePosition" : {
+        "charLength" : 44,
+        "startLineNumber" : 228,
+        "startColumnNumber" : 104,
+        "endLineNumber" : 228,
+        "endColumnNumber" : 148
+      },
+      "nodeContext" : "TextSecurePreferences.isMultiDevice(context)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 101,
+        "startLineNumber" : 228,
+        "startColumnNumber" : 47,
+        "endLineNumber" : 228,
+        "endColumnNumber" : 148
+      },
+      "nodeContext" : "legacyTargets.isEmpty() && senderKeyTargets.isEmpty() && TextSecurePreferences.isMultiDevice(context)",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 11,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 136,
+        "startLineNumber" : 228,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 228,
+        "endColumnNumber" : 148
+      },
+      "nodeContext" : "onlyTargetIsSelfWithLinkedDevice=legacyTargets.isEmpty() && senderKeyTargets.isEmpty() && TextSecurePreferences.isMultiDevice(context)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 13,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 145,
+        "startLineNumber" : 228,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 228,
+        "endColumnNumber" : 149
+      },
+      "nodeContext" : "boolean onlyTargetIsSelfWithLinkedDevice=legacyTargets.isEmpty() && senderKeyTargets.isEmpty() && TextSecurePreferences.isMultiDevice(context);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 6859,
+        "startLineNumber" : 139,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 266,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  RecipientData recipients=new RecipientData(context,allTargets);\n  Optional<GroupRecord> groupRecord=groupId != null ? DatabaseFactory.getGroupDatabase(context).getGroup(groupId) : Optional.absent();\n  List<Recipient> senderKeyTargets=new LinkedList<>();\n  List<Recipient> legacyTargets=new LinkedList<>();\n  for (  Recipient recipient : allTargets) {\n    Optional<UnidentifiedAccessPair> access=recipients.getAccessPair(recipient.getId());\n    boolean validMembership=groupRecord.isPresent() && groupRecord.get().getMembers().contains(recipient.getId());\n    if (recipient.getSenderKeyCapability() == Recipient.Capability.SUPPORTED && recipient.hasUuid() && access.isPresent() && access.get().getTargetUnidentifiedAccess().isPresent() && validMembership) {\n      senderKeyTargets.add(recipient);\n    }\n else {\n      legacyTargets.add(recipient);\n    }\n  }\n  if (FeatureFlags.senderKey()) {\n    if (groupId == null) {\n      Log.i(TAG,\"Recipients not in a group. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (Recipient.self().getSenderKeyCapability() != Recipient.Capability.SUPPORTED) {\n      Log.i(TAG,\"All of our devices do not support sender key. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (SignalStore.internalValues().removeSenderKeyMinimum()) {\n      Log.i(TAG,\"Sender key minimum removed. Using for \" + senderKeyTargets.size() + \" recipients.\");\n    }\n else     if (senderKeyTargets.size() < 2) {\n      Log.i(TAG,\"Too few sender-key-capable users (\" + senderKeyTargets.size() + \"). Doing all legacy sends.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else {\n      Log.i(TAG,\"Can use sender key for \" + senderKeyTargets.size() + \"/\"+ allTargets.size()+ \" recipients.\");\n    }\n  }\n else {\n    Log.i(TAG,\"Feature flag disabled. Using legacy.\");\n    legacyTargets.addAll(senderKeyTargets);\n    senderKeyTargets.clear();\n  }\n  List<SendMessageResult> allResults=new ArrayList<>(allTargets.size());\n  SignalServiceMessageSender messageSender=ApplicationDependencies.getSignalServiceMessageSender();\n  if (senderKeyTargets.size() > 0 && groupId != null) {\n    DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n    long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n    long keyAge=System.currentTimeMillis() - keyCreateTime;\n    if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n      Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n      SenderKeyUtil.rotateOurKey(context,distributionId);\n    }\n    try {\n      List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n      List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n      List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n      allResults.addAll(results);\n      int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n      Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n      if (sendOperation.shouldIncludeInMessageLog()) {\n        DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n      }\n    }\n catch (    InvalidUnidentifiedAccessHeaderException e) {\n      Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    NoSessionException e) {\n      Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    InvalidKeyException e) {\n      Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\n  }\n  if (cancelationSignal != null && cancelationSignal.isCanceled()) {\n    throw new CancelationException();\n  }\n  boolean onlyTargetIsSelfWithLinkedDevice=legacyTargets.isEmpty() && senderKeyTargets.isEmpty() && TextSecurePreferences.isMultiDevice(context);\n  if (legacyTargets.size() > 0 || onlyTargetIsSelfWithLinkedDevice) {\n    if (legacyTargets.size() > 0) {\n      Log.i(TAG,\"Need to do \" + legacyTargets.size() + \" legacy sends.\");\n    }\n else {\n      Log.i(TAG,\"Need to do a legacy send to send a sync message for a group of only ourselves.\");\n    }\n    List<SignalServiceAddress> targets=legacyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<Optional<UnidentifiedAccessPair>> access=legacyTargets.stream().map(r -> recipients.getAccessPair(r.getId())).collect(Collectors.toList());\n    boolean recipientUpdate=isRecipientUpdate || allResults.size() > 0;\n    final MessageSendLogDatabase messageLogDatabase=DatabaseFactory.getMessageLogDatabase(context);\n    final AtomicLong entryId=new AtomicLong(-1);\n    final boolean includeInMessageLog=sendOperation.shouldIncludeInMessageLog();\n    List<SendMessageResult> results=sendOperation.sendLegacy(messageSender,targets,access,recipientUpdate,result -> {\n      if (!includeInMessageLog) {\n        return;\n      }\nsynchronized (entryId) {\n        if (entryId.get() == -1) {\n          entryId.set(messageLogDatabase.insertIfPossible(recipients.requireRecipientId(result.getAddress()),sendOperation.getSentTimestamp(),result,sendOperation.getContentHint(),sendOperation.getRelatedMessageId()));\n        }\n else {\n          messageLogDatabase.addRecipientToExistingEntryIfPossible(entryId.get(),recipients.requireRecipientId(result.getAddress()),result);\n        }\n      }\n    }\n,cancelationSignal);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using 1:1 to \" + successCount + \"/\"+ targets.size()+ \" legacy targets.\");\n  }\n  return allResults;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 815,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 7926,
+        "startLineNumber" : 124,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 266,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "/** \n * Handles all of the logic of sending to a group. Will do sender key sends and legacy 1:1 sends as-needed, and give you back a list of {@link SendMessageResult}s just like we're used to.\n * @param groupId The groupId of the group you're sending to, or null if you're sending to a collection of recipients not joined by a group.\n * @param isRecipientUpdate True if you've already sent this message to some recipients in the past, otherwise false.\n */\n@WorkerThread private static List<SendMessageResult> sendMessage(@NonNull Context context,@Nullable GroupId.V2 groupId,@NonNull List<Recipient> allTargets,boolean isRecipientUpdate,@NonNull SendOperation sendOperation,@Nullable CancelationSignal cancelationSignal) throws IOException, UntrustedIdentityException {\n  RecipientData recipients=new RecipientData(context,allTargets);\n  Optional<GroupRecord> groupRecord=groupId != null ? DatabaseFactory.getGroupDatabase(context).getGroup(groupId) : Optional.absent();\n  List<Recipient> senderKeyTargets=new LinkedList<>();\n  List<Recipient> legacyTargets=new LinkedList<>();\n  for (  Recipient recipient : allTargets) {\n    Optional<UnidentifiedAccessPair> access=recipients.getAccessPair(recipient.getId());\n    boolean validMembership=groupRecord.isPresent() && groupRecord.get().getMembers().contains(recipient.getId());\n    if (recipient.getSenderKeyCapability() == Recipient.Capability.SUPPORTED && recipient.hasUuid() && access.isPresent() && access.get().getTargetUnidentifiedAccess().isPresent() && validMembership) {\n      senderKeyTargets.add(recipient);\n    }\n else {\n      legacyTargets.add(recipient);\n    }\n  }\n  if (FeatureFlags.senderKey()) {\n    if (groupId == null) {\n      Log.i(TAG,\"Recipients not in a group. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (Recipient.self().getSenderKeyCapability() != Recipient.Capability.SUPPORTED) {\n      Log.i(TAG,\"All of our devices do not support sender key. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (SignalStore.internalValues().removeSenderKeyMinimum()) {\n      Log.i(TAG,\"Sender key minimum removed. Using for \" + senderKeyTargets.size() + \" recipients.\");\n    }\n else     if (senderKeyTargets.size() < 2) {\n      Log.i(TAG,\"Too few sender-key-capable users (\" + senderKeyTargets.size() + \"). Doing all legacy sends.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else {\n      Log.i(TAG,\"Can use sender key for \" + senderKeyTargets.size() + \"/\"+ allTargets.size()+ \" recipients.\");\n    }\n  }\n else {\n    Log.i(TAG,\"Feature flag disabled. Using legacy.\");\n    legacyTargets.addAll(senderKeyTargets);\n    senderKeyTargets.clear();\n  }\n  List<SendMessageResult> allResults=new ArrayList<>(allTargets.size());\n  SignalServiceMessageSender messageSender=ApplicationDependencies.getSignalServiceMessageSender();\n  if (senderKeyTargets.size() > 0 && groupId != null) {\n    DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n    long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n    long keyAge=System.currentTimeMillis() - keyCreateTime;\n    if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n      Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n      SenderKeyUtil.rotateOurKey(context,distributionId);\n    }\n    try {\n      List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n      List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n      List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n      allResults.addAll(results);\n      int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n      Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n      if (sendOperation.shouldIncludeInMessageLog()) {\n        DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n      }\n    }\n catch (    InvalidUnidentifiedAccessHeaderException e) {\n      Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    NoSessionException e) {\n      Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    InvalidKeyException e) {\n      Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\n  }\n  if (cancelationSignal != null && cancelationSignal.isCanceled()) {\n    throw new CancelationException();\n  }\n  boolean onlyTargetIsSelfWithLinkedDevice=legacyTargets.isEmpty() && senderKeyTargets.isEmpty() && TextSecurePreferences.isMultiDevice(context);\n  if (legacyTargets.size() > 0 || onlyTargetIsSelfWithLinkedDevice) {\n    if (legacyTargets.size() > 0) {\n      Log.i(TAG,\"Need to do \" + legacyTargets.size() + \" legacy sends.\");\n    }\n else {\n      Log.i(TAG,\"Need to do a legacy send to send a sync message for a group of only ourselves.\");\n    }\n    List<SignalServiceAddress> targets=legacyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<Optional<UnidentifiedAccessPair>> access=legacyTargets.stream().map(r -> recipients.getAccessPair(r.getId())).collect(Collectors.toList());\n    boolean recipientUpdate=isRecipientUpdate || allResults.size() > 0;\n    final MessageSendLogDatabase messageLogDatabase=DatabaseFactory.getMessageLogDatabase(context);\n    final AtomicLong entryId=new AtomicLong(-1);\n    final boolean includeInMessageLog=sendOperation.shouldIncludeInMessageLog();\n    List<SendMessageResult> results=sendOperation.sendLegacy(messageSender,targets,access,recipientUpdate,result -> {\n      if (!includeInMessageLog) {\n        return;\n      }\nsynchronized (entryId) {\n        if (entryId.get() == -1) {\n          entryId.set(messageLogDatabase.insertIfPossible(recipients.requireRecipientId(result.getAddress()),sendOperation.getSentTimestamp(),result,sendOperation.getContentHint(),sendOperation.getRelatedMessageId()));\n        }\n else {\n          messageLogDatabase.addRecipientToExistingEntryIfPossible(entryId.get(),recipients.requireRecipientId(result.getAddress()),result);\n        }\n      }\n    }\n,cancelationSignal);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using 1:1 to \" + successCount + \"/\"+ targets.size()+ \" legacy targets.\");\n  }\n  return allResults;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 869,
+      "astHeight" : 19
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 145,
+        "startLineNumber" : 228,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 228,
+        "endColumnNumber" : 149
+      },
+      "nodeContext" : "boolean onlyTargetIsSelfWithLinkedDevice=legacyTargets.isEmpty() && senderKeyTargets.isEmpty() && TextSecurePreferences.isMultiDevice(context);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "org.thoughtcrime.securesms.messages.Context"
+  }, {
+    "nodeContext" : "context",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 7,
+      "startLineNumber" : 241,
+      "startColumnNumber" : 95,
+      "endLineNumber" : 241,
+      "endColumnNumber" : 102
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 46,
+        "startLineNumber" : 241,
+        "startColumnNumber" : 57,
+        "endLineNumber" : 241,
+        "endColumnNumber" : 103
+      },
+      "nodeContext" : "DatabaseFactory.getMessageLogDatabase(context)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 68,
+        "startLineNumber" : 241,
+        "startColumnNumber" : 35,
+        "endLineNumber" : 241,
+        "endColumnNumber" : 103
+      },
+      "nodeContext" : "messageLogDatabase=DatabaseFactory.getMessageLogDatabase(context)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 98,
+        "startLineNumber" : 241,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 241,
+        "endColumnNumber" : 104
+      },
+      "nodeContext" : "final MessageSendLogDatabase messageLogDatabase=DatabaseFactory.getMessageLogDatabase(context);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 1903,
+        "startLineNumber" : 230,
+        "startColumnNumber" : 70,
+        "endLineNumber" : 263,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (legacyTargets.size() > 0) {\n    Log.i(TAG,\"Need to do \" + legacyTargets.size() + \" legacy sends.\");\n  }\n else {\n    Log.i(TAG,\"Need to do a legacy send to send a sync message for a group of only ourselves.\");\n  }\n  List<SignalServiceAddress> targets=legacyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n  List<Optional<UnidentifiedAccessPair>> access=legacyTargets.stream().map(r -> recipients.getAccessPair(r.getId())).collect(Collectors.toList());\n  boolean recipientUpdate=isRecipientUpdate || allResults.size() > 0;\n  final MessageSendLogDatabase messageLogDatabase=DatabaseFactory.getMessageLogDatabase(context);\n  final AtomicLong entryId=new AtomicLong(-1);\n  final boolean includeInMessageLog=sendOperation.shouldIncludeInMessageLog();\n  List<SendMessageResult> results=sendOperation.sendLegacy(messageSender,targets,access,recipientUpdate,result -> {\n    if (!includeInMessageLog) {\n      return;\n    }\nsynchronized (entryId) {\n      if (entryId.get() == -1) {\n        entryId.set(messageLogDatabase.insertIfPossible(recipients.requireRecipientId(result.getAddress()),sendOperation.getSentTimestamp(),result,sendOperation.getContentHint(),sendOperation.getRelatedMessageId()));\n      }\n else {\n        messageLogDatabase.addRecipientToExistingEntryIfPossible(entryId.get(),recipients.requireRecipientId(result.getAddress()),result);\n      }\n    }\n  }\n,cancelationSignal);\n  allResults.addAll(results);\n  int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n  Log.d(TAG,\"Successfully sent using 1:1 to \" + successCount + \"/\"+ targets.size()+ \" legacy targets.\");\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 231,
+      "astHeight" : 16
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1969,
+        "startLineNumber" : 230,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 263,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "if (legacyTargets.size() > 0 || onlyTargetIsSelfWithLinkedDevice) {\n  if (legacyTargets.size() > 0) {\n    Log.i(TAG,\"Need to do \" + legacyTargets.size() + \" legacy sends.\");\n  }\n else {\n    Log.i(TAG,\"Need to do a legacy send to send a sync message for a group of only ourselves.\");\n  }\n  List<SignalServiceAddress> targets=legacyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n  List<Optional<UnidentifiedAccessPair>> access=legacyTargets.stream().map(r -> recipients.getAccessPair(r.getId())).collect(Collectors.toList());\n  boolean recipientUpdate=isRecipientUpdate || allResults.size() > 0;\n  final MessageSendLogDatabase messageLogDatabase=DatabaseFactory.getMessageLogDatabase(context);\n  final AtomicLong entryId=new AtomicLong(-1);\n  final boolean includeInMessageLog=sendOperation.shouldIncludeInMessageLog();\n  List<SendMessageResult> results=sendOperation.sendLegacy(messageSender,targets,access,recipientUpdate,result -> {\n    if (!includeInMessageLog) {\n      return;\n    }\nsynchronized (entryId) {\n      if (entryId.get() == -1) {\n        entryId.set(messageLogDatabase.insertIfPossible(recipients.requireRecipientId(result.getAddress()),sendOperation.getSentTimestamp(),result,sendOperation.getContentHint(),sendOperation.getRelatedMessageId()));\n      }\n else {\n        messageLogDatabase.addRecipientToExistingEntryIfPossible(entryId.get(),recipients.requireRecipientId(result.getAddress()),result);\n      }\n    }\n  }\n,cancelationSignal);\n  allResults.addAll(results);\n  int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n  Log.d(TAG,\"Successfully sent using 1:1 to \" + successCount + \"/\"+ targets.size()+ \" legacy targets.\");\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 239,
+      "astHeight" : 17
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 6859,
+        "startLineNumber" : 139,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 266,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  RecipientData recipients=new RecipientData(context,allTargets);\n  Optional<GroupRecord> groupRecord=groupId != null ? DatabaseFactory.getGroupDatabase(context).getGroup(groupId) : Optional.absent();\n  List<Recipient> senderKeyTargets=new LinkedList<>();\n  List<Recipient> legacyTargets=new LinkedList<>();\n  for (  Recipient recipient : allTargets) {\n    Optional<UnidentifiedAccessPair> access=recipients.getAccessPair(recipient.getId());\n    boolean validMembership=groupRecord.isPresent() && groupRecord.get().getMembers().contains(recipient.getId());\n    if (recipient.getSenderKeyCapability() == Recipient.Capability.SUPPORTED && recipient.hasUuid() && access.isPresent() && access.get().getTargetUnidentifiedAccess().isPresent() && validMembership) {\n      senderKeyTargets.add(recipient);\n    }\n else {\n      legacyTargets.add(recipient);\n    }\n  }\n  if (FeatureFlags.senderKey()) {\n    if (groupId == null) {\n      Log.i(TAG,\"Recipients not in a group. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (Recipient.self().getSenderKeyCapability() != Recipient.Capability.SUPPORTED) {\n      Log.i(TAG,\"All of our devices do not support sender key. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (SignalStore.internalValues().removeSenderKeyMinimum()) {\n      Log.i(TAG,\"Sender key minimum removed. Using for \" + senderKeyTargets.size() + \" recipients.\");\n    }\n else     if (senderKeyTargets.size() < 2) {\n      Log.i(TAG,\"Too few sender-key-capable users (\" + senderKeyTargets.size() + \"). Doing all legacy sends.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else {\n      Log.i(TAG,\"Can use sender key for \" + senderKeyTargets.size() + \"/\"+ allTargets.size()+ \" recipients.\");\n    }\n  }\n else {\n    Log.i(TAG,\"Feature flag disabled. Using legacy.\");\n    legacyTargets.addAll(senderKeyTargets);\n    senderKeyTargets.clear();\n  }\n  List<SendMessageResult> allResults=new ArrayList<>(allTargets.size());\n  SignalServiceMessageSender messageSender=ApplicationDependencies.getSignalServiceMessageSender();\n  if (senderKeyTargets.size() > 0 && groupId != null) {\n    DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n    long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n    long keyAge=System.currentTimeMillis() - keyCreateTime;\n    if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n      Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n      SenderKeyUtil.rotateOurKey(context,distributionId);\n    }\n    try {\n      List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n      List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n      List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n      allResults.addAll(results);\n      int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n      Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n      if (sendOperation.shouldIncludeInMessageLog()) {\n        DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n      }\n    }\n catch (    InvalidUnidentifiedAccessHeaderException e) {\n      Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    NoSessionException e) {\n      Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    InvalidKeyException e) {\n      Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\n  }\n  if (cancelationSignal != null && cancelationSignal.isCanceled()) {\n    throw new CancelationException();\n  }\n  boolean onlyTargetIsSelfWithLinkedDevice=legacyTargets.isEmpty() && senderKeyTargets.isEmpty() && TextSecurePreferences.isMultiDevice(context);\n  if (legacyTargets.size() > 0 || onlyTargetIsSelfWithLinkedDevice) {\n    if (legacyTargets.size() > 0) {\n      Log.i(TAG,\"Need to do \" + legacyTargets.size() + \" legacy sends.\");\n    }\n else {\n      Log.i(TAG,\"Need to do a legacy send to send a sync message for a group of only ourselves.\");\n    }\n    List<SignalServiceAddress> targets=legacyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<Optional<UnidentifiedAccessPair>> access=legacyTargets.stream().map(r -> recipients.getAccessPair(r.getId())).collect(Collectors.toList());\n    boolean recipientUpdate=isRecipientUpdate || allResults.size() > 0;\n    final MessageSendLogDatabase messageLogDatabase=DatabaseFactory.getMessageLogDatabase(context);\n    final AtomicLong entryId=new AtomicLong(-1);\n    final boolean includeInMessageLog=sendOperation.shouldIncludeInMessageLog();\n    List<SendMessageResult> results=sendOperation.sendLegacy(messageSender,targets,access,recipientUpdate,result -> {\n      if (!includeInMessageLog) {\n        return;\n      }\nsynchronized (entryId) {\n        if (entryId.get() == -1) {\n          entryId.set(messageLogDatabase.insertIfPossible(recipients.requireRecipientId(result.getAddress()),sendOperation.getSentTimestamp(),result,sendOperation.getContentHint(),sendOperation.getRelatedMessageId()));\n        }\n else {\n          messageLogDatabase.addRecipientToExistingEntryIfPossible(entryId.get(),recipients.requireRecipientId(result.getAddress()),result);\n        }\n      }\n    }\n,cancelationSignal);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using 1:1 to \" + successCount + \"/\"+ targets.size()+ \" legacy targets.\");\n  }\n  return allResults;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 815,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 7926,
+        "startLineNumber" : 124,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 266,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "/** \n * Handles all of the logic of sending to a group. Will do sender key sends and legacy 1:1 sends as-needed, and give you back a list of {@link SendMessageResult}s just like we're used to.\n * @param groupId The groupId of the group you're sending to, or null if you're sending to a collection of recipients not joined by a group.\n * @param isRecipientUpdate True if you've already sent this message to some recipients in the past, otherwise false.\n */\n@WorkerThread private static List<SendMessageResult> sendMessage(@NonNull Context context,@Nullable GroupId.V2 groupId,@NonNull List<Recipient> allTargets,boolean isRecipientUpdate,@NonNull SendOperation sendOperation,@Nullable CancelationSignal cancelationSignal) throws IOException, UntrustedIdentityException {\n  RecipientData recipients=new RecipientData(context,allTargets);\n  Optional<GroupRecord> groupRecord=groupId != null ? DatabaseFactory.getGroupDatabase(context).getGroup(groupId) : Optional.absent();\n  List<Recipient> senderKeyTargets=new LinkedList<>();\n  List<Recipient> legacyTargets=new LinkedList<>();\n  for (  Recipient recipient : allTargets) {\n    Optional<UnidentifiedAccessPair> access=recipients.getAccessPair(recipient.getId());\n    boolean validMembership=groupRecord.isPresent() && groupRecord.get().getMembers().contains(recipient.getId());\n    if (recipient.getSenderKeyCapability() == Recipient.Capability.SUPPORTED && recipient.hasUuid() && access.isPresent() && access.get().getTargetUnidentifiedAccess().isPresent() && validMembership) {\n      senderKeyTargets.add(recipient);\n    }\n else {\n      legacyTargets.add(recipient);\n    }\n  }\n  if (FeatureFlags.senderKey()) {\n    if (groupId == null) {\n      Log.i(TAG,\"Recipients not in a group. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (Recipient.self().getSenderKeyCapability() != Recipient.Capability.SUPPORTED) {\n      Log.i(TAG,\"All of our devices do not support sender key. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (SignalStore.internalValues().removeSenderKeyMinimum()) {\n      Log.i(TAG,\"Sender key minimum removed. Using for \" + senderKeyTargets.size() + \" recipients.\");\n    }\n else     if (senderKeyTargets.size() < 2) {\n      Log.i(TAG,\"Too few sender-key-capable users (\" + senderKeyTargets.size() + \"). Doing all legacy sends.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else {\n      Log.i(TAG,\"Can use sender key for \" + senderKeyTargets.size() + \"/\"+ allTargets.size()+ \" recipients.\");\n    }\n  }\n else {\n    Log.i(TAG,\"Feature flag disabled. Using legacy.\");\n    legacyTargets.addAll(senderKeyTargets);\n    senderKeyTargets.clear();\n  }\n  List<SendMessageResult> allResults=new ArrayList<>(allTargets.size());\n  SignalServiceMessageSender messageSender=ApplicationDependencies.getSignalServiceMessageSender();\n  if (senderKeyTargets.size() > 0 && groupId != null) {\n    DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n    long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n    long keyAge=System.currentTimeMillis() - keyCreateTime;\n    if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n      Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n      SenderKeyUtil.rotateOurKey(context,distributionId);\n    }\n    try {\n      List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n      List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n      List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n      allResults.addAll(results);\n      int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n      Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n      if (sendOperation.shouldIncludeInMessageLog()) {\n        DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n      }\n    }\n catch (    InvalidUnidentifiedAccessHeaderException e) {\n      Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    NoSessionException e) {\n      Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    InvalidKeyException e) {\n      Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\n  }\n  if (cancelationSignal != null && cancelationSignal.isCanceled()) {\n    throw new CancelationException();\n  }\n  boolean onlyTargetIsSelfWithLinkedDevice=legacyTargets.isEmpty() && senderKeyTargets.isEmpty() && TextSecurePreferences.isMultiDevice(context);\n  if (legacyTargets.size() > 0 || onlyTargetIsSelfWithLinkedDevice) {\n    if (legacyTargets.size() > 0) {\n      Log.i(TAG,\"Need to do \" + legacyTargets.size() + \" legacy sends.\");\n    }\n else {\n      Log.i(TAG,\"Need to do a legacy send to send a sync message for a group of only ourselves.\");\n    }\n    List<SignalServiceAddress> targets=legacyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<Optional<UnidentifiedAccessPair>> access=legacyTargets.stream().map(r -> recipients.getAccessPair(r.getId())).collect(Collectors.toList());\n    boolean recipientUpdate=isRecipientUpdate || allResults.size() > 0;\n    final MessageSendLogDatabase messageLogDatabase=DatabaseFactory.getMessageLogDatabase(context);\n    final AtomicLong entryId=new AtomicLong(-1);\n    final boolean includeInMessageLog=sendOperation.shouldIncludeInMessageLog();\n    List<SendMessageResult> results=sendOperation.sendLegacy(messageSender,targets,access,recipientUpdate,result -> {\n      if (!includeInMessageLog) {\n        return;\n      }\nsynchronized (entryId) {\n        if (entryId.get() == -1) {\n          entryId.set(messageLogDatabase.insertIfPossible(recipients.requireRecipientId(result.getAddress()),sendOperation.getSentTimestamp(),result,sendOperation.getContentHint(),sendOperation.getRelatedMessageId()));\n        }\n else {\n          messageLogDatabase.addRecipientToExistingEntryIfPossible(entryId.get(),recipients.requireRecipientId(result.getAddress()),result);\n        }\n      }\n    }\n,cancelationSignal);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using 1:1 to \" + successCount + \"/\"+ targets.size()+ \" legacy targets.\");\n  }\n  return allResults;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 869,
+      "astHeight" : 19
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 98,
+        "startLineNumber" : 241,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 241,
+        "endColumnNumber" : 104
+      },
+      "nodeContext" : "final MessageSendLogDatabase messageLogDatabase=DatabaseFactory.getMessageLogDatabase(context);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.thoughtcrime.securesms.messages.Context"
   } ],
   "positionList" : [ {
-    "charLength" : 3,
-    "startLineNumber" : 45,
-    "startColumnNumber" : 12,
-    "endLineNumber" : 45,
-    "endColumnNumber" : 15
+    "charLength" : 7,
+    "startLineNumber" : 140,
+    "startColumnNumber" : 58,
+    "endLineNumber" : 140,
+    "endColumnNumber" : 65
   }, {
-    "charLength" : 3,
-    "startLineNumber" : 51,
-    "startColumnNumber" : 46,
-    "endLineNumber" : 51,
-    "endColumnNumber" : 49
+    "charLength" : 7,
+    "startLineNumber" : 141,
+    "startColumnNumber" : 91,
+    "endLineNumber" : 141,
+    "endColumnNumber" : 98
+  }, {
+    "charLength" : 7,
+    "startLineNumber" : 190,
+    "startColumnNumber" : 71,
+    "endLineNumber" : 190,
+    "endColumnNumber" : 78
+  }, {
+    "charLength" : 7,
+    "startLineNumber" : 191,
+    "startColumnNumber" : 75,
+    "endLineNumber" : 191,
+    "endColumnNumber" : 82
+  }, {
+    "charLength" : 7,
+    "startLineNumber" : 196,
+    "startColumnNumber" : 35,
+    "endLineNumber" : 196,
+    "endColumnNumber" : 42
+  }, {
+    "charLength" : 7,
+    "startLineNumber" : 210,
+    "startColumnNumber" : 48,
+    "endLineNumber" : 210,
+    "endColumnNumber" : 55
+  }, {
+    "charLength" : 7,
+    "startLineNumber" : 228,
+    "startColumnNumber" : 140,
+    "endLineNumber" : 228,
+    "endColumnNumber" : 147
+  }, {
+    "charLength" : 7,
+    "startLineNumber" : 241,
+    "startColumnNumber" : 95,
+    "endLineNumber" : 241,
+    "endColumnNumber" : 102
   } ],
   "layoutRelationDataList" : [ {
     "firstKey" : 0,
     "secondKey" : 1,
-    "layout" : 2
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 7,
+    "layout" : 3
   }, {
     "firstKey" : 1,
     "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 3,
+    "layout" : 5
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 4,
+    "layout" : 5
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 5,
+    "layout" : 5
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 6,
+    "layout" : 5
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 7,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 6
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 6
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 3,
     "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 5,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 6,
+    "layout" : 6
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 7,
+    "layout" : 6
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 6,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 7,
+    "layout" : 5
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 0,
+    "layout" : 6
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 1,
+    "layout" : 6
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 5,
+    "layout" : 4
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 6,
+    "layout" : 6
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 7,
+    "layout" : 6
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 0,
+    "layout" : 9
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 1,
+    "layout" : 9
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 2,
+    "layout" : 7
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 3,
+    "layout" : 7
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 4,
+    "layout" : 7
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 6,
+    "layout" : 9
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 7,
+    "layout" : 9
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 5,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 7,
+    "layout" : 4
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 3,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 4,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 5,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 6,
+    "layout" : 5
   } ]
 }

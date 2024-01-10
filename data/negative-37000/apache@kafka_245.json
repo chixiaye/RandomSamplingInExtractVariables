@@ -1,0 +1,260 @@
+{
+  "id" : 245,
+  "expression" : "node.agentRestServer",
+  "projectName" : "apache@kafka",
+  "commitID" : "539f006e65d9060cd46a4052d1b70f2312d8ca34",
+  "filePath" : "/trogdor/src/test/java/org/apache/kafka/trogdor/common/MiniTrogdorCluster.java",
+  "occurrences" : 2,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "node.agentRestServer",
+    "nodeType" : "QualifiedName",
+    "nodePosition" : {
+      "charLength" : 20,
+      "startLineNumber" : 143,
+      "startColumnNumber" : 16,
+      "endLineNumber" : 143,
+      "endColumnNumber" : 36
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 50,
+        "startLineNumber" : 143,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 143,
+        "endColumnNumber" : 66
+      },
+      "nodeContext" : "node.agentRestServer.start(node.agentRestResource)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 8,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 51,
+        "startLineNumber" : 143,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 143,
+        "endColumnNumber" : 67
+      },
+      "nodeContext" : "node.agentRestServer.start(node.agentRestResource);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.EnhancedForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 336,
+        "startLineNumber" : 139,
+        "startColumnNumber" : 48,
+        "endLineNumber" : 145,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  NodeData node=getOrCreate(agentName,nodes);\n  node.agentRestResource=new AgentRestResource();\n  node.agentRestServer=new JsonRestServer(0);\n  node.agentRestServer.start(node.agentRestResource);\n  node.agentPort=node.agentRestServer.port();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 46,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 372,
+        "startLineNumber" : 139,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 145,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "for (String agentName : agentNames) {\n  NodeData node=getOrCreate(agentName,nodes);\n  node.agentRestResource=new AgentRestResource();\n  node.agentRestServer=new JsonRestServer(0);\n  node.agentRestServer.start(node.agentRestResource);\n  node.agentPort=node.agentRestServer.port();\n}\n",
+      "nodeType" : "EnhancedForStatement",
+      "astNodeNumber" : 52,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4313,
+        "startLineNumber" : 135,
+        "startColumnNumber" : 59,
+        "endLineNumber" : 215,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  log.info(\"Creating MiniTrogdorCluster with agents: {} and coordinator: {}\",Utils.join(agentNames,\", \"),coordinatorName);\n  TreeMap<String,NodeData> nodes=new TreeMap<>();\n  for (  String agentName : agentNames) {\n    NodeData node=getOrCreate(agentName,nodes);\n    node.agentRestResource=new AgentRestResource();\n    node.agentRestServer=new JsonRestServer(0);\n    node.agentRestServer.start(node.agentRestResource);\n    node.agentPort=node.agentRestServer.port();\n  }\n  if (coordinatorName != null) {\n    NodeData node=getOrCreate(coordinatorName,nodes);\n    node.coordinatorRestResource=new CoordinatorRestResource();\n    node.coordinatorRestServer=new JsonRestServer(0);\n    node.coordinatorRestServer.start(node.coordinatorRestResource);\n    node.coordinatorPort=node.coordinatorRestServer.port();\n  }\n  for (  Map.Entry<String,NodeData> entry : nodes.entrySet()) {\n    NodeData node=entry.getValue();\n    HashMap<String,String> config=new HashMap<>();\n    if (node.agentPort != 0) {\n      config.put(Platform.Config.TROGDOR_AGENT_PORT,Integer.toString(node.agentPort));\n    }\n    if (node.coordinatorPort != 0) {\n      config.put(Platform.Config.TROGDOR_COORDINATOR_PORT,Integer.toString(node.coordinatorPort));\n    }\n    node.node=new BasicNode(entry.getKey(),node.hostname,config,Collections.<String>emptySet());\n  }\n  TreeMap<String,Node> topologyNodes=new TreeMap<>();\n  for (  Map.Entry<String,NodeData> entry : nodes.entrySet()) {\n    topologyNodes.put(entry.getKey(),entry.getValue().node);\n  }\n  final BasicTopology topology=new BasicTopology(topologyNodes);\n  ScheduledExecutorService executor=Executors.newScheduledThreadPool(1,ThreadUtils.createThreadFactory(\"MiniTrogdorClusterStartupThread%d\",false));\n  final AtomicReference<Exception> failure=new AtomicReference<Exception>(null);\n  for (  final Map.Entry<String,NodeData> entry : nodes.entrySet()) {\n    executor.submit((Callable<Void>)() -> {\n      String nodeName=entry.getKey();\n      try {\n        NodeData node=entry.getValue();\n        node.platform=new BasicPlatform(nodeName,topology,scheduler,commandRunner);\n        if (node.agentRestResource != null) {\n          node.agent=new Agent(node.platform,scheduler,node.agentRestServer,node.agentRestResource);\n        }\n        if (node.coordinatorRestResource != null) {\n          node.coordinator=new Coordinator(node.platform,scheduler,node.coordinatorRestServer,node.coordinatorRestResource,0);\n        }\n      }\n catch (      Exception e) {\n        log.error(\"Unable to initialize {}\",nodeName,e);\n        failure.compareAndSet(null,e);\n      }\n      return null;\n    }\n);\n  }\n  executor.shutdown();\n  executor.awaitTermination(1,TimeUnit.DAYS);\n  Exception failureException=failure.get();\n  if (failureException != null) {\n    throw failureException;\n  }\n  TreeMap<String,Agent> agents=new TreeMap<>();\n  Coordinator coordinator=null;\n  for (  Map.Entry<String,NodeData> entry : nodes.entrySet()) {\n    NodeData node=entry.getValue();\n    if (node.agent != null) {\n      agents.put(entry.getKey(),node.agent);\n    }\n    if (node.coordinator != null) {\n      coordinator=node.coordinator;\n    }\n  }\n  return new MiniTrogdorCluster(scheduler,agents,nodes,coordinator);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 552,
+      "astHeight" : 17
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4430,
+        "startLineNumber" : 132,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 215,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "/** \n * Create the MiniTrogdorCluster.\n */\npublic MiniTrogdorCluster build() throws Exception {\n  log.info(\"Creating MiniTrogdorCluster with agents: {} and coordinator: {}\",Utils.join(agentNames,\", \"),coordinatorName);\n  TreeMap<String,NodeData> nodes=new TreeMap<>();\n  for (  String agentName : agentNames) {\n    NodeData node=getOrCreate(agentName,nodes);\n    node.agentRestResource=new AgentRestResource();\n    node.agentRestServer=new JsonRestServer(0);\n    node.agentRestServer.start(node.agentRestResource);\n    node.agentPort=node.agentRestServer.port();\n  }\n  if (coordinatorName != null) {\n    NodeData node=getOrCreate(coordinatorName,nodes);\n    node.coordinatorRestResource=new CoordinatorRestResource();\n    node.coordinatorRestServer=new JsonRestServer(0);\n    node.coordinatorRestServer.start(node.coordinatorRestResource);\n    node.coordinatorPort=node.coordinatorRestServer.port();\n  }\n  for (  Map.Entry<String,NodeData> entry : nodes.entrySet()) {\n    NodeData node=entry.getValue();\n    HashMap<String,String> config=new HashMap<>();\n    if (node.agentPort != 0) {\n      config.put(Platform.Config.TROGDOR_AGENT_PORT,Integer.toString(node.agentPort));\n    }\n    if (node.coordinatorPort != 0) {\n      config.put(Platform.Config.TROGDOR_COORDINATOR_PORT,Integer.toString(node.coordinatorPort));\n    }\n    node.node=new BasicNode(entry.getKey(),node.hostname,config,Collections.<String>emptySet());\n  }\n  TreeMap<String,Node> topologyNodes=new TreeMap<>();\n  for (  Map.Entry<String,NodeData> entry : nodes.entrySet()) {\n    topologyNodes.put(entry.getKey(),entry.getValue().node);\n  }\n  final BasicTopology topology=new BasicTopology(topologyNodes);\n  ScheduledExecutorService executor=Executors.newScheduledThreadPool(1,ThreadUtils.createThreadFactory(\"MiniTrogdorClusterStartupThread%d\",false));\n  final AtomicReference<Exception> failure=new AtomicReference<Exception>(null);\n  for (  final Map.Entry<String,NodeData> entry : nodes.entrySet()) {\n    executor.submit((Callable<Void>)() -> {\n      String nodeName=entry.getKey();\n      try {\n        NodeData node=entry.getValue();\n        node.platform=new BasicPlatform(nodeName,topology,scheduler,commandRunner);\n        if (node.agentRestResource != null) {\n          node.agent=new Agent(node.platform,scheduler,node.agentRestServer,node.agentRestResource);\n        }\n        if (node.coordinatorRestResource != null) {\n          node.coordinator=new Coordinator(node.platform,scheduler,node.coordinatorRestServer,node.coordinatorRestResource,0);\n        }\n      }\n catch (      Exception e) {\n        log.error(\"Unable to initialize {}\",nodeName,e);\n        failure.compareAndSet(null,e);\n      }\n      return null;\n    }\n);\n  }\n  executor.shutdown();\n  executor.awaitTermination(1,TimeUnit.DAYS);\n  Exception failureException=failure.get();\n  if (failureException != null) {\n    throw failureException;\n  }\n  TreeMap<String,Agent> agents=new TreeMap<>();\n  Coordinator coordinator=null;\n  for (  Map.Entry<String,NodeData> entry : nodes.entrySet()) {\n    NodeData node=entry.getValue();\n    if (node.agent != null) {\n      agents.put(entry.getKey(),node.agent);\n    }\n    if (node.coordinator != null) {\n      coordinator=node.coordinator;\n    }\n  }\n  return new MiniTrogdorCluster(scheduler,agents,nodes,coordinator);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 560,
+      "astHeight" : 18
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 51,
+        "startLineNumber" : 143,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 143,
+        "endColumnNumber" : 67
+      },
+      "nodeContext" : "node.agentRestServer.start(node.agentRestResource);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    },
+    "tokenLength" : 2,
+    "type" : "org.apache.kafka.trogdor.rest.JsonRestServer"
+  }, {
+    "nodeContext" : "node.agentRestServer",
+    "nodeType" : "QualifiedName",
+    "nodePosition" : {
+      "charLength" : 20,
+      "startLineNumber" : 144,
+      "startColumnNumber" : 33,
+      "endLineNumber" : 144,
+      "endColumnNumber" : 53
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
+      "nodePosition" : {
+        "charLength" : 27,
+        "startLineNumber" : 144,
+        "startColumnNumber" : 33,
+        "endLineNumber" : 144,
+        "endColumnNumber" : 60
+      },
+      "nodeContext" : "node.agentRestServer.port()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 44,
+        "startLineNumber" : 144,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 144,
+        "endColumnNumber" : 60
+      },
+      "nodeContext" : "node.agentPort=node.agentRestServer.port()",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 45,
+        "startLineNumber" : 144,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 144,
+        "endColumnNumber" : 61
+      },
+      "nodeContext" : "node.agentPort=node.agentRestServer.port();\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.EnhancedForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 336,
+        "startLineNumber" : 139,
+        "startColumnNumber" : 48,
+        "endLineNumber" : 145,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  NodeData node=getOrCreate(agentName,nodes);\n  node.agentRestResource=new AgentRestResource();\n  node.agentRestServer=new JsonRestServer(0);\n  node.agentRestServer.start(node.agentRestResource);\n  node.agentPort=node.agentRestServer.port();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 46,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 372,
+        "startLineNumber" : 139,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 145,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "for (String agentName : agentNames) {\n  NodeData node=getOrCreate(agentName,nodes);\n  node.agentRestResource=new AgentRestResource();\n  node.agentRestServer=new JsonRestServer(0);\n  node.agentRestServer.start(node.agentRestResource);\n  node.agentPort=node.agentRestServer.port();\n}\n",
+      "nodeType" : "EnhancedForStatement",
+      "astNodeNumber" : 52,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4313,
+        "startLineNumber" : 135,
+        "startColumnNumber" : 59,
+        "endLineNumber" : 215,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  log.info(\"Creating MiniTrogdorCluster with agents: {} and coordinator: {}\",Utils.join(agentNames,\", \"),coordinatorName);\n  TreeMap<String,NodeData> nodes=new TreeMap<>();\n  for (  String agentName : agentNames) {\n    NodeData node=getOrCreate(agentName,nodes);\n    node.agentRestResource=new AgentRestResource();\n    node.agentRestServer=new JsonRestServer(0);\n    node.agentRestServer.start(node.agentRestResource);\n    node.agentPort=node.agentRestServer.port();\n  }\n  if (coordinatorName != null) {\n    NodeData node=getOrCreate(coordinatorName,nodes);\n    node.coordinatorRestResource=new CoordinatorRestResource();\n    node.coordinatorRestServer=new JsonRestServer(0);\n    node.coordinatorRestServer.start(node.coordinatorRestResource);\n    node.coordinatorPort=node.coordinatorRestServer.port();\n  }\n  for (  Map.Entry<String,NodeData> entry : nodes.entrySet()) {\n    NodeData node=entry.getValue();\n    HashMap<String,String> config=new HashMap<>();\n    if (node.agentPort != 0) {\n      config.put(Platform.Config.TROGDOR_AGENT_PORT,Integer.toString(node.agentPort));\n    }\n    if (node.coordinatorPort != 0) {\n      config.put(Platform.Config.TROGDOR_COORDINATOR_PORT,Integer.toString(node.coordinatorPort));\n    }\n    node.node=new BasicNode(entry.getKey(),node.hostname,config,Collections.<String>emptySet());\n  }\n  TreeMap<String,Node> topologyNodes=new TreeMap<>();\n  for (  Map.Entry<String,NodeData> entry : nodes.entrySet()) {\n    topologyNodes.put(entry.getKey(),entry.getValue().node);\n  }\n  final BasicTopology topology=new BasicTopology(topologyNodes);\n  ScheduledExecutorService executor=Executors.newScheduledThreadPool(1,ThreadUtils.createThreadFactory(\"MiniTrogdorClusterStartupThread%d\",false));\n  final AtomicReference<Exception> failure=new AtomicReference<Exception>(null);\n  for (  final Map.Entry<String,NodeData> entry : nodes.entrySet()) {\n    executor.submit((Callable<Void>)() -> {\n      String nodeName=entry.getKey();\n      try {\n        NodeData node=entry.getValue();\n        node.platform=new BasicPlatform(nodeName,topology,scheduler,commandRunner);\n        if (node.agentRestResource != null) {\n          node.agent=new Agent(node.platform,scheduler,node.agentRestServer,node.agentRestResource);\n        }\n        if (node.coordinatorRestResource != null) {\n          node.coordinator=new Coordinator(node.platform,scheduler,node.coordinatorRestServer,node.coordinatorRestResource,0);\n        }\n      }\n catch (      Exception e) {\n        log.error(\"Unable to initialize {}\",nodeName,e);\n        failure.compareAndSet(null,e);\n      }\n      return null;\n    }\n);\n  }\n  executor.shutdown();\n  executor.awaitTermination(1,TimeUnit.DAYS);\n  Exception failureException=failure.get();\n  if (failureException != null) {\n    throw failureException;\n  }\n  TreeMap<String,Agent> agents=new TreeMap<>();\n  Coordinator coordinator=null;\n  for (  Map.Entry<String,NodeData> entry : nodes.entrySet()) {\n    NodeData node=entry.getValue();\n    if (node.agent != null) {\n      agents.put(entry.getKey(),node.agent);\n    }\n    if (node.coordinator != null) {\n      coordinator=node.coordinator;\n    }\n  }\n  return new MiniTrogdorCluster(scheduler,agents,nodes,coordinator);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 552,
+      "astHeight" : 17
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4430,
+        "startLineNumber" : 132,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 215,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "/** \n * Create the MiniTrogdorCluster.\n */\npublic MiniTrogdorCluster build() throws Exception {\n  log.info(\"Creating MiniTrogdorCluster with agents: {} and coordinator: {}\",Utils.join(agentNames,\", \"),coordinatorName);\n  TreeMap<String,NodeData> nodes=new TreeMap<>();\n  for (  String agentName : agentNames) {\n    NodeData node=getOrCreate(agentName,nodes);\n    node.agentRestResource=new AgentRestResource();\n    node.agentRestServer=new JsonRestServer(0);\n    node.agentRestServer.start(node.agentRestResource);\n    node.agentPort=node.agentRestServer.port();\n  }\n  if (coordinatorName != null) {\n    NodeData node=getOrCreate(coordinatorName,nodes);\n    node.coordinatorRestResource=new CoordinatorRestResource();\n    node.coordinatorRestServer=new JsonRestServer(0);\n    node.coordinatorRestServer.start(node.coordinatorRestResource);\n    node.coordinatorPort=node.coordinatorRestServer.port();\n  }\n  for (  Map.Entry<String,NodeData> entry : nodes.entrySet()) {\n    NodeData node=entry.getValue();\n    HashMap<String,String> config=new HashMap<>();\n    if (node.agentPort != 0) {\n      config.put(Platform.Config.TROGDOR_AGENT_PORT,Integer.toString(node.agentPort));\n    }\n    if (node.coordinatorPort != 0) {\n      config.put(Platform.Config.TROGDOR_COORDINATOR_PORT,Integer.toString(node.coordinatorPort));\n    }\n    node.node=new BasicNode(entry.getKey(),node.hostname,config,Collections.<String>emptySet());\n  }\n  TreeMap<String,Node> topologyNodes=new TreeMap<>();\n  for (  Map.Entry<String,NodeData> entry : nodes.entrySet()) {\n    topologyNodes.put(entry.getKey(),entry.getValue().node);\n  }\n  final BasicTopology topology=new BasicTopology(topologyNodes);\n  ScheduledExecutorService executor=Executors.newScheduledThreadPool(1,ThreadUtils.createThreadFactory(\"MiniTrogdorClusterStartupThread%d\",false));\n  final AtomicReference<Exception> failure=new AtomicReference<Exception>(null);\n  for (  final Map.Entry<String,NodeData> entry : nodes.entrySet()) {\n    executor.submit((Callable<Void>)() -> {\n      String nodeName=entry.getKey();\n      try {\n        NodeData node=entry.getValue();\n        node.platform=new BasicPlatform(nodeName,topology,scheduler,commandRunner);\n        if (node.agentRestResource != null) {\n          node.agent=new Agent(node.platform,scheduler,node.agentRestServer,node.agentRestResource);\n        }\n        if (node.coordinatorRestResource != null) {\n          node.coordinator=new Coordinator(node.platform,scheduler,node.coordinatorRestServer,node.coordinatorRestResource,0);\n        }\n      }\n catch (      Exception e) {\n        log.error(\"Unable to initialize {}\",nodeName,e);\n        failure.compareAndSet(null,e);\n      }\n      return null;\n    }\n);\n  }\n  executor.shutdown();\n  executor.awaitTermination(1,TimeUnit.DAYS);\n  Exception failureException=failure.get();\n  if (failureException != null) {\n    throw failureException;\n  }\n  TreeMap<String,Agent> agents=new TreeMap<>();\n  Coordinator coordinator=null;\n  for (  Map.Entry<String,NodeData> entry : nodes.entrySet()) {\n    NodeData node=entry.getValue();\n    if (node.agent != null) {\n      agents.put(entry.getKey(),node.agent);\n    }\n    if (node.coordinator != null) {\n      coordinator=node.coordinator;\n    }\n  }\n  return new MiniTrogdorCluster(scheduler,agents,nodes,coordinator);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 560,
+      "astHeight" : 18
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 45,
+        "startLineNumber" : 144,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 144,
+        "endColumnNumber" : 61
+      },
+      "nodeContext" : "node.agentPort=node.agentRestServer.port();\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    },
+    "tokenLength" : 2,
+    "type" : "org.apache.kafka.trogdor.rest.JsonRestServer"
+  } ],
+  "positionList" : [ {
+    "charLength" : 20,
+    "startLineNumber" : 143,
+    "startColumnNumber" : 16,
+    "endLineNumber" : 143,
+    "endColumnNumber" : 36
+  }, {
+    "charLength" : 20,
+    "startLineNumber" : 144,
+    "startColumnNumber" : 33,
+    "endLineNumber" : 144,
+    "endColumnNumber" : 53
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 3
+  } ]
+}

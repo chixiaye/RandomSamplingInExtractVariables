@@ -1,87 +1,100 @@
 {
   "id" : 365,
-  "expression" : "str",
+  "expression" : "handlersCount != addrs.size()",
   "projectName" : "skylot@jadx",
-  "commitID" : "eb2a1734d3e02c19814f628e10bf80de5fb19772",
-  "filePath" : "/jadx-core/src/test/java/jadx/tests/integration/switches/TestSwitchWithFallThroughCase2.java",
+  "commitID" : "aec986447ed3c90acc54d888f155275d882a66b0",
+  "filePath" : "jadx-core/src/main/java/jadx/core/dex/nodes/MethodNode.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "str",
-    "nodeType" : "SimpleName",
+    "nodeContext" : "handlersCount != addrs.size()",
+    "nodeType" : "InfixExpression",
     "nodePosition" : {
-      "charLength" : 3,
-      "startLineNumber" : 46,
-      "startColumnNumber" : 10,
-      "endLineNumber" : 46,
-      "endColumnNumber" : 13
+      "charLength" : 29,
+      "startLineNumber" : 290,
+      "startColumnNumber" : 27,
+      "endLineNumber" : 290,
+      "endColumnNumber" : 56
     },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
+    "astNodeNumber" : 5,
+    "astHeight" : 3,
     "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 50,
+        "startLineNumber" : 290,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 290,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "handlersCount > 0 && handlersCount != addrs.size()",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 11,
-        "startLineNumber" : 46,
-        "startColumnNumber" : 3,
-        "endLineNumber" : 46,
-        "endColumnNumber" : 14
+        "charLength" : 522,
+        "startLineNumber" : 290,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 304,
+        "endColumnNumber" : 3
       },
-      "nodeContext" : "return str;\n",
-      "nodeType" : "ReturnStatement",
-      "astNodeNumber" : 2,
-      "astHeight" : 2
+      "nodeContext" : "if (handlersCount > 0 && handlersCount != addrs.size()) {\n  for (  TryCatchBlock ct1 : catches) {\n    for (    TryCatchBlock ct2 : catches) {\n      if (ct1 != ct2 && ct2.containsAllHandlers(ct1)) {\n        for (        ExceptionHandler h : ct1.getHandlers()) {\n          ct2.removeHandler(mth,h);\n          h.setTryBlock(ct1);\n        }\n      }\n    }\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 55,
+      "astHeight" : 13
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 447,
-        "startLineNumber" : 16,
-        "startColumnNumber" : 50,
-        "endLineNumber" : 47,
-        "endColumnNumber" : 3
+        "charLength" : 2416,
+        "startLineNumber" : 260,
+        "startColumnNumber" : 91,
+        "endLineNumber" : 337,
+        "endColumnNumber" : 2
       },
-      "nodeContext" : "{\n  String str=\"\";\n  if (a > 0) {\nswitch (a % 4) {\ncase 1:      str+=\">\";\n    if (a == 5 && b) {\n      if (c) {\n        str+=\"1\";\n      }\n else {\n        str+=\"!c\";\n      }\n      break;\n    }\ncase 2:  if (b) {\n    str+=\"2\";\n  }\nbreak;\ncase 3:break;\ndefault:str+=\"default\";\nbreak;\n}\nstr+=\"+\";\n}\nif (b && c) {\nstr+=\"-\";\n}\nreturn str;\n}\n",
+      "nodeContext" : "{\n  CatchHandler[] catchBlocks=mthCode.getCatchHandlers();\n  Try[] tries=mthCode.getTries();\n  if (catchBlocks.length == 0 && tries.length == 0) {\n    return;\n  }\n  int handlersCount=0;\n  Set<Integer> addrs=new HashSet<>();\n  List<TryCatchBlock> catches=new ArrayList<>(catchBlocks.length);\n  for (  CatchHandler handler : catchBlocks) {\n    TryCatchBlock tcBlock=new TryCatchBlock();\n    catches.add(tcBlock);\n    int[] handlerAddrArr=handler.getAddresses();\n    for (int i=0; i < handlerAddrArr.length; i++) {\n      int addr=handlerAddrArr[i];\n      ClassInfo type=ClassInfo.fromDex(mth.dex(),handler.getTypeIndexes()[i]);\n      tcBlock.addHandler(mth,addr,type);\n      addrs.add(addr);\n      handlersCount++;\n    }\n    int addr=handler.getCatchAllAddress();\n    if (addr >= 0) {\n      tcBlock.addHandler(mth,addr,null);\n      addrs.add(addr);\n      handlersCount++;\n    }\n  }\n  if (handlersCount > 0 && handlersCount != addrs.size()) {\n    for (    TryCatchBlock ct1 : catches) {\n      for (      TryCatchBlock ct2 : catches) {\n        if (ct1 != ct2 && ct2.containsAllHandlers(ct1)) {\n          for (          ExceptionHandler h : ct1.getHandlers()) {\n            ct2.removeHandler(mth,h);\n            h.setTryBlock(ct1);\n          }\n        }\n      }\n    }\n  }\n  addrs.clear();\n  for (  TryCatchBlock ct : catches) {\n    for (    ExceptionHandler eh : ct.getHandlers()) {\n      int addr=eh.getHandleOffset();\n      ExcHandlerAttr ehAttr=new ExcHandlerAttr(ct,eh);\n      insnByOffset[addr].addAttr(ehAttr);\n    }\n  }\n  for (  Try aTry : tries) {\n    int catchNum=aTry.getCatchHandlerIndex();\n    TryCatchBlock catchBlock=catches.get(catchNum);\n    int offset=aTry.getStartAddress();\n    int end=offset + aTry.getInstructionCount() - 1;\n    InsnNode insn=insnByOffset[offset];\n    insn.add(AFlag.TRY_ENTER);\n    while (offset <= end && offset >= 0) {\n      insn=insnByOffset[offset];\n      catchBlock.addInsn(insn);\n      offset=InsnDecoder.getNextInsnOffset(insnByOffset,offset);\n    }\n    if (insnByOffset[end] != null) {\n      insnByOffset[end].add(AFlag.TRY_LEAVE);\n    }\n else {\n      insn.add(AFlag.TRY_LEAVE);\n    }\n  }\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 76,
-      "astHeight" : 11
+      "astNodeNumber" : 382,
+      "astHeight" : 14
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 495,
-        "startLineNumber" : 16,
-        "startColumnNumber" : 2,
-        "endLineNumber" : 47,
-        "endColumnNumber" : 3
+        "charLength" : 2506,
+        "startLineNumber" : 260,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 337,
+        "endColumnNumber" : 2
       },
-      "nodeContext" : "public String test(int a,boolean b,boolean c){\n  String str=\"\";\n  if (a > 0) {\nswitch (a % 4) {\ncase 1:      str+=\">\";\n    if (a == 5 && b) {\n      if (c) {\n        str+=\"1\";\n      }\n else {\n        str+=\"!c\";\n      }\n      break;\n    }\ncase 2:  if (b) {\n    str+=\"2\";\n  }\nbreak;\ncase 3:break;\ndefault:str+=\"default\";\nbreak;\n}\nstr+=\"+\";\n}\nif (b && c) {\nstr+=\"-\";\n}\nreturn str;\n}\n",
+      "nodeContext" : "private static void initTryCatches(MethodNode mth,Code mthCode,InsnNode[] insnByOffset){\n  CatchHandler[] catchBlocks=mthCode.getCatchHandlers();\n  Try[] tries=mthCode.getTries();\n  if (catchBlocks.length == 0 && tries.length == 0) {\n    return;\n  }\n  int handlersCount=0;\n  Set<Integer> addrs=new HashSet<>();\n  List<TryCatchBlock> catches=new ArrayList<>(catchBlocks.length);\n  for (  CatchHandler handler : catchBlocks) {\n    TryCatchBlock tcBlock=new TryCatchBlock();\n    catches.add(tcBlock);\n    int[] handlerAddrArr=handler.getAddresses();\n    for (int i=0; i < handlerAddrArr.length; i++) {\n      int addr=handlerAddrArr[i];\n      ClassInfo type=ClassInfo.fromDex(mth.dex(),handler.getTypeIndexes()[i]);\n      tcBlock.addHandler(mth,addr,type);\n      addrs.add(addr);\n      handlersCount++;\n    }\n    int addr=handler.getCatchAllAddress();\n    if (addr >= 0) {\n      tcBlock.addHandler(mth,addr,null);\n      addrs.add(addr);\n      handlersCount++;\n    }\n  }\n  if (handlersCount > 0 && handlersCount != addrs.size()) {\n    for (    TryCatchBlock ct1 : catches) {\n      for (      TryCatchBlock ct2 : catches) {\n        if (ct1 != ct2 && ct2.containsAllHandlers(ct1)) {\n          for (          ExceptionHandler h : ct1.getHandlers()) {\n            ct2.removeHandler(mth,h);\n            h.setTryBlock(ct1);\n          }\n        }\n      }\n    }\n  }\n  addrs.clear();\n  for (  TryCatchBlock ct : catches) {\n    for (    ExceptionHandler eh : ct.getHandlers()) {\n      int addr=eh.getHandleOffset();\n      ExcHandlerAttr ehAttr=new ExcHandlerAttr(ct,eh);\n      insnByOffset[addr].addAttr(ehAttr);\n    }\n  }\n  for (  Try aTry : tries) {\n    int catchNum=aTry.getCatchHandlerIndex();\n    TryCatchBlock catchBlock=catches.get(catchNum);\n    int offset=aTry.getStartAddress();\n    int end=offset + aTry.getInstructionCount() - 1;\n    InsnNode insn=insnByOffset[offset];\n    insn.add(AFlag.TRY_ENTER);\n    while (offset <= end && offset >= 0) {\n      insn=insnByOffset[offset];\n      catchBlock.addInsn(insn);\n      offset=InsnDecoder.getNextInsnOffset(insnByOffset,offset);\n    }\n    if (insnByOffset[end] != null) {\n      insnByOffset[end].add(AFlag.TRY_LEAVE);\n    }\n else {\n      insn.add(AFlag.TRY_LEAVE);\n    }\n  }\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 90,
-      "astHeight" : 12
+      "astNodeNumber" : 401,
+      "astHeight" : 15
     } ],
     "currentLineData" : {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
       "nodePosition" : {
-        "charLength" : 11,
-        "startLineNumber" : 46,
-        "startColumnNumber" : 3,
-        "endLineNumber" : 46,
-        "endColumnNumber" : 14
+        "charLength" : 50,
+        "startLineNumber" : 290,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 290,
+        "endColumnNumber" : 56
       },
-      "nodeContext" : "return str;\n",
-      "nodeType" : "ReturnStatement",
-      "astNodeNumber" : 2,
-      "astHeight" : 2
+      "nodeContext" : "handlersCount > 0 && handlersCount != addrs.size()",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
     },
-    "tokenLength" : 1,
-    "type" : "java.lang.String"
+    "tokenLength" : 4,
+    "type" : "boolean"
   } ],
   "positionList" : [ {
-    "charLength" : 3,
-    "startLineNumber" : 46,
-    "startColumnNumber" : 10,
-    "endLineNumber" : 46,
-    "endColumnNumber" : 13
+    "charLength" : 29,
+    "startLineNumber" : 290,
+    "startColumnNumber" : 27,
+    "endLineNumber" : 290,
+    "endColumnNumber" : 56
   } ],
   "layoutRelationDataList" : [ ]
 }

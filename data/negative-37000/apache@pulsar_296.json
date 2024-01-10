@@ -1,0 +1,221 @@
+{
+  "id" : 296,
+  "expression" : "readWriteLock",
+  "projectName" : "apache@pulsar",
+  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
+  "filePath" : "/pulsar-client/src/main/java/org/apache/pulsar/client/impl/UnAckedMessageTracker.java",
+  "occurrences" : 2,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "readWriteLock",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 13,
+      "startLineNumber" : 111,
+      "startColumnNumber" : 24,
+      "endLineNumber" : 111,
+      "endColumnNumber" : 37
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
+      "nodePosition" : {
+        "charLength" : 24,
+        "startLineNumber" : 111,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 111,
+        "endColumnNumber" : 48
+      },
+      "nodeContext" : "readWriteLock.readLock()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 40,
+        "startLineNumber" : 111,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 111,
+        "endColumnNumber" : 48
+      },
+      "nodeContext" : "this.readLock=readWriteLock.readLock()",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 41,
+        "startLineNumber" : 111,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 111,
+        "endColumnNumber" : 49
+      },
+      "nodeContext" : "this.readLock=readWriteLock.readLock();\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2227,
+        "startLineNumber" : 106,
+        "startColumnNumber" : 134,
+        "endLineNumber" : 151,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  Preconditions.checkArgument(tickDurationInMs > 0 && ackTimeoutMillis >= tickDurationInMs);\n  this.ackTimeoutMillis=ackTimeoutMillis;\n  this.tickDurationInMs=tickDurationInMs;\n  ReentrantReadWriteLock readWriteLock=new ReentrantReadWriteLock();\n  this.readLock=readWriteLock.readLock();\n  this.writeLock=readWriteLock.writeLock();\n  this.messageIdPartitionMap=new ConcurrentHashMap<>();\n  this.timePartitions=new ArrayDeque<>();\n  int blankPartitions=(int)Math.ceil((double)this.ackTimeoutMillis / this.tickDurationInMs);\n  for (int i=0; i < blankPartitions + 1; i++) {\n    timePartitions.add(new ConcurrentOpenHashSet<>(16,1));\n  }\n  timeout=client.timer().newTimeout(new TimerTask(){\n    @Override public void run(    Timeout t) throws Exception {\n      Set<MessageId> messageIds=TL_MESSAGE_IDS_SET.get();\n      messageIds.clear();\n      writeLock.lock();\n      try {\n        ConcurrentOpenHashSet<MessageId> headPartition=timePartitions.removeFirst();\n        if (!headPartition.isEmpty()) {\n          log.warn(\"[{}] {} messages have timed-out\",consumerBase,headPartition.size());\n          headPartition.forEach(messageId -> {\n            addChunkedMessageIdsAndRemoveFromSequnceMap(messageId,messageIds,consumerBase);\n            messageIds.add(messageId);\n            messageIdPartitionMap.remove(messageId);\n          }\n);\n        }\n        headPartition.clear();\n        timePartitions.addLast(headPartition);\n      }\n  finally {\n        writeLock.unlock();\n        if (messageIds.size() > 0) {\n          consumerBase.onAckTimeoutSend(messageIds);\n          consumerBase.redeliverUnacknowledgedMessages(messageIds);\n        }\n        timeout=client.timer().newTimeout(this,tickDurationInMs,TimeUnit.MILLISECONDS);\n      }\n    }\n  }\n,this.tickDurationInMs,TimeUnit.MILLISECONDS);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 254,
+      "astHeight" : 19
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 2357,
+        "startLineNumber" : 106,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 151,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "public UnAckedMessageTracker(PulsarClientImpl client,ConsumerBase<?> consumerBase,long ackTimeoutMillis,long tickDurationInMs){\n  Preconditions.checkArgument(tickDurationInMs > 0 && ackTimeoutMillis >= tickDurationInMs);\n  this.ackTimeoutMillis=ackTimeoutMillis;\n  this.tickDurationInMs=tickDurationInMs;\n  ReentrantReadWriteLock readWriteLock=new ReentrantReadWriteLock();\n  this.readLock=readWriteLock.readLock();\n  this.writeLock=readWriteLock.writeLock();\n  this.messageIdPartitionMap=new ConcurrentHashMap<>();\n  this.timePartitions=new ArrayDeque<>();\n  int blankPartitions=(int)Math.ceil((double)this.ackTimeoutMillis / this.tickDurationInMs);\n  for (int i=0; i < blankPartitions + 1; i++) {\n    timePartitions.add(new ConcurrentOpenHashSet<>(16,1));\n  }\n  timeout=client.timer().newTimeout(new TimerTask(){\n    @Override public void run(    Timeout t) throws Exception {\n      Set<MessageId> messageIds=TL_MESSAGE_IDS_SET.get();\n      messageIds.clear();\n      writeLock.lock();\n      try {\n        ConcurrentOpenHashSet<MessageId> headPartition=timePartitions.removeFirst();\n        if (!headPartition.isEmpty()) {\n          log.warn(\"[{}] {} messages have timed-out\",consumerBase,headPartition.size());\n          headPartition.forEach(messageId -> {\n            addChunkedMessageIdsAndRemoveFromSequnceMap(messageId,messageIds,consumerBase);\n            messageIds.add(messageId);\n            messageIdPartitionMap.remove(messageId);\n          }\n);\n        }\n        headPartition.clear();\n        timePartitions.addLast(headPartition);\n      }\n  finally {\n        writeLock.unlock();\n        if (messageIds.size() > 0) {\n          consumerBase.onAckTimeoutSend(messageIds);\n          consumerBase.redeliverUnacknowledgedMessages(messageIds);\n        }\n        timeout=client.timer().newTimeout(this,tickDurationInMs,TimeUnit.MILLISECONDS);\n      }\n    }\n  }\n,this.tickDurationInMs,TimeUnit.MILLISECONDS);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 273,
+      "astHeight" : 20
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 41,
+        "startLineNumber" : 111,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 111,
+        "endColumnNumber" : 49
+      },
+      "nodeContext" : "this.readLock=readWriteLock.readLock();\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "java.util.concurrent.locks.ReentrantReadWriteLock"
+  }, {
+    "nodeContext" : "readWriteLock",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 13,
+      "startLineNumber" : 112,
+      "startColumnNumber" : 25,
+      "endLineNumber" : 112,
+      "endColumnNumber" : 38
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
+      "nodePosition" : {
+        "charLength" : 25,
+        "startLineNumber" : 112,
+        "startColumnNumber" : 25,
+        "endLineNumber" : 112,
+        "endColumnNumber" : 50
+      },
+      "nodeContext" : "readWriteLock.writeLock()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 42,
+        "startLineNumber" : 112,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 112,
+        "endColumnNumber" : 50
+      },
+      "nodeContext" : "this.writeLock=readWriteLock.writeLock()",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 43,
+        "startLineNumber" : 112,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 112,
+        "endColumnNumber" : 51
+      },
+      "nodeContext" : "this.writeLock=readWriteLock.writeLock();\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2227,
+        "startLineNumber" : 106,
+        "startColumnNumber" : 134,
+        "endLineNumber" : 151,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  Preconditions.checkArgument(tickDurationInMs > 0 && ackTimeoutMillis >= tickDurationInMs);\n  this.ackTimeoutMillis=ackTimeoutMillis;\n  this.tickDurationInMs=tickDurationInMs;\n  ReentrantReadWriteLock readWriteLock=new ReentrantReadWriteLock();\n  this.readLock=readWriteLock.readLock();\n  this.writeLock=readWriteLock.writeLock();\n  this.messageIdPartitionMap=new ConcurrentHashMap<>();\n  this.timePartitions=new ArrayDeque<>();\n  int blankPartitions=(int)Math.ceil((double)this.ackTimeoutMillis / this.tickDurationInMs);\n  for (int i=0; i < blankPartitions + 1; i++) {\n    timePartitions.add(new ConcurrentOpenHashSet<>(16,1));\n  }\n  timeout=client.timer().newTimeout(new TimerTask(){\n    @Override public void run(    Timeout t) throws Exception {\n      Set<MessageId> messageIds=TL_MESSAGE_IDS_SET.get();\n      messageIds.clear();\n      writeLock.lock();\n      try {\n        ConcurrentOpenHashSet<MessageId> headPartition=timePartitions.removeFirst();\n        if (!headPartition.isEmpty()) {\n          log.warn(\"[{}] {} messages have timed-out\",consumerBase,headPartition.size());\n          headPartition.forEach(messageId -> {\n            addChunkedMessageIdsAndRemoveFromSequnceMap(messageId,messageIds,consumerBase);\n            messageIds.add(messageId);\n            messageIdPartitionMap.remove(messageId);\n          }\n);\n        }\n        headPartition.clear();\n        timePartitions.addLast(headPartition);\n      }\n  finally {\n        writeLock.unlock();\n        if (messageIds.size() > 0) {\n          consumerBase.onAckTimeoutSend(messageIds);\n          consumerBase.redeliverUnacknowledgedMessages(messageIds);\n        }\n        timeout=client.timer().newTimeout(this,tickDurationInMs,TimeUnit.MILLISECONDS);\n      }\n    }\n  }\n,this.tickDurationInMs,TimeUnit.MILLISECONDS);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 254,
+      "astHeight" : 19
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 2357,
+        "startLineNumber" : 106,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 151,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "public UnAckedMessageTracker(PulsarClientImpl client,ConsumerBase<?> consumerBase,long ackTimeoutMillis,long tickDurationInMs){\n  Preconditions.checkArgument(tickDurationInMs > 0 && ackTimeoutMillis >= tickDurationInMs);\n  this.ackTimeoutMillis=ackTimeoutMillis;\n  this.tickDurationInMs=tickDurationInMs;\n  ReentrantReadWriteLock readWriteLock=new ReentrantReadWriteLock();\n  this.readLock=readWriteLock.readLock();\n  this.writeLock=readWriteLock.writeLock();\n  this.messageIdPartitionMap=new ConcurrentHashMap<>();\n  this.timePartitions=new ArrayDeque<>();\n  int blankPartitions=(int)Math.ceil((double)this.ackTimeoutMillis / this.tickDurationInMs);\n  for (int i=0; i < blankPartitions + 1; i++) {\n    timePartitions.add(new ConcurrentOpenHashSet<>(16,1));\n  }\n  timeout=client.timer().newTimeout(new TimerTask(){\n    @Override public void run(    Timeout t) throws Exception {\n      Set<MessageId> messageIds=TL_MESSAGE_IDS_SET.get();\n      messageIds.clear();\n      writeLock.lock();\n      try {\n        ConcurrentOpenHashSet<MessageId> headPartition=timePartitions.removeFirst();\n        if (!headPartition.isEmpty()) {\n          log.warn(\"[{}] {} messages have timed-out\",consumerBase,headPartition.size());\n          headPartition.forEach(messageId -> {\n            addChunkedMessageIdsAndRemoveFromSequnceMap(messageId,messageIds,consumerBase);\n            messageIds.add(messageId);\n            messageIdPartitionMap.remove(messageId);\n          }\n);\n        }\n        headPartition.clear();\n        timePartitions.addLast(headPartition);\n      }\n  finally {\n        writeLock.unlock();\n        if (messageIds.size() > 0) {\n          consumerBase.onAckTimeoutSend(messageIds);\n          consumerBase.redeliverUnacknowledgedMessages(messageIds);\n        }\n        timeout=client.timer().newTimeout(this,tickDurationInMs,TimeUnit.MILLISECONDS);\n      }\n    }\n  }\n,this.tickDurationInMs,TimeUnit.MILLISECONDS);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 273,
+      "astHeight" : 20
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 43,
+        "startLineNumber" : 112,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 112,
+        "endColumnNumber" : 51
+      },
+      "nodeContext" : "this.writeLock=readWriteLock.writeLock();\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "java.util.concurrent.locks.ReentrantReadWriteLock"
+  } ],
+  "positionList" : [ {
+    "charLength" : 13,
+    "startLineNumber" : 111,
+    "startColumnNumber" : 24,
+    "endLineNumber" : 111,
+    "endColumnNumber" : 37
+  }, {
+    "charLength" : 13,
+    "startLineNumber" : 112,
+    "startColumnNumber" : 25,
+    "endLineNumber" : 112,
+    "endColumnNumber" : 38
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 3
+  } ]
+}

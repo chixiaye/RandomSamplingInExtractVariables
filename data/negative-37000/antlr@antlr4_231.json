@@ -1,0 +1,100 @@
+{
+  "id" : 231,
+  "expression" : "PredictionMode.SLL",
+  "projectName" : "antlr@antlr4",
+  "commitID" : "f2b93e550cd912be3973743d09206db98f4092c9",
+  "filePath" : "/runtime/Java/src/org/antlr/v4/runtime/atn/PredictionMode.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "PredictionMode.SLL",
+    "nodeType" : "QualifiedName",
+    "nodePosition" : {
+      "charLength" : 18,
+      "startLineNumber" : 223,
+      "startColumnNumber" : 15,
+      "endLineNumber" : 223,
+      "endColumnNumber" : 33
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 26,
+        "startLineNumber" : 223,
+        "startColumnNumber" : 7,
+        "endLineNumber" : 223,
+        "endColumnNumber" : 33
+      },
+      "nodeContext" : "mode == PredictionMode.SLL",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 557,
+        "startLineNumber" : 223,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 237,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "if (mode == PredictionMode.SLL) {\n  if (configs.hasSemanticContext) {\n    ATNConfigSet dup=new ATNConfigSet();\n    for (    ATNConfig c : configs) {\n      c=new ATNConfig(c,SemanticContext.NONE);\n      dup.add(c);\n    }\n    configs=dup;\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 46,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 1192,
+        "startLineNumber" : 212,
+        "startColumnNumber" : 102,
+        "endLineNumber" : 245,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  if (allConfigsInRuleStopStates(configs)) {\n    return true;\n  }\n  if (mode == PredictionMode.SLL) {\n    if (configs.hasSemanticContext) {\n      ATNConfigSet dup=new ATNConfigSet();\n      for (      ATNConfig c : configs) {\n        c=new ATNConfig(c,SemanticContext.NONE);\n        dup.add(c);\n      }\n      configs=dup;\n    }\n  }\n  Collection<BitSet> altsets=getConflictingAltSubsets(configs);\n  boolean heuristic=hasConflictingAltSet(altsets) && !hasStateAssociatedWithOneAlt(configs);\n  return heuristic;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 79,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.EnumDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 5791,
+        "startLineNumber" : 120,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 245,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "/** \n * Computes the SLL prediction termination condition. <p> This method computes the SLL prediction termination condition for both of the following cases.</p> <ul> <li>The usual SLL+LL fallback upon SLL conflict</li> <li>Pure SLL without LL fallback</li> </ul> <p><strong>COMBINED SLL+LL PARSING</strong></p> <p>When LL-fallback is enabled upon SLL conflict, correct predictions are ensured regardless of how the termination condition is computed by this method. Due to the substantially higher cost of LL prediction, the prediction should only fall back to LL when the additional lookahead cannot lead to a unique SLL prediction.</p> <p>Assuming combined SLL+LL parsing, an SLL configuration set with only conflicting subsets should fall back to full LL, even if the configuration sets don't resolve to the same alternative (e.g. {@code} {1,2}} and {@code} {3,4}}. If there is at least one non-conflictingconfiguration, SLL could continue with the hopes that more lookahead will resolve via one of those non-conflicting configurations.</p> <p>Here's the prediction termination rule them: SLL (for SLL+LL parsing) stops when it sees only conflicting configuration subsets. In contrast, full LL keeps going when there is uncertainty.</p> <p><strong>HEURISTIC</strong></p> <p>As a heuristic, we stop prediction when we see any conflicting subset unless we see a state that only has one alternative associated with it. The single-alt-state thing lets prediction continue upon rules like (otherwise, it would admit defeat too soon):</p> <p> {@code [12|1|[], 6|2|[], 12|2|[]]. s : (ID | ID ID?) ';' ;}</p> <p>When the ATN simulation reaches the state before  {@code ';'}, it has a DFA state that looks like:  {@code [12|1|[], 6|2|[], 12|2|[]]}. Naturally {@code 12|1|[]} and {@code 12|2|[]} conflict, but we cannot stopprocessing this node because alternative to has another way to continue, via  {@code [6|2|[]]}.</p> <p>It also let's us continue for this rule:</p> <p> {@code [1|1|[], 1|2|[], 8|3|[]] a : A | A | A B ;}</p> <p>After matching input A, we reach the stop state for rule A, state 1. State 8 is the state right before B. Clearly alternatives 1 and 2 conflict and no amount of further lookahead will separate the two. However, alternative 3 will be able to continue and so we do not stop working on this state. In the previous example, we're concerned with states associated with the conflicting alternatives. Here alt 3 is not associated with the conflicting configs, but since we can continue looking for input reasonably, don't declare the state done.</p> <p><strong>PURE SLL PARSING</strong></p> <p>To handle pure SLL parsing, all we have to do is make sure that we combine stack contexts for configurations that differ only by semantic predicate. From there, we can do the usual SLL termination heuristic.</p> <p><strong>PREDICATES IN SLL+LL PARSING</strong></p> <p>SLL decisions don't evaluate predicates until after they reach DFA stop states because they need to create the DFA cache that works in all semantic situations. In contrast, full LL evaluates predicates collected during start state computation so it can ignore predicates thereafter. This means that SLL termination detection can totally ignore semantic predicates.</p> <p>Implementation-wise,  {@link ATNConfigSet} combines stack contexts but notsemantic predicate contexts so we might see two configurations like the following.</p> <p> {@code} (s, 1, x, {}), (s, 1, x', {p})}</p><p>Before testing these configurations against others, we have to merge {@code x} and {@code x'} (without modifying the existing configurations).For example, we test  {@code (x+x')==x''} when looking for conflicts inthe following configurations.</p> <p> {@code} (s, 1, x, {}), (s, 1, x', {p}), (s, 2, x'', {})}</p><p>If the configuration set has predicates (as indicated by {@link ATNConfigSet#hasSemanticContext}), this algorithm makes a copy of the configurations to strip out all of the predicates so that a standard {@link ATNConfigSet} will merge everything ignoring predicates.</p>\n */\npublic static boolean hasSLLConflictTerminatingPrediction(PredictionMode mode,ATNConfigSet configs){\n  if (allConfigsInRuleStopStates(configs)) {\n    return true;\n  }\n  if (mode == PredictionMode.SLL) {\n    if (configs.hasSemanticContext) {\n      ATNConfigSet dup=new ATNConfigSet();\n      for (      ATNConfig c : configs) {\n        c=new ATNConfig(c,SemanticContext.NONE);\n        dup.add(c);\n      }\n      configs=dup;\n    }\n  }\n  Collection<BitSet> altsets=getConflictingAltSubsets(configs);\n  boolean heuristic=hasConflictingAltSet(altsets) && !hasStateAssociatedWithOneAlt(configs);\n  return heuristic;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 93,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 26,
+        "startLineNumber" : 223,
+        "startColumnNumber" : 7,
+        "endLineNumber" : 223,
+        "endColumnNumber" : 33
+      },
+      "nodeContext" : "mode == PredictionMode.SLL",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    },
+    "tokenLength" : 2,
+    "type" : "org.antlr.v4.runtime.atn.PredictionMode"
+  } ],
+  "positionList" : [ {
+    "charLength" : 18,
+    "startLineNumber" : 223,
+    "startColumnNumber" : 15,
+    "endLineNumber" : 223,
+    "endColumnNumber" : 33
+  } ],
+  "layoutRelationDataList" : [ ]
+}

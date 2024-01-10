@@ -1,0 +1,2898 @@
+{
+  "id" : 1360,
+  "expression" : "processorEntity",
+  "projectName" : "nifi",
+  "commitID" : "2a92747046b39d7b3f7604258c1d3bb81a9447bd",
+  "filePath" : "nifi-nar-bundles/nifi-framework-bundle/nifi-framework/nifi-web/nifi-web-api/src/main/java/org/apache/nifi/web/api/ProcessGroupResource.java",
+  "occurrences" : 16,
+  "isArithmeticExpression" : 1,
+  "isGetTypeMethod" : 1,
+  "expressionList" : [ {
+    "nodeContext" : "processorEntity",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 580,
+      "startColumnNumber" : 12,
+      "endLineNumber" : 580,
+      "endColumnNumber" : 27
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 23,
+        "startLineNumber" : 580,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 580,
+        "endColumnNumber" : 35
+      },
+      "nodeContext" : "processorEntity == null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 65,
+        "startLineNumber" : 580,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 580,
+        "endColumnNumber" : 77
+      },
+      "nodeContext" : "processorEntity == null || processorEntity.getComponent() == null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 170,
+        "startLineNumber" : 580,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 582,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (processorEntity == null || processorEntity.getComponent() == null) {\n  throw new IllegalArgumentException(\"Processor details must be specified.\");\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 16,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2639,
+        "startLineNumber" : 578,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 242,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4427,
+        "startLineNumber" : 540,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Creates a new processor.\n * @param httpServletRequest request\n * @param groupId            The group id\n * @param processorEntity    A processorEntity.\n * @return A processorEntity.\n */\n@POST @Consumes(MediaType.APPLICATION_JSON) @Produces(MediaType.APPLICATION_JSON) @Path(\"{id}/processors\") @ApiOperation(value=\"Creates a new processor\",response=ProcessorEntity.class,authorizations={@Authorization(value=\"Write - /process-groups/{uuid}\",type=\"\")}) @ApiResponses(value={@ApiResponse(code=400,message=\"NiFi was unable to complete the request because it was invalid. The request should not be retried without modification.\"),@ApiResponse(code=401,message=\"Client could not be authenticated.\"),@ApiResponse(code=403,message=\"Client is not authorized to make this request.\"),@ApiResponse(code=404,message=\"The specified resource could not be found.\"),@ApiResponse(code=409,message=\"The request was valid but NiFi was not in the appropriate state to process it. Retrying the same request later may be successful.\")}) public Response createProcessor(@Context final HttpServletRequest httpServletRequest,@ApiParam(value=\"The process group id.\",required=true) @PathParam(\"id\") final String groupId,@ApiParam(value=\"The processor configuration details.\",required=true) final ProcessorEntity processorEntity){\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 365,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 65,
+        "startLineNumber" : 580,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 580,
+        "endColumnNumber" : 77
+      },
+      "nodeContext" : "processorEntity == null || processorEntity.getComponent() == null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.nifi.web.api.entity.ProcessorEntity"
+  }, {
+    "nodeContext" : "processorEntity",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 580,
+      "startColumnNumber" : 39,
+      "endLineNumber" : 580,
+      "endColumnNumber" : 54
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 580,
+        "startColumnNumber" : 39,
+        "endLineNumber" : 580,
+        "endColumnNumber" : 69
+      },
+      "nodeContext" : "processorEntity.getComponent()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,rightOperand]",
+      "nodePosition" : {
+        "charLength" : 38,
+        "startLineNumber" : 580,
+        "startColumnNumber" : 39,
+        "endLineNumber" : 580,
+        "endColumnNumber" : 77
+      },
+      "nodeContext" : "processorEntity.getComponent() == null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 65,
+        "startLineNumber" : 580,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 580,
+        "endColumnNumber" : 77
+      },
+      "nodeContext" : "processorEntity == null || processorEntity.getComponent() == null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 170,
+        "startLineNumber" : 580,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 582,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (processorEntity == null || processorEntity.getComponent() == null) {\n  throw new IllegalArgumentException(\"Processor details must be specified.\");\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 16,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2639,
+        "startLineNumber" : 578,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 242,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4427,
+        "startLineNumber" : 540,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Creates a new processor.\n * @param httpServletRequest request\n * @param groupId            The group id\n * @param processorEntity    A processorEntity.\n * @return A processorEntity.\n */\n@POST @Consumes(MediaType.APPLICATION_JSON) @Produces(MediaType.APPLICATION_JSON) @Path(\"{id}/processors\") @ApiOperation(value=\"Creates a new processor\",response=ProcessorEntity.class,authorizations={@Authorization(value=\"Write - /process-groups/{uuid}\",type=\"\")}) @ApiResponses(value={@ApiResponse(code=400,message=\"NiFi was unable to complete the request because it was invalid. The request should not be retried without modification.\"),@ApiResponse(code=401,message=\"Client could not be authenticated.\"),@ApiResponse(code=403,message=\"Client is not authorized to make this request.\"),@ApiResponse(code=404,message=\"The specified resource could not be found.\"),@ApiResponse(code=409,message=\"The request was valid but NiFi was not in the appropriate state to process it. Retrying the same request later may be successful.\")}) public Response createProcessor(@Context final HttpServletRequest httpServletRequest,@ApiParam(value=\"The process group id.\",required=true) @PathParam(\"id\") final String groupId,@ApiParam(value=\"The processor configuration details.\",required=true) final ProcessorEntity processorEntity){\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 365,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 65,
+        "startLineNumber" : 580,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 580,
+        "endColumnNumber" : 77
+      },
+      "nodeContext" : "processorEntity == null || processorEntity.getComponent() == null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.nifi.web.api.entity.ProcessorEntity"
+  }, {
+    "nodeContext" : "processorEntity",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 584,
+      "startColumnNumber" : 12,
+      "endLineNumber" : 584,
+      "endColumnNumber" : 27
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 29,
+        "startLineNumber" : 584,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 584,
+        "endColumnNumber" : 41
+      },
+      "nodeContext" : "processorEntity.getRevision()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 37,
+        "startLineNumber" : 584,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 584,
+        "endColumnNumber" : 49
+      },
+      "nodeContext" : "processorEntity.getRevision() == null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 144,
+        "startLineNumber" : 584,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 584,
+        "endColumnNumber" : 156
+      },
+      "nodeContext" : "processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 22,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 277,
+        "startLineNumber" : 584,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 586,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n  throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 29,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2639,
+        "startLineNumber" : 578,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 242,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4427,
+        "startLineNumber" : 540,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Creates a new processor.\n * @param httpServletRequest request\n * @param groupId            The group id\n * @param processorEntity    A processorEntity.\n * @return A processorEntity.\n */\n@POST @Consumes(MediaType.APPLICATION_JSON) @Produces(MediaType.APPLICATION_JSON) @Path(\"{id}/processors\") @ApiOperation(value=\"Creates a new processor\",response=ProcessorEntity.class,authorizations={@Authorization(value=\"Write - /process-groups/{uuid}\",type=\"\")}) @ApiResponses(value={@ApiResponse(code=400,message=\"NiFi was unable to complete the request because it was invalid. The request should not be retried without modification.\"),@ApiResponse(code=401,message=\"Client could not be authenticated.\"),@ApiResponse(code=403,message=\"Client is not authorized to make this request.\"),@ApiResponse(code=404,message=\"The specified resource could not be found.\"),@ApiResponse(code=409,message=\"The request was valid but NiFi was not in the appropriate state to process it. Retrying the same request later may be successful.\")}) public Response createProcessor(@Context final HttpServletRequest httpServletRequest,@ApiParam(value=\"The process group id.\",required=true) @PathParam(\"id\") final String groupId,@ApiParam(value=\"The processor configuration details.\",required=true) final ProcessorEntity processorEntity){\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 365,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 144,
+        "startLineNumber" : 584,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 584,
+        "endColumnNumber" : 156
+      },
+      "nodeContext" : "processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 22,
+      "astHeight" : 7
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.nifi.web.api.entity.ProcessorEntity"
+  }, {
+    "nodeContext" : "processorEntity",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 584,
+      "startColumnNumber" : 54,
+      "endLineNumber" : 584,
+      "endColumnNumber" : 69
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 29,
+        "startLineNumber" : 584,
+        "startColumnNumber" : 54,
+        "endLineNumber" : 584,
+        "endColumnNumber" : 83
+      },
+      "nodeContext" : "processorEntity.getRevision()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 42,
+        "startLineNumber" : 584,
+        "startColumnNumber" : 54,
+        "endLineNumber" : 584,
+        "endColumnNumber" : 96
+      },
+      "nodeContext" : "processorEntity.getRevision().getVersion()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 50,
+        "startLineNumber" : 584,
+        "startColumnNumber" : 54,
+        "endLineNumber" : 584,
+        "endColumnNumber" : 104
+      },
+      "nodeContext" : "processorEntity.getRevision().getVersion() == null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ParenthesizedExpression,expression]",
+      "nodePosition" : {
+        "charLength" : 101,
+        "startLineNumber" : 584,
+        "startColumnNumber" : 54,
+        "endLineNumber" : 584,
+        "endColumnNumber" : 155
+      },
+      "nodeContext" : "processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,rightOperand]",
+      "nodePosition" : {
+        "charLength" : 103,
+        "startLineNumber" : 584,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 584,
+        "endColumnNumber" : 156
+      },
+      "nodeContext" : "(processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)",
+      "nodeType" : "ParenthesizedExpression",
+      "astNodeNumber" : 16,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 144,
+        "startLineNumber" : 584,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 584,
+        "endColumnNumber" : 156
+      },
+      "nodeContext" : "processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 22,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 277,
+        "startLineNumber" : 584,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 586,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n  throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 29,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2639,
+        "startLineNumber" : 578,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 242,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4427,
+        "startLineNumber" : 540,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Creates a new processor.\n * @param httpServletRequest request\n * @param groupId            The group id\n * @param processorEntity    A processorEntity.\n * @return A processorEntity.\n */\n@POST @Consumes(MediaType.APPLICATION_JSON) @Produces(MediaType.APPLICATION_JSON) @Path(\"{id}/processors\") @ApiOperation(value=\"Creates a new processor\",response=ProcessorEntity.class,authorizations={@Authorization(value=\"Write - /process-groups/{uuid}\",type=\"\")}) @ApiResponses(value={@ApiResponse(code=400,message=\"NiFi was unable to complete the request because it was invalid. The request should not be retried without modification.\"),@ApiResponse(code=401,message=\"Client could not be authenticated.\"),@ApiResponse(code=403,message=\"Client is not authorized to make this request.\"),@ApiResponse(code=404,message=\"The specified resource could not be found.\"),@ApiResponse(code=409,message=\"The request was valid but NiFi was not in the appropriate state to process it. Retrying the same request later may be successful.\")}) public Response createProcessor(@Context final HttpServletRequest httpServletRequest,@ApiParam(value=\"The process group id.\",required=true) @PathParam(\"id\") final String groupId,@ApiParam(value=\"The processor configuration details.\",required=true) final ProcessorEntity processorEntity){\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 365,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 144,
+        "startLineNumber" : 584,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 584,
+        "endColumnNumber" : 156
+      },
+      "nodeContext" : "processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 22,
+      "astHeight" : 7
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.nifi.web.api.entity.ProcessorEntity"
+  }, {
+    "nodeContext" : "processorEntity",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 584,
+      "startColumnNumber" : 108,
+      "endLineNumber" : 584,
+      "endColumnNumber" : 123
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 29,
+        "startLineNumber" : 584,
+        "startColumnNumber" : 108,
+        "endLineNumber" : 584,
+        "endColumnNumber" : 137
+      },
+      "nodeContext" : "processorEntity.getRevision()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 42,
+        "startLineNumber" : 584,
+        "startColumnNumber" : 108,
+        "endLineNumber" : 584,
+        "endColumnNumber" : 150
+      },
+      "nodeContext" : "processorEntity.getRevision().getVersion()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,rightOperand]",
+      "nodePosition" : {
+        "charLength" : 47,
+        "startLineNumber" : 584,
+        "startColumnNumber" : 108,
+        "endLineNumber" : 584,
+        "endColumnNumber" : 155
+      },
+      "nodeContext" : "processorEntity.getRevision().getVersion() != 0",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ParenthesizedExpression,expression]",
+      "nodePosition" : {
+        "charLength" : 101,
+        "startLineNumber" : 584,
+        "startColumnNumber" : 54,
+        "endLineNumber" : 584,
+        "endColumnNumber" : 155
+      },
+      "nodeContext" : "processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,rightOperand]",
+      "nodePosition" : {
+        "charLength" : 103,
+        "startLineNumber" : 584,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 584,
+        "endColumnNumber" : 156
+      },
+      "nodeContext" : "(processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)",
+      "nodeType" : "ParenthesizedExpression",
+      "astNodeNumber" : 16,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 144,
+        "startLineNumber" : 584,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 584,
+        "endColumnNumber" : 156
+      },
+      "nodeContext" : "processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 22,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 277,
+        "startLineNumber" : 584,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 586,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n  throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 29,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2639,
+        "startLineNumber" : 578,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 242,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4427,
+        "startLineNumber" : 540,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Creates a new processor.\n * @param httpServletRequest request\n * @param groupId            The group id\n * @param processorEntity    A processorEntity.\n * @return A processorEntity.\n */\n@POST @Consumes(MediaType.APPLICATION_JSON) @Produces(MediaType.APPLICATION_JSON) @Path(\"{id}/processors\") @ApiOperation(value=\"Creates a new processor\",response=ProcessorEntity.class,authorizations={@Authorization(value=\"Write - /process-groups/{uuid}\",type=\"\")}) @ApiResponses(value={@ApiResponse(code=400,message=\"NiFi was unable to complete the request because it was invalid. The request should not be retried without modification.\"),@ApiResponse(code=401,message=\"Client could not be authenticated.\"),@ApiResponse(code=403,message=\"Client is not authorized to make this request.\"),@ApiResponse(code=404,message=\"The specified resource could not be found.\"),@ApiResponse(code=409,message=\"The request was valid but NiFi was not in the appropriate state to process it. Retrying the same request later may be successful.\")}) public Response createProcessor(@Context final HttpServletRequest httpServletRequest,@ApiParam(value=\"The process group id.\",required=true) @PathParam(\"id\") final String groupId,@ApiParam(value=\"The processor configuration details.\",required=true) final ProcessorEntity processorEntity){\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 365,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 144,
+        "startLineNumber" : 584,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 584,
+        "endColumnNumber" : 156
+      },
+      "nodeContext" : "processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 22,
+      "astHeight" : 7
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.nifi.web.api.entity.ProcessorEntity"
+  }, {
+    "nodeContext" : "processorEntity",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 588,
+      "startColumnNumber" : 12,
+      "endLineNumber" : 588,
+      "endColumnNumber" : 27
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 588,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 588,
+        "endColumnNumber" : 42
+      },
+      "nodeContext" : "processorEntity.getComponent()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 38,
+        "startLineNumber" : 588,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 588,
+        "endColumnNumber" : 50
+      },
+      "nodeContext" : "processorEntity.getComponent().getId()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 46,
+        "startLineNumber" : 588,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 588,
+        "endColumnNumber" : 58
+      },
+      "nodeContext" : "processorEntity.getComponent().getId() != null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 148,
+        "startLineNumber" : 588,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 590,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (processorEntity.getComponent().getId() != null) {\n  throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 14,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2639,
+        "startLineNumber" : 578,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 242,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4427,
+        "startLineNumber" : 540,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Creates a new processor.\n * @param httpServletRequest request\n * @param groupId            The group id\n * @param processorEntity    A processorEntity.\n * @return A processorEntity.\n */\n@POST @Consumes(MediaType.APPLICATION_JSON) @Produces(MediaType.APPLICATION_JSON) @Path(\"{id}/processors\") @ApiOperation(value=\"Creates a new processor\",response=ProcessorEntity.class,authorizations={@Authorization(value=\"Write - /process-groups/{uuid}\",type=\"\")}) @ApiResponses(value={@ApiResponse(code=400,message=\"NiFi was unable to complete the request because it was invalid. The request should not be retried without modification.\"),@ApiResponse(code=401,message=\"Client could not be authenticated.\"),@ApiResponse(code=403,message=\"Client is not authorized to make this request.\"),@ApiResponse(code=404,message=\"The specified resource could not be found.\"),@ApiResponse(code=409,message=\"The request was valid but NiFi was not in the appropriate state to process it. Retrying the same request later may be successful.\")}) public Response createProcessor(@Context final HttpServletRequest httpServletRequest,@ApiParam(value=\"The process group id.\",required=true) @PathParam(\"id\") final String groupId,@ApiParam(value=\"The processor configuration details.\",required=true) final ProcessorEntity processorEntity){\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 365,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 46,
+        "startLineNumber" : 588,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 588,
+        "endColumnNumber" : 58
+      },
+      "nodeContext" : "processorEntity.getComponent().getId() != null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.nifi.web.api.entity.ProcessorEntity"
+  }, {
+    "nodeContext" : "processorEntity",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 592,
+      "startColumnNumber" : 32,
+      "endLineNumber" : 592,
+      "endColumnNumber" : 47
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 592,
+        "startColumnNumber" : 32,
+        "endLineNumber" : 592,
+        "endColumnNumber" : 62
+      },
+      "nodeContext" : "processorEntity.getComponent()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 40,
+        "startLineNumber" : 592,
+        "startColumnNumber" : 32,
+        "endLineNumber" : 592,
+        "endColumnNumber" : 72
+      },
+      "nodeContext" : "processorEntity.getComponent().getType()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 61,
+        "startLineNumber" : 592,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 592,
+        "endColumnNumber" : 73
+      },
+      "nodeContext" : "StringUtils.isBlank(processorEntity.getComponent().getType())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 180,
+        "startLineNumber" : 592,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 594,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n  throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2639,
+        "startLineNumber" : 578,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 242,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4427,
+        "startLineNumber" : 540,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Creates a new processor.\n * @param httpServletRequest request\n * @param groupId            The group id\n * @param processorEntity    A processorEntity.\n * @return A processorEntity.\n */\n@POST @Consumes(MediaType.APPLICATION_JSON) @Produces(MediaType.APPLICATION_JSON) @Path(\"{id}/processors\") @ApiOperation(value=\"Creates a new processor\",response=ProcessorEntity.class,authorizations={@Authorization(value=\"Write - /process-groups/{uuid}\",type=\"\")}) @ApiResponses(value={@ApiResponse(code=400,message=\"NiFi was unable to complete the request because it was invalid. The request should not be retried without modification.\"),@ApiResponse(code=401,message=\"Client could not be authenticated.\"),@ApiResponse(code=403,message=\"Client is not authorized to make this request.\"),@ApiResponse(code=404,message=\"The specified resource could not be found.\"),@ApiResponse(code=409,message=\"The request was valid but NiFi was not in the appropriate state to process it. Retrying the same request later may be successful.\")}) public Response createProcessor(@Context final HttpServletRequest httpServletRequest,@ApiParam(value=\"The process group id.\",required=true) @PathParam(\"id\") final String groupId,@ApiParam(value=\"The processor configuration details.\",required=true) final ProcessorEntity processorEntity){\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 365,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 61,
+        "startLineNumber" : 592,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 592,
+        "endColumnNumber" : 73
+      },
+      "nodeContext" : "StringUtils.isBlank(processorEntity.getComponent().getType())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.nifi.web.api.entity.ProcessorEntity"
+  }, {
+    "nodeContext" : "processorEntity",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 596,
+      "startColumnNumber" : 12,
+      "endLineNumber" : 596,
+      "endColumnNumber" : 27
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 596,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 596,
+        "endColumnNumber" : 42
+      },
+      "nodeContext" : "processorEntity.getComponent()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 49,
+        "startLineNumber" : 596,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 596,
+        "endColumnNumber" : 61
+      },
+      "nodeContext" : "processorEntity.getComponent().getParentGroupId()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 57,
+        "startLineNumber" : 596,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 596,
+        "endColumnNumber" : 69
+      },
+      "nodeContext" : "processorEntity.getComponent().getParentGroupId() != null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 127,
+        "startLineNumber" : 596,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 596,
+        "endColumnNumber" : 139
+      },
+      "nodeContext" : "processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 17,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 379,
+        "startLineNumber" : 596,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 599,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n  throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 33,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2639,
+        "startLineNumber" : 578,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 242,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4427,
+        "startLineNumber" : 540,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Creates a new processor.\n * @param httpServletRequest request\n * @param groupId            The group id\n * @param processorEntity    A processorEntity.\n * @return A processorEntity.\n */\n@POST @Consumes(MediaType.APPLICATION_JSON) @Produces(MediaType.APPLICATION_JSON) @Path(\"{id}/processors\") @ApiOperation(value=\"Creates a new processor\",response=ProcessorEntity.class,authorizations={@Authorization(value=\"Write - /process-groups/{uuid}\",type=\"\")}) @ApiResponses(value={@ApiResponse(code=400,message=\"NiFi was unable to complete the request because it was invalid. The request should not be retried without modification.\"),@ApiResponse(code=401,message=\"Client could not be authenticated.\"),@ApiResponse(code=403,message=\"Client is not authorized to make this request.\"),@ApiResponse(code=404,message=\"The specified resource could not be found.\"),@ApiResponse(code=409,message=\"The request was valid but NiFi was not in the appropriate state to process it. Retrying the same request later may be successful.\")}) public Response createProcessor(@Context final HttpServletRequest httpServletRequest,@ApiParam(value=\"The process group id.\",required=true) @PathParam(\"id\") final String groupId,@ApiParam(value=\"The processor configuration details.\",required=true) final ProcessorEntity processorEntity){\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 365,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 127,
+        "startLineNumber" : 596,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 596,
+        "endColumnNumber" : 139
+      },
+      "nodeContext" : "processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 17,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.nifi.web.api.entity.ProcessorEntity"
+  }, {
+    "nodeContext" : "processorEntity",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 596,
+      "startColumnNumber" : 89,
+      "endLineNumber" : 596,
+      "endColumnNumber" : 104
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 596,
+        "startColumnNumber" : 89,
+        "endLineNumber" : 596,
+        "endColumnNumber" : 119
+      },
+      "nodeContext" : "processorEntity.getComponent()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 49,
+        "startLineNumber" : 596,
+        "startColumnNumber" : 89,
+        "endLineNumber" : 596,
+        "endColumnNumber" : 138
+      },
+      "nodeContext" : "processorEntity.getComponent().getParentGroupId()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.PrefixExpression,operand]",
+      "nodePosition" : {
+        "charLength" : 65,
+        "startLineNumber" : 596,
+        "startColumnNumber" : 74,
+        "endLineNumber" : 596,
+        "endColumnNumber" : 139
+      },
+      "nodeContext" : "groupId.equals(processorEntity.getComponent().getParentGroupId())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,rightOperand]",
+      "nodePosition" : {
+        "charLength" : 66,
+        "startLineNumber" : 596,
+        "startColumnNumber" : 73,
+        "endLineNumber" : 596,
+        "endColumnNumber" : 139
+      },
+      "nodeContext" : "!groupId.equals(processorEntity.getComponent().getParentGroupId())",
+      "nodeType" : "PrefixExpression",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 127,
+        "startLineNumber" : 596,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 596,
+        "endColumnNumber" : 139
+      },
+      "nodeContext" : "processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 17,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 379,
+        "startLineNumber" : 596,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 599,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n  throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 33,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2639,
+        "startLineNumber" : 578,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 242,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4427,
+        "startLineNumber" : 540,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Creates a new processor.\n * @param httpServletRequest request\n * @param groupId            The group id\n * @param processorEntity    A processorEntity.\n * @return A processorEntity.\n */\n@POST @Consumes(MediaType.APPLICATION_JSON) @Produces(MediaType.APPLICATION_JSON) @Path(\"{id}/processors\") @ApiOperation(value=\"Creates a new processor\",response=ProcessorEntity.class,authorizations={@Authorization(value=\"Write - /process-groups/{uuid}\",type=\"\")}) @ApiResponses(value={@ApiResponse(code=400,message=\"NiFi was unable to complete the request because it was invalid. The request should not be retried without modification.\"),@ApiResponse(code=401,message=\"Client could not be authenticated.\"),@ApiResponse(code=403,message=\"Client is not authorized to make this request.\"),@ApiResponse(code=404,message=\"The specified resource could not be found.\"),@ApiResponse(code=409,message=\"The request was valid but NiFi was not in the appropriate state to process it. Retrying the same request later may be successful.\")}) public Response createProcessor(@Context final HttpServletRequest httpServletRequest,@ApiParam(value=\"The process group id.\",required=true) @PathParam(\"id\") final String groupId,@ApiParam(value=\"The processor configuration details.\",required=true) final ProcessorEntity processorEntity){\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 365,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 127,
+        "startLineNumber" : 596,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 596,
+        "endColumnNumber" : 139
+      },
+      "nodeContext" : "processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 17,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.nifi.web.api.entity.ProcessorEntity"
+  }, {
+    "nodeContext" : "processorEntity",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 598,
+      "startColumnNumber" : 20,
+      "endLineNumber" : 598,
+      "endColumnNumber" : 35
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 598,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 598,
+        "endColumnNumber" : 50
+      },
+      "nodeContext" : "processorEntity.getComponent()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 49,
+        "startLineNumber" : 598,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 598,
+        "endColumnNumber" : 69
+      },
+      "nodeContext" : "processorEntity.getComponent().getParentGroupId()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.ClassInstanceCreation,arguments]",
+      "nodePosition" : {
+        "charLength" : 185,
+        "startLineNumber" : 597,
+        "startColumnNumber" : 47,
+        "endLineNumber" : 598,
+        "endColumnNumber" : 79
+      },
+      "nodeContext" : "String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ThrowStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 215,
+        "startLineNumber" : 597,
+        "startColumnNumber" : 18,
+        "endLineNumber" : 598,
+        "endColumnNumber" : 80
+      },
+      "nodeContext" : "new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId))",
+      "nodeType" : "ClassInstanceCreation",
+      "astNodeNumber" : 13,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 222,
+        "startLineNumber" : 597,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 598,
+        "endColumnNumber" : 81
+      },
+      "nodeContext" : "throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n",
+      "nodeType" : "ThrowStatement",
+      "astNodeNumber" : 14,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 246,
+        "startLineNumber" : 596,
+        "startColumnNumber" : 141,
+        "endLineNumber" : 599,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 15,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 379,
+        "startLineNumber" : 596,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 599,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n  throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 33,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2639,
+        "startLineNumber" : 578,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 242,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4427,
+        "startLineNumber" : 540,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Creates a new processor.\n * @param httpServletRequest request\n * @param groupId            The group id\n * @param processorEntity    A processorEntity.\n * @return A processorEntity.\n */\n@POST @Consumes(MediaType.APPLICATION_JSON) @Produces(MediaType.APPLICATION_JSON) @Path(\"{id}/processors\") @ApiOperation(value=\"Creates a new processor\",response=ProcessorEntity.class,authorizations={@Authorization(value=\"Write - /process-groups/{uuid}\",type=\"\")}) @ApiResponses(value={@ApiResponse(code=400,message=\"NiFi was unable to complete the request because it was invalid. The request should not be retried without modification.\"),@ApiResponse(code=401,message=\"Client could not be authenticated.\"),@ApiResponse(code=403,message=\"Client is not authorized to make this request.\"),@ApiResponse(code=404,message=\"The specified resource could not be found.\"),@ApiResponse(code=409,message=\"The request was valid but NiFi was not in the appropriate state to process it. Retrying the same request later may be successful.\")}) public Response createProcessor(@Context final HttpServletRequest httpServletRequest,@ApiParam(value=\"The process group id.\",required=true) @PathParam(\"id\") final String groupId,@ApiParam(value=\"The processor configuration details.\",required=true) final ProcessorEntity processorEntity){\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 365,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 49,
+        "startLineNumber" : 598,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 598,
+        "endColumnNumber" : 69
+      },
+      "nodeContext" : "processorEntity.getComponent().getParentGroupId()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.nifi.web.api.entity.ProcessorEntity"
+  }, {
+    "nodeContext" : "processorEntity",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 600,
+      "startColumnNumber" : 8,
+      "endLineNumber" : 600,
+      "endColumnNumber" : 23
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 600,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 600,
+        "endColumnNumber" : 38
+      },
+      "nodeContext" : "processorEntity.getComponent()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 56,
+        "startLineNumber" : 600,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 600,
+        "endColumnNumber" : 64
+      },
+      "nodeContext" : "processorEntity.getComponent().setParentGroupId(groupId)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 57,
+        "startLineNumber" : 600,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 600,
+        "endColumnNumber" : 65
+      },
+      "nodeContext" : "processorEntity.getComponent().setParentGroupId(groupId);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2639,
+        "startLineNumber" : 578,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 242,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4427,
+        "startLineNumber" : 540,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Creates a new processor.\n * @param httpServletRequest request\n * @param groupId            The group id\n * @param processorEntity    A processorEntity.\n * @return A processorEntity.\n */\n@POST @Consumes(MediaType.APPLICATION_JSON) @Produces(MediaType.APPLICATION_JSON) @Path(\"{id}/processors\") @ApiOperation(value=\"Creates a new processor\",response=ProcessorEntity.class,authorizations={@Authorization(value=\"Write - /process-groups/{uuid}\",type=\"\")}) @ApiResponses(value={@ApiResponse(code=400,message=\"NiFi was unable to complete the request because it was invalid. The request should not be retried without modification.\"),@ApiResponse(code=401,message=\"Client could not be authenticated.\"),@ApiResponse(code=403,message=\"Client is not authorized to make this request.\"),@ApiResponse(code=404,message=\"The specified resource could not be found.\"),@ApiResponse(code=409,message=\"The request was valid but NiFi was not in the appropriate state to process it. Retrying the same request later may be successful.\")}) public Response createProcessor(@Context final HttpServletRequest httpServletRequest,@ApiParam(value=\"The process group id.\",required=true) @PathParam(\"id\") final String groupId,@ApiParam(value=\"The processor configuration details.\",required=true) final ProcessorEntity processorEntity){\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 365,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 57,
+        "startLineNumber" : 600,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 600,
+        "endColumnNumber" : 65
+      },
+      "nodeContext" : "processorEntity.getComponent().setParentGroupId(groupId);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.nifi.web.api.entity.ProcessorEntity"
+  }, {
+    "nodeContext" : "processorEntity",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 603,
+      "startColumnNumber" : 46,
+      "endLineNumber" : 603,
+      "endColumnNumber" : 61
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ReturnStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 43,
+        "startLineNumber" : 603,
+        "startColumnNumber" : 19,
+        "endLineNumber" : 603,
+        "endColumnNumber" : 62
+      },
+      "nodeContext" : "replicate(HttpMethod.POST,processorEntity)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 51,
+        "startLineNumber" : 603,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 603,
+        "endColumnNumber" : 63
+      },
+      "nodeContext" : "return replicate(HttpMethod.POST,processorEntity);\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 75,
+        "startLineNumber" : 602,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 604,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  return replicate(HttpMethod.POST,processorEntity);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 8,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 101,
+        "startLineNumber" : 602,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 604,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (isReplicateRequest()) {\n  return replicate(HttpMethod.POST,processorEntity);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2639,
+        "startLineNumber" : 578,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 242,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4427,
+        "startLineNumber" : 540,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Creates a new processor.\n * @param httpServletRequest request\n * @param groupId            The group id\n * @param processorEntity    A processorEntity.\n * @return A processorEntity.\n */\n@POST @Consumes(MediaType.APPLICATION_JSON) @Produces(MediaType.APPLICATION_JSON) @Path(\"{id}/processors\") @ApiOperation(value=\"Creates a new processor\",response=ProcessorEntity.class,authorizations={@Authorization(value=\"Write - /process-groups/{uuid}\",type=\"\")}) @ApiResponses(value={@ApiResponse(code=400,message=\"NiFi was unable to complete the request because it was invalid. The request should not be retried without modification.\"),@ApiResponse(code=401,message=\"Client could not be authenticated.\"),@ApiResponse(code=403,message=\"Client is not authorized to make this request.\"),@ApiResponse(code=404,message=\"The specified resource could not be found.\"),@ApiResponse(code=409,message=\"The request was valid but NiFi was not in the appropriate state to process it. Retrying the same request later may be successful.\")}) public Response createProcessor(@Context final HttpServletRequest httpServletRequest,@ApiParam(value=\"The process group id.\",required=true) @PathParam(\"id\") final String groupId,@ApiParam(value=\"The processor configuration details.\",required=true) final ProcessorEntity processorEntity){\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 365,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 51,
+        "startLineNumber" : 603,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 603,
+        "endColumnNumber" : 63
+      },
+      "nodeContext" : "return replicate(HttpMethod.POST,processorEntity);\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.nifi.web.api.entity.ProcessorEntity"
+  }, {
+    "nodeContext" : "processorEntity",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 620,
+      "startColumnNumber" : 8,
+      "endLineNumber" : 620,
+      "endColumnNumber" : 23
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 620,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 620,
+        "endColumnNumber" : 38
+      },
+      "nodeContext" : "processorEntity.getComponent()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 52,
+        "startLineNumber" : 620,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 620,
+        "endColumnNumber" : 60
+      },
+      "nodeContext" : "processorEntity.getComponent().setId(generateUuid())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 53,
+        "startLineNumber" : 620,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 620,
+        "endColumnNumber" : 61
+      },
+      "nodeContext" : "processorEntity.getComponent().setId(generateUuid());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2639,
+        "startLineNumber" : 578,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 242,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4427,
+        "startLineNumber" : 540,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Creates a new processor.\n * @param httpServletRequest request\n * @param groupId            The group id\n * @param processorEntity    A processorEntity.\n * @return A processorEntity.\n */\n@POST @Consumes(MediaType.APPLICATION_JSON) @Produces(MediaType.APPLICATION_JSON) @Path(\"{id}/processors\") @ApiOperation(value=\"Creates a new processor\",response=ProcessorEntity.class,authorizations={@Authorization(value=\"Write - /process-groups/{uuid}\",type=\"\")}) @ApiResponses(value={@ApiResponse(code=400,message=\"NiFi was unable to complete the request because it was invalid. The request should not be retried without modification.\"),@ApiResponse(code=401,message=\"Client could not be authenticated.\"),@ApiResponse(code=403,message=\"Client is not authorized to make this request.\"),@ApiResponse(code=404,message=\"The specified resource could not be found.\"),@ApiResponse(code=409,message=\"The request was valid but NiFi was not in the appropriate state to process it. Retrying the same request later may be successful.\")}) public Response createProcessor(@Context final HttpServletRequest httpServletRequest,@ApiParam(value=\"The process group id.\",required=true) @PathParam(\"id\") final String groupId,@ApiParam(value=\"The processor configuration details.\",required=true) final ProcessorEntity processorEntity){\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 365,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 53,
+        "startLineNumber" : 620,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 620,
+        "endColumnNumber" : 61
+      },
+      "nodeContext" : "processorEntity.getComponent().setId(generateUuid());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.nifi.web.api.entity.ProcessorEntity"
+  }, {
+    "nodeContext" : "processorEntity",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 623,
+      "startColumnNumber" : 46,
+      "endLineNumber" : 623,
+      "endColumnNumber" : 61
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 68,
+        "startLineNumber" : 623,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 623,
+        "endColumnNumber" : 102
+      },
+      "nodeContext" : "getRevision(processorEntity,processorEntity.getComponent().getId())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 79,
+        "startLineNumber" : 623,
+        "startColumnNumber" : 23,
+        "endLineNumber" : 623,
+        "endColumnNumber" : 102
+      },
+      "nodeContext" : "revision=getRevision(processorEntity,processorEntity.getComponent().getId())",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 95,
+        "startLineNumber" : 623,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 623,
+        "endColumnNumber" : 103
+      },
+      "nodeContext" : "final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 14,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2639,
+        "startLineNumber" : 578,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 242,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4427,
+        "startLineNumber" : 540,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Creates a new processor.\n * @param httpServletRequest request\n * @param groupId            The group id\n * @param processorEntity    A processorEntity.\n * @return A processorEntity.\n */\n@POST @Consumes(MediaType.APPLICATION_JSON) @Produces(MediaType.APPLICATION_JSON) @Path(\"{id}/processors\") @ApiOperation(value=\"Creates a new processor\",response=ProcessorEntity.class,authorizations={@Authorization(value=\"Write - /process-groups/{uuid}\",type=\"\")}) @ApiResponses(value={@ApiResponse(code=400,message=\"NiFi was unable to complete the request because it was invalid. The request should not be retried without modification.\"),@ApiResponse(code=401,message=\"Client could not be authenticated.\"),@ApiResponse(code=403,message=\"Client is not authorized to make this request.\"),@ApiResponse(code=404,message=\"The specified resource could not be found.\"),@ApiResponse(code=409,message=\"The request was valid but NiFi was not in the appropriate state to process it. Retrying the same request later may be successful.\")}) public Response createProcessor(@Context final HttpServletRequest httpServletRequest,@ApiParam(value=\"The process group id.\",required=true) @PathParam(\"id\") final String groupId,@ApiParam(value=\"The processor configuration details.\",required=true) final ProcessorEntity processorEntity){\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 365,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 95,
+        "startLineNumber" : 623,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 623,
+        "endColumnNumber" : 103
+      },
+      "nodeContext" : "final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 14,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.nifi.web.api.entity.ProcessorEntity"
+  }, {
+    "nodeContext" : "processorEntity",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 623,
+      "startColumnNumber" : 63,
+      "endLineNumber" : 623,
+      "endColumnNumber" : 78
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 623,
+        "startColumnNumber" : 63,
+        "endLineNumber" : 623,
+        "endColumnNumber" : 93
+      },
+      "nodeContext" : "processorEntity.getComponent()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 38,
+        "startLineNumber" : 623,
+        "startColumnNumber" : 63,
+        "endLineNumber" : 623,
+        "endColumnNumber" : 101
+      },
+      "nodeContext" : "processorEntity.getComponent().getId()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 68,
+        "startLineNumber" : 623,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 623,
+        "endColumnNumber" : 102
+      },
+      "nodeContext" : "getRevision(processorEntity,processorEntity.getComponent().getId())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 79,
+        "startLineNumber" : 623,
+        "startColumnNumber" : 23,
+        "endLineNumber" : 623,
+        "endColumnNumber" : 102
+      },
+      "nodeContext" : "revision=getRevision(processorEntity,processorEntity.getComponent().getId())",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 95,
+        "startLineNumber" : 623,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 623,
+        "endColumnNumber" : 103
+      },
+      "nodeContext" : "final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 14,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2639,
+        "startLineNumber" : 578,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 242,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4427,
+        "startLineNumber" : 540,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Creates a new processor.\n * @param httpServletRequest request\n * @param groupId            The group id\n * @param processorEntity    A processorEntity.\n * @return A processorEntity.\n */\n@POST @Consumes(MediaType.APPLICATION_JSON) @Produces(MediaType.APPLICATION_JSON) @Path(\"{id}/processors\") @ApiOperation(value=\"Creates a new processor\",response=ProcessorEntity.class,authorizations={@Authorization(value=\"Write - /process-groups/{uuid}\",type=\"\")}) @ApiResponses(value={@ApiResponse(code=400,message=\"NiFi was unable to complete the request because it was invalid. The request should not be retried without modification.\"),@ApiResponse(code=401,message=\"Client could not be authenticated.\"),@ApiResponse(code=403,message=\"Client is not authorized to make this request.\"),@ApiResponse(code=404,message=\"The specified resource could not be found.\"),@ApiResponse(code=409,message=\"The request was valid but NiFi was not in the appropriate state to process it. Retrying the same request later may be successful.\")}) public Response createProcessor(@Context final HttpServletRequest httpServletRequest,@ApiParam(value=\"The process group id.\",required=true) @PathParam(\"id\") final String groupId,@ApiParam(value=\"The processor configuration details.\",required=true) final ProcessorEntity processorEntity){\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 365,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 95,
+        "startLineNumber" : 623,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 623,
+        "endColumnNumber" : 103
+      },
+      "nodeContext" : "final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 14,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.nifi.web.api.entity.ProcessorEntity"
+  }, {
+    "nodeContext" : "processorEntity",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 624,
+      "startColumnNumber" : 88,
+      "endLineNumber" : 624,
+      "endColumnNumber" : 103
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 624,
+        "startColumnNumber" : 88,
+        "endLineNumber" : 624,
+        "endColumnNumber" : 118
+      },
+      "nodeContext" : "processorEntity.getComponent()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 80,
+        "startLineNumber" : 624,
+        "startColumnNumber" : 39,
+        "endLineNumber" : 624,
+        "endColumnNumber" : 119
+      },
+      "nodeContext" : "serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 8,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 89,
+        "startLineNumber" : 624,
+        "startColumnNumber" : 30,
+        "endLineNumber" : 624,
+        "endColumnNumber" : 119
+      },
+      "nodeContext" : "entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent())",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 112,
+        "startLineNumber" : 624,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 624,
+        "endColumnNumber" : 120
+      },
+      "nodeContext" : "final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 14,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2639,
+        "startLineNumber" : 578,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 242,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4427,
+        "startLineNumber" : 540,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 630,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Creates a new processor.\n * @param httpServletRequest request\n * @param groupId            The group id\n * @param processorEntity    A processorEntity.\n * @return A processorEntity.\n */\n@POST @Consumes(MediaType.APPLICATION_JSON) @Produces(MediaType.APPLICATION_JSON) @Path(\"{id}/processors\") @ApiOperation(value=\"Creates a new processor\",response=ProcessorEntity.class,authorizations={@Authorization(value=\"Write - /process-groups/{uuid}\",type=\"\")}) @ApiResponses(value={@ApiResponse(code=400,message=\"NiFi was unable to complete the request because it was invalid. The request should not be retried without modification.\"),@ApiResponse(code=401,message=\"Client could not be authenticated.\"),@ApiResponse(code=403,message=\"Client is not authorized to make this request.\"),@ApiResponse(code=404,message=\"The specified resource could not be found.\"),@ApiResponse(code=409,message=\"The request was valid but NiFi was not in the appropriate state to process it. Retrying the same request later may be successful.\")}) public Response createProcessor(@Context final HttpServletRequest httpServletRequest,@ApiParam(value=\"The process group id.\",required=true) @PathParam(\"id\") final String groupId,@ApiParam(value=\"The processor configuration details.\",required=true) final ProcessorEntity processorEntity){\n  if (processorEntity == null || processorEntity.getComponent() == null) {\n    throw new IllegalArgumentException(\"Processor details must be specified.\");\n  }\n  if (processorEntity.getRevision() == null || (processorEntity.getRevision().getVersion() == null || processorEntity.getRevision().getVersion() != 0)) {\n    throw new IllegalArgumentException(\"A revision of 0 must be specified when creating a new Processor.\");\n  }\n  if (processorEntity.getComponent().getId() != null) {\n    throw new IllegalArgumentException(\"Processor ID cannot be specified.\");\n  }\n  if (StringUtils.isBlank(processorEntity.getComponent().getType())) {\n    throw new IllegalArgumentException(\"The type of processor to create must be specified.\");\n  }\n  if (processorEntity.getComponent().getParentGroupId() != null && !groupId.equals(processorEntity.getComponent().getParentGroupId())) {\n    throw new IllegalArgumentException(String.format(\"If specified, the parent process group id %s must be the same as specified in the URI %s\",processorEntity.getComponent().getParentGroupId(),groupId));\n  }\n  processorEntity.getComponent().setParentGroupId(groupId);\n  if (isReplicateRequest()) {\n    return replicate(HttpMethod.POST,processorEntity);\n  }\n  final boolean validationPhase=isValidationPhase(httpServletRequest);\n  if (validationPhase || !isTwoPhaseRequest(httpServletRequest)) {\n    serviceFacade.authorizeAccess(lookup -> {\n      final Authorizable processGroup=lookup.getProcessGroup(groupId).getAuthorizable();\n      processGroup.authorize(authorizer,RequestAction.WRITE,NiFiUserUtils.getNiFiUser());\n    }\n);\n  }\n  if (validationPhase) {\n    return generateContinueResponse().build();\n  }\n  processorEntity.getComponent().setId(generateUuid());\n  final Revision revision=getRevision(processorEntity,processorEntity.getComponent().getId());\n  final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n  processorResource.populateRemainingProcessorEntityContent(entity);\n  String uri=entity.getUri();\n  return clusterContext(generateCreatedResponse(URI.create(uri),entity)).build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 365,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 112,
+        "startLineNumber" : 624,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 624,
+        "endColumnNumber" : 120
+      },
+      "nodeContext" : "final ProcessorEntity entity=serviceFacade.createProcessor(revision,groupId,processorEntity.getComponent());\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 14,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.nifi.web.api.entity.ProcessorEntity"
+  } ],
+  "positionList" : [ {
+    "charLength" : 15,
+    "startLineNumber" : 580,
+    "startColumnNumber" : 12,
+    "endLineNumber" : 580,
+    "endColumnNumber" : 27
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 580,
+    "startColumnNumber" : 39,
+    "endLineNumber" : 580,
+    "endColumnNumber" : 54
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 584,
+    "startColumnNumber" : 12,
+    "endLineNumber" : 584,
+    "endColumnNumber" : 27
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 584,
+    "startColumnNumber" : 54,
+    "endLineNumber" : 584,
+    "endColumnNumber" : 69
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 584,
+    "startColumnNumber" : 108,
+    "endLineNumber" : 584,
+    "endColumnNumber" : 123
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 588,
+    "startColumnNumber" : 12,
+    "endLineNumber" : 588,
+    "endColumnNumber" : 27
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 592,
+    "startColumnNumber" : 32,
+    "endLineNumber" : 592,
+    "endColumnNumber" : 47
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 596,
+    "startColumnNumber" : 12,
+    "endLineNumber" : 596,
+    "endColumnNumber" : 27
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 596,
+    "startColumnNumber" : 89,
+    "endLineNumber" : 596,
+    "endColumnNumber" : 104
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 598,
+    "startColumnNumber" : 20,
+    "endLineNumber" : 598,
+    "endColumnNumber" : 35
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 600,
+    "startColumnNumber" : 8,
+    "endLineNumber" : 600,
+    "endColumnNumber" : 23
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 603,
+    "startColumnNumber" : 46,
+    "endLineNumber" : 603,
+    "endColumnNumber" : 61
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 620,
+    "startColumnNumber" : 8,
+    "endLineNumber" : 620,
+    "endColumnNumber" : 23
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 623,
+    "startColumnNumber" : 46,
+    "endLineNumber" : 623,
+    "endColumnNumber" : 61
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 623,
+    "startColumnNumber" : 63,
+    "endLineNumber" : 623,
+    "endColumnNumber" : 78
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 624,
+    "startColumnNumber" : 88,
+    "endLineNumber" : 624,
+    "endColumnNumber" : 103
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 1
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 7,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 10,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 11,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 12,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 13,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 14,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 15,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 5,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 6,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 7,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 8,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 9,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 10,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 11,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 12,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 13,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 14,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 15,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 4,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 5,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 6,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 7,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 8,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 9,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 10,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 11,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 12,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 13,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 14,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 15,
+    "layout" : 4
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 0,
+    "layout" : 7
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 1,
+    "layout" : 7
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 5,
+    "layout" : 7
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 6,
+    "layout" : 7
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 7,
+    "layout" : 7
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 8,
+    "layout" : 7
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 9,
+    "layout" : 7
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 10,
+    "layout" : 7
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 11,
+    "layout" : 7
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 12,
+    "layout" : 7
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 13,
+    "layout" : 7
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 14,
+    "layout" : 7
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 15,
+    "layout" : 7
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 0,
+    "layout" : 7
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 1,
+    "layout" : 7
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 5,
+    "layout" : 7
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 6,
+    "layout" : 7
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 7,
+    "layout" : 7
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 8,
+    "layout" : 7
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 9,
+    "layout" : 7
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 10,
+    "layout" : 7
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 11,
+    "layout" : 7
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 12,
+    "layout" : 7
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 13,
+    "layout" : 7
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 14,
+    "layout" : 7
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 15,
+    "layout" : 7
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 6,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 7,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 8,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 9,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 10,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 11,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 12,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 13,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 14,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 15,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 5,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 7,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 8,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 9,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 10,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 11,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 12,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 13,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 14,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 15,
+    "layout" : 4
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 3,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 4,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 5,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 6,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 9,
+    "layout" : 4
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 10,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 11,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 12,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 13,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 14,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 15,
+    "layout" : 5
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 0,
+    "layout" : 6
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 1,
+    "layout" : 6
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 2,
+    "layout" : 6
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 3,
+    "layout" : 6
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 4,
+    "layout" : 6
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 5,
+    "layout" : 6
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 6,
+    "layout" : 6
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 7,
+    "layout" : 4
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 9,
+    "layout" : 5
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 10,
+    "layout" : 6
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 11,
+    "layout" : 6
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 12,
+    "layout" : 6
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 13,
+    "layout" : 6
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 14,
+    "layout" : 6
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 15,
+    "layout" : 6
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 0,
+    "layout" : 7
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 1,
+    "layout" : 7
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 2,
+    "layout" : 7
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 3,
+    "layout" : 7
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 4,
+    "layout" : 7
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 5,
+    "layout" : 7
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 6,
+    "layout" : 7
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 7,
+    "layout" : 6
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 8,
+    "layout" : 6
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 10,
+    "layout" : 7
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 11,
+    "layout" : 7
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 12,
+    "layout" : 7
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 13,
+    "layout" : 7
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 14,
+    "layout" : 7
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 15,
+    "layout" : 7
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 7,
+    "layout" : 3
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 11,
+    "layout" : 3
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 12,
+    "layout" : 3
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 13,
+    "layout" : 3
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 14,
+    "layout" : 3
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 15,
+    "layout" : 3
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 5,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 6,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 7,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 8,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 9,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 10,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 12,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 13,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 14,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 15,
+    "layout" : 4
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 7,
+    "layout" : 3
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 10,
+    "layout" : 3
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 11,
+    "layout" : 3
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 13,
+    "layout" : 3
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 14,
+    "layout" : 3
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 15,
+    "layout" : 3
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 7,
+    "layout" : 3
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 10,
+    "layout" : 3
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 11,
+    "layout" : 3
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 12,
+    "layout" : 3
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 14,
+    "layout" : 0
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 15,
+    "layout" : 3
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 3,
+    "layout" : 5
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 4,
+    "layout" : 5
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 5,
+    "layout" : 5
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 6,
+    "layout" : 5
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 7,
+    "layout" : 5
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 8,
+    "layout" : 5
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 9,
+    "layout" : 5
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 10,
+    "layout" : 5
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 11,
+    "layout" : 5
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 12,
+    "layout" : 5
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 13,
+    "layout" : 2
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 15,
+    "layout" : 5
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 5,
+    "layout" : 4
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 6,
+    "layout" : 4
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 7,
+    "layout" : 4
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 8,
+    "layout" : 4
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 9,
+    "layout" : 4
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 10,
+    "layout" : 4
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 11,
+    "layout" : 4
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 12,
+    "layout" : 4
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 13,
+    "layout" : 4
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 14,
+    "layout" : 4
+  } ]
+}

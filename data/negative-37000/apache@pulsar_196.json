@@ -1,0 +1,139 @@
+{
+  "id" : 196,
+  "expression" : "checkMessage.getData()",
+  "projectName" : "apache@pulsar",
+  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
+  "filePath" : "/pulsar-broker/src/test/java/org/apache/pulsar/client/api/RetryTopicTest.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "checkMessage.getData()",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 22,
+      "startLineNumber" : 115,
+      "startColumnNumber" : 104,
+      "endLineNumber" : 115,
+      "endColumnNumber" : 126
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 34,
+        "startLineNumber" : 115,
+        "startColumnNumber" : 93,
+        "endLineNumber" : 115,
+        "endColumnNumber" : 127
+      },
+      "nodeContext" : "new String(checkMessage.getData())",
+      "nodeType" : "ClassInstanceCreation",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 116,
+        "startLineNumber" : 115,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 115,
+        "endColumnNumber" : 128
+      },
+      "nodeContext" : "log.info(\"check consumer received message : {} {}\",checkMessage.getMessageId(),new String(checkMessage.getData()))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 13,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 117,
+        "startLineNumber" : 115,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 115,
+        "endColumnNumber" : 129
+      },
+      "nodeContext" : "log.info(\"check consumer received message : {} {}\",checkMessage.getMessageId(),new String(checkMessage.getData()));\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 14,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 141,
+        "startLineNumber" : 114,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  log.info(\"check consumer received message : {} {}\",checkMessage.getMessageId(),new String(checkMessage.getData()));\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 15,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 167,
+        "startLineNumber" : 114,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (checkMessage != null) {\n  log.info(\"check consumer received message : {} {}\",checkMessage.getMessageId(),new String(checkMessage.getData()));\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 19,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2941,
+        "startLineNumber" : 52,
+        "startColumnNumber" : 50,
+        "endLineNumber" : 120,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final String topic=\"persistent://my-property/my-ns/retry-topic\";\n  final int maxRedeliveryCount=2;\n  final int sendMessages=100;\n  Consumer<byte[]> consumer=pulsarClient.newConsumer(Schema.BYTES).topic(topic).subscriptionName(\"my-subscription\").subscriptionType(SubscriptionType.Shared).enableRetry(true).deadLetterPolicy(DeadLetterPolicy.builder().maxRedeliverCount(maxRedeliveryCount).build()).receiverQueueSize(100).subscriptionInitialPosition(SubscriptionInitialPosition.Earliest).subscribe();\n  @Cleanup PulsarClient newPulsarClient=newPulsarClient(lookupUrl.toString(),0);\n  Consumer<byte[]> deadLetterConsumer=newPulsarClient.newConsumer(Schema.BYTES).topic(\"persistent://my-property/my-ns/retry-topic-my-subscription-DLQ\").subscriptionName(\"my-subscription\").subscriptionInitialPosition(SubscriptionInitialPosition.Earliest).subscribe();\n  Producer<byte[]> producer=pulsarClient.newProducer(Schema.BYTES).topic(topic).create();\n  for (int i=0; i < sendMessages; i++) {\n    producer.send(String.format(\"Hello Pulsar [%d]\",i).getBytes());\n  }\n  producer.close();\n  int totalReceived=0;\n  do {\n    Message<byte[]> message=consumer.receive();\n    log.info(\"consumer received message : {} {}\",message.getMessageId(),new String(message.getData()));\n    consumer.reconsumeLater(message,1,TimeUnit.SECONDS);\n    totalReceived++;\n  }\n while (totalReceived < sendMessages * (maxRedeliveryCount + 1));\n  int totalInDeadLetter=0;\n  do {\n    Message message=deadLetterConsumer.receive();\n    log.info(\"dead letter consumer received message : {} {}\",message.getMessageId(),new String(message.getData()));\n    deadLetterConsumer.acknowledge(message);\n    totalInDeadLetter++;\n  }\n while (totalInDeadLetter < sendMessages);\n  deadLetterConsumer.close();\n  consumer.close();\n  Consumer<byte[]> checkConsumer=this.pulsarClient.newConsumer(Schema.BYTES).topic(topic).subscriptionName(\"my-subscription\").subscriptionType(SubscriptionType.Shared).subscriptionInitialPosition(SubscriptionInitialPosition.Earliest).subscribe();\n  Message<byte[]> checkMessage=checkConsumer.receive(3,TimeUnit.SECONDS);\n  if (checkMessage != null) {\n    log.info(\"check consumer received message : {} {}\",checkMessage.getMessageId(),new String(checkMessage.getData()));\n  }\n  assertNull(checkMessage);\n  checkConsumer.close();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 336,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 2997,
+        "startLineNumber" : 51,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 120,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test public void testRetryTopic() throws Exception {\n  final String topic=\"persistent://my-property/my-ns/retry-topic\";\n  final int maxRedeliveryCount=2;\n  final int sendMessages=100;\n  Consumer<byte[]> consumer=pulsarClient.newConsumer(Schema.BYTES).topic(topic).subscriptionName(\"my-subscription\").subscriptionType(SubscriptionType.Shared).enableRetry(true).deadLetterPolicy(DeadLetterPolicy.builder().maxRedeliverCount(maxRedeliveryCount).build()).receiverQueueSize(100).subscriptionInitialPosition(SubscriptionInitialPosition.Earliest).subscribe();\n  @Cleanup PulsarClient newPulsarClient=newPulsarClient(lookupUrl.toString(),0);\n  Consumer<byte[]> deadLetterConsumer=newPulsarClient.newConsumer(Schema.BYTES).topic(\"persistent://my-property/my-ns/retry-topic-my-subscription-DLQ\").subscriptionName(\"my-subscription\").subscriptionInitialPosition(SubscriptionInitialPosition.Earliest).subscribe();\n  Producer<byte[]> producer=pulsarClient.newProducer(Schema.BYTES).topic(topic).create();\n  for (int i=0; i < sendMessages; i++) {\n    producer.send(String.format(\"Hello Pulsar [%d]\",i).getBytes());\n  }\n  producer.close();\n  int totalReceived=0;\n  do {\n    Message<byte[]> message=consumer.receive();\n    log.info(\"consumer received message : {} {}\",message.getMessageId(),new String(message.getData()));\n    consumer.reconsumeLater(message,1,TimeUnit.SECONDS);\n    totalReceived++;\n  }\n while (totalReceived < sendMessages * (maxRedeliveryCount + 1));\n  int totalInDeadLetter=0;\n  do {\n    Message message=deadLetterConsumer.receive();\n    log.info(\"dead letter consumer received message : {} {}\",message.getMessageId(),new String(message.getData()));\n    deadLetterConsumer.acknowledge(message);\n    totalInDeadLetter++;\n  }\n while (totalInDeadLetter < sendMessages);\n  deadLetterConsumer.close();\n  consumer.close();\n  Consumer<byte[]> checkConsumer=this.pulsarClient.newConsumer(Schema.BYTES).topic(topic).subscriptionName(\"my-subscription\").subscriptionType(SubscriptionType.Shared).subscriptionInitialPosition(SubscriptionInitialPosition.Earliest).subscribe();\n  Message<byte[]> checkMessage=checkConsumer.receive(3,TimeUnit.SECONDS);\n  if (checkMessage != null) {\n    log.info(\"check consumer received message : {} {}\",checkMessage.getMessageId(),new String(checkMessage.getData()));\n  }\n  assertNull(checkMessage);\n  checkConsumer.close();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 344,
+      "astHeight" : 15
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 117,
+        "startLineNumber" : 115,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 115,
+        "endColumnNumber" : 129
+      },
+      "nodeContext" : "log.info(\"check consumer received message : {} {}\",checkMessage.getMessageId(),new String(checkMessage.getData()));\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 14,
+      "astHeight" : 5
+    },
+    "tokenLength" : 2,
+    "type" : "byte[]"
+  } ],
+  "positionList" : [ {
+    "charLength" : 22,
+    "startLineNumber" : 115,
+    "startColumnNumber" : 104,
+    "endLineNumber" : 115,
+    "endColumnNumber" : 126
+  } ],
+  "layoutRelationDataList" : [ ]
+}

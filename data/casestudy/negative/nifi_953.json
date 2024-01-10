@@ -1,0 +1,100 @@
+{
+  "id" : 953,
+  "expression" : "clusterCoordinator.getElectedActiveCoordinatorNode()",
+  "projectName" : "nifi",
+  "commitID" : "a1b07b1e9c388d8642699b1d8b101a606dc5bd6a",
+  "filePath" : "nifi-nar-bundles/nifi-framework-bundle/nifi-framework/nifi-framework-cluster/src/main/java/org/apache/nifi/cluster/coordination/heartbeat/AbstractHeartbeatMonitor.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 1,
+  "isGetTypeMethod" : 1,
+  "expressionList" : [ {
+    "nodeContext" : "clusterCoordinator.getElectedActiveCoordinatorNode()",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 52,
+      "startLineNumber" : 124,
+      "startColumnNumber" : 49,
+      "endLineNumber" : 124,
+      "endColumnNumber" : 101
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 72,
+        "startLineNumber" : 124,
+        "startColumnNumber" : 29,
+        "endLineNumber" : 124,
+        "endColumnNumber" : 101
+      },
+      "nodeContext" : "activeCoordinator=clusterCoordinator.getElectedActiveCoordinatorNode()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 94,
+        "startLineNumber" : 124,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 124,
+        "endColumnNumber" : 102
+      },
+      "nodeContext" : "final NodeIdentifier activeCoordinator=clusterCoordinator.getElectedActiveCoordinatorNode();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2981,
+        "startLineNumber" : 123,
+        "startColumnNumber" : 52,
+        "endLineNumber" : 173,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final NodeIdentifier activeCoordinator=clusterCoordinator.getElectedActiveCoordinatorNode();\n  if (activeCoordinator != null && !activeCoordinator.equals(clusterCoordinator.getLocalNodeIdentifier())) {\n    logger.debug(\"It appears that this node is no longer the actively elected cluster coordinator. Will not request that node disconnect.\");\n    return;\n  }\n  final Map<NodeIdentifier,NodeHeartbeat> latestHeartbeats=getLatestHeartbeats();\n  if (latestHeartbeats == null || latestHeartbeats.isEmpty()) {\n    logger.debug(\"Received no new heartbeats. Will not disconnect any nodes due to lack of heartbeat\");\n    return;\n  }\n  final StopWatch procStopWatch=new StopWatch(true);\n  for (  final NodeHeartbeat heartbeat : latestHeartbeats.values()) {\n    try {\n      processHeartbeat(heartbeat);\n    }\n catch (    final Exception e) {\n      clusterCoordinator.reportEvent(null,Severity.ERROR,\"Received heartbeat from \" + heartbeat.getNodeIdentifier() + \" but failed to process heartbeat due to \"+ e);\n      logger.error(\"Failed to process heartbeat from {} due to {}\",heartbeat.getNodeIdentifier(),e.toString());\n      logger.error(\"\",e);\n    }\n  }\n  procStopWatch.stop();\n  logger.info(\"Finished processing {} heartbeats in {}\",latestHeartbeats.size(),procStopWatch.getDuration());\n  final long maxMillis=heartbeatIntervalMillis * 8;\n  final long threshold=System.currentTimeMillis() - maxMillis;\n  for (  final NodeHeartbeat heartbeat : latestHeartbeats.values()) {\n    if (heartbeat.getTimestamp() < threshold) {\n      final long secondsSinceLastHeartbeat=TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - heartbeat.getTimestamp());\n      clusterCoordinator.disconnectionRequestedByNode(heartbeat.getNodeIdentifier(),DisconnectionCode.LACK_OF_HEARTBEAT,\"Have not received a heartbeat from node in \" + secondsSinceLastHeartbeat + \" seconds\");\n      try {\n        removeHeartbeat(heartbeat.getNodeIdentifier());\n      }\n catch (      final Exception e) {\n        logger.warn(\"Failed to remove heartbeat for {} due to {}\",heartbeat.getNodeIdentifier(),e.toString());\n        logger.warn(\"\",e);\n      }\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 235,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3217,
+        "startLineNumber" : 117,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 173,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Fetches all of the latest heartbeats and updates the Cluster Coordinator as appropriate, based on the heartbeats received. Visible for testing.\n */\nprotected synchronized void monitorHeartbeats(){\n  final NodeIdentifier activeCoordinator=clusterCoordinator.getElectedActiveCoordinatorNode();\n  if (activeCoordinator != null && !activeCoordinator.equals(clusterCoordinator.getLocalNodeIdentifier())) {\n    logger.debug(\"It appears that this node is no longer the actively elected cluster coordinator. Will not request that node disconnect.\");\n    return;\n  }\n  final Map<NodeIdentifier,NodeHeartbeat> latestHeartbeats=getLatestHeartbeats();\n  if (latestHeartbeats == null || latestHeartbeats.isEmpty()) {\n    logger.debug(\"Received no new heartbeats. Will not disconnect any nodes due to lack of heartbeat\");\n    return;\n  }\n  final StopWatch procStopWatch=new StopWatch(true);\n  for (  final NodeHeartbeat heartbeat : latestHeartbeats.values()) {\n    try {\n      processHeartbeat(heartbeat);\n    }\n catch (    final Exception e) {\n      clusterCoordinator.reportEvent(null,Severity.ERROR,\"Received heartbeat from \" + heartbeat.getNodeIdentifier() + \" but failed to process heartbeat due to \"+ e);\n      logger.error(\"Failed to process heartbeat from {} due to {}\",heartbeat.getNodeIdentifier(),e.toString());\n      logger.error(\"\",e);\n    }\n  }\n  procStopWatch.stop();\n  logger.info(\"Finished processing {} heartbeats in {}\",latestHeartbeats.size(),procStopWatch.getDuration());\n  final long maxMillis=heartbeatIntervalMillis * 8;\n  final long threshold=System.currentTimeMillis() - maxMillis;\n  for (  final NodeHeartbeat heartbeat : latestHeartbeats.values()) {\n    if (heartbeat.getTimestamp() < threshold) {\n      final long secondsSinceLastHeartbeat=TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - heartbeat.getTimestamp());\n      clusterCoordinator.disconnectionRequestedByNode(heartbeat.getNodeIdentifier(),DisconnectionCode.LACK_OF_HEARTBEAT,\"Have not received a heartbeat from node in \" + secondsSinceLastHeartbeat + \" seconds\");\n      try {\n        removeHeartbeat(heartbeat.getNodeIdentifier());\n      }\n catch (      final Exception e) {\n        logger.warn(\"Failed to remove heartbeat for {} due to {}\",heartbeat.getNodeIdentifier(),e.toString());\n        logger.warn(\"\",e);\n      }\n    }\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 241,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 94,
+        "startLineNumber" : 124,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 124,
+        "endColumnNumber" : 102
+      },
+      "nodeContext" : "final NodeIdentifier activeCoordinator=clusterCoordinator.getElectedActiveCoordinatorNode();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    },
+    "tokenLength" : 2,
+    "type" : "org.apache.nifi.cluster.protocol.NodeIdentifier"
+  } ],
+  "positionList" : [ {
+    "charLength" : 52,
+    "startLineNumber" : 124,
+    "startColumnNumber" : 49,
+    "endLineNumber" : 124,
+    "endColumnNumber" : 101
+  } ],
+  "layoutRelationDataList" : [ ]
+}

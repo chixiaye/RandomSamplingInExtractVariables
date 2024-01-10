@@ -1,100 +1,100 @@
 {
   "id" : 180,
-  "expression" : "\"Unexpected testField value\"",
+  "expression" : "UserFactory.createAdminUser(Constants.AUTH_URL)",
   "projectName" : "realm@realm-java",
-  "commitID" : "9da3b229a46407f73e2003fb40857cadf062086b",
-  "filePath" : "/realm/realm-library/src/androidTest/java/io/realm/RealmMigrationTests.java",
+  "commitID" : "d090c7f487279bf8d97571c7491cf602033905b9",
+  "filePath" : "realm/realm-library/src/syncIntegrationTest/java/io/realm/objectserver/ProgressListenerTests.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "\"Unexpected testField value\"",
-    "nodeType" : "StringLiteral",
+    "nodeContext" : "UserFactory.createAdminUser(Constants.AUTH_URL)",
+    "nodeType" : "MethodInvocation",
     "nodePosition" : {
-      "charLength" : 28,
-      "startLineNumber" : 1365,
-      "startColumnNumber" : 21,
-      "endLineNumber" : 1365,
-      "endColumnNumber" : 49
+      "charLength" : 47,
+      "startLineNumber" : 140,
+      "startColumnNumber" : 29,
+      "endLineNumber" : 140,
+      "endColumnNumber" : 76
     },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
+    "astNodeNumber" : 6,
+    "astHeight" : 3,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
       "nodePosition" : {
-        "charLength" : 77,
-        "startLineNumber" : 1365,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 1365,
-        "endColumnNumber" : 85
+        "charLength" : 59,
+        "startLineNumber" : 140,
+        "startColumnNumber" : 17,
+        "endLineNumber" : 140,
+        "endColumnNumber" : 76
       },
-      "nodeContext" : "assertEquals(\"Unexpected testField value\",testVal,result.first().testField)",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 9,
+      "nodeContext" : "adminUser=UserFactory.createAdminUser(Constants.AUTH_URL)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 8,
       "astHeight" : 4
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 78,
-        "startLineNumber" : 1365,
+        "charLength" : 69,
+        "startLineNumber" : 140,
         "startColumnNumber" : 8,
-        "endLineNumber" : 1365,
-        "endColumnNumber" : 86
+        "endLineNumber" : 140,
+        "endColumnNumber" : 77
       },
-      "nodeContext" : "assertEquals(\"Unexpected testField value\",testVal,result.first().testField);\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 10,
+      "nodeContext" : "SyncUser adminUser=UserFactory.createAdminUser(Constants.AUTH_URL);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 11,
       "astHeight" : 5
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 1758,
-        "startLineNumber" : 1329,
-        "startColumnNumber" : 43,
-        "endLineNumber" : 1368,
+        "charLength" : 1236,
+        "startLineNumber" : 134,
+        "startColumnNumber" : 55,
+        "endLineNumber" : 157,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  final Class<MigrationIndexedFieldRenamed> schemaClass=MigrationIndexedFieldRenamed.class;\n  final int oldTestVal=7;\n  final Long testVal=Long.valueOf(293);\n  RealmMigration migration=new RealmMigration(){\n    @Override public void migrate(    DynamicRealm realm,    long oldVersion,    long newVersion){\n      realm.getSchema().get(schemaClass.getSimpleName()).renameField(\"testField\",\"oldTestField\").addField(\"testField\",Long.class);\n    }\n  }\n;\n  RealmConfiguration config=configFactory.createConfigurationBuilder().schema(schemaClass).schemaVersion(2).migration(migration).assetFile(\"rename-and-add-indexed.realm\").build();\n  realm=Realm.getInstance(config);\n  realm.beginTransaction();\n  MigrationIndexedFieldRenamed obj=realm.createObject(schemaClass,2);\n  obj.oldTestField=oldTestVal;\n  obj.testField=testVal;\n  realm.commitTransaction();\n  RealmObjectSchema schema=realm.getSchema().get(schemaClass.getSimpleName());\n  assertTrue(schema.hasField(\"testField\"));\n  assertTrue(schema.hasField(\"oldTestField\"));\n  assertTrue(schema.hasIndex(\"oldTestField\"));\n  RealmResults<MigrationIndexedFieldRenamed> result=realm.where(schemaClass).equalTo(\"id\",2).findAll();\n  assertEquals(\"There should be an object with PK=2\",1,result.size());\n  assertEquals(\"Unexpected oldTestField value\",oldTestVal,result.first().oldTestField);\n  assertEquals(\"Unexpected testField value\",testVal,result.first().testField);\n  realm.close();\n}\n",
+      "nodeContext" : "{\n  final CountDownLatch allChangesDownloaded=new CountDownLatch(1);\n  SyncUser userWithData=UserFactory.createUniqueUser(Constants.AUTH_URL);\n  SyncConfiguration userWithDataConfig=configFactory.createSyncConfigurationBuilder(userWithData,Constants.USER_REALM).build();\n  URI serverUrl=createRemoteData(userWithDataConfig);\n  SyncUser adminUser=UserFactory.createAdminUser(Constants.AUTH_URL);\n  final SyncConfiguration config=configFactory.createSyncConfigurationBuilder(adminUser,serverUrl.toString()).build();\n  Realm realm=Realm.getInstance(config);\n  SyncSession session=SyncManager.getSession(config);\n  session.addDownloadProgressListener(ProgressMode.CURRENT_CHANGES,new ProgressListener(){\n    @Override public void onChange(    Progress progress){\n      if (progress.isTransferComplete()) {\n        assertTransferComplete(progress,true);\n        assertEquals(TEST_SIZE,getStoreTestDataSize(config));\n        allChangesDownloaded.countDown();\n      }\n    }\n  }\n);\n  TestHelper.awaitOrFail(allChangesDownloaded);\n  realm.close();\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 217,
+      "astNodeNumber" : 140,
       "astHeight" : 13
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 1807,
-        "startLineNumber" : 1328,
+        "charLength" : 1297,
+        "startLineNumber" : 133,
         "startColumnNumber" : 4,
-        "endLineNumber" : 1368,
+        "endLineNumber" : 157,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "@Test public void renameAndAddIndexedField(){\n  final Class<MigrationIndexedFieldRenamed> schemaClass=MigrationIndexedFieldRenamed.class;\n  final int oldTestVal=7;\n  final Long testVal=Long.valueOf(293);\n  RealmMigration migration=new RealmMigration(){\n    @Override public void migrate(    DynamicRealm realm,    long oldVersion,    long newVersion){\n      realm.getSchema().get(schemaClass.getSimpleName()).renameField(\"testField\",\"oldTestField\").addField(\"testField\",Long.class);\n    }\n  }\n;\n  RealmConfiguration config=configFactory.createConfigurationBuilder().schema(schemaClass).schemaVersion(2).migration(migration).assetFile(\"rename-and-add-indexed.realm\").build();\n  realm=Realm.getInstance(config);\n  realm.beginTransaction();\n  MigrationIndexedFieldRenamed obj=realm.createObject(schemaClass,2);\n  obj.oldTestField=oldTestVal;\n  obj.testField=testVal;\n  realm.commitTransaction();\n  RealmObjectSchema schema=realm.getSchema().get(schemaClass.getSimpleName());\n  assertTrue(schema.hasField(\"testField\"));\n  assertTrue(schema.hasField(\"oldTestField\"));\n  assertTrue(schema.hasIndex(\"oldTestField\"));\n  RealmResults<MigrationIndexedFieldRenamed> result=realm.where(schemaClass).equalTo(\"id\",2).findAll();\n  assertEquals(\"There should be an object with PK=2\",1,result.size());\n  assertEquals(\"Unexpected oldTestField value\",oldTestVal,result.first().oldTestField);\n  assertEquals(\"Unexpected testField value\",testVal,result.first().testField);\n  realm.close();\n}\n",
+      "nodeContext" : "@Test public void downloadProgressListener_changesOnly(){\n  final CountDownLatch allChangesDownloaded=new CountDownLatch(1);\n  SyncUser userWithData=UserFactory.createUniqueUser(Constants.AUTH_URL);\n  SyncConfiguration userWithDataConfig=configFactory.createSyncConfigurationBuilder(userWithData,Constants.USER_REALM).build();\n  URI serverUrl=createRemoteData(userWithDataConfig);\n  SyncUser adminUser=UserFactory.createAdminUser(Constants.AUTH_URL);\n  final SyncConfiguration config=configFactory.createSyncConfigurationBuilder(adminUser,serverUrl.toString()).build();\n  Realm realm=Realm.getInstance(config);\n  SyncSession session=SyncManager.getSession(config);\n  session.addDownloadProgressListener(ProgressMode.CURRENT_CHANGES,new ProgressListener(){\n    @Override public void onChange(    Progress progress){\n      if (progress.isTransferComplete()) {\n        assertTransferComplete(progress,true);\n        assertEquals(TEST_SIZE,getStoreTestDataSize(config));\n        allChangesDownloaded.countDown();\n      }\n    }\n  }\n);\n  TestHelper.awaitOrFail(allChangesDownloaded);\n  realm.close();\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 223,
+      "astNodeNumber" : 146,
       "astHeight" : 14
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 78,
-        "startLineNumber" : 1365,
+        "charLength" : 69,
+        "startLineNumber" : 140,
         "startColumnNumber" : 8,
-        "endLineNumber" : 1365,
-        "endColumnNumber" : 86
+        "endLineNumber" : 140,
+        "endColumnNumber" : 77
       },
-      "nodeContext" : "assertEquals(\"Unexpected testField value\",testVal,result.first().testField);\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 10,
+      "nodeContext" : "SyncUser adminUser=UserFactory.createAdminUser(Constants.AUTH_URL);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 11,
       "astHeight" : 5
     },
-    "tokenLength" : 3,
-    "type" : "java.lang.String"
+    "tokenLength" : 5,
+    "type" : "io.realm.SyncUser"
   } ],
   "positionList" : [ {
-    "charLength" : 28,
-    "startLineNumber" : 1365,
-    "startColumnNumber" : 21,
-    "endLineNumber" : 1365,
-    "endColumnNumber" : 49
+    "charLength" : 47,
+    "startLineNumber" : 140,
+    "startColumnNumber" : 29,
+    "endLineNumber" : 140,
+    "endColumnNumber" : 76
   } ],
   "layoutRelationDataList" : [ ]
 }

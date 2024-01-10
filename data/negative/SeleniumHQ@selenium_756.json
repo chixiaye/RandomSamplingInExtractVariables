@@ -1,0 +1,113 @@
+{
+  "id" : 756,
+  "expression" : "Failsafe",
+  "projectName" : "SeleniumHQ@selenium",
+  "commitID" : "3326b903133634c1cb4bd48e90c9f54af8addb0a",
+  "filePath" : "java/server/src/org/openqa/selenium/events/zeromq/UnboundZmqEventBus.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "Failsafe",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 8,
+      "startLineNumber" : 82,
+      "startColumnNumber" : 4,
+      "endLineNumber" : 82,
+      "endColumnNumber" : 12
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 26,
+        "startLineNumber" : 82,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 82,
+        "endColumnNumber" : 30
+      },
+      "nodeContext" : "Failsafe.with(retryPolicy)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 400,
+        "startLineNumber" : 82,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 93,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "Failsafe.with(retryPolicy).run(() -> {\n  sub=context.createSocket(SocketType.SUB);\n  sub.setIPv6(isSubAddressIPv6(publishConnection));\n  sub.connect(publishConnection);\n  sub.subscribe(new byte[0]);\n  pub=context.createSocket(SocketType.PUB);\n  pub.setIPv6(isSubAddressIPv6(subscribeConnection));\n  pub.connect(subscribeConnection);\n}\n)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 59,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 401,
+        "startLineNumber" : 82,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 93,
+        "endColumnNumber" : 6
+      },
+      "nodeContext" : "Failsafe.with(retryPolicy).run(() -> {\n  sub=context.createSocket(SocketType.SUB);\n  sub.setIPv6(isSubAddressIPv6(publishConnection));\n  sub.connect(publishConnection);\n  sub.subscribe(new byte[0]);\n  pub=context.createSocket(SocketType.PUB);\n  pub.setIPv6(isSubAddressIPv6(subscribeConnection));\n  pub.connect(subscribeConnection);\n}\n);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 60,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3052,
+        "startLineNumber" : 64,
+        "startColumnNumber" : 93,
+        "endLineNumber" : 152,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  executor=Executors.newCachedThreadPool(r -> {\n    Thread thread=new Thread(r);\n    thread.setName(\"Event Bus\");\n    thread.setDaemon(true);\n    return thread;\n  }\n);\n  String connectionMessage=String.format(\"Connecting to %s and %s\",publishConnection,subscribeConnection);\n  LOG.info(connectionMessage);\n  RetryPolicy<Object> retryPolicy=new RetryPolicy<>().withMaxAttempts(5).withDelay(5,10,ChronoUnit.SECONDS).onFailedAttempt(e -> LOG.log(Level.WARNING,String.format(\"%s failed\",connectionMessage))).onRetry(e -> LOG.log(Level.WARNING,String.format(\"Failure #%s. Retrying.\",e.getAttemptCount()))).onRetriesExceeded(e -> LOG.log(Level.WARNING,\"Connection aborted.\"));\n  Failsafe.with(retryPolicy).run(() -> {\n    sub=context.createSocket(SocketType.SUB);\n    sub.setIPv6(isSubAddressIPv6(publishConnection));\n    sub.connect(publishConnection);\n    sub.subscribe(new byte[0]);\n    pub=context.createSocket(SocketType.PUB);\n    pub.setIPv6(isSubAddressIPv6(subscribeConnection));\n    pub.connect(subscribeConnection);\n  }\n);\n  ZMQ.Poller poller=context.createPoller(1);\n  poller.register(sub,ZMQ.Poller.POLLIN);\n  LOG.info(\"Sockets created\");\n  AtomicBoolean pollingStarted=new AtomicBoolean(false);\n  executor.submit(() -> {\n    LOG.info(\"Bus started\");\n    while (!Thread.currentThread().isInterrupted()) {\n      try {\n        poller.poll(150);\n        pollingStarted.lazySet(true);\n        if (poller.pollin(0)) {\n          ZMQ.Socket socket=poller.getSocket(0);\n          Type type=new Type(new String(socket.recv(ZMQ.DONTWAIT),UTF_8));\n          UUID id=UUID.fromString(new String(socket.recv(ZMQ.DONTWAIT),UTF_8));\n          String data=new String(socket.recv(ZMQ.DONTWAIT),UTF_8);\n          Object converted=JSON.toType(data,Object.class);\n          Event event=new Event(id,type,converted);\n          if (recentMessages.contains(id)) {\n            continue;\n          }\n          recentMessages.add(id);\n          List<Consumer<Event>> typeListeners=listeners.get(type);\n          if (typeListeners == null) {\n            continue;\n          }\n          typeListeners.parallelStream().forEach(listener -> listener.accept(event));\n        }\n      }\n catch (      Throwable e) {\n        if (e.getCause() != null && e.getCause() instanceof AssertionError) {\n        }\n else {\n          throw e;\n        }\n      }\n    }\n  }\n);\n  while (!pollingStarted.get()) {\n    try {\n      Thread.sleep(100);\n    }\n catch (    InterruptedException e) {\n      Thread.currentThread().interrupt();\n      throw new RuntimeException(e);\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 432,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3143,
+        "startLineNumber" : 64,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 152,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "UnboundZmqEventBus(ZContext context,String publishConnection,String subscribeConnection){\n  executor=Executors.newCachedThreadPool(r -> {\n    Thread thread=new Thread(r);\n    thread.setName(\"Event Bus\");\n    thread.setDaemon(true);\n    return thread;\n  }\n);\n  String connectionMessage=String.format(\"Connecting to %s and %s\",publishConnection,subscribeConnection);\n  LOG.info(connectionMessage);\n  RetryPolicy<Object> retryPolicy=new RetryPolicy<>().withMaxAttempts(5).withDelay(5,10,ChronoUnit.SECONDS).onFailedAttempt(e -> LOG.log(Level.WARNING,String.format(\"%s failed\",connectionMessage))).onRetry(e -> LOG.log(Level.WARNING,String.format(\"Failure #%s. Retrying.\",e.getAttemptCount()))).onRetriesExceeded(e -> LOG.log(Level.WARNING,\"Connection aborted.\"));\n  Failsafe.with(retryPolicy).run(() -> {\n    sub=context.createSocket(SocketType.SUB);\n    sub.setIPv6(isSubAddressIPv6(publishConnection));\n    sub.connect(publishConnection);\n    sub.subscribe(new byte[0]);\n    pub=context.createSocket(SocketType.PUB);\n    pub.setIPv6(isSubAddressIPv6(subscribeConnection));\n    pub.connect(subscribeConnection);\n  }\n);\n  ZMQ.Poller poller=context.createPoller(1);\n  poller.register(sub,ZMQ.Poller.POLLIN);\n  LOG.info(\"Sockets created\");\n  AtomicBoolean pollingStarted=new AtomicBoolean(false);\n  executor.submit(() -> {\n    LOG.info(\"Bus started\");\n    while (!Thread.currentThread().isInterrupted()) {\n      try {\n        poller.poll(150);\n        pollingStarted.lazySet(true);\n        if (poller.pollin(0)) {\n          ZMQ.Socket socket=poller.getSocket(0);\n          Type type=new Type(new String(socket.recv(ZMQ.DONTWAIT),UTF_8));\n          UUID id=UUID.fromString(new String(socket.recv(ZMQ.DONTWAIT),UTF_8));\n          String data=new String(socket.recv(ZMQ.DONTWAIT),UTF_8);\n          Object converted=JSON.toType(data,Object.class);\n          Event event=new Event(id,type,converted);\n          if (recentMessages.contains(id)) {\n            continue;\n          }\n          recentMessages.add(id);\n          List<Consumer<Event>> typeListeners=listeners.get(type);\n          if (typeListeners == null) {\n            continue;\n          }\n          typeListeners.parallelStream().forEach(listener -> listener.accept(event));\n        }\n      }\n catch (      Throwable e) {\n        if (e.getCause() != null && e.getCause() instanceof AssertionError) {\n        }\n else {\n          throw e;\n        }\n      }\n    }\n  }\n);\n  while (!pollingStarted.get()) {\n    try {\n      Thread.sleep(100);\n    }\n catch (    InterruptedException e) {\n      Thread.currentThread().interrupt();\n      throw new RuntimeException(e);\n    }\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 446,
+      "astHeight" : 19
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 26,
+        "startLineNumber" : 82,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 82,
+        "endColumnNumber" : 30
+      },
+      "nodeContext" : "Failsafe.with(retryPolicy)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    },
+    "tokenLength" : 1,
+    "type" : null
+  } ],
+  "positionList" : [ {
+    "charLength" : 8,
+    "startLineNumber" : 82,
+    "startColumnNumber" : 4,
+    "endLineNumber" : 82,
+    "endColumnNumber" : 12
+  } ],
+  "layoutRelationDataList" : [ ]
+}

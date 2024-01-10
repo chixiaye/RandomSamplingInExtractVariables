@@ -1,100 +1,100 @@
 {
   "id" : 199,
-  "expression" : "sourceResultPartitions.get(0).getId()",
+  "expression" : "\"The checkpoint node should not be marked for deletion.\"",
   "projectName" : "apache@flink",
-  "commitID" : "f8cb19e70ca7da6423dfb01b97e05c4d520c9fde",
-  "filePath" : "/flink-runtime/src/test/java/org/apache/flink/runtime/executiongraph/RegionPartitionGroupReleaseStrategyTest.java",
+  "commitID" : "c3df4c3f1f868d40e1e70404bea41b7a007e8b08",
+  "filePath" : "flink-runtime/src/test/java/org/apache/flink/runtime/checkpoint/ZooKeeperCompletedCheckpointStoreITCase.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "sourceResultPartitions.get(0).getId()",
-    "nodeType" : "MethodInvocation",
+    "nodeContext" : "\"The checkpoint node should not be marked for deletion.\"",
+    "nodeType" : "StringLiteral",
     "nodePosition" : {
-      "charLength" : 37,
-      "startLineNumber" : 94,
+      "charLength" : 56,
+      "startLineNumber" : 224,
       "startColumnNumber" : 16,
-      "endLineNumber" : 94,
-      "endColumnNumber" : 53
+      "endLineNumber" : 224,
+      "endColumnNumber" : 72
     },
-    "astNodeNumber" : 6,
-    "astHeight" : 3,
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
     "parentDataList" : [ {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
       "nodePosition" : {
-        "charLength" : 83,
-        "startLineNumber" : 93,
-        "startColumnNumber" : 44,
-        "endLineNumber" : 94,
-        "endColumnNumber" : 53
+        "charLength" : 153,
+        "startLineNumber" : 223,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 226,
+        "endColumnNumber" : 46
       },
-      "nodeContext" : "onlySourceResultPartitionId=sourceResultPartitions.get(0).getId()",
-      "nodeType" : "VariableDeclarationFragment",
-      "astNodeNumber" : 8,
-      "astHeight" : 4
+      "nodeContext" : "assertEquals(\"The checkpoint node should not be marked for deletion.\",1,checkpointPathChildren.size())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 120,
-        "startLineNumber" : 93,
+        "charLength" : 154,
+        "startLineNumber" : 223,
         "startColumnNumber" : 8,
-        "endLineNumber" : 94,
-        "endColumnNumber" : 54
+        "endLineNumber" : 226,
+        "endColumnNumber" : 47
       },
-      "nodeContext" : "final IntermediateResultPartitionID onlySourceResultPartitionId=sourceResultPartitions.get(0).getId();\n",
-      "nodeType" : "VariableDeclarationStatement",
-      "astNodeNumber" : 12,
-      "astHeight" : 5
+      "nodeContext" : "assertEquals(\"The checkpoint node should not be marked for deletion.\",1,checkpointPathChildren.size());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 1696,
-        "startLineNumber" : 75,
-        "startColumnNumber" : 85,
-        "endLineNumber" : 103,
+        "charLength" : 2043,
+        "startLineNumber" : 199,
+        "startColumnNumber" : 63,
+        "endLineNumber" : 244,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  final List<TestingSchedulingExecutionVertex> sourceVertices=testingSchedulingTopology.addExecutionVertices().finish();\n  final List<TestingSchedulingExecutionVertex> intermediateVertices=testingSchedulingTopology.addExecutionVertices().finish();\n  final List<TestingSchedulingExecutionVertex> sinkVertices=testingSchedulingTopology.addExecutionVertices().finish();\n  final List<TestingSchedulingResultPartition> sourceResultPartitions=testingSchedulingTopology.connectAllToAll(sourceVertices,intermediateVertices).finish();\n  testingSchedulingTopology.connectAllToAll(intermediateVertices,sinkVertices).withResultPartitionType(ResultPartitionType.PIPELINED).finish();\n  final ExecutionVertexID onlyIntermediateVertexId=intermediateVertices.get(0).getId();\n  final ExecutionVertexID onlySinkVertexId=sinkVertices.get(0).getId();\n  final IntermediateResultPartitionID onlySourceResultPartitionId=sourceResultPartitions.get(0).getId();\n  final RegionPartitionGroupReleaseStrategy regionPartitionGroupReleaseStrategy=new RegionPartitionGroupReleaseStrategy(testingSchedulingTopology);\n  regionPartitionGroupReleaseStrategy.vertexFinished(onlyIntermediateVertexId);\n  final List<IntermediateResultPartitionID> partitionsToRelease=getReleasablePartitions(regionPartitionGroupReleaseStrategy,onlySinkVertexId);\n  assertThat(partitionsToRelease,contains(onlySourceResultPartitionId));\n}\n",
+      "nodeContext" : "{\n  CuratorFramework client=ZOOKEEPER.getClient();\n  SharedStateRegistry sharedStateRegistry=new SharedStateRegistryImpl();\n  CompletedCheckpointStore store=createRecoveredCompletedCheckpointStore(1);\n  TestCompletedCheckpoint checkpoint=createCheckpoint(0,sharedStateRegistry);\n  store.addCheckpointAndSubsumeOldestOne(checkpoint,new CheckpointsCleaner(),() -> {\n  }\n);\n  assertEquals(1,store.getNumberOfRetainedCheckpoints());\n  assertNotNull(client.checkExists().forPath(CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID())));\n  store.shutdown(JobStatus.SUSPENDED,new CheckpointsCleaner());\n  assertEquals(0,store.getNumberOfRetainedCheckpoints());\n  final String checkpointPath=CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID());\n  final List<String> checkpointPathChildren=client.getChildren().forPath(checkpointPath);\n  assertEquals(\"The checkpoint node should not be marked for deletion.\",1,checkpointPathChildren.size());\n  final String locksNodeName=Iterables.getOnlyElement(checkpointPathChildren);\n  final String locksNodePath=ZooKeeperUtils.generateZookeeperPath(checkpointPath,locksNodeName);\n  final Stat locksStat=client.checkExists().forPath(locksNodePath);\n  assertEquals(\"There shouldn't be any lock node available for the checkpoint\",0,locksStat.getNumChildren());\n  sharedStateRegistry.close();\n  store=createRecoveredCompletedCheckpointStore(1);\n  CompletedCheckpoint recovered=store.getLatestCheckpoint();\n  assertEquals(checkpoint,recovered);\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 143,
-      "astHeight" : 6
+      "astNodeNumber" : 185,
+      "astHeight" : 8
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 1787,
-        "startLineNumber" : 74,
+        "charLength" : 2302,
+        "startLineNumber" : 194,
         "startColumnNumber" : 4,
-        "endLineNumber" : 103,
+        "endLineNumber" : 244,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "@Test public void releasePartitionsIfDownstreamRegionWithMultipleOperatorsIsFinished(){\n  final List<TestingSchedulingExecutionVertex> sourceVertices=testingSchedulingTopology.addExecutionVertices().finish();\n  final List<TestingSchedulingExecutionVertex> intermediateVertices=testingSchedulingTopology.addExecutionVertices().finish();\n  final List<TestingSchedulingExecutionVertex> sinkVertices=testingSchedulingTopology.addExecutionVertices().finish();\n  final List<TestingSchedulingResultPartition> sourceResultPartitions=testingSchedulingTopology.connectAllToAll(sourceVertices,intermediateVertices).finish();\n  testingSchedulingTopology.connectAllToAll(intermediateVertices,sinkVertices).withResultPartitionType(ResultPartitionType.PIPELINED).finish();\n  final ExecutionVertexID onlyIntermediateVertexId=intermediateVertices.get(0).getId();\n  final ExecutionVertexID onlySinkVertexId=sinkVertices.get(0).getId();\n  final IntermediateResultPartitionID onlySourceResultPartitionId=sourceResultPartitions.get(0).getId();\n  final RegionPartitionGroupReleaseStrategy regionPartitionGroupReleaseStrategy=new RegionPartitionGroupReleaseStrategy(testingSchedulingTopology);\n  regionPartitionGroupReleaseStrategy.vertexFinished(onlyIntermediateVertexId);\n  final List<IntermediateResultPartitionID> partitionsToRelease=getReleasablePartitions(regionPartitionGroupReleaseStrategy,onlySinkVertexId);\n  assertThat(partitionsToRelease,contains(onlySourceResultPartitionId));\n}\n",
+      "nodeContext" : "/** \n * Tests that suspends keeps all checkpoints (so that they can be recovered later by the ZooKeeper store). Furthermore, suspending a job should release all locks.\n */\n@Test public void testSuspendKeepsCheckpoints() throws Exception {\n  CuratorFramework client=ZOOKEEPER.getClient();\n  SharedStateRegistry sharedStateRegistry=new SharedStateRegistryImpl();\n  CompletedCheckpointStore store=createRecoveredCompletedCheckpointStore(1);\n  TestCompletedCheckpoint checkpoint=createCheckpoint(0,sharedStateRegistry);\n  store.addCheckpointAndSubsumeOldestOne(checkpoint,new CheckpointsCleaner(),() -> {\n  }\n);\n  assertEquals(1,store.getNumberOfRetainedCheckpoints());\n  assertNotNull(client.checkExists().forPath(CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID())));\n  store.shutdown(JobStatus.SUSPENDED,new CheckpointsCleaner());\n  assertEquals(0,store.getNumberOfRetainedCheckpoints());\n  final String checkpointPath=CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID());\n  final List<String> checkpointPathChildren=client.getChildren().forPath(checkpointPath);\n  assertEquals(\"The checkpoint node should not be marked for deletion.\",1,checkpointPathChildren.size());\n  final String locksNodeName=Iterables.getOnlyElement(checkpointPathChildren);\n  final String locksNodePath=ZooKeeperUtils.generateZookeeperPath(checkpointPath,locksNodeName);\n  final Stat locksStat=client.checkExists().forPath(locksNodePath);\n  assertEquals(\"There shouldn't be any lock node available for the checkpoint\",0,locksStat.getNumChildren());\n  sharedStateRegistry.close();\n  store=createRecoveredCompletedCheckpointStore(1);\n  CompletedCheckpoint recovered=store.getLatestCheckpoint();\n  assertEquals(checkpoint,recovered);\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 149,
-      "astHeight" : 7
+      "astNodeNumber" : 194,
+      "astHeight" : 9
     } ],
     "currentLineData" : {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
       "nodePosition" : {
-        "charLength" : 83,
-        "startLineNumber" : 93,
-        "startColumnNumber" : 44,
-        "endLineNumber" : 94,
-        "endColumnNumber" : 53
+        "charLength" : 153,
+        "startLineNumber" : 223,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 226,
+        "endColumnNumber" : 46
       },
-      "nodeContext" : "onlySourceResultPartitionId=sourceResultPartitions.get(0).getId()",
-      "nodeType" : "VariableDeclarationFragment",
-      "astNodeNumber" : 8,
-      "astHeight" : 4
+      "nodeContext" : "assertEquals(\"The checkpoint node should not be marked for deletion.\",1,checkpointPathChildren.size())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
     },
-    "tokenLength" : 4,
-    "type" : "org.apache.flink.runtime.jobgraph.IntermediateResultPartitionID"
+    "tokenLength" : 8,
+    "type" : "java.lang.String"
   } ],
   "positionList" : [ {
-    "charLength" : 37,
-    "startLineNumber" : 94,
+    "charLength" : 56,
+    "startLineNumber" : 224,
     "startColumnNumber" : 16,
-    "endLineNumber" : 94,
-    "endColumnNumber" : 53
+    "endLineNumber" : 224,
+    "endColumnNumber" : 72
   } ],
   "layoutRelationDataList" : [ ]
 }

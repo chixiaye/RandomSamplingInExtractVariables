@@ -1,113 +1,100 @@
 {
   "id" : 11,
-  "expression" : "VClientImpl",
+  "expression" : "processName",
   "projectName" : "android-hacker@VirtualXposed",
-  "commitID" : "8e98dd20e6a751089d4eb2642fa6bf088a3e7a79",
-  "filePath" : "/VirtualApp/lib/src/main/java/com/lody/virtual/client/stub/StubContentProvider.java",
+  "commitID" : "1e7866f2ce81f85e451faeb00d17c69c578669d7",
+  "filePath" : "VirtualApp/lib/src/main/java/com/lody/virtual/client/hook/patchs/am/HCallbackHook.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "VClientImpl",
+    "nodeContext" : "processName",
     "nodeType" : "SimpleName",
     "nodePosition" : {
       "charLength" : 11,
-      "startLineNumber" : 42,
-      "startColumnNumber" : 23,
-      "endLineNumber" : 42,
-      "endColumnNumber" : 34
+      "startLineNumber" : 127,
+      "startColumnNumber" : 21,
+      "endLineNumber" : 127,
+      "endColumnNumber" : 32
     },
     "astNodeNumber" : 1,
     "astHeight" : 1,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
       "nodePosition" : {
-        "charLength" : 17,
-        "startLineNumber" : 42,
-        "startColumnNumber" : 23,
-        "endLineNumber" : 42,
-        "endColumnNumber" : 40
+        "charLength" : 58,
+        "startLineNumber" : 127,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 127,
+        "endColumnNumber" : 60
       },
-      "nodeContext" : "VClientImpl.get()",
+      "nodeContext" : "AppSandBox.install(processName,targetActInfo.packageName)",
       "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 3,
-      "astHeight" : 2
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
-      "nodePosition" : {
-        "charLength" : 26,
-        "startLineNumber" : 42,
-        "startColumnNumber" : 14,
-        "endLineNumber" : 42,
-        "endColumnNumber" : 40
-      },
-      "nodeContext" : "client=VClientImpl.get()",
-      "nodeType" : "VariableDeclarationFragment",
-      "astNodeNumber" : 5,
+      "astNodeNumber" : 7,
       "astHeight" : 3
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 39,
-        "startLineNumber" : 42,
+        "charLength" : 59,
+        "startLineNumber" : 127,
         "startColumnNumber" : 2,
-        "endLineNumber" : 42,
-        "endColumnNumber" : 41
+        "endLineNumber" : 127,
+        "endColumnNumber" : 61
       },
-      "nodeContext" : "VClientImpl client=VClientImpl.get();\n",
-      "nodeType" : "VariableDeclarationStatement",
+      "nodeContext" : "AppSandBox.install(processName,targetActInfo.packageName);\n",
+      "nodeType" : "ExpressionStatement",
       "astNodeNumber" : 8,
       "astHeight" : 4
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 448,
-        "startLineNumber" : 35,
-        "startColumnNumber" : 43,
-        "endLineNumber" : 48,
+        "charLength" : 1980,
+        "startLineNumber" : 103,
+        "startColumnNumber" : 48,
+        "endLineNumber" : 155,
         "endColumnNumber" : 2
       },
-      "nodeContext" : "{\n  ConditionVariable lock=VirtualCore.get().getInitLock();\n  if (lock != null) {\n    lock.block();\n  }\n  IBinder token=BundleCompat.getBinder(extras,\"_VA_|_binder_\");\n  int vuid=extras.getInt(\"_VA_|_vuid_\");\n  VClientImpl client=VClientImpl.get();\n  client.initProcess(token,vuid);\n  Bundle res=new Bundle();\n  BundleCompat.putBinder(res,\"_VA_|_client_\",client.asBinder());\n  res.putInt(\"_VA_|_pid_\",Process.myPid());\n  return res;\n}\n",
+      "nodeContext" : "{\n  Object r=msg.obj;\n  Intent stubIntent=ActivityRecordCompat.getIntent(r);\n  Intent targetIntent=stubIntent.getParcelableExtra(ExtraConstants.EXTRA_TARGET_INTENT);\n  ComponentName component=targetIntent.getComponent();\n  String pkgName=component.getPackageName();\n  AppInfo appInfo=VirtualCore.getCore().findApp(pkgName);\n  if (appInfo == null) {\n    return;\n  }\n  ActivityInfo stubActInfo=stubIntent.getParcelableExtra(ExtraConstants.EXTRA_STUB_ACT_INFO);\n  ActivityInfo targetActInfo=stubIntent.getParcelableExtra(ExtraConstants.EXTRA_TARGET_ACT_INFO);\n  if (stubActInfo == null || targetActInfo == null) {\n    return;\n  }\n  String processName=ComponentUtils.getProcessName(targetActInfo);\n  AppSandBox.install(processName,targetActInfo.packageName);\n  ClassLoader pluginClassLoader=appInfo.getClassLoader();\n  targetIntent.setExtrasClassLoader(pluginClassLoader);\n  boolean error=false;\n  try {\n    targetIntent.putExtra(ExtraConstants.EXTRA_STUB_ACT_INFO,stubActInfo);\n    targetIntent.putExtra(ExtraConstants.EXTRA_TARGET_ACT_INFO,targetActInfo);\n  }\n catch (  Throwable e) {\n    error=true;\n    VLog.w(TAG,\"Directly putExtra failed: %s.\",e.getMessage());\n  }\n  if (error && Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {\n    ClassLoader oldParent=ClassLoaderCompat.setParent(getClass().getClassLoader(),pluginClassLoader);\n    try {\n      targetIntent.putExtra(ExtraConstants.EXTRA_STUB_ACT_INFO,stubActInfo);\n      targetIntent.putExtra(ExtraConstants.EXTRA_TARGET_ACT_INFO,targetActInfo);\n    }\n catch (    Throwable e) {\n      VLog.w(TAG,\"Secondly putExtra failed: %s.\",e.getMessage());\n    }\n    ClassLoaderCompat.setParent(getClass().getClassLoader(),oldParent);\n  }\n  ActivityRecordCompat.setIntent(r,targetIntent);\n  ActivityRecordCompat.setActivityInfo(r,targetActInfo);\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 79,
-      "astHeight" : 6
+      "astNodeNumber" : 248,
+      "astHeight" : 10
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 490,
-        "startLineNumber" : 35,
+        "charLength" : 2027,
+        "startLineNumber" : 103,
         "startColumnNumber" : 1,
-        "endLineNumber" : 48,
+        "endLineNumber" : 155,
         "endColumnNumber" : 2
       },
-      "nodeContext" : "private Bundle initProcess(Bundle extras){\n  ConditionVariable lock=VirtualCore.get().getInitLock();\n  if (lock != null) {\n    lock.block();\n  }\n  IBinder token=BundleCompat.getBinder(extras,\"_VA_|_binder_\");\n  int vuid=extras.getInt(\"_VA_|_vuid_\");\n  VClientImpl client=VClientImpl.get();\n  client.initProcess(token,vuid);\n  Bundle res=new Bundle();\n  BundleCompat.putBinder(res,\"_VA_|_client_\",client.asBinder());\n  res.putInt(\"_VA_|_pid_\",Process.myPid());\n  return res;\n}\n",
+      "nodeContext" : "private void handleLaunchActivity(Message msg){\n  Object r=msg.obj;\n  Intent stubIntent=ActivityRecordCompat.getIntent(r);\n  Intent targetIntent=stubIntent.getParcelableExtra(ExtraConstants.EXTRA_TARGET_INTENT);\n  ComponentName component=targetIntent.getComponent();\n  String pkgName=component.getPackageName();\n  AppInfo appInfo=VirtualCore.getCore().findApp(pkgName);\n  if (appInfo == null) {\n    return;\n  }\n  ActivityInfo stubActInfo=stubIntent.getParcelableExtra(ExtraConstants.EXTRA_STUB_ACT_INFO);\n  ActivityInfo targetActInfo=stubIntent.getParcelableExtra(ExtraConstants.EXTRA_TARGET_ACT_INFO);\n  if (stubActInfo == null || targetActInfo == null) {\n    return;\n  }\n  String processName=ComponentUtils.getProcessName(targetActInfo);\n  AppSandBox.install(processName,targetActInfo.packageName);\n  ClassLoader pluginClassLoader=appInfo.getClassLoader();\n  targetIntent.setExtrasClassLoader(pluginClassLoader);\n  boolean error=false;\n  try {\n    targetIntent.putExtra(ExtraConstants.EXTRA_STUB_ACT_INFO,stubActInfo);\n    targetIntent.putExtra(ExtraConstants.EXTRA_TARGET_ACT_INFO,targetActInfo);\n  }\n catch (  Throwable e) {\n    error=true;\n    VLog.w(TAG,\"Directly putExtra failed: %s.\",e.getMessage());\n  }\n  if (error && Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {\n    ClassLoader oldParent=ClassLoaderCompat.setParent(getClass().getClassLoader(),pluginClassLoader);\n    try {\n      targetIntent.putExtra(ExtraConstants.EXTRA_STUB_ACT_INFO,stubActInfo);\n      targetIntent.putExtra(ExtraConstants.EXTRA_TARGET_ACT_INFO,targetActInfo);\n    }\n catch (    Throwable e) {\n      VLog.w(TAG,\"Secondly putExtra failed: %s.\",e.getMessage());\n    }\n    ClassLoaderCompat.setParent(getClass().getClassLoader(),oldParent);\n  }\n  ActivityRecordCompat.setIntent(r,targetIntent);\n  ActivityRecordCompat.setActivityInfo(r,targetActInfo);\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 88,
-      "astHeight" : 7
+      "astNodeNumber" : 256,
+      "astHeight" : 11
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 39,
-        "startLineNumber" : 42,
+        "charLength" : 59,
+        "startLineNumber" : 127,
         "startColumnNumber" : 2,
-        "endLineNumber" : 42,
-        "endColumnNumber" : 41
+        "endLineNumber" : 127,
+        "endColumnNumber" : 61
       },
-      "nodeContext" : "VClientImpl client=VClientImpl.get();\n",
-      "nodeType" : "VariableDeclarationStatement",
+      "nodeContext" : "AppSandBox.install(processName,targetActInfo.packageName);\n",
+      "nodeType" : "ExpressionStatement",
       "astNodeNumber" : 8,
       "astHeight" : 4
     },
     "tokenLength" : 1,
-    "type" : "com.lody.virtual.client.VClientImpl"
+    "type" : "java.lang.String"
   } ],
   "positionList" : [ {
     "charLength" : 11,
-    "startLineNumber" : 42,
-    "startColumnNumber" : 23,
-    "endLineNumber" : 42,
-    "endColumnNumber" : 34
+    "startLineNumber" : 127,
+    "startColumnNumber" : 21,
+    "endLineNumber" : 127,
+    "endColumnNumber" : 32
   } ],
   "layoutRelationDataList" : [ ]
 }

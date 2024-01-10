@@ -1,87 +1,113 @@
 {
   "id" : 192,
-  "expression" : "new ScopeFormats(jmFormat,jmJobFormat,tmFormat,tmJobFormat,taskFormat,operatorFormat)",
+  "expression" : "locksStat",
   "projectName" : "apache@flink",
-  "commitID" : "f8cb19e70ca7da6423dfb01b97e05c4d520c9fde",
-  "filePath" : "/flink-runtime/src/main/java/org/apache/flink/runtime/metrics/scope/ScopeFormats.java",
+  "commitID" : "c3df4c3f1f868d40e1e70404bea41b7a007e8b08",
+  "filePath" : "flink-runtime/src/test/java/org/apache/flink/runtime/checkpoint/ZooKeeperCompletedCheckpointStoreITCase.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "new ScopeFormats(jmFormat,jmJobFormat,tmFormat,tmJobFormat,taskFormat,operatorFormat)",
-    "nodeType" : "ClassInstanceCreation",
+    "nodeContext" : "locksStat",
+    "nodeType" : "SimpleName",
     "nodePosition" : {
-      "charLength" : 107,
-      "startLineNumber" : 100,
-      "startColumnNumber" : 15,
-      "endLineNumber" : 101,
-      "endColumnNumber" : 89
+      "charLength" : 9,
+      "startLineNumber" : 236,
+      "startColumnNumber" : 16,
+      "endLineNumber" : 236,
+      "endColumnNumber" : 25
     },
-    "astNodeNumber" : 9,
-    "astHeight" : 3,
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
     "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 26,
+        "startLineNumber" : 236,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 236,
+        "endColumnNumber" : 42
+      },
+      "nodeContext" : "locksStat.getNumChildren()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 157,
+        "startLineNumber" : 233,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 236,
+        "endColumnNumber" : 43
+      },
+      "nodeContext" : "assertEquals(\"There shouldn't be any lock node available for the checkpoint\",0,locksStat.getNumChildren())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 115,
-        "startLineNumber" : 100,
+        "charLength" : 158,
+        "startLineNumber" : 233,
         "startColumnNumber" : 8,
-        "endLineNumber" : 101,
-        "endColumnNumber" : 90
+        "endLineNumber" : 236,
+        "endColumnNumber" : 44
       },
-      "nodeContext" : "return new ScopeFormats(jmFormat,jmJobFormat,tmFormat,tmJobFormat,taskFormat,operatorFormat);\n",
-      "nodeType" : "ReturnStatement",
-      "astNodeNumber" : 10,
+      "nodeContext" : "assertEquals(\"There shouldn't be any lock node available for the checkpoint\",0,locksStat.getNumChildren());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
       "astHeight" : 4
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 612,
-        "startLineNumber" : 92,
-        "startColumnNumber" : 64,
-        "endLineNumber" : 102,
+        "charLength" : 2043,
+        "startLineNumber" : 199,
+        "startColumnNumber" : 63,
+        "endLineNumber" : 244,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  String jmFormat=config.getString(MetricOptions.SCOPE_NAMING_JM);\n  String jmJobFormat=config.getString(MetricOptions.SCOPE_NAMING_JM_JOB);\n  String tmFormat=config.getString(MetricOptions.SCOPE_NAMING_TM);\n  String tmJobFormat=config.getString(MetricOptions.SCOPE_NAMING_TM_JOB);\n  String taskFormat=config.getString(MetricOptions.SCOPE_NAMING_TASK);\n  String operatorFormat=config.getString(MetricOptions.SCOPE_NAMING_OPERATOR);\n  return new ScopeFormats(jmFormat,jmJobFormat,tmFormat,tmJobFormat,taskFormat,operatorFormat);\n}\n",
+      "nodeContext" : "{\n  CuratorFramework client=ZOOKEEPER.getClient();\n  SharedStateRegistry sharedStateRegistry=new SharedStateRegistryImpl();\n  CompletedCheckpointStore store=createRecoveredCompletedCheckpointStore(1);\n  TestCompletedCheckpoint checkpoint=createCheckpoint(0,sharedStateRegistry);\n  store.addCheckpointAndSubsumeOldestOne(checkpoint,new CheckpointsCleaner(),() -> {\n  }\n);\n  assertEquals(1,store.getNumberOfRetainedCheckpoints());\n  assertNotNull(client.checkExists().forPath(CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID())));\n  store.shutdown(JobStatus.SUSPENDED,new CheckpointsCleaner());\n  assertEquals(0,store.getNumberOfRetainedCheckpoints());\n  final String checkpointPath=CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID());\n  final List<String> checkpointPathChildren=client.getChildren().forPath(checkpointPath);\n  assertEquals(\"The checkpoint node should not be marked for deletion.\",1,checkpointPathChildren.size());\n  final String locksNodeName=Iterables.getOnlyElement(checkpointPathChildren);\n  final String locksNodePath=ZooKeeperUtils.generateZookeeperPath(checkpointPath,locksNodeName);\n  final Stat locksStat=client.checkExists().forPath(locksNodePath);\n  assertEquals(\"There shouldn't be any lock node available for the checkpoint\",0,locksStat.getNumChildren());\n  sharedStateRegistry.close();\n  store=createRecoveredCompletedCheckpointStore(1);\n  CompletedCheckpoint recovered=store.getLatestCheckpoint();\n  assertEquals(checkpoint,recovered);\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 77,
-      "astHeight" : 6
+      "astNodeNumber" : 185,
+      "astHeight" : 8
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 893,
-        "startLineNumber" : 86,
+        "charLength" : 2302,
+        "startLineNumber" : 194,
         "startColumnNumber" : 4,
-        "endLineNumber" : 102,
+        "endLineNumber" : 244,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "/** \n * Creates the scope formats as defined in the given configuration.\n * @param config The configuration that defines the formats\n * @return The ScopeFormats parsed from the configuration\n */\npublic static ScopeFormats fromConfig(Configuration config){\n  String jmFormat=config.getString(MetricOptions.SCOPE_NAMING_JM);\n  String jmJobFormat=config.getString(MetricOptions.SCOPE_NAMING_JM_JOB);\n  String tmFormat=config.getString(MetricOptions.SCOPE_NAMING_TM);\n  String tmJobFormat=config.getString(MetricOptions.SCOPE_NAMING_TM_JOB);\n  String taskFormat=config.getString(MetricOptions.SCOPE_NAMING_TASK);\n  String operatorFormat=config.getString(MetricOptions.SCOPE_NAMING_OPERATOR);\n  return new ScopeFormats(jmFormat,jmJobFormat,tmFormat,tmJobFormat,taskFormat,operatorFormat);\n}\n",
+      "nodeContext" : "/** \n * Tests that suspends keeps all checkpoints (so that they can be recovered later by the ZooKeeper store). Furthermore, suspending a job should release all locks.\n */\n@Test public void testSuspendKeepsCheckpoints() throws Exception {\n  CuratorFramework client=ZOOKEEPER.getClient();\n  SharedStateRegistry sharedStateRegistry=new SharedStateRegistryImpl();\n  CompletedCheckpointStore store=createRecoveredCompletedCheckpointStore(1);\n  TestCompletedCheckpoint checkpoint=createCheckpoint(0,sharedStateRegistry);\n  store.addCheckpointAndSubsumeOldestOne(checkpoint,new CheckpointsCleaner(),() -> {\n  }\n);\n  assertEquals(1,store.getNumberOfRetainedCheckpoints());\n  assertNotNull(client.checkExists().forPath(CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID())));\n  store.shutdown(JobStatus.SUSPENDED,new CheckpointsCleaner());\n  assertEquals(0,store.getNumberOfRetainedCheckpoints());\n  final String checkpointPath=CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID());\n  final List<String> checkpointPathChildren=client.getChildren().forPath(checkpointPath);\n  assertEquals(\"The checkpoint node should not be marked for deletion.\",1,checkpointPathChildren.size());\n  final String locksNodeName=Iterables.getOnlyElement(checkpointPathChildren);\n  final String locksNodePath=ZooKeeperUtils.generateZookeeperPath(checkpointPath,locksNodeName);\n  final Stat locksStat=client.checkExists().forPath(locksNodePath);\n  assertEquals(\"There shouldn't be any lock node available for the checkpoint\",0,locksStat.getNumChildren());\n  sharedStateRegistry.close();\n  store=createRecoveredCompletedCheckpointStore(1);\n  CompletedCheckpoint recovered=store.getLatestCheckpoint();\n  assertEquals(checkpoint,recovered);\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 88,
-      "astHeight" : 7
+      "astNodeNumber" : 194,
+      "astHeight" : 9
     } ],
     "currentLineData" : {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
       "nodePosition" : {
-        "charLength" : 115,
-        "startLineNumber" : 100,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 101,
-        "endColumnNumber" : 90
+        "charLength" : 26,
+        "startLineNumber" : 236,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 236,
+        "endColumnNumber" : 42
       },
-      "nodeContext" : "return new ScopeFormats(jmFormat,jmJobFormat,tmFormat,tmJobFormat,taskFormat,operatorFormat);\n",
-      "nodeType" : "ReturnStatement",
-      "astNodeNumber" : 10,
-      "astHeight" : 4
+      "nodeContext" : "locksStat.getNumChildren()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
     },
-    "tokenLength" : 7,
-    "type" : "org.apache.flink.runtime.metrics.scope.ScopeFormats"
+    "tokenLength" : 1,
+    "type" : "org.apache.flink.runtime.checkpoint.Stat"
   } ],
   "positionList" : [ {
-    "charLength" : 107,
-    "startLineNumber" : 100,
-    "startColumnNumber" : 15,
-    "endLineNumber" : 101,
-    "endColumnNumber" : 89
+    "charLength" : 9,
+    "startLineNumber" : 236,
+    "startColumnNumber" : 16,
+    "endLineNumber" : 236,
+    "endColumnNumber" : 25
   } ],
   "layoutRelationDataList" : [ ]
 }

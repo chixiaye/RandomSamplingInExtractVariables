@@ -1,195 +1,100 @@
 {
   "id" : 270,
-  "expression" : "\"a\"",
+  "expression" : "processIds.stream().filter(p -> p > 0).collect(Collectors.toList())",
   "projectName" : "bazelbuild@bazel",
-  "commitID" : "302971e1b3d803069ac949c0085c0d2a3916c8ab",
-  "filePath" : "/src/test/java/com/google/devtools/build/lib/skyframe/serialization/HashMapCodecTest.java",
-  "occurrences" : 2,
+  "commitID" : "40c9b756d7f8bac20801e2a54e3d83b2112c80c6",
+  "filePath" : "src/main/java/com/google/devtools/build/lib/worker/WorkerSpawnRunner.java",
+  "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "\"a\"",
-    "nodeType" : "StringLiteral",
+    "nodeContext" : "processIds.stream().filter(p -> p > 0).collect(Collectors.toList())",
+    "nodeType" : "MethodInvocation",
     "nodePosition" : {
-      "charLength" : 3,
-      "startLineNumber" : 36,
-      "startColumnNumber" : 13,
-      "endLineNumber" : 36,
-      "endColumnNumber" : 16
+      "charLength" : 67,
+      "startLineNumber" : 569,
+      "startColumnNumber" : 8,
+      "endLineNumber" : 569,
+      "endColumnNumber" : 75
     },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
+    "astNodeNumber" : 16,
+    "astHeight" : 5,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
       "nodePosition" : {
-        "charLength" : 22,
-        "startLineNumber" : 36,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 36,
-        "endColumnNumber" : 26
+        "charLength" : 96,
+        "startLineNumber" : 568,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 569,
+        "endColumnNumber" : 75
       },
-      "nodeContext" : "map1.put(\"a\",\"first\")",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 5,
-      "astHeight" : 2
+      "nodeContext" : "filteredProcessIds=processIds.stream().filter(p -> p > 0).collect(Collectors.toList())",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 18,
+      "astHeight" : 6
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 23,
-        "startLineNumber" : 36,
+        "charLength" : 108,
+        "startLineNumber" : 568,
         "startColumnNumber" : 4,
-        "endLineNumber" : 36,
-        "endColumnNumber" : 27
+        "endLineNumber" : 569,
+        "endColumnNumber" : 76
       },
-      "nodeContext" : "map1.put(\"a\",\"first\");\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 6,
-      "astHeight" : 3
+      "nodeContext" : "List<Long> filteredProcessIds=processIds.stream().filter(p -> p > 0).collect(Collectors.toList());\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 24,
+      "astHeight" : 7
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 1085,
-        "startLineNumber" : 34,
-        "startColumnNumber" : 39,
-        "endLineNumber" : 61,
+        "charLength" : 1875,
+        "startLineNumber" : 561,
+        "startColumnNumber" : 87,
+        "endLineNumber" : 615,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "{\n  HashMap<String,String> map1=new HashMap<>();\n  map1.put(\"a\",\"first\");\n  map1.put(\"b\",null);\n  LinkedHashMap<String,String> map2=new LinkedHashMap<>();\n  map2.put(\"c\",null);\n  map2.put(\"a\",\"second\");\n  HashMap<String,String> emptyMap=new HashMap<>();\n  List<Map<String,String>> deserializedMaps=new ArrayList<>();\n  new SerializationTester(map1,map2,emptyMap,emptyMap).setVerificationFunction((VerificationFunction<Map<String,String>>)(original,deserialized) -> {\n    assertThat(deserialized).containsExactlyEntriesIn(original).inOrder();\n    deserializedMaps.add(deserialized);\n  }\n).runTests();\n  assertThat(deserializedMaps).hasSize(4);\n  for (int i=0; i < 4; i++) {\n    for (int j=0; j < 4; j++) {\n      if (i == j) {\n        continue;\n      }\n      assertThat(deserializedMaps.get(i)).isNotSameInstanceAs(deserializedMaps.get(j));\n    }\n  }\n}\n",
+      "nodeContext" : "{\n  Map<Long,WorkerMetric.WorkerStat> pidResults=new HashMap<>();\n  if (os != OS.LINUX && os != OS.DARWIN) {\n    return pidResults;\n  }\n  List<Long> filteredProcessIds=processIds.stream().filter(p -> p > 0).collect(Collectors.toList());\n  String pids=Joiner.on(\",\").join(filteredProcessIds);\n  BufferedReader psOutput;\n  try {\n    String command=\"ps -o pid,rss -p \" + pids;\n    psOutput=new BufferedReader(new InputStreamReader(runtime.exec(new String[]{\"bash\",\"-c\",command}).getInputStream(),\"UTF-8\"));\n  }\n catch (  IOException e) {\n    logger.atWarning().withCause(e).log(\"Error while executing command for pids: %s\",pids);\n    return pidResults;\n  }\n  try {\n    Instant now=Instant.now();\n    String output=null;\n    boolean isFirst=true;\n    while ((output=psOutput.readLine()) != null) {\n      if (isFirst) {\n        isFirst=false;\n        continue;\n      }\n      List<String> line=Splitter.on(\" \").trimResults().omitEmptyStrings().splitToList(output);\n      if (line.size() != 2) {\n        logger.atWarning().log(\"Unexpected length of split line %s %d\",output,line.size());\n        continue;\n      }\n      long pid=Long.parseLong(line.get(0));\n      int memoryInKb=Integer.parseInt(line.get(1)) / 1000;\n      pidResults.put(pid,new WorkerMetric.WorkerStat(memoryInKb,now));\n    }\n  }\n catch (  IllegalArgumentException|IOException e) {\n    logger.atWarning().withCause(e).log(\"Error while parsing psOutput: %s\",psOutput);\n  }\n  return pidResults;\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 177,
-      "astHeight" : 12
+      "astNodeNumber" : 261,
+      "astHeight" : 13
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 1130,
-        "startLineNumber" : 33,
+        "charLength" : 1981,
+        "startLineNumber" : 560,
         "startColumnNumber" : 2,
-        "endLineNumber" : 61,
+        "endLineNumber" : 615,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "@Test public void smoke() throws Exception {\n  HashMap<String,String> map1=new HashMap<>();\n  map1.put(\"a\",\"first\");\n  map1.put(\"b\",null);\n  LinkedHashMap<String,String> map2=new LinkedHashMap<>();\n  map2.put(\"c\",null);\n  map2.put(\"a\",\"second\");\n  HashMap<String,String> emptyMap=new HashMap<>();\n  List<Map<String,String>> deserializedMaps=new ArrayList<>();\n  new SerializationTester(map1,map2,emptyMap,emptyMap).setVerificationFunction((VerificationFunction<Map<String,String>>)(original,deserialized) -> {\n    assertThat(deserialized).containsExactlyEntriesIn(original).inOrder();\n    deserializedMaps.add(deserialized);\n  }\n).runTests();\n  assertThat(deserializedMaps).hasSize(4);\n  for (int i=0; i < 4; i++) {\n    for (int j=0; j < 4; j++) {\n      if (i == j) {\n        continue;\n      }\n      assertThat(deserializedMaps.get(i)).isNotSameInstanceAs(deserializedMaps.get(j));\n    }\n  }\n}\n",
+      "nodeContext" : "@VisibleForTesting public Map<Long,WorkerMetric.WorkerStat> collectStats(OS os,List<Long> processIds){\n  Map<Long,WorkerMetric.WorkerStat> pidResults=new HashMap<>();\n  if (os != OS.LINUX && os != OS.DARWIN) {\n    return pidResults;\n  }\n  List<Long> filteredProcessIds=processIds.stream().filter(p -> p > 0).collect(Collectors.toList());\n  String pids=Joiner.on(\",\").join(filteredProcessIds);\n  BufferedReader psOutput;\n  try {\n    String command=\"ps -o pid,rss -p \" + pids;\n    psOutput=new BufferedReader(new InputStreamReader(runtime.exec(new String[]{\"bash\",\"-c\",command}).getInputStream(),\"UTF-8\"));\n  }\n catch (  IOException e) {\n    logger.atWarning().withCause(e).log(\"Error while executing command for pids: %s\",pids);\n    return pidResults;\n  }\n  try {\n    Instant now=Instant.now();\n    String output=null;\n    boolean isFirst=true;\n    while ((output=psOutput.readLine()) != null) {\n      if (isFirst) {\n        isFirst=false;\n        continue;\n      }\n      List<String> line=Splitter.on(\" \").trimResults().omitEmptyStrings().splitToList(output);\n      if (line.size() != 2) {\n        logger.atWarning().log(\"Unexpected length of split line %s %d\",output,line.size());\n        continue;\n      }\n      long pid=Long.parseLong(line.get(0));\n      int memoryInKb=Integer.parseInt(line.get(1)) / 1000;\n      pidResults.put(pid,new WorkerMetric.WorkerStat(memoryInKb,now));\n    }\n  }\n catch (  IllegalArgumentException|IOException e) {\n    logger.atWarning().withCause(e).log(\"Error while parsing psOutput: %s\",psOutput);\n  }\n  return pidResults;\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 185,
-      "astHeight" : 13
+      "astNodeNumber" : 286,
+      "astHeight" : 14
     } ],
     "currentLineData" : {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
       "nodePosition" : {
-        "charLength" : 23,
-        "startLineNumber" : 36,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 36,
-        "endColumnNumber" : 27
+        "charLength" : 96,
+        "startLineNumber" : 568,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 569,
+        "endColumnNumber" : 75
       },
-      "nodeContext" : "map1.put(\"a\",\"first\");\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 6,
-      "astHeight" : 3
+      "nodeContext" : "filteredProcessIds=processIds.stream().filter(p -> p > 0).collect(Collectors.toList())",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 18,
+      "astHeight" : 6
     },
-    "tokenLength" : 1,
-    "type" : "java.lang.String"
-  }, {
-    "nodeContext" : "\"a\"",
-    "nodeType" : "StringLiteral",
-    "nodePosition" : {
-      "charLength" : 3,
-      "startLineNumber" : 40,
-      "startColumnNumber" : 13,
-      "endLineNumber" : 40,
-      "endColumnNumber" : 16
-    },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
-    "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
-      "nodePosition" : {
-        "charLength" : 23,
-        "startLineNumber" : 40,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 40,
-        "endColumnNumber" : 27
-      },
-      "nodeContext" : "map2.put(\"a\",\"second\")",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 5,
-      "astHeight" : 2
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 24,
-        "startLineNumber" : 40,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 40,
-        "endColumnNumber" : 28
-      },
-      "nodeContext" : "map2.put(\"a\",\"second\");\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 6,
-      "astHeight" : 3
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
-      "nodePosition" : {
-        "charLength" : 1085,
-        "startLineNumber" : 34,
-        "startColumnNumber" : 39,
-        "endLineNumber" : 61,
-        "endColumnNumber" : 3
-      },
-      "nodeContext" : "{\n  HashMap<String,String> map1=new HashMap<>();\n  map1.put(\"a\",\"first\");\n  map1.put(\"b\",null);\n  LinkedHashMap<String,String> map2=new LinkedHashMap<>();\n  map2.put(\"c\",null);\n  map2.put(\"a\",\"second\");\n  HashMap<String,String> emptyMap=new HashMap<>();\n  List<Map<String,String>> deserializedMaps=new ArrayList<>();\n  new SerializationTester(map1,map2,emptyMap,emptyMap).setVerificationFunction((VerificationFunction<Map<String,String>>)(original,deserialized) -> {\n    assertThat(deserialized).containsExactlyEntriesIn(original).inOrder();\n    deserializedMaps.add(deserialized);\n  }\n).runTests();\n  assertThat(deserializedMaps).hasSize(4);\n  for (int i=0; i < 4; i++) {\n    for (int j=0; j < 4; j++) {\n      if (i == j) {\n        continue;\n      }\n      assertThat(deserializedMaps.get(i)).isNotSameInstanceAs(deserializedMaps.get(j));\n    }\n  }\n}\n",
-      "nodeType" : "Block",
-      "astNodeNumber" : 177,
-      "astHeight" : 12
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
-      "nodePosition" : {
-        "charLength" : 1130,
-        "startLineNumber" : 33,
-        "startColumnNumber" : 2,
-        "endLineNumber" : 61,
-        "endColumnNumber" : 3
-      },
-      "nodeContext" : "@Test public void smoke() throws Exception {\n  HashMap<String,String> map1=new HashMap<>();\n  map1.put(\"a\",\"first\");\n  map1.put(\"b\",null);\n  LinkedHashMap<String,String> map2=new LinkedHashMap<>();\n  map2.put(\"c\",null);\n  map2.put(\"a\",\"second\");\n  HashMap<String,String> emptyMap=new HashMap<>();\n  List<Map<String,String>> deserializedMaps=new ArrayList<>();\n  new SerializationTester(map1,map2,emptyMap,emptyMap).setVerificationFunction((VerificationFunction<Map<String,String>>)(original,deserialized) -> {\n    assertThat(deserialized).containsExactlyEntriesIn(original).inOrder();\n    deserializedMaps.add(deserialized);\n  }\n).runTests();\n  assertThat(deserializedMaps).hasSize(4);\n  for (int i=0; i < 4; i++) {\n    for (int j=0; j < 4; j++) {\n      if (i == j) {\n        continue;\n      }\n      assertThat(deserializedMaps.get(i)).isNotSameInstanceAs(deserializedMaps.get(j));\n    }\n  }\n}\n",
-      "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 185,
-      "astHeight" : 13
-    } ],
-    "currentLineData" : {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 24,
-        "startLineNumber" : 40,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 40,
-        "endColumnNumber" : 28
-      },
-      "nodeContext" : "map2.put(\"a\",\"second\");\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 6,
-      "astHeight" : 3
-    },
-    "tokenLength" : 1,
-    "type" : "java.lang.String"
+    "tokenLength" : 11,
+    "type" : "java.util.List<java.lang.Long>"
   } ],
   "positionList" : [ {
-    "charLength" : 3,
-    "startLineNumber" : 36,
-    "startColumnNumber" : 13,
-    "endLineNumber" : 36,
-    "endColumnNumber" : 16
-  }, {
-    "charLength" : 3,
-    "startLineNumber" : 40,
-    "startColumnNumber" : 13,
-    "endLineNumber" : 40,
-    "endColumnNumber" : 16
+    "charLength" : 67,
+    "startLineNumber" : 569,
+    "startColumnNumber" : 8,
+    "endLineNumber" : 569,
+    "endColumnNumber" : 75
   } ],
-  "layoutRelationDataList" : [ {
-    "firstKey" : 0,
-    "secondKey" : 1,
-    "layout" : 2
-  }, {
-    "firstKey" : 1,
-    "secondKey" : 0,
-    "layout" : 2
-  } ]
+  "layoutRelationDataList" : [ ]
 }

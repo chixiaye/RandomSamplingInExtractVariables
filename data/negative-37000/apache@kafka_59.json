@@ -1,0 +1,684 @@
+{
+  "id" : 59,
+  "expression" : "new JSONSerde<>()",
+  "projectName" : "apache@kafka",
+  "commitID" : "539f006e65d9060cd46a4052d1b70f2312d8ca34",
+  "filePath" : "/streams/examples/src/main/java/org/apache/kafka/streams/examples/pageview/PageViewTypedDemo.java",
+  "occurrences" : 5,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "new JSONSerde<>()",
+    "nodeType" : "ClassInstanceCreation",
+    "nodePosition" : {
+      "charLength" : 17,
+      "startLineNumber" : 190,
+      "startColumnNumber" : 120,
+      "endLineNumber" : 190,
+      "endColumnNumber" : 137
+    },
+    "astNodeNumber" : 4,
+    "astHeight" : 4,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 49,
+        "startLineNumber" : 190,
+        "startColumnNumber" : 89,
+        "endLineNumber" : 190,
+        "endColumnNumber" : 138
+      },
+      "nodeContext" : "Consumed.with(Serdes.String(),new JSONSerde<>())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 91,
+        "startLineNumber" : 190,
+        "startColumnNumber" : 48,
+        "endLineNumber" : 190,
+        "endColumnNumber" : 139
+      },
+      "nodeContext" : "builder.stream(\"streams-pageview-input\",Consumed.with(Serdes.String(),new JSONSerde<>()))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 14,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 99,
+        "startLineNumber" : 190,
+        "startColumnNumber" : 40,
+        "endLineNumber" : 190,
+        "endColumnNumber" : 139
+      },
+      "nodeContext" : "views=builder.stream(\"streams-pageview-input\",Consumed.with(Serdes.String(),new JSONSerde<>()))",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 16,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 132,
+        "startLineNumber" : 190,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 190,
+        "endColumnNumber" : 140
+      },
+      "nodeContext" : "final KStream<String,PageView> views=builder.stream(\"streams-pageview-input\",Consumed.with(Serdes.String(),new JSONSerde<>()));\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 25,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3356,
+        "startLineNumber" : 175,
+        "startColumnNumber" : 49,
+        "endLineNumber" : 249,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final Properties props=new Properties();\n  props.put(StreamsConfig.APPLICATION_ID_CONFIG,\"streams-pageview-typed\");\n  props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG,\"localhost:9092\");\n  props.put(StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG,JsonTimestampExtractor.class);\n  props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG,JSONSerde.class);\n  props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG,JSONSerde.class);\n  props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG,0);\n  props.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG,1000L);\n  props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,\"earliest\");\n  final StreamsBuilder builder=new StreamsBuilder();\n  final KStream<String,PageView> views=builder.stream(\"streams-pageview-input\",Consumed.with(Serdes.String(),new JSONSerde<>()));\n  final KTable<String,UserProfile> users=builder.table(\"streams-userprofile-input\",Consumed.with(Serdes.String(),new JSONSerde<>()));\n  final Duration duration24Hours=Duration.ofHours(24);\n  final KStream<WindowedPageViewByRegion,RegionCount> regionCount=views.leftJoin(users,(view,profile) -> {\n    final PageViewByRegion viewByRegion=new PageViewByRegion();\n    viewByRegion.user=view.user;\n    viewByRegion.page=view.page;\n    if (profile != null) {\n      viewByRegion.region=profile.region;\n    }\n else {\n      viewByRegion.region=\"UNKNOWN\";\n    }\n    return viewByRegion;\n  }\n).map((user,viewRegion) -> new KeyValue<>(viewRegion.region,viewRegion)).groupByKey(Grouped.with(Serdes.String(),new JSONSerde<>())).windowedBy(TimeWindows.ofSizeAndGrace(Duration.ofDays(7),duration24Hours).advanceBy(Duration.ofSeconds(1))).count().toStream().map((key,value) -> {\n    final WindowedPageViewByRegion wViewByRegion=new WindowedPageViewByRegion();\n    wViewByRegion.windowStart=key.window().start();\n    wViewByRegion.region=key.key();\n    final RegionCount rCount=new RegionCount();\n    rCount.region=key.key();\n    rCount.count=value;\n    return new KeyValue<>(wViewByRegion,rCount);\n  }\n);\n  regionCount.to(\"streams-pageviewstats-typed-output\",Produced.with(new JSONSerde<>(),new JSONSerde<>()));\n  final KafkaStreams streams=new KafkaStreams(builder.build(),props);\n  final CountDownLatch latch=new CountDownLatch(1);\n  Runtime.getRuntime().addShutdownHook(new Thread(\"streams-pipe-shutdown-hook\"){\n    @Override public void run(){\n      streams.close();\n      latch.countDown();\n    }\n  }\n);\n  try {\n    streams.start();\n    latch.await();\n  }\n catch (  final Throwable e) {\n    e.printStackTrace();\n    System.exit(1);\n  }\n  System.exit(0);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 425,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3401,
+        "startLineNumber" : 175,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 249,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "public static void main(final String[] args){\n  final Properties props=new Properties();\n  props.put(StreamsConfig.APPLICATION_ID_CONFIG,\"streams-pageview-typed\");\n  props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG,\"localhost:9092\");\n  props.put(StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG,JsonTimestampExtractor.class);\n  props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG,JSONSerde.class);\n  props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG,JSONSerde.class);\n  props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG,0);\n  props.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG,1000L);\n  props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,\"earliest\");\n  final StreamsBuilder builder=new StreamsBuilder();\n  final KStream<String,PageView> views=builder.stream(\"streams-pageview-input\",Consumed.with(Serdes.String(),new JSONSerde<>()));\n  final KTable<String,UserProfile> users=builder.table(\"streams-userprofile-input\",Consumed.with(Serdes.String(),new JSONSerde<>()));\n  final Duration duration24Hours=Duration.ofHours(24);\n  final KStream<WindowedPageViewByRegion,RegionCount> regionCount=views.leftJoin(users,(view,profile) -> {\n    final PageViewByRegion viewByRegion=new PageViewByRegion();\n    viewByRegion.user=view.user;\n    viewByRegion.page=view.page;\n    if (profile != null) {\n      viewByRegion.region=profile.region;\n    }\n else {\n      viewByRegion.region=\"UNKNOWN\";\n    }\n    return viewByRegion;\n  }\n).map((user,viewRegion) -> new KeyValue<>(viewRegion.region,viewRegion)).groupByKey(Grouped.with(Serdes.String(),new JSONSerde<>())).windowedBy(TimeWindows.ofSizeAndGrace(Duration.ofDays(7),duration24Hours).advanceBy(Duration.ofSeconds(1))).count().toStream().map((key,value) -> {\n    final WindowedPageViewByRegion wViewByRegion=new WindowedPageViewByRegion();\n    wViewByRegion.windowStart=key.window().start();\n    wViewByRegion.region=key.key();\n    final RegionCount rCount=new RegionCount();\n    rCount.region=key.key();\n    rCount.count=value;\n    return new KeyValue<>(wViewByRegion,rCount);\n  }\n);\n  regionCount.to(\"streams-pageviewstats-typed-output\",Produced.with(new JSONSerde<>(),new JSONSerde<>()));\n  final KafkaStreams streams=new KafkaStreams(builder.build(),props);\n  final CountDownLatch latch=new CountDownLatch(1);\n  Runtime.getRuntime().addShutdownHook(new Thread(\"streams-pipe-shutdown-hook\"){\n    @Override public void run(){\n      streams.close();\n      latch.countDown();\n    }\n  }\n);\n  try {\n    streams.start();\n    latch.await();\n  }\n catch (  final Throwable e) {\n    e.printStackTrace();\n    System.exit(1);\n  }\n  System.exit(0);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 437,
+      "astHeight" : 19
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 132,
+        "startLineNumber" : 190,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 190,
+        "endColumnNumber" : 140
+      },
+      "nodeContext" : "final KStream<String,PageView> views=builder.stream(\"streams-pageview-input\",Consumed.with(Serdes.String(),new JSONSerde<>()));\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 25,
+      "astHeight" : 8
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.kafka.streams.examples.pageview.PageViewTypedDemo.JSONSerde<org.apache.kafka.streams.examples.pageview.PageViewTypedDemo.PageView>"
+  }, {
+    "nodeContext" : "new JSONSerde<>()",
+    "nodeType" : "ClassInstanceCreation",
+    "nodePosition" : {
+      "charLength" : 17,
+      "startLineNumber" : 192,
+      "startColumnNumber" : 124,
+      "endLineNumber" : 192,
+      "endColumnNumber" : 141
+    },
+    "astNodeNumber" : 4,
+    "astHeight" : 4,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 49,
+        "startLineNumber" : 192,
+        "startColumnNumber" : 93,
+        "endLineNumber" : 192,
+        "endColumnNumber" : 142
+      },
+      "nodeContext" : "Consumed.with(Serdes.String(),new JSONSerde<>())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 93,
+        "startLineNumber" : 192,
+        "startColumnNumber" : 50,
+        "endLineNumber" : 192,
+        "endColumnNumber" : 143
+      },
+      "nodeContext" : "builder.table(\"streams-userprofile-input\",Consumed.with(Serdes.String(),new JSONSerde<>()))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 14,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 101,
+        "startLineNumber" : 192,
+        "startColumnNumber" : 42,
+        "endLineNumber" : 192,
+        "endColumnNumber" : 143
+      },
+      "nodeContext" : "users=builder.table(\"streams-userprofile-input\",Consumed.with(Serdes.String(),new JSONSerde<>()))",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 16,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 136,
+        "startLineNumber" : 192,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 192,
+        "endColumnNumber" : 144
+      },
+      "nodeContext" : "final KTable<String,UserProfile> users=builder.table(\"streams-userprofile-input\",Consumed.with(Serdes.String(),new JSONSerde<>()));\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 25,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3356,
+        "startLineNumber" : 175,
+        "startColumnNumber" : 49,
+        "endLineNumber" : 249,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final Properties props=new Properties();\n  props.put(StreamsConfig.APPLICATION_ID_CONFIG,\"streams-pageview-typed\");\n  props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG,\"localhost:9092\");\n  props.put(StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG,JsonTimestampExtractor.class);\n  props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG,JSONSerde.class);\n  props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG,JSONSerde.class);\n  props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG,0);\n  props.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG,1000L);\n  props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,\"earliest\");\n  final StreamsBuilder builder=new StreamsBuilder();\n  final KStream<String,PageView> views=builder.stream(\"streams-pageview-input\",Consumed.with(Serdes.String(),new JSONSerde<>()));\n  final KTable<String,UserProfile> users=builder.table(\"streams-userprofile-input\",Consumed.with(Serdes.String(),new JSONSerde<>()));\n  final Duration duration24Hours=Duration.ofHours(24);\n  final KStream<WindowedPageViewByRegion,RegionCount> regionCount=views.leftJoin(users,(view,profile) -> {\n    final PageViewByRegion viewByRegion=new PageViewByRegion();\n    viewByRegion.user=view.user;\n    viewByRegion.page=view.page;\n    if (profile != null) {\n      viewByRegion.region=profile.region;\n    }\n else {\n      viewByRegion.region=\"UNKNOWN\";\n    }\n    return viewByRegion;\n  }\n).map((user,viewRegion) -> new KeyValue<>(viewRegion.region,viewRegion)).groupByKey(Grouped.with(Serdes.String(),new JSONSerde<>())).windowedBy(TimeWindows.ofSizeAndGrace(Duration.ofDays(7),duration24Hours).advanceBy(Duration.ofSeconds(1))).count().toStream().map((key,value) -> {\n    final WindowedPageViewByRegion wViewByRegion=new WindowedPageViewByRegion();\n    wViewByRegion.windowStart=key.window().start();\n    wViewByRegion.region=key.key();\n    final RegionCount rCount=new RegionCount();\n    rCount.region=key.key();\n    rCount.count=value;\n    return new KeyValue<>(wViewByRegion,rCount);\n  }\n);\n  regionCount.to(\"streams-pageviewstats-typed-output\",Produced.with(new JSONSerde<>(),new JSONSerde<>()));\n  final KafkaStreams streams=new KafkaStreams(builder.build(),props);\n  final CountDownLatch latch=new CountDownLatch(1);\n  Runtime.getRuntime().addShutdownHook(new Thread(\"streams-pipe-shutdown-hook\"){\n    @Override public void run(){\n      streams.close();\n      latch.countDown();\n    }\n  }\n);\n  try {\n    streams.start();\n    latch.await();\n  }\n catch (  final Throwable e) {\n    e.printStackTrace();\n    System.exit(1);\n  }\n  System.exit(0);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 425,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3401,
+        "startLineNumber" : 175,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 249,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "public static void main(final String[] args){\n  final Properties props=new Properties();\n  props.put(StreamsConfig.APPLICATION_ID_CONFIG,\"streams-pageview-typed\");\n  props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG,\"localhost:9092\");\n  props.put(StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG,JsonTimestampExtractor.class);\n  props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG,JSONSerde.class);\n  props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG,JSONSerde.class);\n  props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG,0);\n  props.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG,1000L);\n  props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,\"earliest\");\n  final StreamsBuilder builder=new StreamsBuilder();\n  final KStream<String,PageView> views=builder.stream(\"streams-pageview-input\",Consumed.with(Serdes.String(),new JSONSerde<>()));\n  final KTable<String,UserProfile> users=builder.table(\"streams-userprofile-input\",Consumed.with(Serdes.String(),new JSONSerde<>()));\n  final Duration duration24Hours=Duration.ofHours(24);\n  final KStream<WindowedPageViewByRegion,RegionCount> regionCount=views.leftJoin(users,(view,profile) -> {\n    final PageViewByRegion viewByRegion=new PageViewByRegion();\n    viewByRegion.user=view.user;\n    viewByRegion.page=view.page;\n    if (profile != null) {\n      viewByRegion.region=profile.region;\n    }\n else {\n      viewByRegion.region=\"UNKNOWN\";\n    }\n    return viewByRegion;\n  }\n).map((user,viewRegion) -> new KeyValue<>(viewRegion.region,viewRegion)).groupByKey(Grouped.with(Serdes.String(),new JSONSerde<>())).windowedBy(TimeWindows.ofSizeAndGrace(Duration.ofDays(7),duration24Hours).advanceBy(Duration.ofSeconds(1))).count().toStream().map((key,value) -> {\n    final WindowedPageViewByRegion wViewByRegion=new WindowedPageViewByRegion();\n    wViewByRegion.windowStart=key.window().start();\n    wViewByRegion.region=key.key();\n    final RegionCount rCount=new RegionCount();\n    rCount.region=key.key();\n    rCount.count=value;\n    return new KeyValue<>(wViewByRegion,rCount);\n  }\n);\n  regionCount.to(\"streams-pageviewstats-typed-output\",Produced.with(new JSONSerde<>(),new JSONSerde<>()));\n  final KafkaStreams streams=new KafkaStreams(builder.build(),props);\n  final CountDownLatch latch=new CountDownLatch(1);\n  Runtime.getRuntime().addShutdownHook(new Thread(\"streams-pipe-shutdown-hook\"){\n    @Override public void run(){\n      streams.close();\n      latch.countDown();\n    }\n  }\n);\n  try {\n    streams.start();\n    latch.await();\n  }\n catch (  final Throwable e) {\n    e.printStackTrace();\n    System.exit(1);\n  }\n  System.exit(0);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 437,
+      "astHeight" : 19
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 136,
+        "startLineNumber" : 192,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 192,
+        "endColumnNumber" : 144
+      },
+      "nodeContext" : "final KTable<String,UserProfile> users=builder.table(\"streams-userprofile-input\",Consumed.with(Serdes.String(),new JSONSerde<>()));\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 25,
+      "astHeight" : 8
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.kafka.streams.examples.pageview.PageViewTypedDemo.JSONSerde<org.apache.kafka.streams.examples.pageview.PageViewTypedDemo.UserProfile>"
+  }, {
+    "nodeContext" : "new JSONSerde<>()",
+    "nodeType" : "ClassInstanceCreation",
+    "nodePosition" : {
+      "charLength" : 17,
+      "startLineNumber" : 210,
+      "startColumnNumber" : 54,
+      "endLineNumber" : 210,
+      "endColumnNumber" : 71
+    },
+    "astNodeNumber" : 4,
+    "astHeight" : 4,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 48,
+        "startLineNumber" : 210,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 210,
+        "endColumnNumber" : 72
+      },
+      "nodeContext" : "Grouped.with(Serdes.String(),new JSONSerde<>())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 633,
+        "startLineNumber" : 196,
+        "startColumnNumber" : 75,
+        "endLineNumber" : 210,
+        "endColumnNumber" : 73
+      },
+      "nodeContext" : "views.leftJoin(users,(view,profile) -> {\n  final PageViewByRegion viewByRegion=new PageViewByRegion();\n  viewByRegion.user=view.user;\n  viewByRegion.page=view.page;\n  if (profile != null) {\n    viewByRegion.region=profile.region;\n  }\n else {\n    viewByRegion.region=\"UNKNOWN\";\n  }\n  return viewByRegion;\n}\n).map((user,viewRegion) -> new KeyValue<>(viewRegion.region,viewRegion)).groupByKey(Grouped.with(Serdes.String(),new JSONSerde<>()))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 84,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 755,
+        "startLineNumber" : 196,
+        "startColumnNumber" : 75,
+        "endLineNumber" : 211,
+        "endColumnNumber" : 121
+      },
+      "nodeContext" : "views.leftJoin(users,(view,profile) -> {\n  final PageViewByRegion viewByRegion=new PageViewByRegion();\n  viewByRegion.user=view.user;\n  viewByRegion.page=view.page;\n  if (profile != null) {\n    viewByRegion.region=profile.region;\n  }\n else {\n    viewByRegion.region=\"UNKNOWN\";\n  }\n  return viewByRegion;\n}\n).map((user,viewRegion) -> new KeyValue<>(viewRegion.region,viewRegion)).groupByKey(Grouped.with(Serdes.String(),new JSONSerde<>())).windowedBy(TimeWindows.ofSizeAndGrace(Duration.ofDays(7),duration24Hours).advanceBy(Duration.ofSeconds(1)))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 100,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 776,
+        "startLineNumber" : 196,
+        "startColumnNumber" : 75,
+        "endLineNumber" : 212,
+        "endColumnNumber" : 20
+      },
+      "nodeContext" : "views.leftJoin(users,(view,profile) -> {\n  final PageViewByRegion viewByRegion=new PageViewByRegion();\n  viewByRegion.user=view.user;\n  viewByRegion.page=view.page;\n  if (profile != null) {\n    viewByRegion.region=profile.region;\n  }\n else {\n    viewByRegion.region=\"UNKNOWN\";\n  }\n  return viewByRegion;\n}\n).map((user,viewRegion) -> new KeyValue<>(viewRegion.region,viewRegion)).groupByKey(Grouped.with(Serdes.String(),new JSONSerde<>())).windowedBy(TimeWindows.ofSizeAndGrace(Duration.ofDays(7),duration24Hours).advanceBy(Duration.ofSeconds(1))).count()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 102,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 800,
+        "startLineNumber" : 196,
+        "startColumnNumber" : 75,
+        "endLineNumber" : 213,
+        "endColumnNumber" : 23
+      },
+      "nodeContext" : "views.leftJoin(users,(view,profile) -> {\n  final PageViewByRegion viewByRegion=new PageViewByRegion();\n  viewByRegion.user=view.user;\n  viewByRegion.page=view.page;\n  if (profile != null) {\n    viewByRegion.region=profile.region;\n  }\n else {\n    viewByRegion.region=\"UNKNOWN\";\n  }\n  return viewByRegion;\n}\n).map((user,viewRegion) -> new KeyValue<>(viewRegion.region,viewRegion)).groupByKey(Grouped.with(Serdes.String(),new JSONSerde<>())).windowedBy(TimeWindows.ofSizeAndGrace(Duration.ofDays(7),duration24Hours).advanceBy(Duration.ofSeconds(1))).count().toStream()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 104,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 1268,
+        "startLineNumber" : 196,
+        "startColumnNumber" : 75,
+        "endLineNumber" : 224,
+        "endColumnNumber" : 14
+      },
+      "nodeContext" : "views.leftJoin(users,(view,profile) -> {\n  final PageViewByRegion viewByRegion=new PageViewByRegion();\n  viewByRegion.user=view.user;\n  viewByRegion.page=view.page;\n  if (profile != null) {\n    viewByRegion.region=profile.region;\n  }\n else {\n    viewByRegion.region=\"UNKNOWN\";\n  }\n  return viewByRegion;\n}\n).map((user,viewRegion) -> new KeyValue<>(viewRegion.region,viewRegion)).groupByKey(Grouped.with(Serdes.String(),new JSONSerde<>())).windowedBy(TimeWindows.ofSizeAndGrace(Duration.ofDays(7),duration24Hours).advanceBy(Duration.ofSeconds(1))).count().toStream().map((key,value) -> {\n  final WindowedPageViewByRegion wViewByRegion=new WindowedPageViewByRegion();\n  wViewByRegion.windowStart=key.window().start();\n  wViewByRegion.region=key.key();\n  final RegionCount rCount=new RegionCount();\n  rCount.region=key.key();\n  rCount.count=value;\n  return new KeyValue<>(wViewByRegion,rCount);\n}\n)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 169,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 1282,
+        "startLineNumber" : 196,
+        "startColumnNumber" : 61,
+        "endLineNumber" : 224,
+        "endColumnNumber" : 14
+      },
+      "nodeContext" : "regionCount=views.leftJoin(users,(view,profile) -> {\n  final PageViewByRegion viewByRegion=new PageViewByRegion();\n  viewByRegion.user=view.user;\n  viewByRegion.page=view.page;\n  if (profile != null) {\n    viewByRegion.region=profile.region;\n  }\n else {\n    viewByRegion.region=\"UNKNOWN\";\n  }\n  return viewByRegion;\n}\n).map((user,viewRegion) -> new KeyValue<>(viewRegion.region,viewRegion)).groupByKey(Grouped.with(Serdes.String(),new JSONSerde<>())).windowedBy(TimeWindows.ofSizeAndGrace(Duration.ofDays(7),duration24Hours).advanceBy(Duration.ofSeconds(1))).count().toStream().map((key,value) -> {\n  final WindowedPageViewByRegion wViewByRegion=new WindowedPageViewByRegion();\n  wViewByRegion.windowStart=key.window().start();\n  wViewByRegion.region=key.key();\n  final RegionCount rCount=new RegionCount();\n  rCount.region=key.key();\n  rCount.count=value;\n  return new KeyValue<>(wViewByRegion,rCount);\n}\n)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 171,
+      "astHeight" : 16
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1336,
+        "startLineNumber" : 196,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 224,
+        "endColumnNumber" : 15
+      },
+      "nodeContext" : "final KStream<WindowedPageViewByRegion,RegionCount> regionCount=views.leftJoin(users,(view,profile) -> {\n  final PageViewByRegion viewByRegion=new PageViewByRegion();\n  viewByRegion.user=view.user;\n  viewByRegion.page=view.page;\n  if (profile != null) {\n    viewByRegion.region=profile.region;\n  }\n else {\n    viewByRegion.region=\"UNKNOWN\";\n  }\n  return viewByRegion;\n}\n).map((user,viewRegion) -> new KeyValue<>(viewRegion.region,viewRegion)).groupByKey(Grouped.with(Serdes.String(),new JSONSerde<>())).windowedBy(TimeWindows.ofSizeAndGrace(Duration.ofDays(7),duration24Hours).advanceBy(Duration.ofSeconds(1))).count().toStream().map((key,value) -> {\n  final WindowedPageViewByRegion wViewByRegion=new WindowedPageViewByRegion();\n  wViewByRegion.windowStart=key.window().start();\n  wViewByRegion.region=key.key();\n  final RegionCount rCount=new RegionCount();\n  rCount.region=key.key();\n  rCount.count=value;\n  return new KeyValue<>(wViewByRegion,rCount);\n}\n);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 180,
+      "astHeight" : 17
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3356,
+        "startLineNumber" : 175,
+        "startColumnNumber" : 49,
+        "endLineNumber" : 249,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final Properties props=new Properties();\n  props.put(StreamsConfig.APPLICATION_ID_CONFIG,\"streams-pageview-typed\");\n  props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG,\"localhost:9092\");\n  props.put(StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG,JsonTimestampExtractor.class);\n  props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG,JSONSerde.class);\n  props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG,JSONSerde.class);\n  props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG,0);\n  props.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG,1000L);\n  props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,\"earliest\");\n  final StreamsBuilder builder=new StreamsBuilder();\n  final KStream<String,PageView> views=builder.stream(\"streams-pageview-input\",Consumed.with(Serdes.String(),new JSONSerde<>()));\n  final KTable<String,UserProfile> users=builder.table(\"streams-userprofile-input\",Consumed.with(Serdes.String(),new JSONSerde<>()));\n  final Duration duration24Hours=Duration.ofHours(24);\n  final KStream<WindowedPageViewByRegion,RegionCount> regionCount=views.leftJoin(users,(view,profile) -> {\n    final PageViewByRegion viewByRegion=new PageViewByRegion();\n    viewByRegion.user=view.user;\n    viewByRegion.page=view.page;\n    if (profile != null) {\n      viewByRegion.region=profile.region;\n    }\n else {\n      viewByRegion.region=\"UNKNOWN\";\n    }\n    return viewByRegion;\n  }\n).map((user,viewRegion) -> new KeyValue<>(viewRegion.region,viewRegion)).groupByKey(Grouped.with(Serdes.String(),new JSONSerde<>())).windowedBy(TimeWindows.ofSizeAndGrace(Duration.ofDays(7),duration24Hours).advanceBy(Duration.ofSeconds(1))).count().toStream().map((key,value) -> {\n    final WindowedPageViewByRegion wViewByRegion=new WindowedPageViewByRegion();\n    wViewByRegion.windowStart=key.window().start();\n    wViewByRegion.region=key.key();\n    final RegionCount rCount=new RegionCount();\n    rCount.region=key.key();\n    rCount.count=value;\n    return new KeyValue<>(wViewByRegion,rCount);\n  }\n);\n  regionCount.to(\"streams-pageviewstats-typed-output\",Produced.with(new JSONSerde<>(),new JSONSerde<>()));\n  final KafkaStreams streams=new KafkaStreams(builder.build(),props);\n  final CountDownLatch latch=new CountDownLatch(1);\n  Runtime.getRuntime().addShutdownHook(new Thread(\"streams-pipe-shutdown-hook\"){\n    @Override public void run(){\n      streams.close();\n      latch.countDown();\n    }\n  }\n);\n  try {\n    streams.start();\n    latch.await();\n  }\n catch (  final Throwable e) {\n    e.printStackTrace();\n    System.exit(1);\n  }\n  System.exit(0);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 425,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3401,
+        "startLineNumber" : 175,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 249,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "public static void main(final String[] args){\n  final Properties props=new Properties();\n  props.put(StreamsConfig.APPLICATION_ID_CONFIG,\"streams-pageview-typed\");\n  props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG,\"localhost:9092\");\n  props.put(StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG,JsonTimestampExtractor.class);\n  props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG,JSONSerde.class);\n  props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG,JSONSerde.class);\n  props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG,0);\n  props.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG,1000L);\n  props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,\"earliest\");\n  final StreamsBuilder builder=new StreamsBuilder();\n  final KStream<String,PageView> views=builder.stream(\"streams-pageview-input\",Consumed.with(Serdes.String(),new JSONSerde<>()));\n  final KTable<String,UserProfile> users=builder.table(\"streams-userprofile-input\",Consumed.with(Serdes.String(),new JSONSerde<>()));\n  final Duration duration24Hours=Duration.ofHours(24);\n  final KStream<WindowedPageViewByRegion,RegionCount> regionCount=views.leftJoin(users,(view,profile) -> {\n    final PageViewByRegion viewByRegion=new PageViewByRegion();\n    viewByRegion.user=view.user;\n    viewByRegion.page=view.page;\n    if (profile != null) {\n      viewByRegion.region=profile.region;\n    }\n else {\n      viewByRegion.region=\"UNKNOWN\";\n    }\n    return viewByRegion;\n  }\n).map((user,viewRegion) -> new KeyValue<>(viewRegion.region,viewRegion)).groupByKey(Grouped.with(Serdes.String(),new JSONSerde<>())).windowedBy(TimeWindows.ofSizeAndGrace(Duration.ofDays(7),duration24Hours).advanceBy(Duration.ofSeconds(1))).count().toStream().map((key,value) -> {\n    final WindowedPageViewByRegion wViewByRegion=new WindowedPageViewByRegion();\n    wViewByRegion.windowStart=key.window().start();\n    wViewByRegion.region=key.key();\n    final RegionCount rCount=new RegionCount();\n    rCount.region=key.key();\n    rCount.count=value;\n    return new KeyValue<>(wViewByRegion,rCount);\n  }\n);\n  regionCount.to(\"streams-pageviewstats-typed-output\",Produced.with(new JSONSerde<>(),new JSONSerde<>()));\n  final KafkaStreams streams=new KafkaStreams(builder.build(),props);\n  final CountDownLatch latch=new CountDownLatch(1);\n  Runtime.getRuntime().addShutdownHook(new Thread(\"streams-pipe-shutdown-hook\"){\n    @Override public void run(){\n      streams.close();\n      latch.countDown();\n    }\n  }\n);\n  try {\n    streams.start();\n    latch.await();\n  }\n catch (  final Throwable e) {\n    e.printStackTrace();\n    System.exit(1);\n  }\n  System.exit(0);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 437,
+      "astHeight" : 19
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 48,
+        "startLineNumber" : 210,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 210,
+        "endColumnNumber" : 72
+      },
+      "nodeContext" : "Grouped.with(Serdes.String(),new JSONSerde<>())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.kafka.streams.examples.pageview.PageViewTypedDemo.JSONSerde<org.apache.kafka.streams.examples.pageview.PageViewTypedDemo.PageViewByRegion>"
+  }, {
+    "nodeContext" : "new JSONSerde<>()",
+    "nodeType" : "ClassInstanceCreation",
+    "nodePosition" : {
+      "charLength" : 17,
+      "startLineNumber" : 227,
+      "startColumnNumber" : 75,
+      "endLineNumber" : 227,
+      "endColumnNumber" : 92
+    },
+    "astNodeNumber" : 4,
+    "astHeight" : 4,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 51,
+        "startLineNumber" : 227,
+        "startColumnNumber" : 61,
+        "endLineNumber" : 227,
+        "endColumnNumber" : 112
+      },
+      "nodeContext" : "Produced.with(new JSONSerde<>(),new JSONSerde<>())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 11,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 105,
+        "startLineNumber" : 227,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 227,
+        "endColumnNumber" : 113
+      },
+      "nodeContext" : "regionCount.to(\"streams-pageviewstats-typed-output\",Produced.with(new JSONSerde<>(),new JSONSerde<>()))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 15,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 106,
+        "startLineNumber" : 227,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 227,
+        "endColumnNumber" : 114
+      },
+      "nodeContext" : "regionCount.to(\"streams-pageviewstats-typed-output\",Produced.with(new JSONSerde<>(),new JSONSerde<>()));\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 16,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3356,
+        "startLineNumber" : 175,
+        "startColumnNumber" : 49,
+        "endLineNumber" : 249,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final Properties props=new Properties();\n  props.put(StreamsConfig.APPLICATION_ID_CONFIG,\"streams-pageview-typed\");\n  props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG,\"localhost:9092\");\n  props.put(StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG,JsonTimestampExtractor.class);\n  props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG,JSONSerde.class);\n  props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG,JSONSerde.class);\n  props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG,0);\n  props.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG,1000L);\n  props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,\"earliest\");\n  final StreamsBuilder builder=new StreamsBuilder();\n  final KStream<String,PageView> views=builder.stream(\"streams-pageview-input\",Consumed.with(Serdes.String(),new JSONSerde<>()));\n  final KTable<String,UserProfile> users=builder.table(\"streams-userprofile-input\",Consumed.with(Serdes.String(),new JSONSerde<>()));\n  final Duration duration24Hours=Duration.ofHours(24);\n  final KStream<WindowedPageViewByRegion,RegionCount> regionCount=views.leftJoin(users,(view,profile) -> {\n    final PageViewByRegion viewByRegion=new PageViewByRegion();\n    viewByRegion.user=view.user;\n    viewByRegion.page=view.page;\n    if (profile != null) {\n      viewByRegion.region=profile.region;\n    }\n else {\n      viewByRegion.region=\"UNKNOWN\";\n    }\n    return viewByRegion;\n  }\n).map((user,viewRegion) -> new KeyValue<>(viewRegion.region,viewRegion)).groupByKey(Grouped.with(Serdes.String(),new JSONSerde<>())).windowedBy(TimeWindows.ofSizeAndGrace(Duration.ofDays(7),duration24Hours).advanceBy(Duration.ofSeconds(1))).count().toStream().map((key,value) -> {\n    final WindowedPageViewByRegion wViewByRegion=new WindowedPageViewByRegion();\n    wViewByRegion.windowStart=key.window().start();\n    wViewByRegion.region=key.key();\n    final RegionCount rCount=new RegionCount();\n    rCount.region=key.key();\n    rCount.count=value;\n    return new KeyValue<>(wViewByRegion,rCount);\n  }\n);\n  regionCount.to(\"streams-pageviewstats-typed-output\",Produced.with(new JSONSerde<>(),new JSONSerde<>()));\n  final KafkaStreams streams=new KafkaStreams(builder.build(),props);\n  final CountDownLatch latch=new CountDownLatch(1);\n  Runtime.getRuntime().addShutdownHook(new Thread(\"streams-pipe-shutdown-hook\"){\n    @Override public void run(){\n      streams.close();\n      latch.countDown();\n    }\n  }\n);\n  try {\n    streams.start();\n    latch.await();\n  }\n catch (  final Throwable e) {\n    e.printStackTrace();\n    System.exit(1);\n  }\n  System.exit(0);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 425,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3401,
+        "startLineNumber" : 175,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 249,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "public static void main(final String[] args){\n  final Properties props=new Properties();\n  props.put(StreamsConfig.APPLICATION_ID_CONFIG,\"streams-pageview-typed\");\n  props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG,\"localhost:9092\");\n  props.put(StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG,JsonTimestampExtractor.class);\n  props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG,JSONSerde.class);\n  props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG,JSONSerde.class);\n  props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG,0);\n  props.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG,1000L);\n  props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,\"earliest\");\n  final StreamsBuilder builder=new StreamsBuilder();\n  final KStream<String,PageView> views=builder.stream(\"streams-pageview-input\",Consumed.with(Serdes.String(),new JSONSerde<>()));\n  final KTable<String,UserProfile> users=builder.table(\"streams-userprofile-input\",Consumed.with(Serdes.String(),new JSONSerde<>()));\n  final Duration duration24Hours=Duration.ofHours(24);\n  final KStream<WindowedPageViewByRegion,RegionCount> regionCount=views.leftJoin(users,(view,profile) -> {\n    final PageViewByRegion viewByRegion=new PageViewByRegion();\n    viewByRegion.user=view.user;\n    viewByRegion.page=view.page;\n    if (profile != null) {\n      viewByRegion.region=profile.region;\n    }\n else {\n      viewByRegion.region=\"UNKNOWN\";\n    }\n    return viewByRegion;\n  }\n).map((user,viewRegion) -> new KeyValue<>(viewRegion.region,viewRegion)).groupByKey(Grouped.with(Serdes.String(),new JSONSerde<>())).windowedBy(TimeWindows.ofSizeAndGrace(Duration.ofDays(7),duration24Hours).advanceBy(Duration.ofSeconds(1))).count().toStream().map((key,value) -> {\n    final WindowedPageViewByRegion wViewByRegion=new WindowedPageViewByRegion();\n    wViewByRegion.windowStart=key.window().start();\n    wViewByRegion.region=key.key();\n    final RegionCount rCount=new RegionCount();\n    rCount.region=key.key();\n    rCount.count=value;\n    return new KeyValue<>(wViewByRegion,rCount);\n  }\n);\n  regionCount.to(\"streams-pageviewstats-typed-output\",Produced.with(new JSONSerde<>(),new JSONSerde<>()));\n  final KafkaStreams streams=new KafkaStreams(builder.build(),props);\n  final CountDownLatch latch=new CountDownLatch(1);\n  Runtime.getRuntime().addShutdownHook(new Thread(\"streams-pipe-shutdown-hook\"){\n    @Override public void run(){\n      streams.close();\n      latch.countDown();\n    }\n  }\n);\n  try {\n    streams.start();\n    latch.await();\n  }\n catch (  final Throwable e) {\n    e.printStackTrace();\n    System.exit(1);\n  }\n  System.exit(0);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 437,
+      "astHeight" : 19
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 106,
+        "startLineNumber" : 227,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 227,
+        "endColumnNumber" : 114
+      },
+      "nodeContext" : "regionCount.to(\"streams-pageviewstats-typed-output\",Produced.with(new JSONSerde<>(),new JSONSerde<>()));\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 16,
+      "astHeight" : 7
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.kafka.streams.examples.pageview.PageViewTypedDemo.JSONSerde<org.apache.kafka.streams.examples.pageview.PageViewTypedDemo.WindowedPageViewByRegion>"
+  }, {
+    "nodeContext" : "new JSONSerde<>()",
+    "nodeType" : "ClassInstanceCreation",
+    "nodePosition" : {
+      "charLength" : 17,
+      "startLineNumber" : 227,
+      "startColumnNumber" : 94,
+      "endLineNumber" : 227,
+      "endColumnNumber" : 111
+    },
+    "astNodeNumber" : 4,
+    "astHeight" : 4,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 51,
+        "startLineNumber" : 227,
+        "startColumnNumber" : 61,
+        "endLineNumber" : 227,
+        "endColumnNumber" : 112
+      },
+      "nodeContext" : "Produced.with(new JSONSerde<>(),new JSONSerde<>())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 11,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 105,
+        "startLineNumber" : 227,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 227,
+        "endColumnNumber" : 113
+      },
+      "nodeContext" : "regionCount.to(\"streams-pageviewstats-typed-output\",Produced.with(new JSONSerde<>(),new JSONSerde<>()))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 15,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 106,
+        "startLineNumber" : 227,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 227,
+        "endColumnNumber" : 114
+      },
+      "nodeContext" : "regionCount.to(\"streams-pageviewstats-typed-output\",Produced.with(new JSONSerde<>(),new JSONSerde<>()));\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 16,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3356,
+        "startLineNumber" : 175,
+        "startColumnNumber" : 49,
+        "endLineNumber" : 249,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final Properties props=new Properties();\n  props.put(StreamsConfig.APPLICATION_ID_CONFIG,\"streams-pageview-typed\");\n  props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG,\"localhost:9092\");\n  props.put(StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG,JsonTimestampExtractor.class);\n  props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG,JSONSerde.class);\n  props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG,JSONSerde.class);\n  props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG,0);\n  props.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG,1000L);\n  props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,\"earliest\");\n  final StreamsBuilder builder=new StreamsBuilder();\n  final KStream<String,PageView> views=builder.stream(\"streams-pageview-input\",Consumed.with(Serdes.String(),new JSONSerde<>()));\n  final KTable<String,UserProfile> users=builder.table(\"streams-userprofile-input\",Consumed.with(Serdes.String(),new JSONSerde<>()));\n  final Duration duration24Hours=Duration.ofHours(24);\n  final KStream<WindowedPageViewByRegion,RegionCount> regionCount=views.leftJoin(users,(view,profile) -> {\n    final PageViewByRegion viewByRegion=new PageViewByRegion();\n    viewByRegion.user=view.user;\n    viewByRegion.page=view.page;\n    if (profile != null) {\n      viewByRegion.region=profile.region;\n    }\n else {\n      viewByRegion.region=\"UNKNOWN\";\n    }\n    return viewByRegion;\n  }\n).map((user,viewRegion) -> new KeyValue<>(viewRegion.region,viewRegion)).groupByKey(Grouped.with(Serdes.String(),new JSONSerde<>())).windowedBy(TimeWindows.ofSizeAndGrace(Duration.ofDays(7),duration24Hours).advanceBy(Duration.ofSeconds(1))).count().toStream().map((key,value) -> {\n    final WindowedPageViewByRegion wViewByRegion=new WindowedPageViewByRegion();\n    wViewByRegion.windowStart=key.window().start();\n    wViewByRegion.region=key.key();\n    final RegionCount rCount=new RegionCount();\n    rCount.region=key.key();\n    rCount.count=value;\n    return new KeyValue<>(wViewByRegion,rCount);\n  }\n);\n  regionCount.to(\"streams-pageviewstats-typed-output\",Produced.with(new JSONSerde<>(),new JSONSerde<>()));\n  final KafkaStreams streams=new KafkaStreams(builder.build(),props);\n  final CountDownLatch latch=new CountDownLatch(1);\n  Runtime.getRuntime().addShutdownHook(new Thread(\"streams-pipe-shutdown-hook\"){\n    @Override public void run(){\n      streams.close();\n      latch.countDown();\n    }\n  }\n);\n  try {\n    streams.start();\n    latch.await();\n  }\n catch (  final Throwable e) {\n    e.printStackTrace();\n    System.exit(1);\n  }\n  System.exit(0);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 425,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3401,
+        "startLineNumber" : 175,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 249,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "public static void main(final String[] args){\n  final Properties props=new Properties();\n  props.put(StreamsConfig.APPLICATION_ID_CONFIG,\"streams-pageview-typed\");\n  props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG,\"localhost:9092\");\n  props.put(StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG,JsonTimestampExtractor.class);\n  props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG,JSONSerde.class);\n  props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG,JSONSerde.class);\n  props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG,0);\n  props.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG,1000L);\n  props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,\"earliest\");\n  final StreamsBuilder builder=new StreamsBuilder();\n  final KStream<String,PageView> views=builder.stream(\"streams-pageview-input\",Consumed.with(Serdes.String(),new JSONSerde<>()));\n  final KTable<String,UserProfile> users=builder.table(\"streams-userprofile-input\",Consumed.with(Serdes.String(),new JSONSerde<>()));\n  final Duration duration24Hours=Duration.ofHours(24);\n  final KStream<WindowedPageViewByRegion,RegionCount> regionCount=views.leftJoin(users,(view,profile) -> {\n    final PageViewByRegion viewByRegion=new PageViewByRegion();\n    viewByRegion.user=view.user;\n    viewByRegion.page=view.page;\n    if (profile != null) {\n      viewByRegion.region=profile.region;\n    }\n else {\n      viewByRegion.region=\"UNKNOWN\";\n    }\n    return viewByRegion;\n  }\n).map((user,viewRegion) -> new KeyValue<>(viewRegion.region,viewRegion)).groupByKey(Grouped.with(Serdes.String(),new JSONSerde<>())).windowedBy(TimeWindows.ofSizeAndGrace(Duration.ofDays(7),duration24Hours).advanceBy(Duration.ofSeconds(1))).count().toStream().map((key,value) -> {\n    final WindowedPageViewByRegion wViewByRegion=new WindowedPageViewByRegion();\n    wViewByRegion.windowStart=key.window().start();\n    wViewByRegion.region=key.key();\n    final RegionCount rCount=new RegionCount();\n    rCount.region=key.key();\n    rCount.count=value;\n    return new KeyValue<>(wViewByRegion,rCount);\n  }\n);\n  regionCount.to(\"streams-pageviewstats-typed-output\",Produced.with(new JSONSerde<>(),new JSONSerde<>()));\n  final KafkaStreams streams=new KafkaStreams(builder.build(),props);\n  final CountDownLatch latch=new CountDownLatch(1);\n  Runtime.getRuntime().addShutdownHook(new Thread(\"streams-pipe-shutdown-hook\"){\n    @Override public void run(){\n      streams.close();\n      latch.countDown();\n    }\n  }\n);\n  try {\n    streams.start();\n    latch.await();\n  }\n catch (  final Throwable e) {\n    e.printStackTrace();\n    System.exit(1);\n  }\n  System.exit(0);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 437,
+      "astHeight" : 19
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 106,
+        "startLineNumber" : 227,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 227,
+        "endColumnNumber" : 114
+      },
+      "nodeContext" : "regionCount.to(\"streams-pageviewstats-typed-output\",Produced.with(new JSONSerde<>(),new JSONSerde<>()));\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 16,
+      "astHeight" : 7
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.kafka.streams.examples.pageview.PageViewTypedDemo.JSONSerde<org.apache.kafka.streams.examples.pageview.PageViewTypedDemo.RegionCount>"
+  } ],
+  "positionList" : [ {
+    "charLength" : 17,
+    "startLineNumber" : 190,
+    "startColumnNumber" : 120,
+    "endLineNumber" : 190,
+    "endColumnNumber" : 137
+  }, {
+    "charLength" : 17,
+    "startLineNumber" : 192,
+    "startColumnNumber" : 124,
+    "endLineNumber" : 192,
+    "endColumnNumber" : 141
+  }, {
+    "charLength" : 17,
+    "startLineNumber" : 210,
+    "startColumnNumber" : 54,
+    "endLineNumber" : 210,
+    "endColumnNumber" : 71
+  }, {
+    "charLength" : 17,
+    "startLineNumber" : 227,
+    "startColumnNumber" : 75,
+    "endLineNumber" : 227,
+    "endColumnNumber" : 92
+  }, {
+    "charLength" : 17,
+    "startLineNumber" : 227,
+    "startColumnNumber" : 94,
+    "endLineNumber" : 227,
+    "endColumnNumber" : 111
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 8
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 8
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 3,
+    "layout" : 8
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 4,
+    "layout" : 8
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 4,
+    "layout" : 0
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 3,
+    "layout" : 0
+  } ]
+}

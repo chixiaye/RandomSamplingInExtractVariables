@@ -1,126 +1,100 @@
 {
   "id" : 258,
-  "expression" : "entry.getId()",
+  "expression" : "insn.getArg(0).isInsnWrap()",
   "projectName" : "skylot@jadx",
-  "commitID" : "eb2a1734d3e02c19814f628e10bf80de5fb19772",
-  "filePath" : "/jadx-core/src/main/java/jadx/core/xmlgen/ResourceStorage.java",
+  "commitID" : "72b2663949555b03aeb864775d84f163b91bcea7",
+  "filePath" : "jadx-core/src/main/java/jadx/core/dex/visitors/SimplifyVisitor.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "entry.getId()",
+    "nodeContext" : "insn.getArg(0).isInsnWrap()",
     "nodeType" : "MethodInvocation",
     "nodePosition" : {
-      "charLength" : 13,
-      "startLineNumber" : 50,
-      "startColumnNumber" : 11,
-      "endLineNumber" : 50,
-      "endColumnNumber" : 24
+      "charLength" : 27,
+      "startLineNumber" : 161,
+      "startColumnNumber" : 7,
+      "endLineNumber" : 161,
+      "endColumnNumber" : 34
     },
-    "astNodeNumber" : 3,
-    "astHeight" : 2,
+    "astNodeNumber" : 6,
+    "astHeight" : 3,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
       "nodePosition" : {
-        "charLength" : 70,
-        "startLineNumber" : 50,
-        "startColumnNumber" : 3,
-        "endLineNumber" : 50,
-        "endColumnNumber" : 73
+        "charLength" : 173,
+        "startLineNumber" : 159,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 34
       },
-      "nodeContext" : "map.put(entry.getId(),entry.getTypeName() + '/' + entry.getKeyName())",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 14,
-      "astHeight" : 4
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 71,
-        "startLineNumber" : 50,
-        "startColumnNumber" : 3,
-        "endLineNumber" : 50,
-        "endColumnNumber" : 74
-      },
-      "nodeContext" : "map.put(entry.getId(),entry.getTypeName() + '/' + entry.getKeyName());\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 15,
+      "nodeContext" : "callMth.getDeclClass().getFullName().equals(Consts.CLASS_STRING_BUILDER) && callMth.getShortId().equals(Consts.MTH_TOSTRING_SIGNATURE) && insn.getArg(0).isInsnWrap()",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 25,
       "astHeight" : 5
     }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.EnhancedForStatement,body]",
-      "nodePosition" : {
-        "charLength" : 80,
-        "startLineNumber" : 49,
-        "startColumnNumber" : 35,
-        "endLineNumber" : 51,
-        "endColumnNumber" : 3
-      },
-      "nodeContext" : "{\n  map.put(entry.getId(),entry.getTypeName() + '/' + entry.getKeyName());\n}\n",
-      "nodeType" : "Block",
-      "astNodeNumber" : 16,
-      "astHeight" : 6
-    }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 113,
-        "startLineNumber" : 49,
+        "charLength" : 3127,
+        "startLineNumber" : 159,
         "startColumnNumber" : 2,
-        "endLineNumber" : 51,
+        "endLineNumber" : 224,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "for (ResourceEntry entry : list) {\n  map.put(entry.getId(),entry.getTypeName() + '/' + entry.getKeyName());\n}\n",
-      "nodeType" : "EnhancedForStatement",
-      "astNodeNumber" : 22,
-      "astHeight" : 7
+      "nodeContext" : "if (callMth.getDeclClass().getFullName().equals(Consts.CLASS_STRING_BUILDER) && callMth.getShortId().equals(Consts.MTH_TOSTRING_SIGNATURE) && insn.getArg(0).isInsnWrap()) {\n  try {\n    List<InsnNode> chain=flattenInsnChain(insn);\n    int constrIndex=-1;\n    if (chain.size() > 1 && chain.get(0).getType() == InsnType.CONSTRUCTOR) {\n      constrIndex=0;\n    }\n else     if (chain.size() > 2 && chain.get(1).getType() == InsnType.CONSTRUCTOR) {\n      constrIndex=1;\n    }\n else     if (chain.size() > 3 && chain.get(2).getType() == InsnType.CONSTRUCTOR) {\n      constrIndex=2;\n    }\n    if (constrIndex != -1) {\n      ConstructorInsn constr=(ConstructorInsn)chain.get(constrIndex);\n      if (constr.getClassType().getFullName().equals(Consts.CLASS_STRING_BUILDER)) {\n        int len=chain.size(), argInd=1;\n        InsnNode concatInsn=new InsnNode(InsnType.STR_CONCAT,len - 1);\n        InsnNode argInsn;\n        if (constrIndex > 0) {\n          InsnWrapArg iwa;\n          if (constrIndex == 2 && (argInsn=chain.get(1)).getType() == InsnType.INVOKE && ((InvokeNode)argInsn).getCallMth().getName().compareTo(\"valueOf\") == 0) {\n            iwa=(InsnWrapArg)argInsn.getArg(0);\n            argInd=3;\n          }\n else {\n            InsnNode firstNode=chain.get(0);\n            if (firstNode instanceof ConstStringNode) {\n              ConstStringNode csn=(ConstStringNode)firstNode;\n              iwa=new InsnWrapArg(csn);\n              argInd=2;\n            }\n else {\n              return null;\n            }\n          }\n          concatInsn.addArg(iwa);\n        }\n        for (; argInd < len; argInd++) {\n          InsnNode node=chain.get(argInd);\n          MethodInfo method=((CallMthInterface)node).getCallMth();\n          if (!(node.getArgsCount() < 2 && method.isConstructor() || method.getName().equals(\"append\"))) {\n            return null;\n          }\n          concatInsn.addArg(node.getArg(1));\n        }\n        concatInsn.setResult(insn.getResult());\n        return concatInsn;\n      }\n    }\n  }\n catch (  Exception e) {\n    LOG.warn(\"Can't convert string concatenation: {} insn: {}\",mth,insn,e);\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 354,
+      "astHeight" : 20
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 180,
-        "startLineNumber" : 47,
-        "startColumnNumber" : 49,
-        "endLineNumber" : 53,
+        "charLength" : 3338,
+        "startLineNumber" : 154,
+        "startColumnNumber" : 70,
+        "endLineNumber" : 226,
         "endColumnNumber" : 2
       },
-      "nodeContext" : "{\n  Map<Integer,String> map=new HashMap<>();\n  for (  ResourceEntry entry : list) {\n    map.put(entry.getId(),entry.getTypeName() + '/' + entry.getKeyName());\n  }\n  return map;\n}\n",
+      "nodeContext" : "{\n  MethodInfo callMth=((InvokeNode)insn).getCallMth();\n  if (callMth.getDeclClass().getFullName().equals(Consts.CLASS_STRING_BUILDER) && callMth.getShortId().equals(Consts.MTH_TOSTRING_SIGNATURE) && insn.getArg(0).isInsnWrap()) {\n    try {\n      List<InsnNode> chain=flattenInsnChain(insn);\n      int constrIndex=-1;\n      if (chain.size() > 1 && chain.get(0).getType() == InsnType.CONSTRUCTOR) {\n        constrIndex=0;\n      }\n else       if (chain.size() > 2 && chain.get(1).getType() == InsnType.CONSTRUCTOR) {\n        constrIndex=1;\n      }\n else       if (chain.size() > 3 && chain.get(2).getType() == InsnType.CONSTRUCTOR) {\n        constrIndex=2;\n      }\n      if (constrIndex != -1) {\n        ConstructorInsn constr=(ConstructorInsn)chain.get(constrIndex);\n        if (constr.getClassType().getFullName().equals(Consts.CLASS_STRING_BUILDER)) {\n          int len=chain.size(), argInd=1;\n          InsnNode concatInsn=new InsnNode(InsnType.STR_CONCAT,len - 1);\n          InsnNode argInsn;\n          if (constrIndex > 0) {\n            InsnWrapArg iwa;\n            if (constrIndex == 2 && (argInsn=chain.get(1)).getType() == InsnType.INVOKE && ((InvokeNode)argInsn).getCallMth().getName().compareTo(\"valueOf\") == 0) {\n              iwa=(InsnWrapArg)argInsn.getArg(0);\n              argInd=3;\n            }\n else {\n              InsnNode firstNode=chain.get(0);\n              if (firstNode instanceof ConstStringNode) {\n                ConstStringNode csn=(ConstStringNode)firstNode;\n                iwa=new InsnWrapArg(csn);\n                argInd=2;\n              }\n else {\n                return null;\n              }\n            }\n            concatInsn.addArg(iwa);\n          }\n          for (; argInd < len; argInd++) {\n            InsnNode node=chain.get(argInd);\n            MethodInfo method=((CallMthInterface)node).getCallMth();\n            if (!(node.getArgsCount() < 2 && method.isConstructor() || method.getName().equals(\"append\"))) {\n              return null;\n            }\n            concatInsn.addArg(node.getArg(1));\n          }\n          concatInsn.setResult(insn.getResult());\n          return concatInsn;\n        }\n      }\n    }\n catch (    Exception e) {\n      LOG.warn(\"Can't convert string concatenation: {} insn: {}\",mth,insn,e);\n    }\n  }\n  return null;\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 39,
-      "astHeight" : 8
+      "astNodeNumber" : 369,
+      "astHeight" : 21
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 228,
-        "startLineNumber" : 47,
+        "charLength" : 3711,
+        "startLineNumber" : 145,
         "startColumnNumber" : 1,
-        "endLineNumber" : 53,
+        "endLineNumber" : 226,
         "endColumnNumber" : 2
       },
-      "nodeContext" : "public Map<Integer,String> getResourcesNames(){\n  Map<Integer,String> map=new HashMap<>();\n  for (  ResourceEntry entry : list) {\n    map.put(entry.getId(),entry.getTypeName() + '/' + entry.getKeyName());\n  }\n  return map;\n}\n",
+      "nodeContext" : "/** \n * Simplify chains of calls to StringBuilder#append() plus constructor of StringBuilder. Those chains are usually automatically generated by the Java compiler when you create String concatenations like <code>\"text \" + 1 + \" text\"</code>.\n * @param mth\n * @param insn\n * @return\n */\nprivate static InsnNode convertInvoke(MethodNode mth,InsnNode insn){\n  MethodInfo callMth=((InvokeNode)insn).getCallMth();\n  if (callMth.getDeclClass().getFullName().equals(Consts.CLASS_STRING_BUILDER) && callMth.getShortId().equals(Consts.MTH_TOSTRING_SIGNATURE) && insn.getArg(0).isInsnWrap()) {\n    try {\n      List<InsnNode> chain=flattenInsnChain(insn);\n      int constrIndex=-1;\n      if (chain.size() > 1 && chain.get(0).getType() == InsnType.CONSTRUCTOR) {\n        constrIndex=0;\n      }\n else       if (chain.size() > 2 && chain.get(1).getType() == InsnType.CONSTRUCTOR) {\n        constrIndex=1;\n      }\n else       if (chain.size() > 3 && chain.get(2).getType() == InsnType.CONSTRUCTOR) {\n        constrIndex=2;\n      }\n      if (constrIndex != -1) {\n        ConstructorInsn constr=(ConstructorInsn)chain.get(constrIndex);\n        if (constr.getClassType().getFullName().equals(Consts.CLASS_STRING_BUILDER)) {\n          int len=chain.size(), argInd=1;\n          InsnNode concatInsn=new InsnNode(InsnType.STR_CONCAT,len - 1);\n          InsnNode argInsn;\n          if (constrIndex > 0) {\n            InsnWrapArg iwa;\n            if (constrIndex == 2 && (argInsn=chain.get(1)).getType() == InsnType.INVOKE && ((InvokeNode)argInsn).getCallMth().getName().compareTo(\"valueOf\") == 0) {\n              iwa=(InsnWrapArg)argInsn.getArg(0);\n              argInd=3;\n            }\n else {\n              InsnNode firstNode=chain.get(0);\n              if (firstNode instanceof ConstStringNode) {\n                ConstStringNode csn=(ConstStringNode)firstNode;\n                iwa=new InsnWrapArg(csn);\n                argInd=2;\n              }\n else {\n                return null;\n              }\n            }\n            concatInsn.addArg(iwa);\n          }\n          for (; argInd < len; argInd++) {\n            InsnNode node=chain.get(argInd);\n            MethodInfo method=((CallMthInterface)node).getCallMth();\n            if (!(node.getArgsCount() < 2 && method.isConstructor() || method.getName().equals(\"append\"))) {\n              return null;\n            }\n            concatInsn.addArg(node.getArg(1));\n          }\n          concatInsn.setResult(insn.getResult());\n          return concatInsn;\n        }\n      }\n    }\n catch (    Exception e) {\n      LOG.warn(\"Can't convert string concatenation: {} insn: {}\",mth,insn,e);\n    }\n  }\n  return null;\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 49,
-      "astHeight" : 9
+      "astNodeNumber" : 384,
+      "astHeight" : 22
     } ],
     "currentLineData" : {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
       "nodePosition" : {
-        "charLength" : 71,
-        "startLineNumber" : 50,
-        "startColumnNumber" : 3,
-        "endLineNumber" : 50,
-        "endColumnNumber" : 74
+        "charLength" : 173,
+        "startLineNumber" : 159,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 34
       },
-      "nodeContext" : "map.put(entry.getId(),entry.getTypeName() + '/' + entry.getKeyName());\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 15,
+      "nodeContext" : "callMth.getDeclClass().getFullName().equals(Consts.CLASS_STRING_BUILDER) && callMth.getShortId().equals(Consts.MTH_TOSTRING_SIGNATURE) && insn.getArg(0).isInsnWrap()",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 25,
       "astHeight" : 5
     },
-    "tokenLength" : 2,
-    "type" : "int"
+    "tokenLength" : 4,
+    "type" : "boolean"
   } ],
   "positionList" : [ {
-    "charLength" : 13,
-    "startLineNumber" : 50,
-    "startColumnNumber" : 11,
-    "endLineNumber" : 50,
-    "endColumnNumber" : 24
+    "charLength" : 27,
+    "startLineNumber" : 161,
+    "startColumnNumber" : 7,
+    "endLineNumber" : 161,
+    "endColumnNumber" : 34
   } ],
   "layoutRelationDataList" : [ ]
 }

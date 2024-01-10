@@ -1,100 +1,100 @@
 {
   "id" : 119,
-  "expression" : "clusterNodeInfo.getSlotsBeingImported().size()",
+  "expression" : "true",
   "projectName" : "redis@jedis",
-  "commitID" : "eaa5b16af93d575cd1f340c2cd23595dc29d5638",
-  "filePath" : "/src/test/java/redis/clients/jedis/tests/JedisClusterNodeInformationParserTest.java",
+  "commitID" : "80f8584d03a770ae3d15bc0ea8ea687e9f7b8015",
+  "filePath" : "src/main/java/redis/clients/jedis/JedisSentinelPool.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "clusterNodeInfo.getSlotsBeingImported().size()",
-    "nodeType" : "MethodInvocation",
+    "nodeContext" : "true",
+    "nodeType" : "BooleanLiteral",
     "nodePosition" : {
-      "charLength" : 46,
-      "startLineNumber" : 55,
-      "startColumnNumber" : 20,
-      "endLineNumber" : 55,
-      "endColumnNumber" : 66
+      "charLength" : 4,
+      "startLineNumber" : 115,
+      "startColumnNumber" : 19,
+      "endLineNumber" : 115,
+      "endColumnNumber" : 23
     },
-    "astNodeNumber" : 5,
-    "astHeight" : 3,
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
       "nodePosition" : {
-        "charLength" : 63,
-        "startLineNumber" : 55,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 55,
-        "endColumnNumber" : 67
+        "charLength" : 14,
+        "startLineNumber" : 115,
+        "startColumnNumber" : 9,
+        "endLineNumber" : 115,
+        "endColumnNumber" : 23
       },
-      "nodeContext" : "assertEquals(1,clusterNodeInfo.getSlotsBeingImported().size())",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 8,
-      "astHeight" : 4
+      "nodeContext" : "running=true",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 64,
-        "startLineNumber" : 55,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 55,
-        "endColumnNumber" : 68
+        "charLength" : 23,
+        "startLineNumber" : 115,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 115,
+        "endColumnNumber" : 24
       },
-      "nodeContext" : "assertEquals(1,clusterNodeInfo.getSlotsBeingImported().size());\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 9,
-      "astHeight" : 5
+      "nodeContext" : "boolean running=true;\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 817,
-        "startLineNumber" : 43,
-        "startColumnNumber" : 43,
-        "endLineNumber" : 57,
-        "endColumnNumber" : 3
+        "charLength" : 1678,
+        "startLineNumber" : 112,
+        "startColumnNumber" : 30,
+        "endLineNumber" : 177,
+        "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  String nodeInfo=\"5f4a2236d00008fba7ac0dd24b95762b446767bd :7379 myself,master - 0 0 1 connected 0-5459 [5460->-5f4a2236d00008fba7ac0dd24b95762b446767bd] [5461-<-5f4a2236d00008fba7ac0dd24b95762b446767bd]\";\n  HostAndPort current=new HostAndPort(\"localhost\",7379);\n  ClusterNodeInformation clusterNodeInfo=parser.parse(nodeInfo,current);\n  assertEquals(clusterNodeInfo.getNode(),current);\n  for (int slot=0; slot <= 5459; slot++) {\n    assertTrue(clusterNodeInfo.getAvailableSlots().contains(slot));\n  }\n  assertEquals(1,clusterNodeInfo.getSlotsBeingMigrated().size());\n  assertTrue(clusterNodeInfo.getSlotsBeingMigrated().contains(5460));\n  assertEquals(1,clusterNodeInfo.getSlotsBeingImported().size());\n  assertTrue(clusterNodeInfo.getSlotsBeingImported().contains(5461));\n}\n",
+      "nodeContext" : "{\n  HostAndPort master=null;\n  boolean running=true;\n  outer:   while (running) {\n    log.info(\"Trying to find master from available Sentinels...\");\n    for (    String sentinel : sentinels) {\n      final HostAndPort hap=toHostAndPort(Arrays.asList(sentinel.split(\":\")));\n      log.fine(\"Connecting to Sentinel \" + hap);\n      Jedis jedis=null;\n      try {\n        jedis=new Jedis(hap.getHost(),hap.getPort());\n        if (master == null) {\n          List<String> masterAddr=jedis.sentinelGetMasterAddrByName(masterName);\n          if (masterAddr == null || masterAddr.size() != 2) {\n            log.warning(\"Can not get master addr, master name: \" + masterName + \". Sentinel: \"+ hap+ \".\");\n            continue;\n          }\n          master=toHostAndPort(masterAddr);\n          log.fine(\"Found Redis master at \" + master);\n          break outer;\n        }\n      }\n catch (      JedisConnectionException e) {\n        log.warning(\"Cannot connect to sentinel running @ \" + hap + \". Trying next one.\");\n      }\n finally {\n        if (jedis != null) {\n          jedis.close();\n        }\n      }\n    }\n    try {\n      log.severe(\"All sentinels down, cannot determine where is \" + masterName + \" master is running... sleeping 1000ms.\");\n      Thread.sleep(1000);\n    }\n catch (    InterruptedException e) {\n      e.printStackTrace();\n    }\n  }\n  log.info(\"Redis master running at \" + master + \", starting Sentinel listeners...\");\n  for (  String sentinel : sentinels) {\n    final HostAndPort hap=toHostAndPort(Arrays.asList(sentinel.split(\":\")));\n    MasterListener masterListener=new MasterListener(masterName,hap.getHost(),hap.getPort());\n    masterListeners.add(masterListener);\n    masterListener.start();\n  }\n  return master;\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 91,
-      "astHeight" : 8
+      "astNodeNumber" : 230,
+      "astHeight" : 16
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 866,
-        "startLineNumber" : 42,
-        "startColumnNumber" : 2,
-        "endLineNumber" : 57,
-        "endColumnNumber" : 3
+        "charLength" : 1765,
+        "startLineNumber" : 111,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 177,
+        "endColumnNumber" : 5
       },
-      "nodeContext" : "@Test public void testParseSlotBeingMigrated(){\n  String nodeInfo=\"5f4a2236d00008fba7ac0dd24b95762b446767bd :7379 myself,master - 0 0 1 connected 0-5459 [5460->-5f4a2236d00008fba7ac0dd24b95762b446767bd] [5461-<-5f4a2236d00008fba7ac0dd24b95762b446767bd]\";\n  HostAndPort current=new HostAndPort(\"localhost\",7379);\n  ClusterNodeInformation clusterNodeInfo=parser.parse(nodeInfo,current);\n  assertEquals(clusterNodeInfo.getNode(),current);\n  for (int slot=0; slot <= 5459; slot++) {\n    assertTrue(clusterNodeInfo.getAvailableSlots().contains(slot));\n  }\n  assertEquals(1,clusterNodeInfo.getSlotsBeingMigrated().size());\n  assertTrue(clusterNodeInfo.getSlotsBeingMigrated().contains(5460));\n  assertEquals(1,clusterNodeInfo.getSlotsBeingImported().size());\n  assertTrue(clusterNodeInfo.getSlotsBeingImported().contains(5461));\n}\n",
+      "nodeContext" : "private HostAndPort initSentinels(Set<String> sentinels,final String masterName){\n  HostAndPort master=null;\n  boolean running=true;\n  outer:   while (running) {\n    log.info(\"Trying to find master from available Sentinels...\");\n    for (    String sentinel : sentinels) {\n      final HostAndPort hap=toHostAndPort(Arrays.asList(sentinel.split(\":\")));\n      log.fine(\"Connecting to Sentinel \" + hap);\n      Jedis jedis=null;\n      try {\n        jedis=new Jedis(hap.getHost(),hap.getPort());\n        if (master == null) {\n          List<String> masterAddr=jedis.sentinelGetMasterAddrByName(masterName);\n          if (masterAddr == null || masterAddr.size() != 2) {\n            log.warning(\"Can not get master addr, master name: \" + masterName + \". Sentinel: \"+ hap+ \".\");\n            continue;\n          }\n          master=toHostAndPort(masterAddr);\n          log.fine(\"Found Redis master at \" + master);\n          break outer;\n        }\n      }\n catch (      JedisConnectionException e) {\n        log.warning(\"Cannot connect to sentinel running @ \" + hap + \". Trying next one.\");\n      }\n finally {\n        if (jedis != null) {\n          jedis.close();\n        }\n      }\n    }\n    try {\n      log.severe(\"All sentinels down, cannot determine where is \" + masterName + \" master is running... sleeping 1000ms.\");\n      Thread.sleep(1000);\n    }\n catch (    InterruptedException e) {\n      e.printStackTrace();\n    }\n  }\n  log.info(\"Redis master running at \" + master + \", starting Sentinel listeners...\");\n  for (  String sentinel : sentinels) {\n    final HostAndPort hap=toHostAndPort(Arrays.asList(sentinel.split(\":\")));\n    MasterListener masterListener=new MasterListener(masterName,hap.getHost(),hap.getPort());\n    masterListeners.add(masterListener);\n    masterListener.start();\n  }\n  return master;\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 97,
-      "astHeight" : 9
+      "astNodeNumber" : 247,
+      "astHeight" : 17
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 64,
-        "startLineNumber" : 55,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 55,
-        "endColumnNumber" : 68
+        "charLength" : 23,
+        "startLineNumber" : 115,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 115,
+        "endColumnNumber" : 24
       },
-      "nodeContext" : "assertEquals(1,clusterNodeInfo.getSlotsBeingImported().size());\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 9,
-      "astHeight" : 5
+      "nodeContext" : "boolean running=true;\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
     },
-    "tokenLength" : 3,
-    "type" : "int"
+    "tokenLength" : 1,
+    "type" : "boolean"
   } ],
   "positionList" : [ {
-    "charLength" : 46,
-    "startLineNumber" : 55,
-    "startColumnNumber" : 20,
-    "endLineNumber" : 55,
-    "endColumnNumber" : 66
+    "charLength" : 4,
+    "startLineNumber" : 115,
+    "startColumnNumber" : 19,
+    "endLineNumber" : 115,
+    "endColumnNumber" : 23
   } ],
   "layoutRelationDataList" : [ ]
 }

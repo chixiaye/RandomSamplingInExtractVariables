@@ -1,87 +1,87 @@
 {
   "id" : 410,
-  "expression" : "isTransparent",
+  "expression" : "size > MAX_WAIT_COUNT",
   "projectName" : "Tencent@tinker",
-  "commitID" : "df9e1d29420d53a650ab73569d828a22e3cfe728",
-  "filePath" : "/tinker-android/tinker-android-loader/src/main/java/com/tencent/tinker/loader/hotplug/ActivityStubManager.java",
+  "commitID" : "40c15bbab73f52238c63408df2772e45075ef921",
+  "filePath" : "tinker-android/tinker-android-lib/src/main/java/com/tencent/tinker/lib/patch/DexDiffPatchInternal.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "isTransparent",
-    "nodeType" : "SimpleName",
+    "nodeContext" : "size > MAX_WAIT_COUNT",
+    "nodeType" : "InfixExpression",
     "nodePosition" : {
-      "charLength" : 13,
-      "startLineNumber" : 71,
+      "charLength" : 21,
+      "startLineNumber" : 91,
       "startColumnNumber" : 12,
-      "endLineNumber" : 71,
-      "endColumnNumber" : 25
+      "endLineNumber" : 91,
+      "endColumnNumber" : 33
     },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
     "parentDataList" : [ {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 217,
-        "startLineNumber" : 71,
+        "charLength" : 73,
+        "startLineNumber" : 91,
         "startColumnNumber" : 8,
-        "endLineNumber" : 76,
+        "endLineNumber" : 93,
         "endColumnNumber" : 9
       },
-      "nodeContext" : "if (isTransparent) {\n  stubNameFormat+=ActivityStubs.TRANSPARENT_STUB_FORMAT_SUFFIX;\n  slotIdx=TRANSPARENT_SLOT_INDEX;\n}\n else {\n  slotIdx=NOTRANSPARENT_SLOT_INDEX;\n}\n",
+      "nodeContext" : "if (size > MAX_WAIT_COUNT) {\n  size=MAX_WAIT_COUNT;\n}\n",
       "nodeType" : "IfStatement",
-      "astNodeNumber" : 18,
-      "astHeight" : 6
+      "astNodeNumber" : 9,
+      "astHeight" : 5
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 2102,
-        "startLineNumber" : 34,
-        "startColumnNumber" : 99,
-        "endLineNumber" : 87,
+        "charLength" : 3187,
+        "startLineNumber" : 85,
+        "startColumnNumber" : 84,
+        "endLineNumber" : 161,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  String stubClassName=sTargetToStubClassNameMap.get(targetClassName);\n  if (stubClassName != null) {\n    return stubClassName;\n  }\n  String stubNameFormat;\n  final int[] nextStubIdxSlots;\n  final int[] countSlots;\n  final int slotIdx;\nswitch (launchMode) {\ncase ActivityInfo.LAUNCH_SINGLE_TOP:{\n      stubNameFormat=ActivityStubs.SINGLETOP_STUB_CLASSNAME_FORMAT;\n      nextStubIdxSlots=NEXT_SINGLETOP_STUB_IDX_SLOTS;\n      countSlots=SINGLETOP_STUB_COUNT_SLOTS;\n      break;\n    }\ncase ActivityInfo.LAUNCH_SINGLE_TASK:{\n    stubNameFormat=ActivityStubs.SINGLETASK_STUB_CLASSNAME_FORMAT;\n    nextStubIdxSlots=NEXT_SINGLETASK_STUB_IDX_SLOTS;\n    countSlots=SINGLETASK_STUB_COUNT_SLOTS;\n    break;\n  }\ncase ActivityInfo.LAUNCH_SINGLE_INSTANCE:{\n  stubNameFormat=ActivityStubs.SINGLEINSTANCE_STUB_CLASSNAME_FORMAT;\n  nextStubIdxSlots=NEXT_SINGLEINSTANCE_STUB_IDX_SLOTS;\n  countSlots=SINGLEINSTANCE_STUB_COUNT_SLOTS;\n  break;\n}\ncase ActivityInfo.LAUNCH_MULTIPLE:default:{\nstubNameFormat=ActivityStubs.STARDARD_STUB_CLASSNAME_FORMAT;\nnextStubIdxSlots=NEXT_STANDARD_STUB_IDX_SLOTS;\ncountSlots=STANDARD_STUB_COUNT_SLOTS;\nbreak;\n}\n}\nif (isTransparent) {\nstubNameFormat+=ActivityStubs.TRANSPARENT_STUB_FORMAT_SUFFIX;\nslotIdx=TRANSPARENT_SLOT_INDEX;\n}\n else {\nslotIdx=NOTRANSPARENT_SLOT_INDEX;\n}\nint stubIndex=nextStubIdxSlots[slotIdx]++;\nif (stubIndex >= countSlots[slotIdx]) {\nstubIndex=nextStubIdxSlots[slotIdx]=0;\n}\nstubClassName=String.format(stubNameFormat,stubIndex);\nsTargetToStubClassNameMap.put(targetClassName,stubClassName);\nreturn stubClassName;\n}\n",
+      "nodeContext" : "{\n  if (optFiles.isEmpty()) {\n    return true;\n  }\n  int size=optFiles.size() * 6;\n  if (size > MAX_WAIT_COUNT) {\n    size=MAX_WAIT_COUNT;\n  }\n  TinkerLog.i(TAG,\"dex count: %d, final wait time: %d\",optFiles.size(),size);\n  for (int i=0; i < size; i++) {\n    if (!checkAllDexOptFile(optFiles,i + 1)) {\n      try {\n        Thread.sleep(WAIT_ASYN_OAT_TIME);\n      }\n catch (      InterruptedException e) {\n        TinkerLog.e(TAG,\"thread sleep InterruptedException e:\" + e);\n      }\n    }\n  }\n  List<File> failDexFiles=new ArrayList<>();\n  for (  File file : optFiles) {\n    TinkerLog.i(TAG,\"check dex optimizer file exist: %s, size %d\",file.getName(),file.length());\n    if (!SharePatchFileUtil.isLegalFile(file)) {\n      TinkerLog.e(TAG,\"final parallel dex optimizer file %s is not exist, return false\",file.getName());\n      failDexFiles.add(file);\n    }\n  }\n  if (!failDexFiles.isEmpty()) {\n    manager.getPatchReporter().onPatchDexOptFail(patchFile,failDexFiles,new TinkerRuntimeException(ShareConstants.CHECK_DEX_OAT_EXIST_FAIL));\n    return false;\n  }\n  if (Build.VERSION.SDK_INT >= 21) {\n    Throwable lastThrowable=null;\n    for (    File file : optFiles) {\n      TinkerLog.i(TAG,\"check dex optimizer file format: %s, size %d\",file.getName(),file.length());\n      int returnType;\n      try {\n        returnType=ShareElfFile.getFileTypeByMagic(file);\n      }\n catch (      IOException e) {\n        continue;\n      }\n      if (returnType == ShareElfFile.FILE_TYPE_ELF) {\n        ShareElfFile elfFile=null;\n        try {\n          elfFile=new ShareElfFile(file);\n        }\n catch (        Throwable e) {\n          TinkerLog.e(TAG,\"final parallel dex optimizer file %s is not elf format, return false\",file.getName());\n          failDexFiles.add(file);\n          lastThrowable=e;\n        }\n finally {\n          if (elfFile != null) {\n            try {\n              elfFile.close();\n            }\n catch (            IOException ignore) {\n            }\n          }\n        }\n      }\n    }\n    if (!failDexFiles.isEmpty()) {\n      Throwable returnThrowable=lastThrowable == null ? new TinkerRuntimeException(ShareConstants.CHECK_DEX_OAT_FORMAT_FAIL) : new TinkerRuntimeException(ShareConstants.CHECK_DEX_OAT_FORMAT_FAIL,lastThrowable);\n      manager.getPatchReporter().onPatchDexOptFail(patchFile,failDexFiles,returnThrowable);\n      return false;\n    }\n  }\n  return true;\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 181,
-      "astHeight" : 8
+      "astNodeNumber" : 311,
+      "astHeight" : 16
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 2197,
-        "startLineNumber" : 34,
+        "charLength" : 3267,
+        "startLineNumber" : 85,
         "startColumnNumber" : 4,
-        "endLineNumber" : 87,
+        "endLineNumber" : 161,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "public static String assignStub(String targetClassName,int launchMode,boolean isTransparent){\n  String stubClassName=sTargetToStubClassNameMap.get(targetClassName);\n  if (stubClassName != null) {\n    return stubClassName;\n  }\n  String stubNameFormat;\n  final int[] nextStubIdxSlots;\n  final int[] countSlots;\n  final int slotIdx;\nswitch (launchMode) {\ncase ActivityInfo.LAUNCH_SINGLE_TOP:{\n      stubNameFormat=ActivityStubs.SINGLETOP_STUB_CLASSNAME_FORMAT;\n      nextStubIdxSlots=NEXT_SINGLETOP_STUB_IDX_SLOTS;\n      countSlots=SINGLETOP_STUB_COUNT_SLOTS;\n      break;\n    }\ncase ActivityInfo.LAUNCH_SINGLE_TASK:{\n    stubNameFormat=ActivityStubs.SINGLETASK_STUB_CLASSNAME_FORMAT;\n    nextStubIdxSlots=NEXT_SINGLETASK_STUB_IDX_SLOTS;\n    countSlots=SINGLETASK_STUB_COUNT_SLOTS;\n    break;\n  }\ncase ActivityInfo.LAUNCH_SINGLE_INSTANCE:{\n  stubNameFormat=ActivityStubs.SINGLEINSTANCE_STUB_CLASSNAME_FORMAT;\n  nextStubIdxSlots=NEXT_SINGLEINSTANCE_STUB_IDX_SLOTS;\n  countSlots=SINGLEINSTANCE_STUB_COUNT_SLOTS;\n  break;\n}\ncase ActivityInfo.LAUNCH_MULTIPLE:default:{\nstubNameFormat=ActivityStubs.STARDARD_STUB_CLASSNAME_FORMAT;\nnextStubIdxSlots=NEXT_STANDARD_STUB_IDX_SLOTS;\ncountSlots=STANDARD_STUB_COUNT_SLOTS;\nbreak;\n}\n}\nif (isTransparent) {\nstubNameFormat+=ActivityStubs.TRANSPARENT_STUB_FORMAT_SUFFIX;\nslotIdx=TRANSPARENT_SLOT_INDEX;\n}\n else {\nslotIdx=NOTRANSPARENT_SLOT_INDEX;\n}\nint stubIndex=nextStubIdxSlots[slotIdx]++;\nif (stubIndex >= countSlots[slotIdx]) {\nstubIndex=nextStubIdxSlots[slotIdx]=0;\n}\nstubClassName=String.format(stubNameFormat,stubIndex);\nsTargetToStubClassNameMap.put(targetClassName,stubClassName);\nreturn stubClassName;\n}\n",
+      "nodeContext" : "protected static boolean waitAndCheckDexOptFile(File patchFile,Tinker manager){\n  if (optFiles.isEmpty()) {\n    return true;\n  }\n  int size=optFiles.size() * 6;\n  if (size > MAX_WAIT_COUNT) {\n    size=MAX_WAIT_COUNT;\n  }\n  TinkerLog.i(TAG,\"dex count: %d, final wait time: %d\",optFiles.size(),size);\n  for (int i=0; i < size; i++) {\n    if (!checkAllDexOptFile(optFiles,i + 1)) {\n      try {\n        Thread.sleep(WAIT_ASYN_OAT_TIME);\n      }\n catch (      InterruptedException e) {\n        TinkerLog.e(TAG,\"thread sleep InterruptedException e:\" + e);\n      }\n    }\n  }\n  List<File> failDexFiles=new ArrayList<>();\n  for (  File file : optFiles) {\n    TinkerLog.i(TAG,\"check dex optimizer file exist: %s, size %d\",file.getName(),file.length());\n    if (!SharePatchFileUtil.isLegalFile(file)) {\n      TinkerLog.e(TAG,\"final parallel dex optimizer file %s is not exist, return false\",file.getName());\n      failDexFiles.add(file);\n    }\n  }\n  if (!failDexFiles.isEmpty()) {\n    manager.getPatchReporter().onPatchDexOptFail(patchFile,failDexFiles,new TinkerRuntimeException(ShareConstants.CHECK_DEX_OAT_EXIST_FAIL));\n    return false;\n  }\n  if (Build.VERSION.SDK_INT >= 21) {\n    Throwable lastThrowable=null;\n    for (    File file : optFiles) {\n      TinkerLog.i(TAG,\"check dex optimizer file format: %s, size %d\",file.getName(),file.length());\n      int returnType;\n      try {\n        returnType=ShareElfFile.getFileTypeByMagic(file);\n      }\n catch (      IOException e) {\n        continue;\n      }\n      if (returnType == ShareElfFile.FILE_TYPE_ELF) {\n        ShareElfFile elfFile=null;\n        try {\n          elfFile=new ShareElfFile(file);\n        }\n catch (        Throwable e) {\n          TinkerLog.e(TAG,\"final parallel dex optimizer file %s is not elf format, return false\",file.getName());\n          failDexFiles.add(file);\n          lastThrowable=e;\n        }\n finally {\n          if (elfFile != null) {\n            try {\n              elfFile.close();\n            }\n catch (            IOException ignore) {\n            }\n          }\n        }\n      }\n    }\n    if (!failDexFiles.isEmpty()) {\n      Throwable returnThrowable=lastThrowable == null ? new TinkerRuntimeException(ShareConstants.CHECK_DEX_OAT_FORMAT_FAIL) : new TinkerRuntimeException(ShareConstants.CHECK_DEX_OAT_FORMAT_FAIL,lastThrowable);\n      manager.getPatchReporter().onPatchDexOptFail(patchFile,failDexFiles,returnThrowable);\n      return false;\n    }\n  }\n  return true;\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 197,
-      "astHeight" : 9
+      "astNodeNumber" : 324,
+      "astHeight" : 17
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 217,
-        "startLineNumber" : 71,
+        "charLength" : 73,
+        "startLineNumber" : 91,
         "startColumnNumber" : 8,
-        "endLineNumber" : 76,
+        "endLineNumber" : 93,
         "endColumnNumber" : 9
       },
-      "nodeContext" : "if (isTransparent) {\n  stubNameFormat+=ActivityStubs.TRANSPARENT_STUB_FORMAT_SUFFIX;\n  slotIdx=TRANSPARENT_SLOT_INDEX;\n}\n else {\n  slotIdx=NOTRANSPARENT_SLOT_INDEX;\n}\n",
+      "nodeContext" : "if (size > MAX_WAIT_COUNT) {\n  size=MAX_WAIT_COUNT;\n}\n",
       "nodeType" : "IfStatement",
-      "astNodeNumber" : 18,
-      "astHeight" : 6
+      "astNodeNumber" : 9,
+      "astHeight" : 5
     },
-    "tokenLength" : 1,
+    "tokenLength" : 5,
     "type" : "boolean"
   } ],
   "positionList" : [ {
-    "charLength" : 13,
-    "startLineNumber" : 71,
+    "charLength" : 21,
+    "startLineNumber" : 91,
     "startColumnNumber" : 12,
-    "endLineNumber" : 71,
-    "endColumnNumber" : 25
+    "endLineNumber" : 91,
+    "endColumnNumber" : 33
   } ],
   "layoutRelationDataList" : [ ]
 }

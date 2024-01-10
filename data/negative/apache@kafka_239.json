@@ -1,113 +1,113 @@
 {
   "id" : 239,
-  "expression" : "Long",
+  "expression" : "sendOldValues",
   "projectName" : "apache@kafka",
-  "commitID" : "539f006e65d9060cd46a4052d1b70f2312d8ca34",
-  "filePath" : "/storage/src/main/java/org/apache/kafka/server/log/remote/metadata/storage/TopicBasedRemoteLogMetadataManager.java",
+  "commitID" : "ce83e5be6644884d5c727ed49982f45eca8c136f",
+  "filePath" : "streams/src/main/java/org/apache/kafka/streams/kstream/internals/KStreamAggregate.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "Long",
+    "nodeContext" : "sendOldValues",
     "nodeType" : "SimpleName",
     "nodePosition" : {
-      "charLength" : 4,
-      "startLineNumber" : 460,
-      "startColumnNumber" : 58,
-      "endLineNumber" : 460,
-      "endColumnNumber" : 62
+      "charLength" : 13,
+      "startLineNumber" : 122,
+      "startColumnNumber" : 62,
+      "endLineNumber" : 122,
+      "endColumnNumber" : 75
     },
     "astNodeNumber" : 1,
     "astHeight" : 1,
     "parentDataList" : [ {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
       "nodePosition" : {
-        "charLength" : 52,
-        "startLineNumber" : 460,
-        "startColumnNumber" : 58,
-        "endLineNumber" : 460,
-        "endColumnNumber" : 110
+        "charLength" : 29,
+        "startLineNumber" : 122,
+        "startColumnNumber" : 62,
+        "endLineNumber" : 122,
+        "endColumnNumber" : 91
       },
-      "nodeContext" : "Long.toString(rlmmConfig.metadataTopicRetentionMs())",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 6,
-      "astHeight" : 3
+      "nodeContext" : "sendOldValues ? oldAgg : null",
+      "nodeType" : "ConditionalExpression",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
       "nodePosition" : {
-        "charLength" : 103,
-        "startLineNumber" : 460,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 460,
-        "endColumnNumber" : 111
+        "charLength" : 94,
+        "startLineNumber" : 122,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 122,
+        "endColumnNumber" : 106
       },
-      "nodeContext" : "topicConfigs.put(TopicConfig.RETENTION_MS_CONFIG,Long.toString(rlmmConfig.metadataTopicRetentionMs()))",
+      "nodeContext" : "tupleForwarder.maybeForward(record.key(),newAgg,sendOldValues ? oldAgg : null,newTimestamp)",
       "nodeType" : "MethodInvocation",
       "astNodeNumber" : 12,
-      "astHeight" : 4
+      "astHeight" : 3
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 104,
-        "startLineNumber" : 460,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 460,
-        "endColumnNumber" : 112
+        "charLength" : 95,
+        "startLineNumber" : 122,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 122,
+        "endColumnNumber" : 107
       },
-      "nodeContext" : "topicConfigs.put(TopicConfig.RETENTION_MS_CONFIG,Long.toString(rlmmConfig.metadataTopicRetentionMs()));\n",
+      "nodeContext" : "tupleForwarder.maybeForward(record.key(),newAgg,sendOldValues ? oldAgg : null,newTimestamp);\n",
       "nodeType" : "ExpressionStatement",
       "astNodeNumber" : 13,
-      "astHeight" : 5
+      "astHeight" : 4
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 512,
-        "startLineNumber" : 458,
+        "charLength" : 1684,
+        "startLineNumber" : 86,
         "startColumnNumber" : 59,
-        "endLineNumber" : 465,
-        "endColumnNumber" : 5
+        "endLineNumber" : 123,
+        "endColumnNumber" : 9
       },
-      "nodeContext" : "{\n  Map<String,String> topicConfigs=new HashMap<>();\n  topicConfigs.put(TopicConfig.RETENTION_MS_CONFIG,Long.toString(rlmmConfig.metadataTopicRetentionMs()));\n  topicConfigs.put(TopicConfig.CLEANUP_POLICY_CONFIG,TopicConfig.CLEANUP_POLICY_DELETE);\n  return new NewTopic(rlmmConfig.remoteLogMetadataTopicName(),rlmmConfig.metadataTopicPartitionsCount(),rlmmConfig.metadataTopicReplicationFactor()).configs(topicConfigs);\n}\n",
+      "nodeContext" : "{\n  if (record.key() == null || record.value() == null) {\n    if (context().recordMetadata().isPresent()) {\n      final RecordMetadata recordMetadata=context().recordMetadata().get();\n      LOG.warn(\"Skipping record due to null key or value. \" + \"topic=[{}] partition=[{}] offset=[{}]\",recordMetadata.topic(),recordMetadata.partition(),recordMetadata.offset());\n    }\n else {\n      LOG.warn(\"Skipping record due to null key or value. Topic, partition, and offset not known.\");\n    }\n    droppedRecordsSensor.record();\n    return;\n  }\n  final ValueAndTimestamp<VAgg> oldAggAndTimestamp=store.get(record.key());\n  VAgg oldAgg=getValueOrNull(oldAggAndTimestamp);\n  final VAgg newAgg;\n  final long newTimestamp;\n  if (oldAgg == null) {\n    oldAgg=initializer.apply();\n    newTimestamp=record.timestamp();\n  }\n else {\n    oldAgg=oldAggAndTimestamp.value();\n    newTimestamp=Math.max(record.timestamp(),oldAggAndTimestamp.timestamp());\n  }\n  newAgg=aggregator.apply(record.key(),record.value(),oldAgg);\n  store.put(record.key(),ValueAndTimestamp.make(newAgg,newTimestamp));\n  tupleForwarder.maybeForward(record.key(),newAgg,sendOldValues ? oldAgg : null,newTimestamp);\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 54,
-      "astHeight" : 7
+      "astNodeNumber" : 169,
+      "astHeight" : 11
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 567,
-        "startLineNumber" : 458,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 465,
-        "endColumnNumber" : 5
+        "charLength" : 1753,
+        "startLineNumber" : 85,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 9
       },
-      "nodeContext" : "private NewTopic createRemoteLogMetadataTopicRequest(){\n  Map<String,String> topicConfigs=new HashMap<>();\n  topicConfigs.put(TopicConfig.RETENTION_MS_CONFIG,Long.toString(rlmmConfig.metadataTopicRetentionMs()));\n  topicConfigs.put(TopicConfig.CLEANUP_POLICY_CONFIG,TopicConfig.CLEANUP_POLICY_DELETE);\n  return new NewTopic(rlmmConfig.remoteLogMetadataTopicName(),rlmmConfig.metadataTopicPartitionsCount(),rlmmConfig.metadataTopicReplicationFactor()).configs(topicConfigs);\n}\n",
+      "nodeContext" : "@Override public void process(final Record<KIn,VIn> record){\n  if (record.key() == null || record.value() == null) {\n    if (context().recordMetadata().isPresent()) {\n      final RecordMetadata recordMetadata=context().recordMetadata().get();\n      LOG.warn(\"Skipping record due to null key or value. \" + \"topic=[{}] partition=[{}] offset=[{}]\",recordMetadata.topic(),recordMetadata.partition(),recordMetadata.offset());\n    }\n else {\n      LOG.warn(\"Skipping record due to null key or value. Topic, partition, and offset not known.\");\n    }\n    droppedRecordsSensor.record();\n    return;\n  }\n  final ValueAndTimestamp<VAgg> oldAggAndTimestamp=store.get(record.key());\n  VAgg oldAgg=getValueOrNull(oldAggAndTimestamp);\n  final VAgg newAgg;\n  final long newTimestamp;\n  if (oldAgg == null) {\n    oldAgg=initializer.apply();\n    newTimestamp=record.timestamp();\n  }\n else {\n    oldAgg=oldAggAndTimestamp.value();\n    newTimestamp=Math.max(record.timestamp(),oldAggAndTimestamp.timestamp());\n  }\n  newAgg=aggregator.apply(record.key(),record.value(),oldAgg);\n  store.put(record.key(),ValueAndTimestamp.make(newAgg,newTimestamp));\n  tupleForwarder.maybeForward(record.key(),newAgg,sendOldValues ? oldAgg : null,newTimestamp);\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 59,
-      "astHeight" : 8
+      "astNodeNumber" : 185,
+      "astHeight" : 12
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 104,
-        "startLineNumber" : 460,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 460,
-        "endColumnNumber" : 112
+        "charLength" : 95,
+        "startLineNumber" : 122,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 122,
+        "endColumnNumber" : 107
       },
-      "nodeContext" : "topicConfigs.put(TopicConfig.RETENTION_MS_CONFIG,Long.toString(rlmmConfig.metadataTopicRetentionMs()));\n",
+      "nodeContext" : "tupleForwarder.maybeForward(record.key(),newAgg,sendOldValues ? oldAgg : null,newTimestamp);\n",
       "nodeType" : "ExpressionStatement",
       "astNodeNumber" : 13,
-      "astHeight" : 5
+      "astHeight" : 4
     },
     "tokenLength" : 1,
-    "type" : "java.lang.Long"
+    "type" : "boolean"
   } ],
   "positionList" : [ {
-    "charLength" : 4,
-    "startLineNumber" : 460,
-    "startColumnNumber" : 58,
-    "endLineNumber" : 460,
-    "endColumnNumber" : 62
+    "charLength" : 13,
+    "startLineNumber" : 122,
+    "startColumnNumber" : 62,
+    "endLineNumber" : 122,
+    "endColumnNumber" : 75
   } ],
   "layoutRelationDataList" : [ ]
 }

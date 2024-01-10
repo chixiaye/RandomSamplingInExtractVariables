@@ -1,87 +1,87 @@
 {
   "id" : 128,
-  "expression" : "!isLegacySegmented",
+  "expression" : "decoderOutputFormat == null",
   "projectName" : "google@ExoPlayer",
-  "commitID" : "4803ab3bd12b71fc32150e96475c0e16aaf6ddc5",
-  "filePath" : "/library/core/src/main/java/com/google/android/exoplayer2/offline/ActionFile.java",
+  "commitID" : "a42d9f36b12033eb7accc3c08dbb365c66800e6f",
+  "filePath" : "library/transformer/src/main/java/com/google/android/exoplayer2/transformer/TransformerAudioRenderer.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "!isLegacySegmented",
-    "nodeType" : "PrefixExpression",
+    "nodeContext" : "decoderOutputFormat == null",
+    "nodeType" : "InfixExpression",
     "nodePosition" : {
-      "charLength" : 18,
-      "startLineNumber" : 132,
+      "charLength" : 27,
+      "startLineNumber" : 336,
       "startColumnNumber" : 8,
-      "endLineNumber" : 132,
-      "endColumnNumber" : 26
+      "endLineNumber" : 336,
+      "endColumnNumber" : 35
     },
-    "astNodeNumber" : 2,
+    "astNodeNumber" : 3,
     "astHeight" : 2,
     "parentDataList" : [ {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 100,
-        "startLineNumber" : 132,
+        "charLength" : 60,
+        "startLineNumber" : 336,
         "startColumnNumber" : 4,
-        "endLineNumber" : 134,
+        "endLineNumber" : 338,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "if (!isLegacySegmented) {\n  customCacheKey=input.readBoolean() ? input.readUTF() : null;\n}\n",
+      "nodeContext" : "if (decoderOutputFormat == null) {\n  return false;\n}\n",
       "nodeType" : "IfStatement",
-      "astNodeNumber" : 15,
-      "astHeight" : 7
+      "astNodeNumber" : 7,
+      "astHeight" : 4
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 1753,
-        "startLineNumber" : 99,
-        "startColumnNumber" : 95,
-        "endLineNumber" : 150,
+        "charLength" : 1687,
+        "startLineNumber" : 330,
+        "startColumnNumber" : 90,
+        "endLineNumber" : 372,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "{\n  String downloadType=input.readUTF();\n  int version=input.readInt();\n  Uri uri=Uri.parse(input.readUTF());\n  boolean isRemoveAction=input.readBoolean();\n  int dataLength=input.readInt();\n  @Nullable byte[] data;\n  if (dataLength != 0) {\n    data=new byte[dataLength];\n    input.readFully(data);\n  }\n else {\n    data=null;\n  }\n  boolean isLegacyProgressive=version == 0 && DOWNLOAD_TYPE_PROGRESSIVE.equals(downloadType);\n  List<StreamKey> keys=new ArrayList<>();\n  if (!isLegacyProgressive) {\n    int keyCount=input.readInt();\n    for (int i=0; i < keyCount; i++) {\n      keys.add(readKey(downloadType,version,input));\n    }\n  }\n  boolean isLegacySegmented=version < 2 && (DOWNLOAD_TYPE_DASH.equals(downloadType) || DOWNLOAD_TYPE_HLS.equals(downloadType) || DOWNLOAD_TYPE_SS.equals(downloadType));\n  @Nullable String customCacheKey=null;\n  if (!isLegacySegmented) {\n    customCacheKey=input.readBoolean() ? input.readUTF() : null;\n  }\n  String id=version < 3 ? generateDownloadId(uri,customCacheKey) : input.readUTF();\n  if (isRemoveAction) {\n    throw new UnsupportedRequestException();\n  }\n  return new DownloadRequest.Builder(id,uri).setMimeType(inferMimeType(downloadType)).setStreamKeys(keys).setCustomCacheKey(customCacheKey).setData(data).build();\n}\n",
+      "nodeContext" : "{\n  if (encoder != null) {\n    return true;\n  }\n  MediaCodecAdapterWrapper decoder=checkNotNull(this.decoder);\n  @Nullable Format decoderOutputFormat=decoder.getOutputFormat();\n  if (decoderOutputFormat == null) {\n    return false;\n  }\n  AudioFormat outputAudioFormat=new AudioFormat(decoderOutputFormat.sampleRate,decoderOutputFormat.channelCount,decoderOutputFormat.pcmEncoding);\n  if (transformation.flattenForSlowMotion) {\n    try {\n      outputAudioFormat=sonicAudioProcessor.configure(outputAudioFormat);\n      flushSonicAndSetSpeed(currentSpeed);\n    }\n catch (    AudioProcessor.UnhandledAudioFormatException e) {\n      throw createRendererException(e,PlaybackException.ERROR_CODE_UNSPECIFIED);\n    }\n  }\n  String audioMimeType=transformation.audioMimeType == null ? checkNotNull(inputFormat).sampleMimeType : transformation.audioMimeType;\n  try {\n    encoder=MediaCodecAdapterWrapper.createForAudioEncoding(new Format.Builder().setSampleMimeType(audioMimeType).setSampleRate(outputAudioFormat.sampleRate).setChannelCount(outputAudioFormat.channelCount).setAverageBitrate(DEFAULT_ENCODER_BITRATE).build());\n  }\n catch (  IOException e) {\n    throw createRendererException(e,PlaybackException.ERROR_CODE_UNSPECIFIED);\n  }\n  encoderInputAudioFormat=outputAudioFormat;\n  return true;\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 220,
-      "astHeight" : 11
+      "astNodeNumber" : 154,
+      "astHeight" : 15
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 1846,
-        "startLineNumber" : 99,
+        "charLength" : 1952,
+        "startLineNumber" : 326,
         "startColumnNumber" : 2,
-        "endLineNumber" : 150,
+        "endLineNumber" : 372,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "private static DownloadRequest readDownloadRequest(DataInputStream input) throws IOException {\n  String downloadType=input.readUTF();\n  int version=input.readInt();\n  Uri uri=Uri.parse(input.readUTF());\n  boolean isRemoveAction=input.readBoolean();\n  int dataLength=input.readInt();\n  @Nullable byte[] data;\n  if (dataLength != 0) {\n    data=new byte[dataLength];\n    input.readFully(data);\n  }\n else {\n    data=null;\n  }\n  boolean isLegacyProgressive=version == 0 && DOWNLOAD_TYPE_PROGRESSIVE.equals(downloadType);\n  List<StreamKey> keys=new ArrayList<>();\n  if (!isLegacyProgressive) {\n    int keyCount=input.readInt();\n    for (int i=0; i < keyCount; i++) {\n      keys.add(readKey(downloadType,version,input));\n    }\n  }\n  boolean isLegacySegmented=version < 2 && (DOWNLOAD_TYPE_DASH.equals(downloadType) || DOWNLOAD_TYPE_HLS.equals(downloadType) || DOWNLOAD_TYPE_SS.equals(downloadType));\n  @Nullable String customCacheKey=null;\n  if (!isLegacySegmented) {\n    customCacheKey=input.readBoolean() ? input.readUTF() : null;\n  }\n  String id=version < 3 ? generateDownloadId(uri,customCacheKey) : input.readUTF();\n  if (isRemoveAction) {\n    throw new UnsupportedRequestException();\n  }\n  return new DownloadRequest.Builder(id,uri).setMimeType(inferMimeType(downloadType)).setStreamKeys(keys).setCustomCacheKey(customCacheKey).setData(data).build();\n}\n",
+      "nodeContext" : "/** \n * Attempts to configure the  {@link #encoder} and Sonic (if applicable), if they have not beenconfigured yet, and returns whether they have been configured.\n */\nprivate boolean ensureEncoderAndAudioProcessingConfigured() throws ExoPlaybackException {\n  if (encoder != null) {\n    return true;\n  }\n  MediaCodecAdapterWrapper decoder=checkNotNull(this.decoder);\n  @Nullable Format decoderOutputFormat=decoder.getOutputFormat();\n  if (decoderOutputFormat == null) {\n    return false;\n  }\n  AudioFormat outputAudioFormat=new AudioFormat(decoderOutputFormat.sampleRate,decoderOutputFormat.channelCount,decoderOutputFormat.pcmEncoding);\n  if (transformation.flattenForSlowMotion) {\n    try {\n      outputAudioFormat=sonicAudioProcessor.configure(outputAudioFormat);\n      flushSonicAndSetSpeed(currentSpeed);\n    }\n catch (    AudioProcessor.UnhandledAudioFormatException e) {\n      throw createRendererException(e,PlaybackException.ERROR_CODE_UNSPECIFIED);\n    }\n  }\n  String audioMimeType=transformation.audioMimeType == null ? checkNotNull(inputFormat).sampleMimeType : transformation.audioMimeType;\n  try {\n    encoder=MediaCodecAdapterWrapper.createForAudioEncoding(new Format.Builder().setSampleMimeType(audioMimeType).setSampleRate(outputAudioFormat.sampleRate).setChannelCount(outputAudioFormat.channelCount).setAverageBitrate(DEFAULT_ENCODER_BITRATE).build());\n  }\n catch (  IOException e) {\n    throw createRendererException(e,PlaybackException.ERROR_CODE_UNSPECIFIED);\n  }\n  encoderInputAudioFormat=outputAudioFormat;\n  return true;\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 232,
-      "astHeight" : 12
+      "astNodeNumber" : 161,
+      "astHeight" : 16
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 100,
-        "startLineNumber" : 132,
+        "charLength" : 60,
+        "startLineNumber" : 336,
         "startColumnNumber" : 4,
-        "endLineNumber" : 134,
+        "endLineNumber" : 338,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "if (!isLegacySegmented) {\n  customCacheKey=input.readBoolean() ? input.readUTF() : null;\n}\n",
+      "nodeContext" : "if (decoderOutputFormat == null) {\n  return false;\n}\n",
       "nodeType" : "IfStatement",
-      "astNodeNumber" : 15,
-      "astHeight" : 7
+      "astNodeNumber" : 7,
+      "astHeight" : 4
     },
-    "tokenLength" : 1,
+    "tokenLength" : 3,
     "type" : "boolean"
   } ],
   "positionList" : [ {
-    "charLength" : 18,
-    "startLineNumber" : 132,
+    "charLength" : 27,
+    "startLineNumber" : 336,
     "startColumnNumber" : 8,
-    "endLineNumber" : 132,
-    "endColumnNumber" : 26
+    "endLineNumber" : 336,
+    "endColumnNumber" : 35
   } ],
   "layoutRelationDataList" : [ ]
 }

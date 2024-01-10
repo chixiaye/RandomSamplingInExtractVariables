@@ -1,247 +1,126 @@
 {
   "id" : 428,
-  "expression" : "that",
+  "expression" : "redirectAddress.contains(Constants.COLON)",
   "projectName" : "alibaba@nacos",
   "commitID" : "4e7346db1d6657ffe07c96bebd2d348229c2812f",
-  "filePath" : "/naming/src/main/java/com/alibaba/nacos/naming/core/v2/metadata/ExpiredMetadataInfo.java",
-  "occurrences" : 2,
+  "filePath" : "core/src/main/java/com/alibaba/nacos/core/remote/ConnectionManager.java",
+  "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "that",
-    "nodeType" : "SimpleName",
+    "nodeContext" : "redirectAddress.contains(Constants.COLON)",
+    "nodeType" : "MethodInvocation",
     "nodePosition" : {
-      "charLength" : 4,
-      "startLineNumber" : 75,
-      "startColumnNumber" : 39,
-      "endLineNumber" : 75,
-      "endColumnNumber" : 43
+      "charLength" : 41,
+      "startLineNumber" : 371,
+      "startColumnNumber" : 67,
+      "endLineNumber" : 371,
+      "endColumnNumber" : 108
     },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
+    "astNodeNumber" : 6,
+    "astHeight" : 3,
     "parentDataList" : [ {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
-      "nodePosition" : {
-        "charLength" : 12,
-        "startLineNumber" : 75,
-        "startColumnNumber" : 39,
-        "endLineNumber" : 75,
-        "endColumnNumber" : 51
-      },
-      "nodeContext" : "that.service",
-      "nodeType" : "QualifiedName",
-      "astNodeNumber" : 3,
-      "astHeight" : 2
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
-      "nodePosition" : {
-        "charLength" : 37,
-        "startLineNumber" : 75,
-        "startColumnNumber" : 15,
-        "endLineNumber" : 75,
-        "endColumnNumber" : 52
-      },
-      "nodeContext" : "Objects.equals(service,that.service)",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 7,
-      "astHeight" : 3
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ReturnStatement,expression]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
       "nodePosition" : {
         "charLength" : 84,
-        "startLineNumber" : 75,
-        "startColumnNumber" : 15,
-        "endLineNumber" : 75,
-        "endColumnNumber" : 99
+        "startLineNumber" : 371,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 371,
+        "endColumnNumber" : 108
       },
-      "nodeContext" : "Objects.equals(service,that.service) && Objects.equals(instanceId,that.instanceId)",
+      "nodeContext" : "StringUtils.isNotBlank(redirectAddress) && redirectAddress.contains(Constants.COLON)",
       "nodeType" : "InfixExpression",
-      "astNodeNumber" : 15,
+      "astNodeNumber" : 11,
       "astHeight" : 4
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 92,
-        "startLineNumber" : 75,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 75,
-        "endColumnNumber" : 100
+        "charLength" : 286,
+        "startLineNumber" : 371,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 375,
+        "endColumnNumber" : 21
       },
-      "nodeContext" : "return Objects.equals(service,that.service) && Objects.equals(instanceId,that.instanceId);\n",
-      "nodeType" : "ReturnStatement",
-      "astNodeNumber" : 16,
-      "astHeight" : 5
+      "nodeContext" : "if (StringUtils.isNotBlank(redirectAddress) && redirectAddress.contains(Constants.COLON)) {\n  String[] split=redirectAddress.split(Constants.COLON);\n  serverIp=split[0];\n  serverPort=split[1];\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 38,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 11231,
+        "startLineNumber" : 286,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 472,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "{\n  int totalCount=connections.size();\n  Loggers.REMOTE_DIGEST.info(\"Connection check task start\");\n  MetricsMonitor.getLongConnectionMonitor().set(totalCount);\n  Set<Map.Entry<String,Connection>> entries=connections.entrySet();\n  int currentSdkClientCount=currentSdkClientCount();\n  boolean isLoaderClient=loadClient >= 0;\n  int currentMaxClient=isLoaderClient ? loadClient : connectionLimitRule.countLimit;\n  int expelCount=currentMaxClient < 0 ? 0 : Math.max(currentSdkClientCount - currentMaxClient,0);\n  Loggers.REMOTE_DIGEST.info(\"Total count ={}, sdkCount={},clusterCount={}, currentLimit={}, toExpelCount={}\",totalCount,currentSdkClientCount,(totalCount - currentSdkClientCount),currentMaxClient + (isLoaderClient ? \"(loaderCount)\" : \"\"),expelCount);\n  List<String> expelClient=new LinkedList<>();\n  Map<String,AtomicInteger> expelForIp=new HashMap<>(16);\n  for (  Map.Entry<String,Connection> entry : entries) {\n    Connection client=entry.getValue();\n    String appName=client.getMetaInfo().getAppName();\n    String clientIp=client.getMetaInfo().getClientIp();\n    if (client.getMetaInfo().isSdkSource() && !expelForIp.containsKey(clientIp)) {\n      int countLimitOfIp=connectionLimitRule.getCountLimitOfIp(clientIp);\n      if (countLimitOfIp < 0) {\n        int countLimitOfApp=connectionLimitRule.getCountLimitOfApp(appName);\n        countLimitOfIp=countLimitOfApp < 0 ? countLimitOfIp : countLimitOfApp;\n      }\n      if (countLimitOfIp < 0) {\n        countLimitOfIp=connectionLimitRule.getCountLimitPerClientIpDefault();\n      }\n      if (countLimitOfIp >= 0 && connectionForClientIp.containsKey(clientIp)) {\n        AtomicInteger currentCountIp=connectionForClientIp.get(clientIp);\n        if (currentCountIp != null && currentCountIp.get() > countLimitOfIp) {\n          expelForIp.put(clientIp,new AtomicInteger(currentCountIp.get() - countLimitOfIp));\n        }\n      }\n    }\n  }\n  Loggers.REMOTE_DIGEST.info(\"Check over limit for ip limit rule, over limit ip count={}\",expelForIp.size());\n  if (expelForIp.size() > 0) {\n    Loggers.REMOTE_DIGEST.info(\"Over limit ip expel info,\",expelForIp);\n  }\n  Set<String> outDatedConnections=new HashSet<>();\n  long now=System.currentTimeMillis();\n  for (  Map.Entry<String,Connection> entry : entries) {\n    Connection client=entry.getValue();\n    String clientIp=client.getMetaInfo().getClientIp();\n    AtomicInteger integer=expelForIp.get(clientIp);\n    if (integer != null && integer.intValue() > 0) {\n      integer.decrementAndGet();\n      expelClient.add(client.getMetaInfo().getConnectionId());\n      expelCount--;\n    }\n else     if (now - client.getMetaInfo().getLastActiveTime() >= KEEP_ALIVE_TIME) {\n      outDatedConnections.add(client.getMetaInfo().getConnectionId());\n    }\n  }\n  if (expelCount > 0) {\n    for (    Map.Entry<String,Connection> entry : entries) {\n      Connection client=entry.getValue();\n      if (!expelForIp.containsKey(client.getMetaInfo().clientIp) && client.getMetaInfo().isSdkSource() && expelCount > 0) {\n        expelClient.add(client.getMetaInfo().getConnectionId());\n        expelCount--;\n        outDatedConnections.remove(client.getMetaInfo().getConnectionId());\n      }\n    }\n  }\n  String serverIp=null;\n  String serverPort=null;\n  if (StringUtils.isNotBlank(redirectAddress) && redirectAddress.contains(Constants.COLON)) {\n    String[] split=redirectAddress.split(Constants.COLON);\n    serverIp=split[0];\n    serverPort=split[1];\n  }\n  for (  String expelledClientId : expelClient) {\n    try {\n      Connection connection=getConnection(expelledClientId);\n      if (connection != null) {\n        ConnectResetRequest connectResetRequest=new ConnectResetRequest();\n        connectResetRequest.setServerIp(serverIp);\n        connectResetRequest.setServerPort(serverPort);\n        connection.asyncRequest(connectResetRequest,null);\n        Loggers.REMOTE_DIGEST.info(\"Send connection reset request , connection id = {},recommendServerIp={}, recommendServerPort={}\",expelledClientId,connectResetRequest.getServerIp(),connectResetRequest.getServerPort());\n      }\n    }\n catch (    ConnectionAlreadyClosedException e) {\n      unregister(expelledClientId);\n    }\ncatch (    Exception e) {\n      Loggers.REMOTE_DIGEST.error(\"Error occurs when expel connection :\",expelledClientId,e);\n    }\n  }\n  Loggers.REMOTE_DIGEST.info(\"Out dated connection ,size={}\",outDatedConnections.size());\n  if (CollectionUtils.isNotEmpty(outDatedConnections)) {\n    Set<String> successConnections=new HashSet<>();\n    final CountDownLatch latch=new CountDownLatch(outDatedConnections.size());\n    for (    String outDateConnectionId : outDatedConnections) {\n      try {\n        Connection connection=getConnection(outDateConnectionId);\n        if (connection != null) {\n          ClientDetectionRequest clientDetectionRequest=new ClientDetectionRequest();\n          connection.asyncRequest(clientDetectionRequest,new RequestCallBack(){\n            @Override public Executor getExecutor(){\n              return null;\n            }\n            @Override public long getTimeout(){\n              return 1000L;\n            }\n            @Override public void onResponse(            Response response){\n              latch.countDown();\n              if (response != null && response.isSuccess()) {\n                connection.freshActiveTime();\n                successConnections.add(outDateConnectionId);\n              }\n            }\n            @Override public void onException(            Throwable e){\n              latch.countDown();\n            }\n          }\n);\n          Loggers.REMOTE_DIGEST.info(\"[{}]send connection active request \",outDateConnectionId);\n        }\n else {\n          latch.countDown();\n        }\n      }\n catch (      ConnectionAlreadyClosedException e) {\n        latch.countDown();\n      }\ncatch (      Exception e) {\n        Loggers.REMOTE_DIGEST.error(\"[{}]Error occurs when check client active detection ,error={}\",outDateConnectionId,e);\n        latch.countDown();\n      }\n    }\n    latch.await(3000L,TimeUnit.MILLISECONDS);\n    Loggers.REMOTE_DIGEST.info(\"Out dated connection check successCount={}\",successConnections.size());\n    for (    String outDateConnectionId : outDatedConnections) {\n      if (!successConnections.contains(outDateConnectionId)) {\n        Loggers.REMOTE_DIGEST.info(\"[{}]Unregister Out dated connection....\",outDateConnectionId);\n        unregister(outDateConnectionId);\n      }\n    }\n  }\n  if (isLoaderClient) {\n    loadClient=-1;\n    redirectAddress=null;\n  }\n  Loggers.REMOTE_DIGEST.info(\"Connection check task end\");\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 852,
+      "astHeight" : 20
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 11364,
+        "startLineNumber" : 286,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 474,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "try {\n  int totalCount=connections.size();\n  Loggers.REMOTE_DIGEST.info(\"Connection check task start\");\n  MetricsMonitor.getLongConnectionMonitor().set(totalCount);\n  Set<Map.Entry<String,Connection>> entries=connections.entrySet();\n  int currentSdkClientCount=currentSdkClientCount();\n  boolean isLoaderClient=loadClient >= 0;\n  int currentMaxClient=isLoaderClient ? loadClient : connectionLimitRule.countLimit;\n  int expelCount=currentMaxClient < 0 ? 0 : Math.max(currentSdkClientCount - currentMaxClient,0);\n  Loggers.REMOTE_DIGEST.info(\"Total count ={}, sdkCount={},clusterCount={}, currentLimit={}, toExpelCount={}\",totalCount,currentSdkClientCount,(totalCount - currentSdkClientCount),currentMaxClient + (isLoaderClient ? \"(loaderCount)\" : \"\"),expelCount);\n  List<String> expelClient=new LinkedList<>();\n  Map<String,AtomicInteger> expelForIp=new HashMap<>(16);\n  for (  Map.Entry<String,Connection> entry : entries) {\n    Connection client=entry.getValue();\n    String appName=client.getMetaInfo().getAppName();\n    String clientIp=client.getMetaInfo().getClientIp();\n    if (client.getMetaInfo().isSdkSource() && !expelForIp.containsKey(clientIp)) {\n      int countLimitOfIp=connectionLimitRule.getCountLimitOfIp(clientIp);\n      if (countLimitOfIp < 0) {\n        int countLimitOfApp=connectionLimitRule.getCountLimitOfApp(appName);\n        countLimitOfIp=countLimitOfApp < 0 ? countLimitOfIp : countLimitOfApp;\n      }\n      if (countLimitOfIp < 0) {\n        countLimitOfIp=connectionLimitRule.getCountLimitPerClientIpDefault();\n      }\n      if (countLimitOfIp >= 0 && connectionForClientIp.containsKey(clientIp)) {\n        AtomicInteger currentCountIp=connectionForClientIp.get(clientIp);\n        if (currentCountIp != null && currentCountIp.get() > countLimitOfIp) {\n          expelForIp.put(clientIp,new AtomicInteger(currentCountIp.get() - countLimitOfIp));\n        }\n      }\n    }\n  }\n  Loggers.REMOTE_DIGEST.info(\"Check over limit for ip limit rule, over limit ip count={}\",expelForIp.size());\n  if (expelForIp.size() > 0) {\n    Loggers.REMOTE_DIGEST.info(\"Over limit ip expel info,\",expelForIp);\n  }\n  Set<String> outDatedConnections=new HashSet<>();\n  long now=System.currentTimeMillis();\n  for (  Map.Entry<String,Connection> entry : entries) {\n    Connection client=entry.getValue();\n    String clientIp=client.getMetaInfo().getClientIp();\n    AtomicInteger integer=expelForIp.get(clientIp);\n    if (integer != null && integer.intValue() > 0) {\n      integer.decrementAndGet();\n      expelClient.add(client.getMetaInfo().getConnectionId());\n      expelCount--;\n    }\n else     if (now - client.getMetaInfo().getLastActiveTime() >= KEEP_ALIVE_TIME) {\n      outDatedConnections.add(client.getMetaInfo().getConnectionId());\n    }\n  }\n  if (expelCount > 0) {\n    for (    Map.Entry<String,Connection> entry : entries) {\n      Connection client=entry.getValue();\n      if (!expelForIp.containsKey(client.getMetaInfo().clientIp) && client.getMetaInfo().isSdkSource() && expelCount > 0) {\n        expelClient.add(client.getMetaInfo().getConnectionId());\n        expelCount--;\n        outDatedConnections.remove(client.getMetaInfo().getConnectionId());\n      }\n    }\n  }\n  String serverIp=null;\n  String serverPort=null;\n  if (StringUtils.isNotBlank(redirectAddress) && redirectAddress.contains(Constants.COLON)) {\n    String[] split=redirectAddress.split(Constants.COLON);\n    serverIp=split[0];\n    serverPort=split[1];\n  }\n  for (  String expelledClientId : expelClient) {\n    try {\n      Connection connection=getConnection(expelledClientId);\n      if (connection != null) {\n        ConnectResetRequest connectResetRequest=new ConnectResetRequest();\n        connectResetRequest.setServerIp(serverIp);\n        connectResetRequest.setServerPort(serverPort);\n        connection.asyncRequest(connectResetRequest,null);\n        Loggers.REMOTE_DIGEST.info(\"Send connection reset request , connection id = {},recommendServerIp={}, recommendServerPort={}\",expelledClientId,connectResetRequest.getServerIp(),connectResetRequest.getServerPort());\n      }\n    }\n catch (    ConnectionAlreadyClosedException e) {\n      unregister(expelledClientId);\n    }\ncatch (    Exception e) {\n      Loggers.REMOTE_DIGEST.error(\"Error occurs when expel connection :\",expelledClientId,e);\n    }\n  }\n  Loggers.REMOTE_DIGEST.info(\"Out dated connection ,size={}\",outDatedConnections.size());\n  if (CollectionUtils.isNotEmpty(outDatedConnections)) {\n    Set<String> successConnections=new HashSet<>();\n    final CountDownLatch latch=new CountDownLatch(outDatedConnections.size());\n    for (    String outDateConnectionId : outDatedConnections) {\n      try {\n        Connection connection=getConnection(outDateConnectionId);\n        if (connection != null) {\n          ClientDetectionRequest clientDetectionRequest=new ClientDetectionRequest();\n          connection.asyncRequest(clientDetectionRequest,new RequestCallBack(){\n            @Override public Executor getExecutor(){\n              return null;\n            }\n            @Override public long getTimeout(){\n              return 1000L;\n            }\n            @Override public void onResponse(            Response response){\n              latch.countDown();\n              if (response != null && response.isSuccess()) {\n                connection.freshActiveTime();\n                successConnections.add(outDateConnectionId);\n              }\n            }\n            @Override public void onException(            Throwable e){\n              latch.countDown();\n            }\n          }\n);\n          Loggers.REMOTE_DIGEST.info(\"[{}]send connection active request \",outDateConnectionId);\n        }\n else {\n          latch.countDown();\n        }\n      }\n catch (      ConnectionAlreadyClosedException e) {\n        latch.countDown();\n      }\ncatch (      Exception e) {\n        Loggers.REMOTE_DIGEST.error(\"[{}]Error occurs when check client active detection ,error={}\",outDateConnectionId,e);\n        latch.countDown();\n      }\n    }\n    latch.await(3000L,TimeUnit.MILLISECONDS);\n    Loggers.REMOTE_DIGEST.info(\"Out dated connection check successCount={}\",successConnections.size());\n    for (    String outDateConnectionId : outDatedConnections) {\n      if (!successConnections.contains(outDateConnectionId)) {\n        Loggers.REMOTE_DIGEST.info(\"[{}]Unregister Out dated connection....\",outDateConnectionId);\n        unregister(outDateConnectionId);\n      }\n    }\n  }\n  if (isLoaderClient) {\n    loadClient=-1;\n    redirectAddress=null;\n  }\n  Loggers.REMOTE_DIGEST.info(\"Connection check task end\");\n}\n catch (Throwable e) {\n  Loggers.REMOTE.error(\"Error occurs during connection check... \",e);\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 867,
+      "astHeight" : 21
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 315,
-        "startLineNumber" : 67,
-        "startColumnNumber" : 36,
-        "endLineNumber" : 76,
-        "endColumnNumber" : 5
+        "charLength" : 11396,
+        "startLineNumber" : 285,
+        "startColumnNumber" : 30,
+        "endLineNumber" : 475,
+        "endColumnNumber" : 13
       },
-      "nodeContext" : "{\n  if (this == o) {\n    return true;\n  }\n  if (!(o instanceof ExpiredMetadataInfo)) {\n    return false;\n  }\n  ExpiredMetadataInfo that=(ExpiredMetadataInfo)o;\n  return Objects.equals(service,that.service) && Objects.equals(instanceId,that.instanceId);\n}\n",
+      "nodeContext" : "{\n  try {\n    int totalCount=connections.size();\n    Loggers.REMOTE_DIGEST.info(\"Connection check task start\");\n    MetricsMonitor.getLongConnectionMonitor().set(totalCount);\n    Set<Map.Entry<String,Connection>> entries=connections.entrySet();\n    int currentSdkClientCount=currentSdkClientCount();\n    boolean isLoaderClient=loadClient >= 0;\n    int currentMaxClient=isLoaderClient ? loadClient : connectionLimitRule.countLimit;\n    int expelCount=currentMaxClient < 0 ? 0 : Math.max(currentSdkClientCount - currentMaxClient,0);\n    Loggers.REMOTE_DIGEST.info(\"Total count ={}, sdkCount={},clusterCount={}, currentLimit={}, toExpelCount={}\",totalCount,currentSdkClientCount,(totalCount - currentSdkClientCount),currentMaxClient + (isLoaderClient ? \"(loaderCount)\" : \"\"),expelCount);\n    List<String> expelClient=new LinkedList<>();\n    Map<String,AtomicInteger> expelForIp=new HashMap<>(16);\n    for (    Map.Entry<String,Connection> entry : entries) {\n      Connection client=entry.getValue();\n      String appName=client.getMetaInfo().getAppName();\n      String clientIp=client.getMetaInfo().getClientIp();\n      if (client.getMetaInfo().isSdkSource() && !expelForIp.containsKey(clientIp)) {\n        int countLimitOfIp=connectionLimitRule.getCountLimitOfIp(clientIp);\n        if (countLimitOfIp < 0) {\n          int countLimitOfApp=connectionLimitRule.getCountLimitOfApp(appName);\n          countLimitOfIp=countLimitOfApp < 0 ? countLimitOfIp : countLimitOfApp;\n        }\n        if (countLimitOfIp < 0) {\n          countLimitOfIp=connectionLimitRule.getCountLimitPerClientIpDefault();\n        }\n        if (countLimitOfIp >= 0 && connectionForClientIp.containsKey(clientIp)) {\n          AtomicInteger currentCountIp=connectionForClientIp.get(clientIp);\n          if (currentCountIp != null && currentCountIp.get() > countLimitOfIp) {\n            expelForIp.put(clientIp,new AtomicInteger(currentCountIp.get() - countLimitOfIp));\n          }\n        }\n      }\n    }\n    Loggers.REMOTE_DIGEST.info(\"Check over limit for ip limit rule, over limit ip count={}\",expelForIp.size());\n    if (expelForIp.size() > 0) {\n      Loggers.REMOTE_DIGEST.info(\"Over limit ip expel info,\",expelForIp);\n    }\n    Set<String> outDatedConnections=new HashSet<>();\n    long now=System.currentTimeMillis();\n    for (    Map.Entry<String,Connection> entry : entries) {\n      Connection client=entry.getValue();\n      String clientIp=client.getMetaInfo().getClientIp();\n      AtomicInteger integer=expelForIp.get(clientIp);\n      if (integer != null && integer.intValue() > 0) {\n        integer.decrementAndGet();\n        expelClient.add(client.getMetaInfo().getConnectionId());\n        expelCount--;\n      }\n else       if (now - client.getMetaInfo().getLastActiveTime() >= KEEP_ALIVE_TIME) {\n        outDatedConnections.add(client.getMetaInfo().getConnectionId());\n      }\n    }\n    if (expelCount > 0) {\n      for (      Map.Entry<String,Connection> entry : entries) {\n        Connection client=entry.getValue();\n        if (!expelForIp.containsKey(client.getMetaInfo().clientIp) && client.getMetaInfo().isSdkSource() && expelCount > 0) {\n          expelClient.add(client.getMetaInfo().getConnectionId());\n          expelCount--;\n          outDatedConnections.remove(client.getMetaInfo().getConnectionId());\n        }\n      }\n    }\n    String serverIp=null;\n    String serverPort=null;\n    if (StringUtils.isNotBlank(redirectAddress) && redirectAddress.contains(Constants.COLON)) {\n      String[] split=redirectAddress.split(Constants.COLON);\n      serverIp=split[0];\n      serverPort=split[1];\n    }\n    for (    String expelledClientId : expelClient) {\n      try {\n        Connection connection=getConnection(expelledClientId);\n        if (connection != null) {\n          ConnectResetRequest connectResetRequest=new ConnectResetRequest();\n          connectResetRequest.setServerIp(serverIp);\n          connectResetRequest.setServerPort(serverPort);\n          connection.asyncRequest(connectResetRequest,null);\n          Loggers.REMOTE_DIGEST.info(\"Send connection reset request , connection id = {},recommendServerIp={}, recommendServerPort={}\",expelledClientId,connectResetRequest.getServerIp(),connectResetRequest.getServerPort());\n        }\n      }\n catch (      ConnectionAlreadyClosedException e) {\n        unregister(expelledClientId);\n      }\ncatch (      Exception e) {\n        Loggers.REMOTE_DIGEST.error(\"Error occurs when expel connection :\",expelledClientId,e);\n      }\n    }\n    Loggers.REMOTE_DIGEST.info(\"Out dated connection ,size={}\",outDatedConnections.size());\n    if (CollectionUtils.isNotEmpty(outDatedConnections)) {\n      Set<String> successConnections=new HashSet<>();\n      final CountDownLatch latch=new CountDownLatch(outDatedConnections.size());\n      for (      String outDateConnectionId : outDatedConnections) {\n        try {\n          Connection connection=getConnection(outDateConnectionId);\n          if (connection != null) {\n            ClientDetectionRequest clientDetectionRequest=new ClientDetectionRequest();\n            connection.asyncRequest(clientDetectionRequest,new RequestCallBack(){\n              @Override public Executor getExecutor(){\n                return null;\n              }\n              @Override public long getTimeout(){\n                return 1000L;\n              }\n              @Override public void onResponse(              Response response){\n                latch.countDown();\n                if (response != null && response.isSuccess()) {\n                  connection.freshActiveTime();\n                  successConnections.add(outDateConnectionId);\n                }\n              }\n              @Override public void onException(              Throwable e){\n                latch.countDown();\n              }\n            }\n);\n            Loggers.REMOTE_DIGEST.info(\"[{}]send connection active request \",outDateConnectionId);\n          }\n else {\n            latch.countDown();\n          }\n        }\n catch (        ConnectionAlreadyClosedException e) {\n          latch.countDown();\n        }\ncatch (        Exception e) {\n          Loggers.REMOTE_DIGEST.error(\"[{}]Error occurs when check client active detection ,error={}\",outDateConnectionId,e);\n          latch.countDown();\n        }\n      }\n      latch.await(3000L,TimeUnit.MILLISECONDS);\n      Loggers.REMOTE_DIGEST.info(\"Out dated connection check successCount={}\",successConnections.size());\n      for (      String outDateConnectionId : outDatedConnections) {\n        if (!successConnections.contains(outDateConnectionId)) {\n          Loggers.REMOTE_DIGEST.info(\"[{}]Unregister Out dated connection....\",outDateConnectionId);\n          unregister(outDateConnectionId);\n        }\n      }\n    }\n    if (isLoaderClient) {\n      loadClient=-1;\n      redirectAddress=null;\n    }\n    Loggers.REMOTE_DIGEST.info(\"Connection check task end\");\n  }\n catch (  Throwable e) {\n    Loggers.REMOTE.error(\"Error occurs during connection check... \",e);\n  }\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 43,
-      "astHeight" : 7
+      "astNodeNumber" : 868,
+      "astHeight" : 22
     }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.AnonymousClassDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 361,
-        "startLineNumber" : 66,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 76,
-        "endColumnNumber" : 5
+        "charLength" : 11436,
+        "startLineNumber" : 284,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 475,
+        "endColumnNumber" : 13
       },
-      "nodeContext" : "@Override public boolean equals(Object o){\n  if (this == o) {\n    return true;\n  }\n  if (!(o instanceof ExpiredMetadataInfo)) {\n    return false;\n  }\n  ExpiredMetadataInfo that=(ExpiredMetadataInfo)o;\n  return Objects.equals(service,that.service) && Objects.equals(instanceId,that.instanceId);\n}\n",
+      "nodeContext" : "@Override public void run(){\n  try {\n    int totalCount=connections.size();\n    Loggers.REMOTE_DIGEST.info(\"Connection check task start\");\n    MetricsMonitor.getLongConnectionMonitor().set(totalCount);\n    Set<Map.Entry<String,Connection>> entries=connections.entrySet();\n    int currentSdkClientCount=currentSdkClientCount();\n    boolean isLoaderClient=loadClient >= 0;\n    int currentMaxClient=isLoaderClient ? loadClient : connectionLimitRule.countLimit;\n    int expelCount=currentMaxClient < 0 ? 0 : Math.max(currentSdkClientCount - currentMaxClient,0);\n    Loggers.REMOTE_DIGEST.info(\"Total count ={}, sdkCount={},clusterCount={}, currentLimit={}, toExpelCount={}\",totalCount,currentSdkClientCount,(totalCount - currentSdkClientCount),currentMaxClient + (isLoaderClient ? \"(loaderCount)\" : \"\"),expelCount);\n    List<String> expelClient=new LinkedList<>();\n    Map<String,AtomicInteger> expelForIp=new HashMap<>(16);\n    for (    Map.Entry<String,Connection> entry : entries) {\n      Connection client=entry.getValue();\n      String appName=client.getMetaInfo().getAppName();\n      String clientIp=client.getMetaInfo().getClientIp();\n      if (client.getMetaInfo().isSdkSource() && !expelForIp.containsKey(clientIp)) {\n        int countLimitOfIp=connectionLimitRule.getCountLimitOfIp(clientIp);\n        if (countLimitOfIp < 0) {\n          int countLimitOfApp=connectionLimitRule.getCountLimitOfApp(appName);\n          countLimitOfIp=countLimitOfApp < 0 ? countLimitOfIp : countLimitOfApp;\n        }\n        if (countLimitOfIp < 0) {\n          countLimitOfIp=connectionLimitRule.getCountLimitPerClientIpDefault();\n        }\n        if (countLimitOfIp >= 0 && connectionForClientIp.containsKey(clientIp)) {\n          AtomicInteger currentCountIp=connectionForClientIp.get(clientIp);\n          if (currentCountIp != null && currentCountIp.get() > countLimitOfIp) {\n            expelForIp.put(clientIp,new AtomicInteger(currentCountIp.get() - countLimitOfIp));\n          }\n        }\n      }\n    }\n    Loggers.REMOTE_DIGEST.info(\"Check over limit for ip limit rule, over limit ip count={}\",expelForIp.size());\n    if (expelForIp.size() > 0) {\n      Loggers.REMOTE_DIGEST.info(\"Over limit ip expel info,\",expelForIp);\n    }\n    Set<String> outDatedConnections=new HashSet<>();\n    long now=System.currentTimeMillis();\n    for (    Map.Entry<String,Connection> entry : entries) {\n      Connection client=entry.getValue();\n      String clientIp=client.getMetaInfo().getClientIp();\n      AtomicInteger integer=expelForIp.get(clientIp);\n      if (integer != null && integer.intValue() > 0) {\n        integer.decrementAndGet();\n        expelClient.add(client.getMetaInfo().getConnectionId());\n        expelCount--;\n      }\n else       if (now - client.getMetaInfo().getLastActiveTime() >= KEEP_ALIVE_TIME) {\n        outDatedConnections.add(client.getMetaInfo().getConnectionId());\n      }\n    }\n    if (expelCount > 0) {\n      for (      Map.Entry<String,Connection> entry : entries) {\n        Connection client=entry.getValue();\n        if (!expelForIp.containsKey(client.getMetaInfo().clientIp) && client.getMetaInfo().isSdkSource() && expelCount > 0) {\n          expelClient.add(client.getMetaInfo().getConnectionId());\n          expelCount--;\n          outDatedConnections.remove(client.getMetaInfo().getConnectionId());\n        }\n      }\n    }\n    String serverIp=null;\n    String serverPort=null;\n    if (StringUtils.isNotBlank(redirectAddress) && redirectAddress.contains(Constants.COLON)) {\n      String[] split=redirectAddress.split(Constants.COLON);\n      serverIp=split[0];\n      serverPort=split[1];\n    }\n    for (    String expelledClientId : expelClient) {\n      try {\n        Connection connection=getConnection(expelledClientId);\n        if (connection != null) {\n          ConnectResetRequest connectResetRequest=new ConnectResetRequest();\n          connectResetRequest.setServerIp(serverIp);\n          connectResetRequest.setServerPort(serverPort);\n          connection.asyncRequest(connectResetRequest,null);\n          Loggers.REMOTE_DIGEST.info(\"Send connection reset request , connection id = {},recommendServerIp={}, recommendServerPort={}\",expelledClientId,connectResetRequest.getServerIp(),connectResetRequest.getServerPort());\n        }\n      }\n catch (      ConnectionAlreadyClosedException e) {\n        unregister(expelledClientId);\n      }\ncatch (      Exception e) {\n        Loggers.REMOTE_DIGEST.error(\"Error occurs when expel connection :\",expelledClientId,e);\n      }\n    }\n    Loggers.REMOTE_DIGEST.info(\"Out dated connection ,size={}\",outDatedConnections.size());\n    if (CollectionUtils.isNotEmpty(outDatedConnections)) {\n      Set<String> successConnections=new HashSet<>();\n      final CountDownLatch latch=new CountDownLatch(outDatedConnections.size());\n      for (      String outDateConnectionId : outDatedConnections) {\n        try {\n          Connection connection=getConnection(outDateConnectionId);\n          if (connection != null) {\n            ClientDetectionRequest clientDetectionRequest=new ClientDetectionRequest();\n            connection.asyncRequest(clientDetectionRequest,new RequestCallBack(){\n              @Override public Executor getExecutor(){\n                return null;\n              }\n              @Override public long getTimeout(){\n                return 1000L;\n              }\n              @Override public void onResponse(              Response response){\n                latch.countDown();\n                if (response != null && response.isSuccess()) {\n                  connection.freshActiveTime();\n                  successConnections.add(outDateConnectionId);\n                }\n              }\n              @Override public void onException(              Throwable e){\n                latch.countDown();\n              }\n            }\n);\n            Loggers.REMOTE_DIGEST.info(\"[{}]send connection active request \",outDateConnectionId);\n          }\n else {\n            latch.countDown();\n          }\n        }\n catch (        ConnectionAlreadyClosedException e) {\n          latch.countDown();\n        }\ncatch (        Exception e) {\n          Loggers.REMOTE_DIGEST.error(\"[{}]Error occurs when check client active detection ,error={}\",outDateConnectionId,e);\n          latch.countDown();\n        }\n      }\n      latch.await(3000L,TimeUnit.MILLISECONDS);\n      Loggers.REMOTE_DIGEST.info(\"Out dated connection check successCount={}\",successConnections.size());\n      for (      String outDateConnectionId : outDatedConnections) {\n        if (!successConnections.contains(outDateConnectionId)) {\n          Loggers.REMOTE_DIGEST.info(\"[{}]Unregister Out dated connection....\",outDateConnectionId);\n          unregister(outDateConnectionId);\n        }\n      }\n    }\n    if (isLoaderClient) {\n      loadClient=-1;\n      redirectAddress=null;\n    }\n    Loggers.REMOTE_DIGEST.info(\"Connection check task end\");\n  }\n catch (  Throwable e) {\n    Loggers.REMOTE.error(\"Error occurs during connection check... \",e);\n  }\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 53,
-      "astHeight" : 8
+      "astNodeNumber" : 874,
+      "astHeight" : 23
     } ],
     "currentLineData" : {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 92,
-        "startLineNumber" : 75,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 75,
-        "endColumnNumber" : 100
-      },
-      "nodeContext" : "return Objects.equals(service,that.service) && Objects.equals(instanceId,that.instanceId);\n",
-      "nodeType" : "ReturnStatement",
-      "astNodeNumber" : 16,
-      "astHeight" : 5
-    },
-    "tokenLength" : 1,
-    "type" : "com.alibaba.nacos.naming.core.v2.metadata.ExpiredMetadataInfo"
-  }, {
-    "nodeContext" : "that",
-    "nodeType" : "SimpleName",
-    "nodePosition" : {
-      "charLength" : 4,
-      "startLineNumber" : 75,
-      "startColumnNumber" : 83,
-      "endLineNumber" : 75,
-      "endColumnNumber" : 87
-    },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
-    "parentDataList" : [ {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
-      "nodePosition" : {
-        "charLength" : 15,
-        "startLineNumber" : 75,
-        "startColumnNumber" : 83,
-        "endLineNumber" : 75,
-        "endColumnNumber" : 98
-      },
-      "nodeContext" : "that.instanceId",
-      "nodeType" : "QualifiedName",
-      "astNodeNumber" : 3,
-      "astHeight" : 2
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,rightOperand]",
-      "nodePosition" : {
-        "charLength" : 43,
-        "startLineNumber" : 75,
-        "startColumnNumber" : 56,
-        "endLineNumber" : 75,
-        "endColumnNumber" : 99
-      },
-      "nodeContext" : "Objects.equals(instanceId,that.instanceId)",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 7,
-      "astHeight" : 3
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ReturnStatement,expression]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
       "nodePosition" : {
         "charLength" : 84,
-        "startLineNumber" : 75,
-        "startColumnNumber" : 15,
-        "endLineNumber" : 75,
-        "endColumnNumber" : 99
+        "startLineNumber" : 371,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 371,
+        "endColumnNumber" : 108
       },
-      "nodeContext" : "Objects.equals(service,that.service) && Objects.equals(instanceId,that.instanceId)",
+      "nodeContext" : "StringUtils.isNotBlank(redirectAddress) && redirectAddress.contains(Constants.COLON)",
       "nodeType" : "InfixExpression",
-      "astNodeNumber" : 15,
+      "astNodeNumber" : 11,
       "astHeight" : 4
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 92,
-        "startLineNumber" : 75,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 75,
-        "endColumnNumber" : 100
-      },
-      "nodeContext" : "return Objects.equals(service,that.service) && Objects.equals(instanceId,that.instanceId);\n",
-      "nodeType" : "ReturnStatement",
-      "astNodeNumber" : 16,
-      "astHeight" : 5
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
-      "nodePosition" : {
-        "charLength" : 315,
-        "startLineNumber" : 67,
-        "startColumnNumber" : 36,
-        "endLineNumber" : 76,
-        "endColumnNumber" : 5
-      },
-      "nodeContext" : "{\n  if (this == o) {\n    return true;\n  }\n  if (!(o instanceof ExpiredMetadataInfo)) {\n    return false;\n  }\n  ExpiredMetadataInfo that=(ExpiredMetadataInfo)o;\n  return Objects.equals(service,that.service) && Objects.equals(instanceId,that.instanceId);\n}\n",
-      "nodeType" : "Block",
-      "astNodeNumber" : 43,
-      "astHeight" : 7
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
-      "nodePosition" : {
-        "charLength" : 361,
-        "startLineNumber" : 66,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 76,
-        "endColumnNumber" : 5
-      },
-      "nodeContext" : "@Override public boolean equals(Object o){\n  if (this == o) {\n    return true;\n  }\n  if (!(o instanceof ExpiredMetadataInfo)) {\n    return false;\n  }\n  ExpiredMetadataInfo that=(ExpiredMetadataInfo)o;\n  return Objects.equals(service,that.service) && Objects.equals(instanceId,that.instanceId);\n}\n",
-      "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 53,
-      "astHeight" : 8
-    } ],
-    "currentLineData" : {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 92,
-        "startLineNumber" : 75,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 75,
-        "endColumnNumber" : 100
-      },
-      "nodeContext" : "return Objects.equals(service,that.service) && Objects.equals(instanceId,that.instanceId);\n",
-      "nodeType" : "ReturnStatement",
-      "astNodeNumber" : 16,
-      "astHeight" : 5
     },
-    "tokenLength" : 1,
-    "type" : "com.alibaba.nacos.naming.core.v2.metadata.ExpiredMetadataInfo"
+    "tokenLength" : 4,
+    "type" : "boolean"
   } ],
   "positionList" : [ {
-    "charLength" : 4,
-    "startLineNumber" : 75,
-    "startColumnNumber" : 39,
-    "endLineNumber" : 75,
-    "endColumnNumber" : 43
-  }, {
-    "charLength" : 4,
-    "startLineNumber" : 75,
-    "startColumnNumber" : 83,
-    "endLineNumber" : 75,
-    "endColumnNumber" : 87
+    "charLength" : 41,
+    "startLineNumber" : 371,
+    "startColumnNumber" : 67,
+    "endLineNumber" : 371,
+    "endColumnNumber" : 108
   } ],
-  "layoutRelationDataList" : [ {
-    "firstKey" : 0,
-    "secondKey" : 1,
-    "layout" : 2
-  }, {
-    "firstKey" : 1,
-    "secondKey" : 0,
-    "layout" : 2
-  } ]
+  "layoutRelationDataList" : [ ]
 }

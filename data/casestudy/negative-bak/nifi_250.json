@@ -1,0 +1,260 @@
+{
+  "id" : 250,
+  "expression" : "updateKeys",
+  "projectName" : "nifi",
+  "commitID" : "3fb445437580bf47f1bec2b553aaff5424eb9eef",
+  "filePath" : "nifi-nar-bundles/nifi-standard-bundle/nifi-standard-processors/src/main/java/org/apache/nifi/processors/standard/PutDatabaseRecord.java",
+  "occurrences" : 2,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "updateKeys",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 10,
+      "startLineNumber" : 627,
+      "startColumnNumber" : 43,
+      "endLineNumber" : 627,
+      "endColumnNumber" : 53
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 18,
+        "startLineNumber" : 627,
+        "startColumnNumber" : 43,
+        "endLineNumber" : 627,
+        "endColumnNumber" : 61
+      },
+      "nodeContext" : "updateKeys == null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 39,
+        "startLineNumber" : 627,
+        "startColumnNumber" : 22,
+        "endLineNumber" : 627,
+        "endColumnNumber" : 61
+      },
+      "nodeContext" : "includePrimaryKeys=updateKeys == null",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 54,
+        "startLineNumber" : 627,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 627,
+        "endColumnNumber" : 62
+      },
+      "nodeContext" : "final boolean includePrimaryKeys=updateKeys == null;\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 6317,
+        "startLineNumber" : 609,
+        "startColumnNumber" : 97,
+        "endLineNumber" : 732,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final RecordSchema recordSchema=recordParser.getSchema();\n  final ComponentLog log=getLogger();\n  final String catalog=context.getProperty(CATALOG_NAME).evaluateAttributeExpressions(flowFile).getValue();\n  final String schemaName=context.getProperty(SCHEMA_NAME).evaluateAttributeExpressions(flowFile).getValue();\n  final String tableName=context.getProperty(TABLE_NAME).evaluateAttributeExpressions(flowFile).getValue();\n  final String updateKeys=context.getProperty(UPDATE_KEYS).evaluateAttributeExpressions(flowFile).getValue();\n  final SchemaKey schemaKey=new PutDatabaseRecord.SchemaKey(catalog,schemaName,tableName);\n  if (StringUtils.isEmpty(tableName)) {\n    throw new IllegalArgumentException(format(\"Cannot process %s because Table Name is null or empty\",flowFile));\n  }\n  final boolean includePrimaryKeys=updateKeys == null;\n  TableSchema tableSchema=schemaCache.get(schemaKey,key -> {\n    try {\n      return TableSchema.from(con,catalog,schemaName,tableName,settings.translateFieldNames,includePrimaryKeys);\n    }\n catch (    SQLException e) {\n      throw new ProcessException(e);\n    }\n  }\n);\n  if (tableSchema == null) {\n    throw new IllegalArgumentException(\"No table schema specified!\");\n  }\n  final StringBuilder tableNameBuilder=new StringBuilder();\n  if (catalog != null) {\n    tableNameBuilder.append(catalog).append(\".\");\n  }\n  if (schemaName != null) {\n    tableNameBuilder.append(schemaName).append(\".\");\n  }\n  tableNameBuilder.append(tableName);\n  final String fqTableName=tableNameBuilder.toString();\n  if (recordSchema == null) {\n    throw new IllegalArgumentException(\"No record schema specified!\");\n  }\n  final SqlAndIncludedColumns sqlHolder;\n  if (INSERT_TYPE.equalsIgnoreCase(statementType)) {\n    sqlHolder=generateInsert(recordSchema,fqTableName,tableSchema,settings);\n  }\n else   if (UPDATE_TYPE.equalsIgnoreCase(statementType)) {\n    sqlHolder=generateUpdate(recordSchema,fqTableName,updateKeys,tableSchema,settings);\n  }\n else   if (DELETE_TYPE.equalsIgnoreCase(statementType)) {\n    sqlHolder=generateDelete(recordSchema,fqTableName,tableSchema,settings);\n  }\n else {\n    throw new IllegalArgumentException(format(\"Statement Type %s is not valid, FlowFile %s\",statementType,flowFile));\n  }\n  try (PreparedStatement ps=con.prepareStatement(sqlHolder.getSql())){\n    final int queryTimeout=functionContext.queryTimeout;\n    try {\n      ps.setQueryTimeout(queryTimeout);\n    }\n catch (    SQLException se) {\n      if (queryTimeout > 0) {\n        throw se;\n      }\n    }\n    Record currentRecord;\n    List<Integer> fieldIndexes=sqlHolder.getFieldIndexes();\n    final Integer maxBatchSize=context.getProperty(MAX_BATCH_SIZE).evaluateAttributeExpressions(flowFile).asInteger();\n    int currentBatchSize=0;\n    int batchIndex=0;\n    while ((currentRecord=recordParser.nextRecord()) != null) {\n      Object[] values=currentRecord.getValues();\n      if (values != null) {\n        if (fieldIndexes != null) {\n          for (int i=0; i < fieldIndexes.size(); i++) {\n            if (DELETE_TYPE.equalsIgnoreCase(statementType)) {\n              ps.setObject(i * 2 + 1,values[fieldIndexes.get(i)]);\n              ps.setObject(i * 2 + 2,values[fieldIndexes.get(i)]);\n            }\n else {\n              ps.setObject(i + 1,values[fieldIndexes.get(i)]);\n            }\n          }\n        }\n else {\n          for (int i=0; i < values.length; i++) {\n            if (DELETE_TYPE.equalsIgnoreCase(statementType)) {\n              ps.setObject(i * 2 + 1,values[i]);\n              ps.setObject(i * 2 + 2,values[i]);\n            }\n else {\n              ps.setObject(i + 1,values[i]);\n            }\n          }\n        }\n        ps.addBatch();\n        if (++currentBatchSize == maxBatchSize) {\n          batchIndex++;\n          log.debug(\"Executing query {}; fieldIndexes: {}; batch index: {}; batch size: {}\",new Object[]{sqlHolder.getSql(),sqlHolder.getFieldIndexes(),batchIndex,currentBatchSize});\n          ps.executeBatch();\n          currentBatchSize=0;\n        }\n      }\n    }\n    if (currentBatchSize > 0) {\n      batchIndex++;\n      log.debug(\"Executing query {}; fieldIndexes: {}; batch index: {}; batch size: {}\",new Object[]{sqlHolder.getSql(),sqlHolder.getFieldIndexes(),batchIndex,currentBatchSize});\n      ps.executeBatch();\n    }\n    result.routeTo(flowFile,REL_SUCCESS);\n    session.getProvenanceReporter().send(flowFile,functionContext.jdbcUrl);\n  }\n }\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 602,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 6703,
+        "startLineNumber" : 606,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 732,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "private void executeDML(ProcessContext context,ProcessSession session,FlowFile flowFile,FunctionContext functionContext,RoutingResult result,Connection con,RecordReader recordParser,String statementType,DMLSettings settings) throws IllegalArgumentException, MalformedRecordException, IOException, SQLException {\n  final RecordSchema recordSchema=recordParser.getSchema();\n  final ComponentLog log=getLogger();\n  final String catalog=context.getProperty(CATALOG_NAME).evaluateAttributeExpressions(flowFile).getValue();\n  final String schemaName=context.getProperty(SCHEMA_NAME).evaluateAttributeExpressions(flowFile).getValue();\n  final String tableName=context.getProperty(TABLE_NAME).evaluateAttributeExpressions(flowFile).getValue();\n  final String updateKeys=context.getProperty(UPDATE_KEYS).evaluateAttributeExpressions(flowFile).getValue();\n  final SchemaKey schemaKey=new PutDatabaseRecord.SchemaKey(catalog,schemaName,tableName);\n  if (StringUtils.isEmpty(tableName)) {\n    throw new IllegalArgumentException(format(\"Cannot process %s because Table Name is null or empty\",flowFile));\n  }\n  final boolean includePrimaryKeys=updateKeys == null;\n  TableSchema tableSchema=schemaCache.get(schemaKey,key -> {\n    try {\n      return TableSchema.from(con,catalog,schemaName,tableName,settings.translateFieldNames,includePrimaryKeys);\n    }\n catch (    SQLException e) {\n      throw new ProcessException(e);\n    }\n  }\n);\n  if (tableSchema == null) {\n    throw new IllegalArgumentException(\"No table schema specified!\");\n  }\n  final StringBuilder tableNameBuilder=new StringBuilder();\n  if (catalog != null) {\n    tableNameBuilder.append(catalog).append(\".\");\n  }\n  if (schemaName != null) {\n    tableNameBuilder.append(schemaName).append(\".\");\n  }\n  tableNameBuilder.append(tableName);\n  final String fqTableName=tableNameBuilder.toString();\n  if (recordSchema == null) {\n    throw new IllegalArgumentException(\"No record schema specified!\");\n  }\n  final SqlAndIncludedColumns sqlHolder;\n  if (INSERT_TYPE.equalsIgnoreCase(statementType)) {\n    sqlHolder=generateInsert(recordSchema,fqTableName,tableSchema,settings);\n  }\n else   if (UPDATE_TYPE.equalsIgnoreCase(statementType)) {\n    sqlHolder=generateUpdate(recordSchema,fqTableName,updateKeys,tableSchema,settings);\n  }\n else   if (DELETE_TYPE.equalsIgnoreCase(statementType)) {\n    sqlHolder=generateDelete(recordSchema,fqTableName,tableSchema,settings);\n  }\n else {\n    throw new IllegalArgumentException(format(\"Statement Type %s is not valid, FlowFile %s\",statementType,flowFile));\n  }\n  try (PreparedStatement ps=con.prepareStatement(sqlHolder.getSql())){\n    final int queryTimeout=functionContext.queryTimeout;\n    try {\n      ps.setQueryTimeout(queryTimeout);\n    }\n catch (    SQLException se) {\n      if (queryTimeout > 0) {\n        throw se;\n      }\n    }\n    Record currentRecord;\n    List<Integer> fieldIndexes=sqlHolder.getFieldIndexes();\n    final Integer maxBatchSize=context.getProperty(MAX_BATCH_SIZE).evaluateAttributeExpressions(flowFile).asInteger();\n    int currentBatchSize=0;\n    int batchIndex=0;\n    while ((currentRecord=recordParser.nextRecord()) != null) {\n      Object[] values=currentRecord.getValues();\n      if (values != null) {\n        if (fieldIndexes != null) {\n          for (int i=0; i < fieldIndexes.size(); i++) {\n            if (DELETE_TYPE.equalsIgnoreCase(statementType)) {\n              ps.setObject(i * 2 + 1,values[fieldIndexes.get(i)]);\n              ps.setObject(i * 2 + 2,values[fieldIndexes.get(i)]);\n            }\n else {\n              ps.setObject(i + 1,values[fieldIndexes.get(i)]);\n            }\n          }\n        }\n else {\n          for (int i=0; i < values.length; i++) {\n            if (DELETE_TYPE.equalsIgnoreCase(statementType)) {\n              ps.setObject(i * 2 + 1,values[i]);\n              ps.setObject(i * 2 + 2,values[i]);\n            }\n else {\n              ps.setObject(i + 1,values[i]);\n            }\n          }\n        }\n        ps.addBatch();\n        if (++currentBatchSize == maxBatchSize) {\n          batchIndex++;\n          log.debug(\"Executing query {}; fieldIndexes: {}; batch index: {}; batch size: {}\",new Object[]{sqlHolder.getSql(),sqlHolder.getFieldIndexes(),batchIndex,currentBatchSize});\n          ps.executeBatch();\n          currentBatchSize=0;\n        }\n      }\n    }\n    if (currentBatchSize > 0) {\n      batchIndex++;\n      log.debug(\"Executing query {}; fieldIndexes: {}; batch index: {}; batch size: {}\",new Object[]{sqlHolder.getSql(),sqlHolder.getFieldIndexes(),batchIndex,currentBatchSize});\n      ps.executeBatch();\n    }\n    result.routeTo(flowFile,REL_SUCCESS);\n    session.getProvenanceReporter().send(flowFile,functionContext.jdbcUrl);\n  }\n }\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 650,
+      "astHeight" : 19
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 54,
+        "startLineNumber" : 627,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 627,
+        "endColumnNumber" : 62
+      },
+      "nodeContext" : "final boolean includePrimaryKeys=updateKeys == null;\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "java.lang.String"
+  }, {
+    "nodeContext" : "updateKeys",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 10,
+      "startLineNumber" : 660,
+      "startColumnNumber" : 66,
+      "endLineNumber" : 660,
+      "endColumnNumber" : 76
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
+      "nodePosition" : {
+        "charLength" : 76,
+        "startLineNumber" : 660,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 660,
+        "endColumnNumber" : 100
+      },
+      "nodeContext" : "generateUpdate(recordSchema,fqTableName,updateKeys,tableSchema,settings)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 88,
+        "startLineNumber" : 660,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 660,
+        "endColumnNumber" : 100
+      },
+      "nodeContext" : "sqlHolder=generateUpdate(recordSchema,fqTableName,updateKeys,tableSchema,settings)",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 9,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 89,
+        "startLineNumber" : 660,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 660,
+        "endColumnNumber" : 101
+      },
+      "nodeContext" : "sqlHolder=generateUpdate(recordSchema,fqTableName,updateKeys,tableSchema,settings);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 114,
+        "startLineNumber" : 659,
+        "startColumnNumber" : 64,
+        "endLineNumber" : 662,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  sqlHolder=generateUpdate(recordSchema,fqTableName,updateKeys,tableSchema,settings);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 11,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 465,
+        "startLineNumber" : 659,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 667,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (UPDATE_TYPE.equalsIgnoreCase(statementType)) {\n  sqlHolder=generateUpdate(recordSchema,fqTableName,updateKeys,tableSchema,settings);\n}\n else if (DELETE_TYPE.equalsIgnoreCase(statementType)) {\n  sqlHolder=generateDelete(recordSchema,fqTableName,tableSchema,settings);\n}\n else {\n  throw new IllegalArgumentException(format(\"Statement Type %s is not valid, FlowFile %s\",statementType,flowFile));\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 41,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 622,
+        "startLineNumber" : 656,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 667,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (INSERT_TYPE.equalsIgnoreCase(statementType)) {\n  sqlHolder=generateInsert(recordSchema,fqTableName,tableSchema,settings);\n}\n else if (UPDATE_TYPE.equalsIgnoreCase(statementType)) {\n  sqlHolder=generateUpdate(recordSchema,fqTableName,updateKeys,tableSchema,settings);\n}\n else if (DELETE_TYPE.equalsIgnoreCase(statementType)) {\n  sqlHolder=generateDelete(recordSchema,fqTableName,tableSchema,settings);\n}\n else {\n  throw new IllegalArgumentException(format(\"Statement Type %s is not valid, FlowFile %s\",statementType,flowFile));\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 56,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 6317,
+        "startLineNumber" : 609,
+        "startColumnNumber" : 97,
+        "endLineNumber" : 732,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final RecordSchema recordSchema=recordParser.getSchema();\n  final ComponentLog log=getLogger();\n  final String catalog=context.getProperty(CATALOG_NAME).evaluateAttributeExpressions(flowFile).getValue();\n  final String schemaName=context.getProperty(SCHEMA_NAME).evaluateAttributeExpressions(flowFile).getValue();\n  final String tableName=context.getProperty(TABLE_NAME).evaluateAttributeExpressions(flowFile).getValue();\n  final String updateKeys=context.getProperty(UPDATE_KEYS).evaluateAttributeExpressions(flowFile).getValue();\n  final SchemaKey schemaKey=new PutDatabaseRecord.SchemaKey(catalog,schemaName,tableName);\n  if (StringUtils.isEmpty(tableName)) {\n    throw new IllegalArgumentException(format(\"Cannot process %s because Table Name is null or empty\",flowFile));\n  }\n  final boolean includePrimaryKeys=updateKeys == null;\n  TableSchema tableSchema=schemaCache.get(schemaKey,key -> {\n    try {\n      return TableSchema.from(con,catalog,schemaName,tableName,settings.translateFieldNames,includePrimaryKeys);\n    }\n catch (    SQLException e) {\n      throw new ProcessException(e);\n    }\n  }\n);\n  if (tableSchema == null) {\n    throw new IllegalArgumentException(\"No table schema specified!\");\n  }\n  final StringBuilder tableNameBuilder=new StringBuilder();\n  if (catalog != null) {\n    tableNameBuilder.append(catalog).append(\".\");\n  }\n  if (schemaName != null) {\n    tableNameBuilder.append(schemaName).append(\".\");\n  }\n  tableNameBuilder.append(tableName);\n  final String fqTableName=tableNameBuilder.toString();\n  if (recordSchema == null) {\n    throw new IllegalArgumentException(\"No record schema specified!\");\n  }\n  final SqlAndIncludedColumns sqlHolder;\n  if (INSERT_TYPE.equalsIgnoreCase(statementType)) {\n    sqlHolder=generateInsert(recordSchema,fqTableName,tableSchema,settings);\n  }\n else   if (UPDATE_TYPE.equalsIgnoreCase(statementType)) {\n    sqlHolder=generateUpdate(recordSchema,fqTableName,updateKeys,tableSchema,settings);\n  }\n else   if (DELETE_TYPE.equalsIgnoreCase(statementType)) {\n    sqlHolder=generateDelete(recordSchema,fqTableName,tableSchema,settings);\n  }\n else {\n    throw new IllegalArgumentException(format(\"Statement Type %s is not valid, FlowFile %s\",statementType,flowFile));\n  }\n  try (PreparedStatement ps=con.prepareStatement(sqlHolder.getSql())){\n    final int queryTimeout=functionContext.queryTimeout;\n    try {\n      ps.setQueryTimeout(queryTimeout);\n    }\n catch (    SQLException se) {\n      if (queryTimeout > 0) {\n        throw se;\n      }\n    }\n    Record currentRecord;\n    List<Integer> fieldIndexes=sqlHolder.getFieldIndexes();\n    final Integer maxBatchSize=context.getProperty(MAX_BATCH_SIZE).evaluateAttributeExpressions(flowFile).asInteger();\n    int currentBatchSize=0;\n    int batchIndex=0;\n    while ((currentRecord=recordParser.nextRecord()) != null) {\n      Object[] values=currentRecord.getValues();\n      if (values != null) {\n        if (fieldIndexes != null) {\n          for (int i=0; i < fieldIndexes.size(); i++) {\n            if (DELETE_TYPE.equalsIgnoreCase(statementType)) {\n              ps.setObject(i * 2 + 1,values[fieldIndexes.get(i)]);\n              ps.setObject(i * 2 + 2,values[fieldIndexes.get(i)]);\n            }\n else {\n              ps.setObject(i + 1,values[fieldIndexes.get(i)]);\n            }\n          }\n        }\n else {\n          for (int i=0; i < values.length; i++) {\n            if (DELETE_TYPE.equalsIgnoreCase(statementType)) {\n              ps.setObject(i * 2 + 1,values[i]);\n              ps.setObject(i * 2 + 2,values[i]);\n            }\n else {\n              ps.setObject(i + 1,values[i]);\n            }\n          }\n        }\n        ps.addBatch();\n        if (++currentBatchSize == maxBatchSize) {\n          batchIndex++;\n          log.debug(\"Executing query {}; fieldIndexes: {}; batch index: {}; batch size: {}\",new Object[]{sqlHolder.getSql(),sqlHolder.getFieldIndexes(),batchIndex,currentBatchSize});\n          ps.executeBatch();\n          currentBatchSize=0;\n        }\n      }\n    }\n    if (currentBatchSize > 0) {\n      batchIndex++;\n      log.debug(\"Executing query {}; fieldIndexes: {}; batch index: {}; batch size: {}\",new Object[]{sqlHolder.getSql(),sqlHolder.getFieldIndexes(),batchIndex,currentBatchSize});\n      ps.executeBatch();\n    }\n    result.routeTo(flowFile,REL_SUCCESS);\n    session.getProvenanceReporter().send(flowFile,functionContext.jdbcUrl);\n  }\n }\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 602,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 6703,
+        "startLineNumber" : 606,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 732,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "private void executeDML(ProcessContext context,ProcessSession session,FlowFile flowFile,FunctionContext functionContext,RoutingResult result,Connection con,RecordReader recordParser,String statementType,DMLSettings settings) throws IllegalArgumentException, MalformedRecordException, IOException, SQLException {\n  final RecordSchema recordSchema=recordParser.getSchema();\n  final ComponentLog log=getLogger();\n  final String catalog=context.getProperty(CATALOG_NAME).evaluateAttributeExpressions(flowFile).getValue();\n  final String schemaName=context.getProperty(SCHEMA_NAME).evaluateAttributeExpressions(flowFile).getValue();\n  final String tableName=context.getProperty(TABLE_NAME).evaluateAttributeExpressions(flowFile).getValue();\n  final String updateKeys=context.getProperty(UPDATE_KEYS).evaluateAttributeExpressions(flowFile).getValue();\n  final SchemaKey schemaKey=new PutDatabaseRecord.SchemaKey(catalog,schemaName,tableName);\n  if (StringUtils.isEmpty(tableName)) {\n    throw new IllegalArgumentException(format(\"Cannot process %s because Table Name is null or empty\",flowFile));\n  }\n  final boolean includePrimaryKeys=updateKeys == null;\n  TableSchema tableSchema=schemaCache.get(schemaKey,key -> {\n    try {\n      return TableSchema.from(con,catalog,schemaName,tableName,settings.translateFieldNames,includePrimaryKeys);\n    }\n catch (    SQLException e) {\n      throw new ProcessException(e);\n    }\n  }\n);\n  if (tableSchema == null) {\n    throw new IllegalArgumentException(\"No table schema specified!\");\n  }\n  final StringBuilder tableNameBuilder=new StringBuilder();\n  if (catalog != null) {\n    tableNameBuilder.append(catalog).append(\".\");\n  }\n  if (schemaName != null) {\n    tableNameBuilder.append(schemaName).append(\".\");\n  }\n  tableNameBuilder.append(tableName);\n  final String fqTableName=tableNameBuilder.toString();\n  if (recordSchema == null) {\n    throw new IllegalArgumentException(\"No record schema specified!\");\n  }\n  final SqlAndIncludedColumns sqlHolder;\n  if (INSERT_TYPE.equalsIgnoreCase(statementType)) {\n    sqlHolder=generateInsert(recordSchema,fqTableName,tableSchema,settings);\n  }\n else   if (UPDATE_TYPE.equalsIgnoreCase(statementType)) {\n    sqlHolder=generateUpdate(recordSchema,fqTableName,updateKeys,tableSchema,settings);\n  }\n else   if (DELETE_TYPE.equalsIgnoreCase(statementType)) {\n    sqlHolder=generateDelete(recordSchema,fqTableName,tableSchema,settings);\n  }\n else {\n    throw new IllegalArgumentException(format(\"Statement Type %s is not valid, FlowFile %s\",statementType,flowFile));\n  }\n  try (PreparedStatement ps=con.prepareStatement(sqlHolder.getSql())){\n    final int queryTimeout=functionContext.queryTimeout;\n    try {\n      ps.setQueryTimeout(queryTimeout);\n    }\n catch (    SQLException se) {\n      if (queryTimeout > 0) {\n        throw se;\n      }\n    }\n    Record currentRecord;\n    List<Integer> fieldIndexes=sqlHolder.getFieldIndexes();\n    final Integer maxBatchSize=context.getProperty(MAX_BATCH_SIZE).evaluateAttributeExpressions(flowFile).asInteger();\n    int currentBatchSize=0;\n    int batchIndex=0;\n    while ((currentRecord=recordParser.nextRecord()) != null) {\n      Object[] values=currentRecord.getValues();\n      if (values != null) {\n        if (fieldIndexes != null) {\n          for (int i=0; i < fieldIndexes.size(); i++) {\n            if (DELETE_TYPE.equalsIgnoreCase(statementType)) {\n              ps.setObject(i * 2 + 1,values[fieldIndexes.get(i)]);\n              ps.setObject(i * 2 + 2,values[fieldIndexes.get(i)]);\n            }\n else {\n              ps.setObject(i + 1,values[fieldIndexes.get(i)]);\n            }\n          }\n        }\n else {\n          for (int i=0; i < values.length; i++) {\n            if (DELETE_TYPE.equalsIgnoreCase(statementType)) {\n              ps.setObject(i * 2 + 1,values[i]);\n              ps.setObject(i * 2 + 2,values[i]);\n            }\n else {\n              ps.setObject(i + 1,values[i]);\n            }\n          }\n        }\n        ps.addBatch();\n        if (++currentBatchSize == maxBatchSize) {\n          batchIndex++;\n          log.debug(\"Executing query {}; fieldIndexes: {}; batch index: {}; batch size: {}\",new Object[]{sqlHolder.getSql(),sqlHolder.getFieldIndexes(),batchIndex,currentBatchSize});\n          ps.executeBatch();\n          currentBatchSize=0;\n        }\n      }\n    }\n    if (currentBatchSize > 0) {\n      batchIndex++;\n      log.debug(\"Executing query {}; fieldIndexes: {}; batch index: {}; batch size: {}\",new Object[]{sqlHolder.getSql(),sqlHolder.getFieldIndexes(),batchIndex,currentBatchSize});\n      ps.executeBatch();\n    }\n    result.routeTo(flowFile,REL_SUCCESS);\n    session.getProvenanceReporter().send(flowFile,functionContext.jdbcUrl);\n  }\n }\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 650,
+      "astHeight" : 19
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 89,
+        "startLineNumber" : 660,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 660,
+        "endColumnNumber" : 101
+      },
+      "nodeContext" : "sqlHolder=generateUpdate(recordSchema,fqTableName,updateKeys,tableSchema,settings);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "java.lang.String"
+  } ],
+  "positionList" : [ {
+    "charLength" : 10,
+    "startLineNumber" : 627,
+    "startColumnNumber" : 43,
+    "endLineNumber" : 627,
+    "endColumnNumber" : 53
+  }, {
+    "charLength" : 10,
+    "startLineNumber" : 660,
+    "startColumnNumber" : 66,
+    "endLineNumber" : 660,
+    "endColumnNumber" : 76
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 6
+  } ]
+}

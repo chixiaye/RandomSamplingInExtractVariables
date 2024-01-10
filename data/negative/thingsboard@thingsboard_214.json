@@ -1,113 +1,221 @@
 {
   "id" : 214,
-  "expression" : "value",
+  "expression" : "deviceId",
   "projectName" : "thingsboard@thingsboard",
-  "commitID" : "7c2b3a9fbf84cc58aa7546029c5c7c10a662c55a",
-  "filePath" : "/rule-engine/rule-engine-components/src/test/java/org/thingsboard/rule/engine/metadata/TbGetCustomerAttributeNodeTest.java",
-  "occurrences" : 1,
+  "commitID" : "0fbb347b27a4f70e324beac90f79313697abd81b",
+  "filePath" : "application/src/main/java/org/thingsboard/server/actors/device/DeviceActorMessageProcessor.java",
+  "occurrences" : 2,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "value",
+    "nodeContext" : "deviceId",
     "nodeType" : "SimpleName",
     "nodePosition" : {
-      "charLength" : 5,
-      "startLineNumber" : 128,
-      "startColumnNumber" : 40,
-      "endLineNumber" : 128,
-      "endColumnNumber" : 45
+      "charLength" : 8,
+      "startLineNumber" : 511,
+      "startColumnNumber" : 63,
+      "endLineNumber" : 511,
+      "endColumnNumber" : 71
     },
     "astNodeNumber" : 1,
     "astHeight" : 1,
     "parentDataList" : [ {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
-      "nodePosition" : {
-        "charLength" : 18,
-        "startLineNumber" : 128,
-        "startColumnNumber" : 40,
-        "endLineNumber" : 128,
-        "endColumnNumber" : 58
-      },
-      "nodeContext" : "value.getMessage()",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 3,
-      "astHeight" : 2
-    }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
       "nodePosition" : {
-        "charLength" : 51,
-        "startLineNumber" : 128,
+        "charLength" : 75,
+        "startLineNumber" : 511,
         "startColumnNumber" : 8,
-        "endLineNumber" : 128,
-        "endColumnNumber" : 59
+        "endLineNumber" : 511,
+        "endColumnNumber" : 83
       },
-      "nodeContext" : "assertEquals(\"something wrong\",value.getMessage())",
+      "nodeContext" : "log.debug(\"[{}] Processing rpc command response [{}]\",deviceId,sessionId)",
       "nodeType" : "MethodInvocation",
       "astNodeNumber" : 6,
-      "astHeight" : 3
+      "astHeight" : 2
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 52,
-        "startLineNumber" : 128,
+        "charLength" : 76,
+        "startLineNumber" : 511,
         "startColumnNumber" : 8,
-        "endLineNumber" : 128,
-        "endColumnNumber" : 60
+        "endLineNumber" : 511,
+        "endColumnNumber" : 84
       },
-      "nodeContext" : "assertEquals(\"something wrong\",value.getMessage());\n",
+      "nodeContext" : "log.debug(\"[{}] Processing rpc command response [{}]\",deviceId,sessionId);\n",
       "nodeType" : "ExpressionStatement",
       "astNodeNumber" : 7,
-      "astHeight" : 4
+      "astHeight" : 3
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 1103,
-        "startLineNumber" : 108,
-        "startColumnNumber" : 52,
-        "endLineNumber" : 130,
+        "charLength" : 1001,
+        "startLineNumber" : 509,
+        "startColumnNumber" : 123,
+        "endLineNumber" : 524,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  UserId userId=new UserId(Uuids.timeBased());\n  CustomerId customerId=new CustomerId(Uuids.timeBased());\n  User user=new User();\n  user.setCustomerId(customerId);\n  msg=TbMsg.newMsg(\"USER\",userId,new TbMsgMetaData(),TbMsgDataType.JSON,\"{}\",ruleChainId,ruleNodeId);\n  when(ctx.getUserService()).thenReturn(userService);\n  when(userService.findUserByIdAsync(any(),eq(userId))).thenReturn(Futures.immediateFuture(user));\n  when(ctx.getAttributesService()).thenReturn(attributesService);\n  when(attributesService.find(any(),eq(customerId),eq(SERVER_SCOPE),eq(Collections.singleton(\"temperature\")))).thenThrow(new IllegalStateException(\"something wrong\"));\n  node.onMsg(ctx,msg);\n  final ArgumentCaptor<Throwable> captor=ArgumentCaptor.forClass(Throwable.class);\n  verify(ctx).tellFailure(same(msg),captor.capture());\n  Throwable value=captor.getValue();\n  assertEquals(\"something wrong\",value.getMessage());\n  assertTrue(msg.getMetaData().getData().isEmpty());\n}\n",
+      "nodeContext" : "{\n  UUID sessionId=getSessionId(sessionInfo);\n  log.debug(\"[{}] Processing rpc command response [{}]\",deviceId,sessionId);\n  ToDeviceRpcRequestMetadata requestMd=toDeviceRpcPendingMap.remove(responseMsg.getRequestId());\n  boolean success=requestMd != null;\n  if (success) {\n    systemContext.getTbCoreDeviceRpcService().processRpcResponseFromDeviceActor(new FromDeviceRpcResponse(requestMd.getMsg().getMsg().getId(),responseMsg.getPayload(),null));\n    if (requestMd.getMsg().getMsg().isPersisted()) {\n      RpcStatus status=responseMsg.getFailed() ? RpcStatus.FAILED : RpcStatus.SUCCESSFUL;\n      systemContext.getTbRpcService().save(tenantId,new RpcId(requestMd.getMsg().getMsg().getId()),status,JacksonUtil.toJsonNode(responseMsg.getPayload()));\n    }\n  }\n else {\n    log.debug(\"[{}] Rpc command response [{}] is stale!\",deviceId,responseMsg.getRequestId());\n  }\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 172,
-      "astHeight" : 8
+      "astNodeNumber" : 115,
+      "astHeight" : 12
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 1161,
-        "startLineNumber" : 107,
+        "charLength" : 1120,
+        "startLineNumber" : 509,
         "startColumnNumber" : 4,
-        "endLineNumber" : 130,
+        "endLineNumber" : 524,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "@Test public void errorThrownIfCannotLoadAttributes(){\n  UserId userId=new UserId(Uuids.timeBased());\n  CustomerId customerId=new CustomerId(Uuids.timeBased());\n  User user=new User();\n  user.setCustomerId(customerId);\n  msg=TbMsg.newMsg(\"USER\",userId,new TbMsgMetaData(),TbMsgDataType.JSON,\"{}\",ruleChainId,ruleNodeId);\n  when(ctx.getUserService()).thenReturn(userService);\n  when(userService.findUserByIdAsync(any(),eq(userId))).thenReturn(Futures.immediateFuture(user));\n  when(ctx.getAttributesService()).thenReturn(attributesService);\n  when(attributesService.find(any(),eq(customerId),eq(SERVER_SCOPE),eq(Collections.singleton(\"temperature\")))).thenThrow(new IllegalStateException(\"something wrong\"));\n  node.onMsg(ctx,msg);\n  final ArgumentCaptor<Throwable> captor=ArgumentCaptor.forClass(Throwable.class);\n  verify(ctx).tellFailure(same(msg),captor.capture());\n  Throwable value=captor.getValue();\n  assertEquals(\"something wrong\",value.getMessage());\n  assertTrue(msg.getMetaData().getData().isEmpty());\n}\n",
+      "nodeContext" : "private void processRpcResponses(TbActorCtx context,SessionInfoProto sessionInfo,ToDeviceRpcResponseMsg responseMsg){\n  UUID sessionId=getSessionId(sessionInfo);\n  log.debug(\"[{}] Processing rpc command response [{}]\",deviceId,sessionId);\n  ToDeviceRpcRequestMetadata requestMd=toDeviceRpcPendingMap.remove(responseMsg.getRequestId());\n  boolean success=requestMd != null;\n  if (success) {\n    systemContext.getTbCoreDeviceRpcService().processRpcResponseFromDeviceActor(new FromDeviceRpcResponse(requestMd.getMsg().getMsg().getId(),responseMsg.getPayload(),null));\n    if (requestMd.getMsg().getMsg().isPersisted()) {\n      RpcStatus status=responseMsg.getFailed() ? RpcStatus.FAILED : RpcStatus.SUCCESSFUL;\n      systemContext.getTbRpcService().save(tenantId,new RpcId(requestMd.getMsg().getMsg().getId()),status,JacksonUtil.toJsonNode(responseMsg.getPayload()));\n    }\n  }\n else {\n    log.debug(\"[{}] Rpc command response [{}] is stale!\",deviceId,responseMsg.getRequestId());\n  }\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 178,
-      "astHeight" : 9
+      "astNodeNumber" : 131,
+      "astHeight" : 13
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 52,
-        "startLineNumber" : 128,
+        "charLength" : 76,
+        "startLineNumber" : 511,
         "startColumnNumber" : 8,
-        "endLineNumber" : 128,
-        "endColumnNumber" : 60
+        "endLineNumber" : 511,
+        "endColumnNumber" : 84
       },
-      "nodeContext" : "assertEquals(\"something wrong\",value.getMessage());\n",
+      "nodeContext" : "log.debug(\"[{}] Processing rpc command response [{}]\",deviceId,sessionId);\n",
       "nodeType" : "ExpressionStatement",
       "astNodeNumber" : 7,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "org.thingsboard.server.common.data.id.DeviceId"
+  }, {
+    "nodeContext" : "deviceId",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 8,
+      "startLineNumber" : 522,
+      "startColumnNumber" : 66,
+      "endLineNumber" : 522,
+      "endColumnNumber" : 74
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 91,
+        "startLineNumber" : 522,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 522,
+        "endColumnNumber" : 103
+      },
+      "nodeContext" : "log.debug(\"[{}] Rpc command response [{}] is stale!\",deviceId,responseMsg.getRequestId())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 8,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 92,
+        "startLineNumber" : 522,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 522,
+        "endColumnNumber" : 104
+      },
+      "nodeContext" : "log.debug(\"[{}] Rpc command response [{}] is stale!\",deviceId,responseMsg.getRequestId());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 116,
+        "startLineNumber" : 521,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 523,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  log.debug(\"[{}] Rpc command response [{}] is stale!\",deviceId,responseMsg.getRequestId());\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 698,
+        "startLineNumber" : 514,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 523,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (success) {\n  systemContext.getTbCoreDeviceRpcService().processRpcResponseFromDeviceActor(new FromDeviceRpcResponse(requestMd.getMsg().getMsg().getId(),responseMsg.getPayload(),null));\n  if (requestMd.getMsg().getMsg().isPersisted()) {\n    RpcStatus status=responseMsg.getFailed() ? RpcStatus.FAILED : RpcStatus.SUCCESSFUL;\n    systemContext.getTbRpcService().save(tenantId,new RpcId(requestMd.getMsg().getMsg().getId()),status,JacksonUtil.toJsonNode(responseMsg.getPayload()));\n  }\n}\n else {\n  log.debug(\"[{}] Rpc command response [{}] is stale!\",deviceId,responseMsg.getRequestId());\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 81,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 1001,
+        "startLineNumber" : 509,
+        "startColumnNumber" : 123,
+        "endLineNumber" : 524,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  UUID sessionId=getSessionId(sessionInfo);\n  log.debug(\"[{}] Processing rpc command response [{}]\",deviceId,sessionId);\n  ToDeviceRpcRequestMetadata requestMd=toDeviceRpcPendingMap.remove(responseMsg.getRequestId());\n  boolean success=requestMd != null;\n  if (success) {\n    systemContext.getTbCoreDeviceRpcService().processRpcResponseFromDeviceActor(new FromDeviceRpcResponse(requestMd.getMsg().getMsg().getId(),responseMsg.getPayload(),null));\n    if (requestMd.getMsg().getMsg().isPersisted()) {\n      RpcStatus status=responseMsg.getFailed() ? RpcStatus.FAILED : RpcStatus.SUCCESSFUL;\n      systemContext.getTbRpcService().save(tenantId,new RpcId(requestMd.getMsg().getMsg().getId()),status,JacksonUtil.toJsonNode(responseMsg.getPayload()));\n    }\n  }\n else {\n    log.debug(\"[{}] Rpc command response [{}] is stale!\",deviceId,responseMsg.getRequestId());\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 115,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 1120,
+        "startLineNumber" : 509,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 524,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "private void processRpcResponses(TbActorCtx context,SessionInfoProto sessionInfo,ToDeviceRpcResponseMsg responseMsg){\n  UUID sessionId=getSessionId(sessionInfo);\n  log.debug(\"[{}] Processing rpc command response [{}]\",deviceId,sessionId);\n  ToDeviceRpcRequestMetadata requestMd=toDeviceRpcPendingMap.remove(responseMsg.getRequestId());\n  boolean success=requestMd != null;\n  if (success) {\n    systemContext.getTbCoreDeviceRpcService().processRpcResponseFromDeviceActor(new FromDeviceRpcResponse(requestMd.getMsg().getMsg().getId(),responseMsg.getPayload(),null));\n    if (requestMd.getMsg().getMsg().isPersisted()) {\n      RpcStatus status=responseMsg.getFailed() ? RpcStatus.FAILED : RpcStatus.SUCCESSFUL;\n      systemContext.getTbRpcService().save(tenantId,new RpcId(requestMd.getMsg().getMsg().getId()),status,JacksonUtil.toJsonNode(responseMsg.getPayload()));\n    }\n  }\n else {\n    log.debug(\"[{}] Rpc command response [{}] is stale!\",deviceId,responseMsg.getRequestId());\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 131,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 92,
+        "startLineNumber" : 522,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 522,
+        "endColumnNumber" : 104
+      },
+      "nodeContext" : "log.debug(\"[{}] Rpc command response [{}] is stale!\",deviceId,responseMsg.getRequestId());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 9,
       "astHeight" : 4
     },
     "tokenLength" : 1,
-    "type" : "java.lang.Throwable"
+    "type" : "org.thingsboard.server.common.data.id.DeviceId"
   } ],
   "positionList" : [ {
-    "charLength" : 5,
-    "startLineNumber" : 128,
-    "startColumnNumber" : 40,
-    "endLineNumber" : 128,
-    "endColumnNumber" : 45
+    "charLength" : 8,
+    "startLineNumber" : 511,
+    "startColumnNumber" : 63,
+    "endLineNumber" : 511,
+    "endColumnNumber" : 71
+  }, {
+    "charLength" : 8,
+    "startLineNumber" : 522,
+    "startColumnNumber" : 66,
+    "endLineNumber" : 522,
+    "endColumnNumber" : 74
   } ],
-  "layoutRelationDataList" : [ ]
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 4
+  } ]
 }

@@ -1,100 +1,113 @@
 {
   "id" : 331,
-  "expression" : "last.epoch() == epoch",
+  "expression" : "Math",
   "projectName" : "apache@kafka",
-  "commitID" : "539f006e65d9060cd46a4052d1b70f2312d8ca34",
-  "filePath" : "/metadata/src/main/java/org/apache/kafka/timeline/SnapshotRegistry.java",
+  "commitID" : "807c5b4d282e7a7a16d0bb94aa2cda9566a7cc2d",
+  "filePath" : "streams/src/main/java/org/apache/kafka/streams/kstream/internals/KTableKTableInnerJoin.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "last.epoch() == epoch",
-    "nodeType" : "InfixExpression",
+    "nodeContext" : "Math",
+    "nodeType" : "SimpleName",
     "nodePosition" : {
-      "charLength" : 21,
-      "startLineNumber" : 191,
-      "startColumnNumber" : 19,
-      "endLineNumber" : 191,
-      "endColumnNumber" : 40
+      "charLength" : 4,
+      "startLineNumber" : 118,
+      "startColumnNumber" : 30,
+      "endLineNumber" : 118,
+      "endColumnNumber" : 34
     },
-    "astNodeNumber" : 5,
-    "astHeight" : 3,
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
       "nodePosition" : {
-        "charLength" : 63,
-        "startLineNumber" : 191,
-        "startColumnNumber" : 15,
-        "endLineNumber" : 193,
-        "endColumnNumber" : 9
+        "charLength" : 64,
+        "startLineNumber" : 118,
+        "startColumnNumber" : 30,
+        "endLineNumber" : 118,
+        "endColumnNumber" : 94
       },
-      "nodeContext" : "if (last.epoch() == epoch) {\n  return last;\n}\n",
-      "nodeType" : "IfStatement",
+      "nodeContext" : "Math.max(record.timestamp(),valueAndTimestampRight.timestamp())",
+      "nodeType" : "MethodInvocation",
       "astNodeNumber" : 9,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 82,
+        "startLineNumber" : 118,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 118,
+        "endColumnNumber" : 94
+      },
+      "nodeContext" : "resultTimestamp=Math.max(record.timestamp(),valueAndTimestampRight.timestamp())",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 11,
       "astHeight" : 4
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 279,
-        "startLineNumber" : 188,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 193,
-        "endColumnNumber" : 9
+        "charLength" : 83,
+        "startLineNumber" : 118,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 118,
+        "endColumnNumber" : 95
       },
-      "nodeContext" : "if (last.epoch() > epoch) {\n  throw new RuntimeException(\"Can't create a new snapshot at epoch \" + epoch + \" because there is already a snapshot with epoch \"+ last.epoch());\n}\n else if (last.epoch() == epoch) {\n  return last;\n}\n",
-      "nodeType" : "IfStatement",
-      "astNodeNumber" : 27,
-      "astHeight" : 7
+      "nodeContext" : "resultTimestamp=Math.max(record.timestamp(),valueAndTimestampRight.timestamp());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 12,
+      "astHeight" : 5
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 531,
-        "startLineNumber" : 186,
-        "startColumnNumber" : 52,
-        "endLineNumber" : 199,
-        "endColumnNumber" : 5
+        "charLength" : 1751,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 64,
+        "endLineNumber" : 129,
+        "endColumnNumber" : 9
       },
-      "nodeContext" : "{\n  Snapshot last=head.prev();\n  if (last.epoch() > epoch) {\n    throw new RuntimeException(\"Can't create a new snapshot at epoch \" + epoch + \" because there is already a snapshot with epoch \"+ last.epoch());\n  }\n else   if (last.epoch() == epoch) {\n    return last;\n  }\n  Snapshot snapshot=new Snapshot(epoch);\n  last.appendNext(snapshot);\n  snapshots.put(epoch,snapshot);\n  log.debug(\"Creating snapshot {}\",epoch);\n  return snapshot;\n}\n",
+      "nodeContext" : "{\n  if (record.key() == null) {\n    if (context().recordMetadata().isPresent()) {\n      final RecordMetadata recordMetadata=context().recordMetadata().get();\n      LOG.warn(\"Skipping record due to null key. \" + \"topic=[{}] partition=[{}] offset=[{}]\",recordMetadata.topic(),recordMetadata.partition(),recordMetadata.offset());\n    }\n else {\n      LOG.warn(\"Skipping record due to null key. Topic, partition, and offset not known.\");\n    }\n    droppedRecordsSensor.record();\n    return;\n  }\n  VOut newValue=null;\n  final long resultTimestamp;\n  VOut oldValue=null;\n  final ValueAndTimestamp<V2> valueAndTimestampRight=valueGetter.get(record.key());\n  final V2 valueRight=getValueOrNull(valueAndTimestampRight);\n  if (valueRight == null) {\n    return;\n  }\n  resultTimestamp=Math.max(record.timestamp(),valueAndTimestampRight.timestamp());\n  if (record.value().newValue != null) {\n    newValue=joiner.apply(record.value().newValue,valueRight);\n  }\n  if (sendOldValues && record.value().oldValue != null) {\n    oldValue=joiner.apply(record.value().oldValue,valueRight);\n  }\n  context().forward(record.withValue(new Change<>(newValue,oldValue)).withTimestamp(resultTimestamp));\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 64,
-      "astHeight" : 8
+      "astNodeNumber" : 175,
+      "astHeight" : 11
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 919,
-        "startLineNumber" : 178,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 199,
-        "endColumnNumber" : 5
-      },
-      "nodeContext" : "/** \n * Creates a new snapshot at the given epoch. If  {@code epoch} already exists and it is the last snapshot then just return that snapshot.\n * @param epoch             The epoch to create the snapshot at.  The current epochwill be advanced to one past this epoch.\n */\npublic Snapshot getOrCreateSnapshot(long epoch){\n  Snapshot last=head.prev();\n  if (last.epoch() > epoch) {\n    throw new RuntimeException(\"Can't create a new snapshot at epoch \" + epoch + \" because there is already a snapshot with epoch \"+ last.epoch());\n  }\n else   if (last.epoch() == epoch) {\n    return last;\n  }\n  Snapshot snapshot=new Snapshot(epoch);\n  last.appendNext(snapshot);\n  snapshots.put(epoch,snapshot);\n  log.debug(\"Creating snapshot {}\",epoch);\n  return snapshot;\n}\n",
-      "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 73,
-      "astHeight" : 9
-    } ],
-    "currentLineData" : {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
-      "nodePosition" : {
-        "charLength" : 63,
-        "startLineNumber" : 191,
-        "startColumnNumber" : 15,
-        "endLineNumber" : 193,
+        "charLength" : 1825,
+        "startLineNumber" : 88,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 129,
         "endColumnNumber" : 9
       },
-      "nodeContext" : "if (last.epoch() == epoch) {\n  return last;\n}\n",
-      "nodeType" : "IfStatement",
-      "astNodeNumber" : 9,
-      "astHeight" : 4
+      "nodeContext" : "@Override public void process(final Record<K,Change<V1>> record){\n  if (record.key() == null) {\n    if (context().recordMetadata().isPresent()) {\n      final RecordMetadata recordMetadata=context().recordMetadata().get();\n      LOG.warn(\"Skipping record due to null key. \" + \"topic=[{}] partition=[{}] offset=[{}]\",recordMetadata.topic(),recordMetadata.partition(),recordMetadata.offset());\n    }\n else {\n      LOG.warn(\"Skipping record due to null key. Topic, partition, and offset not known.\");\n    }\n    droppedRecordsSensor.record();\n    return;\n  }\n  VOut newValue=null;\n  final long resultTimestamp;\n  VOut oldValue=null;\n  final ValueAndTimestamp<V2> valueAndTimestampRight=valueGetter.get(record.key());\n  final V2 valueRight=getValueOrNull(valueAndTimestampRight);\n  if (valueRight == null) {\n    return;\n  }\n  resultTimestamp=Math.max(record.timestamp(),valueAndTimestampRight.timestamp());\n  if (record.value().newValue != null) {\n    newValue=joiner.apply(record.value().newValue,valueRight);\n  }\n  if (sendOldValues && record.value().oldValue != null) {\n    oldValue=joiner.apply(record.value().oldValue,valueRight);\n  }\n  context().forward(record.withValue(new Change<>(newValue,oldValue)).withTimestamp(resultTimestamp));\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 194,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 83,
+        "startLineNumber" : 118,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 118,
+        "endColumnNumber" : 95
+      },
+      "nodeContext" : "resultTimestamp=Math.max(record.timestamp(),valueAndTimestampRight.timestamp());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 12,
+      "astHeight" : 5
     },
-    "tokenLength" : 4,
-    "type" : "boolean"
+    "tokenLength" : 1,
+    "type" : "java.lang.Math"
   } ],
   "positionList" : [ {
-    "charLength" : 21,
-    "startLineNumber" : 191,
-    "startColumnNumber" : 19,
-    "endLineNumber" : 191,
-    "endColumnNumber" : 40
+    "charLength" : 4,
+    "startLineNumber" : 118,
+    "startColumnNumber" : 30,
+    "endLineNumber" : 118,
+    "endColumnNumber" : 34
   } ],
   "layoutRelationDataList" : [ ]
 }

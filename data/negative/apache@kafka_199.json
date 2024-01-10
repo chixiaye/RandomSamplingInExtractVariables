@@ -1,113 +1,100 @@
 {
   "id" : 199,
-  "expression" : "0",
+  "expression" : "sendOldValues ? oldAgg : null",
   "projectName" : "apache@kafka",
-  "commitID" : "539f006e65d9060cd46a4052d1b70f2312d8ca34",
-  "filePath" : "/generator/src/main/java/org/apache/kafka/message/HeaderGenerator.java",
+  "commitID" : "ce83e5be6644884d5c727ed49982f45eca8c136f",
+  "filePath" : "streams/src/main/java/org/apache/kafka/streams/kstream/internals/KStreamAggregate.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "0",
-    "nodeType" : "NumberLiteral",
+    "nodeContext" : "sendOldValues ? oldAgg : null",
+    "nodeType" : "ConditionalExpression",
     "nodePosition" : {
-      "charLength" : 1,
-      "startLineNumber" : 74,
-      "startColumnNumber" : 21,
-      "endLineNumber" : 74,
-      "endColumnNumber" : 22
+      "charLength" : 29,
+      "startLineNumber" : 122,
+      "startColumnNumber" : 62,
+      "endLineNumber" : 122,
+      "endColumnNumber" : 91
     },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
+    "astNodeNumber" : 4,
+    "astHeight" : 2,
     "parentDataList" : [ {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationExpression,fragments]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
       "nodePosition" : {
-        "charLength" : 5,
-        "startLineNumber" : 74,
-        "startColumnNumber" : 17,
-        "endLineNumber" : 74,
-        "endColumnNumber" : 22
+        "charLength" : 94,
+        "startLineNumber" : 122,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 122,
+        "endColumnNumber" : 106
       },
-      "nodeContext" : "i=0",
-      "nodeType" : "VariableDeclarationFragment",
-      "astNodeNumber" : 3,
-      "astHeight" : 2
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.ForStatement,initializers]",
-      "nodePosition" : {
-        "charLength" : 9,
-        "startLineNumber" : 74,
-        "startColumnNumber" : 13,
-        "endLineNumber" : 74,
-        "endColumnNumber" : 22
-      },
-      "nodeContext" : "int i=0",
-      "nodeType" : "VariableDeclarationExpression",
-      "astNodeNumber" : 5,
+      "nodeContext" : "tupleForwarder.maybeForward(record.key(),newAgg,sendOldValues ? oldAgg : null,newTimestamp)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 12,
       "astHeight" : 3
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 97,
-        "startLineNumber" : 74,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 76,
-        "endColumnNumber" : 9
+        "charLength" : 95,
+        "startLineNumber" : 122,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 122,
+        "endColumnNumber" : 107
       },
-      "nodeContext" : "for (int i=0; i < HEADER.length; i++) {\n  buffer.printf(\"%s%n\",HEADER[i]);\n}\n",
-      "nodeType" : "ForStatement",
-      "astNodeNumber" : 22,
-      "astHeight" : 6
+      "nodeContext" : "tupleForwarder.maybeForward(record.key(),newAgg,sendOldValues ? oldAgg : null,newTimestamp);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 13,
+      "astHeight" : 4
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 591,
-        "startLineNumber" : 72,
-        "startColumnNumber" : 27,
-        "endLineNumber" : 89,
-        "endColumnNumber" : 5
+        "charLength" : 1684,
+        "startLineNumber" : 86,
+        "startColumnNumber" : 59,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 9
       },
-      "nodeContext" : "{\n  Objects.requireNonNull(packageName);\n  for (int i=0; i < HEADER.length; i++) {\n    buffer.printf(\"%s%n\",HEADER[i]);\n  }\n  buffer.printf(\"package %s;%n\",packageName);\n  buffer.printf(\"%n\");\n  for (  String newImport : imports) {\n    buffer.printf(\"import %s;%n\",newImport);\n  }\n  buffer.printf(\"%n\");\n  if (!staticImports.isEmpty()) {\n    for (    String newImport : staticImports) {\n      buffer.printf(\"import static %s;%n\",newImport);\n    }\n    buffer.printf(\"%n\");\n  }\n}\n",
+      "nodeContext" : "{\n  if (record.key() == null || record.value() == null) {\n    if (context().recordMetadata().isPresent()) {\n      final RecordMetadata recordMetadata=context().recordMetadata().get();\n      LOG.warn(\"Skipping record due to null key or value. \" + \"topic=[{}] partition=[{}] offset=[{}]\",recordMetadata.topic(),recordMetadata.partition(),recordMetadata.offset());\n    }\n else {\n      LOG.warn(\"Skipping record due to null key or value. Topic, partition, and offset not known.\");\n    }\n    droppedRecordsSensor.record();\n    return;\n  }\n  final ValueAndTimestamp<VAgg> oldAggAndTimestamp=store.get(record.key());\n  VAgg oldAgg=getValueOrNull(oldAggAndTimestamp);\n  final VAgg newAgg;\n  final long newTimestamp;\n  if (oldAgg == null) {\n    oldAgg=initializer.apply();\n    newTimestamp=record.timestamp();\n  }\n else {\n    oldAgg=oldAggAndTimestamp.value();\n    newTimestamp=Math.max(record.timestamp(),oldAggAndTimestamp.timestamp());\n  }\n  newAgg=aggregator.apply(record.key(),record.value(),oldAgg);\n  store.put(record.key(),ValueAndTimestamp.make(newAgg,newTimestamp));\n  tupleForwarder.maybeForward(record.key(),newAgg,sendOldValues ? oldAgg : null,newTimestamp);\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 81,
-      "astHeight" : 8
+      "astNodeNumber" : 169,
+      "astHeight" : 11
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 614,
-        "startLineNumber" : 72,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 89,
-        "endColumnNumber" : 5
+        "charLength" : 1753,
+        "startLineNumber" : 85,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 9
       },
-      "nodeContext" : "public void generate(){\n  Objects.requireNonNull(packageName);\n  for (int i=0; i < HEADER.length; i++) {\n    buffer.printf(\"%s%n\",HEADER[i]);\n  }\n  buffer.printf(\"package %s;%n\",packageName);\n  buffer.printf(\"%n\");\n  for (  String newImport : imports) {\n    buffer.printf(\"import %s;%n\",newImport);\n  }\n  buffer.printf(\"%n\");\n  if (!staticImports.isEmpty()) {\n    for (    String newImport : staticImports) {\n      buffer.printf(\"import static %s;%n\",newImport);\n    }\n    buffer.printf(\"%n\");\n  }\n}\n",
+      "nodeContext" : "@Override public void process(final Record<KIn,VIn> record){\n  if (record.key() == null || record.value() == null) {\n    if (context().recordMetadata().isPresent()) {\n      final RecordMetadata recordMetadata=context().recordMetadata().get();\n      LOG.warn(\"Skipping record due to null key or value. \" + \"topic=[{}] partition=[{}] offset=[{}]\",recordMetadata.topic(),recordMetadata.partition(),recordMetadata.offset());\n    }\n else {\n      LOG.warn(\"Skipping record due to null key or value. Topic, partition, and offset not known.\");\n    }\n    droppedRecordsSensor.record();\n    return;\n  }\n  final ValueAndTimestamp<VAgg> oldAggAndTimestamp=store.get(record.key());\n  VAgg oldAgg=getValueOrNull(oldAggAndTimestamp);\n  final VAgg newAgg;\n  final long newTimestamp;\n  if (oldAgg == null) {\n    oldAgg=initializer.apply();\n    newTimestamp=record.timestamp();\n  }\n else {\n    oldAgg=oldAggAndTimestamp.value();\n    newTimestamp=Math.max(record.timestamp(),oldAggAndTimestamp.timestamp());\n  }\n  newAgg=aggregator.apply(record.key(),record.value(),oldAgg);\n  store.put(record.key(),ValueAndTimestamp.make(newAgg,newTimestamp));\n  tupleForwarder.maybeForward(record.key(),newAgg,sendOldValues ? oldAgg : null,newTimestamp);\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 85,
-      "astHeight" : 9
+      "astNodeNumber" : 185,
+      "astHeight" : 12
     } ],
     "currentLineData" : {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.ForStatement,initializers]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 9,
-        "startLineNumber" : 74,
-        "startColumnNumber" : 13,
-        "endLineNumber" : 74,
-        "endColumnNumber" : 22
+        "charLength" : 95,
+        "startLineNumber" : 122,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 122,
+        "endColumnNumber" : 107
       },
-      "nodeContext" : "int i=0",
-      "nodeType" : "VariableDeclarationExpression",
-      "astNodeNumber" : 5,
-      "astHeight" : 3
+      "nodeContext" : "tupleForwarder.maybeForward(record.key(),newAgg,sendOldValues ? oldAgg : null,newTimestamp);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 13,
+      "astHeight" : 4
     },
-    "tokenLength" : 1,
-    "type" : "int"
+    "tokenLength" : 3,
+    "type" : "VAgg"
   } ],
   "positionList" : [ {
-    "charLength" : 1,
-    "startLineNumber" : 74,
-    "startColumnNumber" : 21,
-    "endLineNumber" : 74,
-    "endColumnNumber" : 22
+    "charLength" : 29,
+    "startLineNumber" : 122,
+    "startColumnNumber" : 62,
+    "endLineNumber" : 122,
+    "endColumnNumber" : 91
   } ],
   "layoutRelationDataList" : [ ]
 }

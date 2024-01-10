@@ -1,0 +1,1516 @@
+{
+  "id" : 1676,
+  "expression" : "entry",
+  "projectName" : "commons-compress",
+  "commitID" : "040e42d0f0bebc15ca80cb80fb6db53804b2e082",
+  "filePath" : "src/main/java/org/apache/commons/compress/archivers/tar/TarArchiveOutputStream.java",
+  "occurrences" : 10,
+  "isArithmeticExpression" : 1,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "entry",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 273,
+      "startColumnNumber" : 33,
+      "endLineNumber" : 273,
+      "endColumnNumber" : 38
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 15,
+        "startLineNumber" : 273,
+        "startColumnNumber" : 33,
+        "endLineNumber" : 273,
+        "endColumnNumber" : 48
+      },
+      "nodeContext" : "entry.getName()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 27,
+        "startLineNumber" : 273,
+        "startColumnNumber" : 21,
+        "endLineNumber" : 273,
+        "endColumnNumber" : 48
+      },
+      "nodeContext" : "entryName=entry.getName()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 41,
+        "startLineNumber" : 273,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 273,
+        "endColumnNumber" : 49
+      },
+      "nodeContext" : "final String entryName=entry.getName();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2702,
+        "startLineNumber" : 267,
+        "startColumnNumber" : 78,
+        "endLineNumber" : 334,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (finished) {\n    throw new IOException(\"Stream has already been finished\");\n  }\n  TarArchiveEntry entry=(TarArchiveEntry)archiveEntry;\n  Map<String,String> paxHeaders=new HashMap<String,String>();\n  final String entryName=entry.getName();\n  final ByteBuffer encodedName=encoding.encode(entryName);\n  final int nameLen=encodedName.limit() - encodedName.position();\n  boolean paxHeaderContainsPath=false;\n  if (nameLen >= TarConstants.NAMELEN) {\n    if (longFileMode == LONGFILE_POSIX) {\n      paxHeaders.put(\"path\",entryName);\n      paxHeaderContainsPath=true;\n    }\n else     if (longFileMode == LONGFILE_GNU) {\n      TarArchiveEntry longLinkEntry=new TarArchiveEntry(TarConstants.GNU_LONGLINK,TarConstants.LF_GNUTYPE_LONGNAME);\n      longLinkEntry.setSize(nameLen + 1);\n      putArchiveEntry(longLinkEntry);\n      write(encodedName.array(),encodedName.arrayOffset(),nameLen);\n      write(0);\n      closeArchiveEntry();\n    }\n else     if (longFileMode != LONGFILE_TRUNCATE) {\n      throw new RuntimeException(\"file name '\" + entryName + \"' is too long ( > \"+ TarConstants.NAMELEN+ \" bytes)\");\n    }\n  }\n  if (bigNumberMode == BIGNUMBER_POSIX) {\n    addPaxHeadersForBigNumbers(paxHeaders,entry);\n  }\n else   if (bigNumberMode != BIGNUMBER_STAR) {\n    failForBigNumbers(entry);\n  }\n  if (addPaxHeadersForNonAsciiNames && !paxHeaderContainsPath && !ASCII.canEncode(entryName)) {\n    paxHeaders.put(\"path\",entryName);\n  }\n  if (addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())) {\n    paxHeaders.put(\"linkpath\",entry.getLinkName());\n  }\n  if (paxHeaders.size() > 0) {\n    writePaxHeaders(entryName,paxHeaders);\n  }\n  entry.writeEntryHeader(recordBuf,encoding,bigNumberMode == BIGNUMBER_STAR);\n  writeRecord(recordBuf);\n  currBytes=0;\n  if (entry.isDirectory()) {\n    currSize=0;\n  }\n else {\n    currSize=entry.getSize();\n  }\n  currName=entryName;\n  haveUnclosedEntry=true;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 274,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3450,
+        "startLineNumber" : 253,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 334,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Put an entry on the output stream. This writes the entry's header record and positions the output stream for writing the contents of the entry. Once this method is called, the stream is ready for calls to write() to write the entry's contents. Once the contents are written, closeArchiveEntry() <B>MUST</B> be called to ensure that all buffered data is completely written to the output stream.\n * @param archiveEntry The TarEntry to be written to the archive.\n * @throws IOException on error\n * @throws ClassCastException if archiveEntry is not an instance of TarArchiveEntry\n */\n@Override public void putArchiveEntry(ArchiveEntry archiveEntry) throws IOException {\n  if (finished) {\n    throw new IOException(\"Stream has already been finished\");\n  }\n  TarArchiveEntry entry=(TarArchiveEntry)archiveEntry;\n  Map<String,String> paxHeaders=new HashMap<String,String>();\n  final String entryName=entry.getName();\n  final ByteBuffer encodedName=encoding.encode(entryName);\n  final int nameLen=encodedName.limit() - encodedName.position();\n  boolean paxHeaderContainsPath=false;\n  if (nameLen >= TarConstants.NAMELEN) {\n    if (longFileMode == LONGFILE_POSIX) {\n      paxHeaders.put(\"path\",entryName);\n      paxHeaderContainsPath=true;\n    }\n else     if (longFileMode == LONGFILE_GNU) {\n      TarArchiveEntry longLinkEntry=new TarArchiveEntry(TarConstants.GNU_LONGLINK,TarConstants.LF_GNUTYPE_LONGNAME);\n      longLinkEntry.setSize(nameLen + 1);\n      putArchiveEntry(longLinkEntry);\n      write(encodedName.array(),encodedName.arrayOffset(),nameLen);\n      write(0);\n      closeArchiveEntry();\n    }\n else     if (longFileMode != LONGFILE_TRUNCATE) {\n      throw new RuntimeException(\"file name '\" + entryName + \"' is too long ( > \"+ TarConstants.NAMELEN+ \" bytes)\");\n    }\n  }\n  if (bigNumberMode == BIGNUMBER_POSIX) {\n    addPaxHeadersForBigNumbers(paxHeaders,entry);\n  }\n else   if (bigNumberMode != BIGNUMBER_STAR) {\n    failForBigNumbers(entry);\n  }\n  if (addPaxHeadersForNonAsciiNames && !paxHeaderContainsPath && !ASCII.canEncode(entryName)) {\n    paxHeaders.put(\"path\",entryName);\n  }\n  if (addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())) {\n    paxHeaders.put(\"linkpath\",entry.getLinkName());\n  }\n  if (paxHeaders.size() > 0) {\n    writePaxHeaders(entryName,paxHeaders);\n  }\n  entry.writeEntryHeader(recordBuf,encoding,bigNumberMode == BIGNUMBER_STAR);\n  writeRecord(recordBuf);\n  currBytes=0;\n  if (entry.isDirectory()) {\n    currSize=0;\n  }\n else {\n    currSize=entry.getSize();\n  }\n  currName=entryName;\n  haveUnclosedEntry=true;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 287,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 41,
+        "startLineNumber" : 273,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 273,
+        "endColumnNumber" : 49
+      },
+      "nodeContext" : "final String entryName=entry.getName();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.tar.TarArchiveEntry"
+  }, {
+    "nodeContext" : "entry",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 301,
+      "startColumnNumber" : 51,
+      "endLineNumber" : 301,
+      "endColumnNumber" : 56
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 45,
+        "startLineNumber" : 301,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 301,
+        "endColumnNumber" : 57
+      },
+      "nodeContext" : "addPaxHeadersForBigNumbers(paxHeaders,entry)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 46,
+        "startLineNumber" : 301,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 301,
+        "endColumnNumber" : 58
+      },
+      "nodeContext" : "addPaxHeadersForBigNumbers(paxHeaders,entry);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 70,
+        "startLineNumber" : 300,
+        "startColumnNumber" : 46,
+        "endLineNumber" : 302,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  addPaxHeadersForBigNumbers(paxHeaders,entry);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 200,
+        "startLineNumber" : 300,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 304,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (bigNumberMode == BIGNUMBER_POSIX) {\n  addPaxHeadersForBigNumbers(paxHeaders,entry);\n}\n else if (bigNumberMode != BIGNUMBER_STAR) {\n  failForBigNumbers(entry);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 19,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2702,
+        "startLineNumber" : 267,
+        "startColumnNumber" : 78,
+        "endLineNumber" : 334,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (finished) {\n    throw new IOException(\"Stream has already been finished\");\n  }\n  TarArchiveEntry entry=(TarArchiveEntry)archiveEntry;\n  Map<String,String> paxHeaders=new HashMap<String,String>();\n  final String entryName=entry.getName();\n  final ByteBuffer encodedName=encoding.encode(entryName);\n  final int nameLen=encodedName.limit() - encodedName.position();\n  boolean paxHeaderContainsPath=false;\n  if (nameLen >= TarConstants.NAMELEN) {\n    if (longFileMode == LONGFILE_POSIX) {\n      paxHeaders.put(\"path\",entryName);\n      paxHeaderContainsPath=true;\n    }\n else     if (longFileMode == LONGFILE_GNU) {\n      TarArchiveEntry longLinkEntry=new TarArchiveEntry(TarConstants.GNU_LONGLINK,TarConstants.LF_GNUTYPE_LONGNAME);\n      longLinkEntry.setSize(nameLen + 1);\n      putArchiveEntry(longLinkEntry);\n      write(encodedName.array(),encodedName.arrayOffset(),nameLen);\n      write(0);\n      closeArchiveEntry();\n    }\n else     if (longFileMode != LONGFILE_TRUNCATE) {\n      throw new RuntimeException(\"file name '\" + entryName + \"' is too long ( > \"+ TarConstants.NAMELEN+ \" bytes)\");\n    }\n  }\n  if (bigNumberMode == BIGNUMBER_POSIX) {\n    addPaxHeadersForBigNumbers(paxHeaders,entry);\n  }\n else   if (bigNumberMode != BIGNUMBER_STAR) {\n    failForBigNumbers(entry);\n  }\n  if (addPaxHeadersForNonAsciiNames && !paxHeaderContainsPath && !ASCII.canEncode(entryName)) {\n    paxHeaders.put(\"path\",entryName);\n  }\n  if (addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())) {\n    paxHeaders.put(\"linkpath\",entry.getLinkName());\n  }\n  if (paxHeaders.size() > 0) {\n    writePaxHeaders(entryName,paxHeaders);\n  }\n  entry.writeEntryHeader(recordBuf,encoding,bigNumberMode == BIGNUMBER_STAR);\n  writeRecord(recordBuf);\n  currBytes=0;\n  if (entry.isDirectory()) {\n    currSize=0;\n  }\n else {\n    currSize=entry.getSize();\n  }\n  currName=entryName;\n  haveUnclosedEntry=true;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 274,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3450,
+        "startLineNumber" : 253,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 334,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Put an entry on the output stream. This writes the entry's header record and positions the output stream for writing the contents of the entry. Once this method is called, the stream is ready for calls to write() to write the entry's contents. Once the contents are written, closeArchiveEntry() <B>MUST</B> be called to ensure that all buffered data is completely written to the output stream.\n * @param archiveEntry The TarEntry to be written to the archive.\n * @throws IOException on error\n * @throws ClassCastException if archiveEntry is not an instance of TarArchiveEntry\n */\n@Override public void putArchiveEntry(ArchiveEntry archiveEntry) throws IOException {\n  if (finished) {\n    throw new IOException(\"Stream has already been finished\");\n  }\n  TarArchiveEntry entry=(TarArchiveEntry)archiveEntry;\n  Map<String,String> paxHeaders=new HashMap<String,String>();\n  final String entryName=entry.getName();\n  final ByteBuffer encodedName=encoding.encode(entryName);\n  final int nameLen=encodedName.limit() - encodedName.position();\n  boolean paxHeaderContainsPath=false;\n  if (nameLen >= TarConstants.NAMELEN) {\n    if (longFileMode == LONGFILE_POSIX) {\n      paxHeaders.put(\"path\",entryName);\n      paxHeaderContainsPath=true;\n    }\n else     if (longFileMode == LONGFILE_GNU) {\n      TarArchiveEntry longLinkEntry=new TarArchiveEntry(TarConstants.GNU_LONGLINK,TarConstants.LF_GNUTYPE_LONGNAME);\n      longLinkEntry.setSize(nameLen + 1);\n      putArchiveEntry(longLinkEntry);\n      write(encodedName.array(),encodedName.arrayOffset(),nameLen);\n      write(0);\n      closeArchiveEntry();\n    }\n else     if (longFileMode != LONGFILE_TRUNCATE) {\n      throw new RuntimeException(\"file name '\" + entryName + \"' is too long ( > \"+ TarConstants.NAMELEN+ \" bytes)\");\n    }\n  }\n  if (bigNumberMode == BIGNUMBER_POSIX) {\n    addPaxHeadersForBigNumbers(paxHeaders,entry);\n  }\n else   if (bigNumberMode != BIGNUMBER_STAR) {\n    failForBigNumbers(entry);\n  }\n  if (addPaxHeadersForNonAsciiNames && !paxHeaderContainsPath && !ASCII.canEncode(entryName)) {\n    paxHeaders.put(\"path\",entryName);\n  }\n  if (addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())) {\n    paxHeaders.put(\"linkpath\",entry.getLinkName());\n  }\n  if (paxHeaders.size() > 0) {\n    writePaxHeaders(entryName,paxHeaders);\n  }\n  entry.writeEntryHeader(recordBuf,encoding,bigNumberMode == BIGNUMBER_STAR);\n  writeRecord(recordBuf);\n  currBytes=0;\n  if (entry.isDirectory()) {\n    currSize=0;\n  }\n else {\n    currSize=entry.getSize();\n  }\n  currName=entryName;\n  haveUnclosedEntry=true;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 287,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 46,
+        "startLineNumber" : 301,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 301,
+        "endColumnNumber" : 58
+      },
+      "nodeContext" : "addPaxHeadersForBigNumbers(paxHeaders,entry);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.tar.TarArchiveEntry"
+  }, {
+    "nodeContext" : "entry",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 303,
+      "startColumnNumber" : 30,
+      "endLineNumber" : 303,
+      "endColumnNumber" : 35
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 24,
+        "startLineNumber" : 303,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 303,
+        "endColumnNumber" : 36
+      },
+      "nodeContext" : "failForBigNumbers(entry)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 25,
+        "startLineNumber" : 303,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 303,
+        "endColumnNumber" : 37
+      },
+      "nodeContext" : "failForBigNumbers(entry);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 4,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 49,
+        "startLineNumber" : 302,
+        "startColumnNumber" : 52,
+        "endLineNumber" : 304,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  failForBigNumbers(entry);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 5,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 86,
+        "startLineNumber" : 302,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 304,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (bigNumberMode != BIGNUMBER_STAR) {\n  failForBigNumbers(entry);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 200,
+        "startLineNumber" : 300,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 304,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (bigNumberMode == BIGNUMBER_POSIX) {\n  addPaxHeadersForBigNumbers(paxHeaders,entry);\n}\n else if (bigNumberMode != BIGNUMBER_STAR) {\n  failForBigNumbers(entry);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 19,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2702,
+        "startLineNumber" : 267,
+        "startColumnNumber" : 78,
+        "endLineNumber" : 334,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (finished) {\n    throw new IOException(\"Stream has already been finished\");\n  }\n  TarArchiveEntry entry=(TarArchiveEntry)archiveEntry;\n  Map<String,String> paxHeaders=new HashMap<String,String>();\n  final String entryName=entry.getName();\n  final ByteBuffer encodedName=encoding.encode(entryName);\n  final int nameLen=encodedName.limit() - encodedName.position();\n  boolean paxHeaderContainsPath=false;\n  if (nameLen >= TarConstants.NAMELEN) {\n    if (longFileMode == LONGFILE_POSIX) {\n      paxHeaders.put(\"path\",entryName);\n      paxHeaderContainsPath=true;\n    }\n else     if (longFileMode == LONGFILE_GNU) {\n      TarArchiveEntry longLinkEntry=new TarArchiveEntry(TarConstants.GNU_LONGLINK,TarConstants.LF_GNUTYPE_LONGNAME);\n      longLinkEntry.setSize(nameLen + 1);\n      putArchiveEntry(longLinkEntry);\n      write(encodedName.array(),encodedName.arrayOffset(),nameLen);\n      write(0);\n      closeArchiveEntry();\n    }\n else     if (longFileMode != LONGFILE_TRUNCATE) {\n      throw new RuntimeException(\"file name '\" + entryName + \"' is too long ( > \"+ TarConstants.NAMELEN+ \" bytes)\");\n    }\n  }\n  if (bigNumberMode == BIGNUMBER_POSIX) {\n    addPaxHeadersForBigNumbers(paxHeaders,entry);\n  }\n else   if (bigNumberMode != BIGNUMBER_STAR) {\n    failForBigNumbers(entry);\n  }\n  if (addPaxHeadersForNonAsciiNames && !paxHeaderContainsPath && !ASCII.canEncode(entryName)) {\n    paxHeaders.put(\"path\",entryName);\n  }\n  if (addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())) {\n    paxHeaders.put(\"linkpath\",entry.getLinkName());\n  }\n  if (paxHeaders.size() > 0) {\n    writePaxHeaders(entryName,paxHeaders);\n  }\n  entry.writeEntryHeader(recordBuf,encoding,bigNumberMode == BIGNUMBER_STAR);\n  writeRecord(recordBuf);\n  currBytes=0;\n  if (entry.isDirectory()) {\n    currSize=0;\n  }\n else {\n    currSize=entry.getSize();\n  }\n  currName=entryName;\n  haveUnclosedEntry=true;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 274,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3450,
+        "startLineNumber" : 253,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 334,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Put an entry on the output stream. This writes the entry's header record and positions the output stream for writing the contents of the entry. Once this method is called, the stream is ready for calls to write() to write the entry's contents. Once the contents are written, closeArchiveEntry() <B>MUST</B> be called to ensure that all buffered data is completely written to the output stream.\n * @param archiveEntry The TarEntry to be written to the archive.\n * @throws IOException on error\n * @throws ClassCastException if archiveEntry is not an instance of TarArchiveEntry\n */\n@Override public void putArchiveEntry(ArchiveEntry archiveEntry) throws IOException {\n  if (finished) {\n    throw new IOException(\"Stream has already been finished\");\n  }\n  TarArchiveEntry entry=(TarArchiveEntry)archiveEntry;\n  Map<String,String> paxHeaders=new HashMap<String,String>();\n  final String entryName=entry.getName();\n  final ByteBuffer encodedName=encoding.encode(entryName);\n  final int nameLen=encodedName.limit() - encodedName.position();\n  boolean paxHeaderContainsPath=false;\n  if (nameLen >= TarConstants.NAMELEN) {\n    if (longFileMode == LONGFILE_POSIX) {\n      paxHeaders.put(\"path\",entryName);\n      paxHeaderContainsPath=true;\n    }\n else     if (longFileMode == LONGFILE_GNU) {\n      TarArchiveEntry longLinkEntry=new TarArchiveEntry(TarConstants.GNU_LONGLINK,TarConstants.LF_GNUTYPE_LONGNAME);\n      longLinkEntry.setSize(nameLen + 1);\n      putArchiveEntry(longLinkEntry);\n      write(encodedName.array(),encodedName.arrayOffset(),nameLen);\n      write(0);\n      closeArchiveEntry();\n    }\n else     if (longFileMode != LONGFILE_TRUNCATE) {\n      throw new RuntimeException(\"file name '\" + entryName + \"' is too long ( > \"+ TarConstants.NAMELEN+ \" bytes)\");\n    }\n  }\n  if (bigNumberMode == BIGNUMBER_POSIX) {\n    addPaxHeadersForBigNumbers(paxHeaders,entry);\n  }\n else   if (bigNumberMode != BIGNUMBER_STAR) {\n    failForBigNumbers(entry);\n  }\n  if (addPaxHeadersForNonAsciiNames && !paxHeaderContainsPath && !ASCII.canEncode(entryName)) {\n    paxHeaders.put(\"path\",entryName);\n  }\n  if (addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())) {\n    paxHeaders.put(\"linkpath\",entry.getLinkName());\n  }\n  if (paxHeaders.size() > 0) {\n    writePaxHeaders(entryName,paxHeaders);\n  }\n  entry.writeEntryHeader(recordBuf,encoding,bigNumberMode == BIGNUMBER_STAR);\n  writeRecord(recordBuf);\n  currBytes=0;\n  if (entry.isDirectory()) {\n    currSize=0;\n  }\n else {\n    currSize=entry.getSize();\n  }\n  currName=entryName;\n  haveUnclosedEntry=true;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 287,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 25,
+        "startLineNumber" : 303,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 303,
+        "endColumnNumber" : 37
+      },
+      "nodeContext" : "failForBigNumbers(entry);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 4,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.tar.TarArchiveEntry"
+  }, {
+    "nodeContext" : "entry",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 312,
+      "startColumnNumber" : 16,
+      "endLineNumber" : 312,
+      "endColumnNumber" : 21
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 14,
+        "startLineNumber" : 312,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 312,
+        "endColumnNumber" : 30
+      },
+      "nodeContext" : "entry.isLink()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ParenthesizedExpression,expression]",
+      "nodePosition" : {
+        "charLength" : 40,
+        "startLineNumber" : 312,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 312,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "entry.isLink() || entry.isSymbolicLink()",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,rightOperand]",
+      "nodePosition" : {
+        "charLength" : 42,
+        "startLineNumber" : 312,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 312,
+        "endColumnNumber" : 57
+      },
+      "nodeContext" : "(entry.isLink() || entry.isSymbolicLink())",
+      "nodeType" : "ParenthesizedExpression",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 140,
+        "startLineNumber" : 311,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 313,
+        "endColumnNumber" : 52
+      },
+      "nodeContext" : "addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 17,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 218,
+        "startLineNumber" : 311,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 315,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())) {\n  paxHeaders.put(\"linkpath\",entry.getLinkName());\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 27,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2702,
+        "startLineNumber" : 267,
+        "startColumnNumber" : 78,
+        "endLineNumber" : 334,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (finished) {\n    throw new IOException(\"Stream has already been finished\");\n  }\n  TarArchiveEntry entry=(TarArchiveEntry)archiveEntry;\n  Map<String,String> paxHeaders=new HashMap<String,String>();\n  final String entryName=entry.getName();\n  final ByteBuffer encodedName=encoding.encode(entryName);\n  final int nameLen=encodedName.limit() - encodedName.position();\n  boolean paxHeaderContainsPath=false;\n  if (nameLen >= TarConstants.NAMELEN) {\n    if (longFileMode == LONGFILE_POSIX) {\n      paxHeaders.put(\"path\",entryName);\n      paxHeaderContainsPath=true;\n    }\n else     if (longFileMode == LONGFILE_GNU) {\n      TarArchiveEntry longLinkEntry=new TarArchiveEntry(TarConstants.GNU_LONGLINK,TarConstants.LF_GNUTYPE_LONGNAME);\n      longLinkEntry.setSize(nameLen + 1);\n      putArchiveEntry(longLinkEntry);\n      write(encodedName.array(),encodedName.arrayOffset(),nameLen);\n      write(0);\n      closeArchiveEntry();\n    }\n else     if (longFileMode != LONGFILE_TRUNCATE) {\n      throw new RuntimeException(\"file name '\" + entryName + \"' is too long ( > \"+ TarConstants.NAMELEN+ \" bytes)\");\n    }\n  }\n  if (bigNumberMode == BIGNUMBER_POSIX) {\n    addPaxHeadersForBigNumbers(paxHeaders,entry);\n  }\n else   if (bigNumberMode != BIGNUMBER_STAR) {\n    failForBigNumbers(entry);\n  }\n  if (addPaxHeadersForNonAsciiNames && !paxHeaderContainsPath && !ASCII.canEncode(entryName)) {\n    paxHeaders.put(\"path\",entryName);\n  }\n  if (addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())) {\n    paxHeaders.put(\"linkpath\",entry.getLinkName());\n  }\n  if (paxHeaders.size() > 0) {\n    writePaxHeaders(entryName,paxHeaders);\n  }\n  entry.writeEntryHeader(recordBuf,encoding,bigNumberMode == BIGNUMBER_STAR);\n  writeRecord(recordBuf);\n  currBytes=0;\n  if (entry.isDirectory()) {\n    currSize=0;\n  }\n else {\n    currSize=entry.getSize();\n  }\n  currName=entryName;\n  haveUnclosedEntry=true;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 274,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3450,
+        "startLineNumber" : 253,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 334,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Put an entry on the output stream. This writes the entry's header record and positions the output stream for writing the contents of the entry. Once this method is called, the stream is ready for calls to write() to write the entry's contents. Once the contents are written, closeArchiveEntry() <B>MUST</B> be called to ensure that all buffered data is completely written to the output stream.\n * @param archiveEntry The TarEntry to be written to the archive.\n * @throws IOException on error\n * @throws ClassCastException if archiveEntry is not an instance of TarArchiveEntry\n */\n@Override public void putArchiveEntry(ArchiveEntry archiveEntry) throws IOException {\n  if (finished) {\n    throw new IOException(\"Stream has already been finished\");\n  }\n  TarArchiveEntry entry=(TarArchiveEntry)archiveEntry;\n  Map<String,String> paxHeaders=new HashMap<String,String>();\n  final String entryName=entry.getName();\n  final ByteBuffer encodedName=encoding.encode(entryName);\n  final int nameLen=encodedName.limit() - encodedName.position();\n  boolean paxHeaderContainsPath=false;\n  if (nameLen >= TarConstants.NAMELEN) {\n    if (longFileMode == LONGFILE_POSIX) {\n      paxHeaders.put(\"path\",entryName);\n      paxHeaderContainsPath=true;\n    }\n else     if (longFileMode == LONGFILE_GNU) {\n      TarArchiveEntry longLinkEntry=new TarArchiveEntry(TarConstants.GNU_LONGLINK,TarConstants.LF_GNUTYPE_LONGNAME);\n      longLinkEntry.setSize(nameLen + 1);\n      putArchiveEntry(longLinkEntry);\n      write(encodedName.array(),encodedName.arrayOffset(),nameLen);\n      write(0);\n      closeArchiveEntry();\n    }\n else     if (longFileMode != LONGFILE_TRUNCATE) {\n      throw new RuntimeException(\"file name '\" + entryName + \"' is too long ( > \"+ TarConstants.NAMELEN+ \" bytes)\");\n    }\n  }\n  if (bigNumberMode == BIGNUMBER_POSIX) {\n    addPaxHeadersForBigNumbers(paxHeaders,entry);\n  }\n else   if (bigNumberMode != BIGNUMBER_STAR) {\n    failForBigNumbers(entry);\n  }\n  if (addPaxHeadersForNonAsciiNames && !paxHeaderContainsPath && !ASCII.canEncode(entryName)) {\n    paxHeaders.put(\"path\",entryName);\n  }\n  if (addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())) {\n    paxHeaders.put(\"linkpath\",entry.getLinkName());\n  }\n  if (paxHeaders.size() > 0) {\n    writePaxHeaders(entryName,paxHeaders);\n  }\n  entry.writeEntryHeader(recordBuf,encoding,bigNumberMode == BIGNUMBER_STAR);\n  writeRecord(recordBuf);\n  currBytes=0;\n  if (entry.isDirectory()) {\n    currSize=0;\n  }\n else {\n    currSize=entry.getSize();\n  }\n  currName=entryName;\n  haveUnclosedEntry=true;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 287,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,rightOperand]",
+      "nodePosition" : {
+        "charLength" : 42,
+        "startLineNumber" : 312,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 312,
+        "endColumnNumber" : 57
+      },
+      "nodeContext" : "(entry.isLink() || entry.isSymbolicLink())",
+      "nodeType" : "ParenthesizedExpression",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.tar.TarArchiveEntry"
+  }, {
+    "nodeContext" : "entry",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 312,
+      "startColumnNumber" : 34,
+      "endLineNumber" : 312,
+      "endColumnNumber" : 39
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,rightOperand]",
+      "nodePosition" : {
+        "charLength" : 22,
+        "startLineNumber" : 312,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 312,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "entry.isSymbolicLink()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ParenthesizedExpression,expression]",
+      "nodePosition" : {
+        "charLength" : 40,
+        "startLineNumber" : 312,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 312,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "entry.isLink() || entry.isSymbolicLink()",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,rightOperand]",
+      "nodePosition" : {
+        "charLength" : 42,
+        "startLineNumber" : 312,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 312,
+        "endColumnNumber" : 57
+      },
+      "nodeContext" : "(entry.isLink() || entry.isSymbolicLink())",
+      "nodeType" : "ParenthesizedExpression",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 140,
+        "startLineNumber" : 311,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 313,
+        "endColumnNumber" : 52
+      },
+      "nodeContext" : "addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 17,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 218,
+        "startLineNumber" : 311,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 315,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())) {\n  paxHeaders.put(\"linkpath\",entry.getLinkName());\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 27,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2702,
+        "startLineNumber" : 267,
+        "startColumnNumber" : 78,
+        "endLineNumber" : 334,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (finished) {\n    throw new IOException(\"Stream has already been finished\");\n  }\n  TarArchiveEntry entry=(TarArchiveEntry)archiveEntry;\n  Map<String,String> paxHeaders=new HashMap<String,String>();\n  final String entryName=entry.getName();\n  final ByteBuffer encodedName=encoding.encode(entryName);\n  final int nameLen=encodedName.limit() - encodedName.position();\n  boolean paxHeaderContainsPath=false;\n  if (nameLen >= TarConstants.NAMELEN) {\n    if (longFileMode == LONGFILE_POSIX) {\n      paxHeaders.put(\"path\",entryName);\n      paxHeaderContainsPath=true;\n    }\n else     if (longFileMode == LONGFILE_GNU) {\n      TarArchiveEntry longLinkEntry=new TarArchiveEntry(TarConstants.GNU_LONGLINK,TarConstants.LF_GNUTYPE_LONGNAME);\n      longLinkEntry.setSize(nameLen + 1);\n      putArchiveEntry(longLinkEntry);\n      write(encodedName.array(),encodedName.arrayOffset(),nameLen);\n      write(0);\n      closeArchiveEntry();\n    }\n else     if (longFileMode != LONGFILE_TRUNCATE) {\n      throw new RuntimeException(\"file name '\" + entryName + \"' is too long ( > \"+ TarConstants.NAMELEN+ \" bytes)\");\n    }\n  }\n  if (bigNumberMode == BIGNUMBER_POSIX) {\n    addPaxHeadersForBigNumbers(paxHeaders,entry);\n  }\n else   if (bigNumberMode != BIGNUMBER_STAR) {\n    failForBigNumbers(entry);\n  }\n  if (addPaxHeadersForNonAsciiNames && !paxHeaderContainsPath && !ASCII.canEncode(entryName)) {\n    paxHeaders.put(\"path\",entryName);\n  }\n  if (addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())) {\n    paxHeaders.put(\"linkpath\",entry.getLinkName());\n  }\n  if (paxHeaders.size() > 0) {\n    writePaxHeaders(entryName,paxHeaders);\n  }\n  entry.writeEntryHeader(recordBuf,encoding,bigNumberMode == BIGNUMBER_STAR);\n  writeRecord(recordBuf);\n  currBytes=0;\n  if (entry.isDirectory()) {\n    currSize=0;\n  }\n else {\n    currSize=entry.getSize();\n  }\n  currName=entryName;\n  haveUnclosedEntry=true;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 274,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3450,
+        "startLineNumber" : 253,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 334,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Put an entry on the output stream. This writes the entry's header record and positions the output stream for writing the contents of the entry. Once this method is called, the stream is ready for calls to write() to write the entry's contents. Once the contents are written, closeArchiveEntry() <B>MUST</B> be called to ensure that all buffered data is completely written to the output stream.\n * @param archiveEntry The TarEntry to be written to the archive.\n * @throws IOException on error\n * @throws ClassCastException if archiveEntry is not an instance of TarArchiveEntry\n */\n@Override public void putArchiveEntry(ArchiveEntry archiveEntry) throws IOException {\n  if (finished) {\n    throw new IOException(\"Stream has already been finished\");\n  }\n  TarArchiveEntry entry=(TarArchiveEntry)archiveEntry;\n  Map<String,String> paxHeaders=new HashMap<String,String>();\n  final String entryName=entry.getName();\n  final ByteBuffer encodedName=encoding.encode(entryName);\n  final int nameLen=encodedName.limit() - encodedName.position();\n  boolean paxHeaderContainsPath=false;\n  if (nameLen >= TarConstants.NAMELEN) {\n    if (longFileMode == LONGFILE_POSIX) {\n      paxHeaders.put(\"path\",entryName);\n      paxHeaderContainsPath=true;\n    }\n else     if (longFileMode == LONGFILE_GNU) {\n      TarArchiveEntry longLinkEntry=new TarArchiveEntry(TarConstants.GNU_LONGLINK,TarConstants.LF_GNUTYPE_LONGNAME);\n      longLinkEntry.setSize(nameLen + 1);\n      putArchiveEntry(longLinkEntry);\n      write(encodedName.array(),encodedName.arrayOffset(),nameLen);\n      write(0);\n      closeArchiveEntry();\n    }\n else     if (longFileMode != LONGFILE_TRUNCATE) {\n      throw new RuntimeException(\"file name '\" + entryName + \"' is too long ( > \"+ TarConstants.NAMELEN+ \" bytes)\");\n    }\n  }\n  if (bigNumberMode == BIGNUMBER_POSIX) {\n    addPaxHeadersForBigNumbers(paxHeaders,entry);\n  }\n else   if (bigNumberMode != BIGNUMBER_STAR) {\n    failForBigNumbers(entry);\n  }\n  if (addPaxHeadersForNonAsciiNames && !paxHeaderContainsPath && !ASCII.canEncode(entryName)) {\n    paxHeaders.put(\"path\",entryName);\n  }\n  if (addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())) {\n    paxHeaders.put(\"linkpath\",entry.getLinkName());\n  }\n  if (paxHeaders.size() > 0) {\n    writePaxHeaders(entryName,paxHeaders);\n  }\n  entry.writeEntryHeader(recordBuf,encoding,bigNumberMode == BIGNUMBER_STAR);\n  writeRecord(recordBuf);\n  currBytes=0;\n  if (entry.isDirectory()) {\n    currSize=0;\n  }\n else {\n    currSize=entry.getSize();\n  }\n  currName=entryName;\n  haveUnclosedEntry=true;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 287,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,rightOperand]",
+      "nodePosition" : {
+        "charLength" : 42,
+        "startLineNumber" : 312,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 312,
+        "endColumnNumber" : 57
+      },
+      "nodeContext" : "(entry.isLink() || entry.isSymbolicLink())",
+      "nodeType" : "ParenthesizedExpression",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.tar.TarArchiveEntry"
+  }, {
+    "nodeContext" : "entry",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 313,
+      "startColumnNumber" : 32,
+      "endLineNumber" : 313,
+      "endColumnNumber" : 37
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 19,
+        "startLineNumber" : 313,
+        "startColumnNumber" : 32,
+        "endLineNumber" : 313,
+        "endColumnNumber" : 51
+      },
+      "nodeContext" : "entry.getLinkName()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.PrefixExpression,operand]",
+      "nodePosition" : {
+        "charLength" : 36,
+        "startLineNumber" : 313,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 313,
+        "endColumnNumber" : 52
+      },
+      "nodeContext" : "ASCII.canEncode(entry.getLinkName())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.InfixExpression,extendedOperands]",
+      "nodePosition" : {
+        "charLength" : 37,
+        "startLineNumber" : 313,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 313,
+        "endColumnNumber" : 52
+      },
+      "nodeContext" : "!ASCII.canEncode(entry.getLinkName())",
+      "nodeType" : "PrefixExpression",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 140,
+        "startLineNumber" : 311,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 313,
+        "endColumnNumber" : 52
+      },
+      "nodeContext" : "addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 17,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 218,
+        "startLineNumber" : 311,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 315,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())) {\n  paxHeaders.put(\"linkpath\",entry.getLinkName());\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 27,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2702,
+        "startLineNumber" : 267,
+        "startColumnNumber" : 78,
+        "endLineNumber" : 334,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (finished) {\n    throw new IOException(\"Stream has already been finished\");\n  }\n  TarArchiveEntry entry=(TarArchiveEntry)archiveEntry;\n  Map<String,String> paxHeaders=new HashMap<String,String>();\n  final String entryName=entry.getName();\n  final ByteBuffer encodedName=encoding.encode(entryName);\n  final int nameLen=encodedName.limit() - encodedName.position();\n  boolean paxHeaderContainsPath=false;\n  if (nameLen >= TarConstants.NAMELEN) {\n    if (longFileMode == LONGFILE_POSIX) {\n      paxHeaders.put(\"path\",entryName);\n      paxHeaderContainsPath=true;\n    }\n else     if (longFileMode == LONGFILE_GNU) {\n      TarArchiveEntry longLinkEntry=new TarArchiveEntry(TarConstants.GNU_LONGLINK,TarConstants.LF_GNUTYPE_LONGNAME);\n      longLinkEntry.setSize(nameLen + 1);\n      putArchiveEntry(longLinkEntry);\n      write(encodedName.array(),encodedName.arrayOffset(),nameLen);\n      write(0);\n      closeArchiveEntry();\n    }\n else     if (longFileMode != LONGFILE_TRUNCATE) {\n      throw new RuntimeException(\"file name '\" + entryName + \"' is too long ( > \"+ TarConstants.NAMELEN+ \" bytes)\");\n    }\n  }\n  if (bigNumberMode == BIGNUMBER_POSIX) {\n    addPaxHeadersForBigNumbers(paxHeaders,entry);\n  }\n else   if (bigNumberMode != BIGNUMBER_STAR) {\n    failForBigNumbers(entry);\n  }\n  if (addPaxHeadersForNonAsciiNames && !paxHeaderContainsPath && !ASCII.canEncode(entryName)) {\n    paxHeaders.put(\"path\",entryName);\n  }\n  if (addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())) {\n    paxHeaders.put(\"linkpath\",entry.getLinkName());\n  }\n  if (paxHeaders.size() > 0) {\n    writePaxHeaders(entryName,paxHeaders);\n  }\n  entry.writeEntryHeader(recordBuf,encoding,bigNumberMode == BIGNUMBER_STAR);\n  writeRecord(recordBuf);\n  currBytes=0;\n  if (entry.isDirectory()) {\n    currSize=0;\n  }\n else {\n    currSize=entry.getSize();\n  }\n  currName=entryName;\n  haveUnclosedEntry=true;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 274,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3450,
+        "startLineNumber" : 253,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 334,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Put an entry on the output stream. This writes the entry's header record and positions the output stream for writing the contents of the entry. Once this method is called, the stream is ready for calls to write() to write the entry's contents. Once the contents are written, closeArchiveEntry() <B>MUST</B> be called to ensure that all buffered data is completely written to the output stream.\n * @param archiveEntry The TarEntry to be written to the archive.\n * @throws IOException on error\n * @throws ClassCastException if archiveEntry is not an instance of TarArchiveEntry\n */\n@Override public void putArchiveEntry(ArchiveEntry archiveEntry) throws IOException {\n  if (finished) {\n    throw new IOException(\"Stream has already been finished\");\n  }\n  TarArchiveEntry entry=(TarArchiveEntry)archiveEntry;\n  Map<String,String> paxHeaders=new HashMap<String,String>();\n  final String entryName=entry.getName();\n  final ByteBuffer encodedName=encoding.encode(entryName);\n  final int nameLen=encodedName.limit() - encodedName.position();\n  boolean paxHeaderContainsPath=false;\n  if (nameLen >= TarConstants.NAMELEN) {\n    if (longFileMode == LONGFILE_POSIX) {\n      paxHeaders.put(\"path\",entryName);\n      paxHeaderContainsPath=true;\n    }\n else     if (longFileMode == LONGFILE_GNU) {\n      TarArchiveEntry longLinkEntry=new TarArchiveEntry(TarConstants.GNU_LONGLINK,TarConstants.LF_GNUTYPE_LONGNAME);\n      longLinkEntry.setSize(nameLen + 1);\n      putArchiveEntry(longLinkEntry);\n      write(encodedName.array(),encodedName.arrayOffset(),nameLen);\n      write(0);\n      closeArchiveEntry();\n    }\n else     if (longFileMode != LONGFILE_TRUNCATE) {\n      throw new RuntimeException(\"file name '\" + entryName + \"' is too long ( > \"+ TarConstants.NAMELEN+ \" bytes)\");\n    }\n  }\n  if (bigNumberMode == BIGNUMBER_POSIX) {\n    addPaxHeadersForBigNumbers(paxHeaders,entry);\n  }\n else   if (bigNumberMode != BIGNUMBER_STAR) {\n    failForBigNumbers(entry);\n  }\n  if (addPaxHeadersForNonAsciiNames && !paxHeaderContainsPath && !ASCII.canEncode(entryName)) {\n    paxHeaders.put(\"path\",entryName);\n  }\n  if (addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())) {\n    paxHeaders.put(\"linkpath\",entry.getLinkName());\n  }\n  if (paxHeaders.size() > 0) {\n    writePaxHeaders(entryName,paxHeaders);\n  }\n  entry.writeEntryHeader(recordBuf,encoding,bigNumberMode == BIGNUMBER_STAR);\n  writeRecord(recordBuf);\n  currBytes=0;\n  if (entry.isDirectory()) {\n    currSize=0;\n  }\n else {\n    currSize=entry.getSize();\n  }\n  currName=entryName;\n  haveUnclosedEntry=true;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 287,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.InfixExpression,extendedOperands]",
+      "nodePosition" : {
+        "charLength" : 37,
+        "startLineNumber" : 313,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 313,
+        "endColumnNumber" : 52
+      },
+      "nodeContext" : "!ASCII.canEncode(entry.getLinkName())",
+      "nodeType" : "PrefixExpression",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.tar.TarArchiveEntry"
+  }, {
+    "nodeContext" : "entry",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 314,
+      "startColumnNumber" : 39,
+      "endLineNumber" : 314,
+      "endColumnNumber" : 44
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 19,
+        "startLineNumber" : 314,
+        "startColumnNumber" : 39,
+        "endLineNumber" : 314,
+        "endColumnNumber" : 58
+      },
+      "nodeContext" : "entry.getLinkName()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 47,
+        "startLineNumber" : 314,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 314,
+        "endColumnNumber" : 59
+      },
+      "nodeContext" : "paxHeaders.put(\"linkpath\",entry.getLinkName())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 48,
+        "startLineNumber" : 314,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 314,
+        "endColumnNumber" : 60
+      },
+      "nodeContext" : "paxHeaders.put(\"linkpath\",entry.getLinkName());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 72,
+        "startLineNumber" : 313,
+        "startColumnNumber" : 54,
+        "endLineNumber" : 315,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  paxHeaders.put(\"linkpath\",entry.getLinkName());\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 218,
+        "startLineNumber" : 311,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 315,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())) {\n  paxHeaders.put(\"linkpath\",entry.getLinkName());\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 27,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2702,
+        "startLineNumber" : 267,
+        "startColumnNumber" : 78,
+        "endLineNumber" : 334,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (finished) {\n    throw new IOException(\"Stream has already been finished\");\n  }\n  TarArchiveEntry entry=(TarArchiveEntry)archiveEntry;\n  Map<String,String> paxHeaders=new HashMap<String,String>();\n  final String entryName=entry.getName();\n  final ByteBuffer encodedName=encoding.encode(entryName);\n  final int nameLen=encodedName.limit() - encodedName.position();\n  boolean paxHeaderContainsPath=false;\n  if (nameLen >= TarConstants.NAMELEN) {\n    if (longFileMode == LONGFILE_POSIX) {\n      paxHeaders.put(\"path\",entryName);\n      paxHeaderContainsPath=true;\n    }\n else     if (longFileMode == LONGFILE_GNU) {\n      TarArchiveEntry longLinkEntry=new TarArchiveEntry(TarConstants.GNU_LONGLINK,TarConstants.LF_GNUTYPE_LONGNAME);\n      longLinkEntry.setSize(nameLen + 1);\n      putArchiveEntry(longLinkEntry);\n      write(encodedName.array(),encodedName.arrayOffset(),nameLen);\n      write(0);\n      closeArchiveEntry();\n    }\n else     if (longFileMode != LONGFILE_TRUNCATE) {\n      throw new RuntimeException(\"file name '\" + entryName + \"' is too long ( > \"+ TarConstants.NAMELEN+ \" bytes)\");\n    }\n  }\n  if (bigNumberMode == BIGNUMBER_POSIX) {\n    addPaxHeadersForBigNumbers(paxHeaders,entry);\n  }\n else   if (bigNumberMode != BIGNUMBER_STAR) {\n    failForBigNumbers(entry);\n  }\n  if (addPaxHeadersForNonAsciiNames && !paxHeaderContainsPath && !ASCII.canEncode(entryName)) {\n    paxHeaders.put(\"path\",entryName);\n  }\n  if (addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())) {\n    paxHeaders.put(\"linkpath\",entry.getLinkName());\n  }\n  if (paxHeaders.size() > 0) {\n    writePaxHeaders(entryName,paxHeaders);\n  }\n  entry.writeEntryHeader(recordBuf,encoding,bigNumberMode == BIGNUMBER_STAR);\n  writeRecord(recordBuf);\n  currBytes=0;\n  if (entry.isDirectory()) {\n    currSize=0;\n  }\n else {\n    currSize=entry.getSize();\n  }\n  currName=entryName;\n  haveUnclosedEntry=true;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 274,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3450,
+        "startLineNumber" : 253,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 334,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Put an entry on the output stream. This writes the entry's header record and positions the output stream for writing the contents of the entry. Once this method is called, the stream is ready for calls to write() to write the entry's contents. Once the contents are written, closeArchiveEntry() <B>MUST</B> be called to ensure that all buffered data is completely written to the output stream.\n * @param archiveEntry The TarEntry to be written to the archive.\n * @throws IOException on error\n * @throws ClassCastException if archiveEntry is not an instance of TarArchiveEntry\n */\n@Override public void putArchiveEntry(ArchiveEntry archiveEntry) throws IOException {\n  if (finished) {\n    throw new IOException(\"Stream has already been finished\");\n  }\n  TarArchiveEntry entry=(TarArchiveEntry)archiveEntry;\n  Map<String,String> paxHeaders=new HashMap<String,String>();\n  final String entryName=entry.getName();\n  final ByteBuffer encodedName=encoding.encode(entryName);\n  final int nameLen=encodedName.limit() - encodedName.position();\n  boolean paxHeaderContainsPath=false;\n  if (nameLen >= TarConstants.NAMELEN) {\n    if (longFileMode == LONGFILE_POSIX) {\n      paxHeaders.put(\"path\",entryName);\n      paxHeaderContainsPath=true;\n    }\n else     if (longFileMode == LONGFILE_GNU) {\n      TarArchiveEntry longLinkEntry=new TarArchiveEntry(TarConstants.GNU_LONGLINK,TarConstants.LF_GNUTYPE_LONGNAME);\n      longLinkEntry.setSize(nameLen + 1);\n      putArchiveEntry(longLinkEntry);\n      write(encodedName.array(),encodedName.arrayOffset(),nameLen);\n      write(0);\n      closeArchiveEntry();\n    }\n else     if (longFileMode != LONGFILE_TRUNCATE) {\n      throw new RuntimeException(\"file name '\" + entryName + \"' is too long ( > \"+ TarConstants.NAMELEN+ \" bytes)\");\n    }\n  }\n  if (bigNumberMode == BIGNUMBER_POSIX) {\n    addPaxHeadersForBigNumbers(paxHeaders,entry);\n  }\n else   if (bigNumberMode != BIGNUMBER_STAR) {\n    failForBigNumbers(entry);\n  }\n  if (addPaxHeadersForNonAsciiNames && !paxHeaderContainsPath && !ASCII.canEncode(entryName)) {\n    paxHeaders.put(\"path\",entryName);\n  }\n  if (addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())) {\n    paxHeaders.put(\"linkpath\",entry.getLinkName());\n  }\n  if (paxHeaders.size() > 0) {\n    writePaxHeaders(entryName,paxHeaders);\n  }\n  entry.writeEntryHeader(recordBuf,encoding,bigNumberMode == BIGNUMBER_STAR);\n  writeRecord(recordBuf);\n  currBytes=0;\n  if (entry.isDirectory()) {\n    currSize=0;\n  }\n else {\n    currSize=entry.getSize();\n  }\n  currName=entryName;\n  haveUnclosedEntry=true;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 287,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 48,
+        "startLineNumber" : 314,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 314,
+        "endColumnNumber" : 60
+      },
+      "nodeContext" : "paxHeaders.put(\"linkpath\",entry.getLinkName());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.tar.TarArchiveEntry"
+  }, {
+    "nodeContext" : "entry",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 321,
+      "startColumnNumber" : 8,
+      "endLineNumber" : 321,
+      "endColumnNumber" : 13
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 107,
+        "startLineNumber" : 321,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 322,
+        "endColumnNumber" : 63
+      },
+      "nodeContext" : "entry.writeEntryHeader(recordBuf,encoding,bigNumberMode == BIGNUMBER_STAR)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 8,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 108,
+        "startLineNumber" : 321,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 322,
+        "endColumnNumber" : 64
+      },
+      "nodeContext" : "entry.writeEntryHeader(recordBuf,encoding,bigNumberMode == BIGNUMBER_STAR);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2702,
+        "startLineNumber" : 267,
+        "startColumnNumber" : 78,
+        "endLineNumber" : 334,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (finished) {\n    throw new IOException(\"Stream has already been finished\");\n  }\n  TarArchiveEntry entry=(TarArchiveEntry)archiveEntry;\n  Map<String,String> paxHeaders=new HashMap<String,String>();\n  final String entryName=entry.getName();\n  final ByteBuffer encodedName=encoding.encode(entryName);\n  final int nameLen=encodedName.limit() - encodedName.position();\n  boolean paxHeaderContainsPath=false;\n  if (nameLen >= TarConstants.NAMELEN) {\n    if (longFileMode == LONGFILE_POSIX) {\n      paxHeaders.put(\"path\",entryName);\n      paxHeaderContainsPath=true;\n    }\n else     if (longFileMode == LONGFILE_GNU) {\n      TarArchiveEntry longLinkEntry=new TarArchiveEntry(TarConstants.GNU_LONGLINK,TarConstants.LF_GNUTYPE_LONGNAME);\n      longLinkEntry.setSize(nameLen + 1);\n      putArchiveEntry(longLinkEntry);\n      write(encodedName.array(),encodedName.arrayOffset(),nameLen);\n      write(0);\n      closeArchiveEntry();\n    }\n else     if (longFileMode != LONGFILE_TRUNCATE) {\n      throw new RuntimeException(\"file name '\" + entryName + \"' is too long ( > \"+ TarConstants.NAMELEN+ \" bytes)\");\n    }\n  }\n  if (bigNumberMode == BIGNUMBER_POSIX) {\n    addPaxHeadersForBigNumbers(paxHeaders,entry);\n  }\n else   if (bigNumberMode != BIGNUMBER_STAR) {\n    failForBigNumbers(entry);\n  }\n  if (addPaxHeadersForNonAsciiNames && !paxHeaderContainsPath && !ASCII.canEncode(entryName)) {\n    paxHeaders.put(\"path\",entryName);\n  }\n  if (addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())) {\n    paxHeaders.put(\"linkpath\",entry.getLinkName());\n  }\n  if (paxHeaders.size() > 0) {\n    writePaxHeaders(entryName,paxHeaders);\n  }\n  entry.writeEntryHeader(recordBuf,encoding,bigNumberMode == BIGNUMBER_STAR);\n  writeRecord(recordBuf);\n  currBytes=0;\n  if (entry.isDirectory()) {\n    currSize=0;\n  }\n else {\n    currSize=entry.getSize();\n  }\n  currName=entryName;\n  haveUnclosedEntry=true;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 274,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3450,
+        "startLineNumber" : 253,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 334,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Put an entry on the output stream. This writes the entry's header record and positions the output stream for writing the contents of the entry. Once this method is called, the stream is ready for calls to write() to write the entry's contents. Once the contents are written, closeArchiveEntry() <B>MUST</B> be called to ensure that all buffered data is completely written to the output stream.\n * @param archiveEntry The TarEntry to be written to the archive.\n * @throws IOException on error\n * @throws ClassCastException if archiveEntry is not an instance of TarArchiveEntry\n */\n@Override public void putArchiveEntry(ArchiveEntry archiveEntry) throws IOException {\n  if (finished) {\n    throw new IOException(\"Stream has already been finished\");\n  }\n  TarArchiveEntry entry=(TarArchiveEntry)archiveEntry;\n  Map<String,String> paxHeaders=new HashMap<String,String>();\n  final String entryName=entry.getName();\n  final ByteBuffer encodedName=encoding.encode(entryName);\n  final int nameLen=encodedName.limit() - encodedName.position();\n  boolean paxHeaderContainsPath=false;\n  if (nameLen >= TarConstants.NAMELEN) {\n    if (longFileMode == LONGFILE_POSIX) {\n      paxHeaders.put(\"path\",entryName);\n      paxHeaderContainsPath=true;\n    }\n else     if (longFileMode == LONGFILE_GNU) {\n      TarArchiveEntry longLinkEntry=new TarArchiveEntry(TarConstants.GNU_LONGLINK,TarConstants.LF_GNUTYPE_LONGNAME);\n      longLinkEntry.setSize(nameLen + 1);\n      putArchiveEntry(longLinkEntry);\n      write(encodedName.array(),encodedName.arrayOffset(),nameLen);\n      write(0);\n      closeArchiveEntry();\n    }\n else     if (longFileMode != LONGFILE_TRUNCATE) {\n      throw new RuntimeException(\"file name '\" + entryName + \"' is too long ( > \"+ TarConstants.NAMELEN+ \" bytes)\");\n    }\n  }\n  if (bigNumberMode == BIGNUMBER_POSIX) {\n    addPaxHeadersForBigNumbers(paxHeaders,entry);\n  }\n else   if (bigNumberMode != BIGNUMBER_STAR) {\n    failForBigNumbers(entry);\n  }\n  if (addPaxHeadersForNonAsciiNames && !paxHeaderContainsPath && !ASCII.canEncode(entryName)) {\n    paxHeaders.put(\"path\",entryName);\n  }\n  if (addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())) {\n    paxHeaders.put(\"linkpath\",entry.getLinkName());\n  }\n  if (paxHeaders.size() > 0) {\n    writePaxHeaders(entryName,paxHeaders);\n  }\n  entry.writeEntryHeader(recordBuf,encoding,bigNumberMode == BIGNUMBER_STAR);\n  writeRecord(recordBuf);\n  currBytes=0;\n  if (entry.isDirectory()) {\n    currSize=0;\n  }\n else {\n    currSize=entry.getSize();\n  }\n  currName=entryName;\n  haveUnclosedEntry=true;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 287,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 107,
+        "startLineNumber" : 321,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 322,
+        "endColumnNumber" : 63
+      },
+      "nodeContext" : "entry.writeEntryHeader(recordBuf,encoding,bigNumberMode == BIGNUMBER_STAR)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 8,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.tar.TarArchiveEntry"
+  }, {
+    "nodeContext" : "entry",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 327,
+      "startColumnNumber" : 12,
+      "endLineNumber" : 327,
+      "endColumnNumber" : 17
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 19,
+        "startLineNumber" : 327,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 327,
+        "endColumnNumber" : 31
+      },
+      "nodeContext" : "entry.isDirectory()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 119,
+        "startLineNumber" : 327,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 331,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (entry.isDirectory()) {\n  currSize=0;\n}\n else {\n  currSize=entry.getSize();\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 16,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2702,
+        "startLineNumber" : 267,
+        "startColumnNumber" : 78,
+        "endLineNumber" : 334,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (finished) {\n    throw new IOException(\"Stream has already been finished\");\n  }\n  TarArchiveEntry entry=(TarArchiveEntry)archiveEntry;\n  Map<String,String> paxHeaders=new HashMap<String,String>();\n  final String entryName=entry.getName();\n  final ByteBuffer encodedName=encoding.encode(entryName);\n  final int nameLen=encodedName.limit() - encodedName.position();\n  boolean paxHeaderContainsPath=false;\n  if (nameLen >= TarConstants.NAMELEN) {\n    if (longFileMode == LONGFILE_POSIX) {\n      paxHeaders.put(\"path\",entryName);\n      paxHeaderContainsPath=true;\n    }\n else     if (longFileMode == LONGFILE_GNU) {\n      TarArchiveEntry longLinkEntry=new TarArchiveEntry(TarConstants.GNU_LONGLINK,TarConstants.LF_GNUTYPE_LONGNAME);\n      longLinkEntry.setSize(nameLen + 1);\n      putArchiveEntry(longLinkEntry);\n      write(encodedName.array(),encodedName.arrayOffset(),nameLen);\n      write(0);\n      closeArchiveEntry();\n    }\n else     if (longFileMode != LONGFILE_TRUNCATE) {\n      throw new RuntimeException(\"file name '\" + entryName + \"' is too long ( > \"+ TarConstants.NAMELEN+ \" bytes)\");\n    }\n  }\n  if (bigNumberMode == BIGNUMBER_POSIX) {\n    addPaxHeadersForBigNumbers(paxHeaders,entry);\n  }\n else   if (bigNumberMode != BIGNUMBER_STAR) {\n    failForBigNumbers(entry);\n  }\n  if (addPaxHeadersForNonAsciiNames && !paxHeaderContainsPath && !ASCII.canEncode(entryName)) {\n    paxHeaders.put(\"path\",entryName);\n  }\n  if (addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())) {\n    paxHeaders.put(\"linkpath\",entry.getLinkName());\n  }\n  if (paxHeaders.size() > 0) {\n    writePaxHeaders(entryName,paxHeaders);\n  }\n  entry.writeEntryHeader(recordBuf,encoding,bigNumberMode == BIGNUMBER_STAR);\n  writeRecord(recordBuf);\n  currBytes=0;\n  if (entry.isDirectory()) {\n    currSize=0;\n  }\n else {\n    currSize=entry.getSize();\n  }\n  currName=entryName;\n  haveUnclosedEntry=true;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 274,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3450,
+        "startLineNumber" : 253,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 334,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Put an entry on the output stream. This writes the entry's header record and positions the output stream for writing the contents of the entry. Once this method is called, the stream is ready for calls to write() to write the entry's contents. Once the contents are written, closeArchiveEntry() <B>MUST</B> be called to ensure that all buffered data is completely written to the output stream.\n * @param archiveEntry The TarEntry to be written to the archive.\n * @throws IOException on error\n * @throws ClassCastException if archiveEntry is not an instance of TarArchiveEntry\n */\n@Override public void putArchiveEntry(ArchiveEntry archiveEntry) throws IOException {\n  if (finished) {\n    throw new IOException(\"Stream has already been finished\");\n  }\n  TarArchiveEntry entry=(TarArchiveEntry)archiveEntry;\n  Map<String,String> paxHeaders=new HashMap<String,String>();\n  final String entryName=entry.getName();\n  final ByteBuffer encodedName=encoding.encode(entryName);\n  final int nameLen=encodedName.limit() - encodedName.position();\n  boolean paxHeaderContainsPath=false;\n  if (nameLen >= TarConstants.NAMELEN) {\n    if (longFileMode == LONGFILE_POSIX) {\n      paxHeaders.put(\"path\",entryName);\n      paxHeaderContainsPath=true;\n    }\n else     if (longFileMode == LONGFILE_GNU) {\n      TarArchiveEntry longLinkEntry=new TarArchiveEntry(TarConstants.GNU_LONGLINK,TarConstants.LF_GNUTYPE_LONGNAME);\n      longLinkEntry.setSize(nameLen + 1);\n      putArchiveEntry(longLinkEntry);\n      write(encodedName.array(),encodedName.arrayOffset(),nameLen);\n      write(0);\n      closeArchiveEntry();\n    }\n else     if (longFileMode != LONGFILE_TRUNCATE) {\n      throw new RuntimeException(\"file name '\" + entryName + \"' is too long ( > \"+ TarConstants.NAMELEN+ \" bytes)\");\n    }\n  }\n  if (bigNumberMode == BIGNUMBER_POSIX) {\n    addPaxHeadersForBigNumbers(paxHeaders,entry);\n  }\n else   if (bigNumberMode != BIGNUMBER_STAR) {\n    failForBigNumbers(entry);\n  }\n  if (addPaxHeadersForNonAsciiNames && !paxHeaderContainsPath && !ASCII.canEncode(entryName)) {\n    paxHeaders.put(\"path\",entryName);\n  }\n  if (addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())) {\n    paxHeaders.put(\"linkpath\",entry.getLinkName());\n  }\n  if (paxHeaders.size() > 0) {\n    writePaxHeaders(entryName,paxHeaders);\n  }\n  entry.writeEntryHeader(recordBuf,encoding,bigNumberMode == BIGNUMBER_STAR);\n  writeRecord(recordBuf);\n  currBytes=0;\n  if (entry.isDirectory()) {\n    currSize=0;\n  }\n else {\n    currSize=entry.getSize();\n  }\n  currName=entryName;\n  haveUnclosedEntry=true;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 287,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 19,
+        "startLineNumber" : 327,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 327,
+        "endColumnNumber" : 31
+      },
+      "nodeContext" : "entry.isDirectory()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.tar.TarArchiveEntry"
+  }, {
+    "nodeContext" : "entry",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 330,
+      "startColumnNumber" : 23,
+      "endLineNumber" : 330,
+      "endColumnNumber" : 28
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
+      "nodePosition" : {
+        "charLength" : 15,
+        "startLineNumber" : 330,
+        "startColumnNumber" : 23,
+        "endLineNumber" : 330,
+        "endColumnNumber" : 38
+      },
+      "nodeContext" : "entry.getSize()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 26,
+        "startLineNumber" : 330,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 330,
+        "endColumnNumber" : 38
+      },
+      "nodeContext" : "currSize=entry.getSize()",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 27,
+        "startLineNumber" : 330,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 330,
+        "endColumnNumber" : 39
+      },
+      "nodeContext" : "currSize=entry.getSize();\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 51,
+        "startLineNumber" : 329,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 331,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  currSize=entry.getSize();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 7,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 119,
+        "startLineNumber" : 327,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 331,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (entry.isDirectory()) {\n  currSize=0;\n}\n else {\n  currSize=entry.getSize();\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 16,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2702,
+        "startLineNumber" : 267,
+        "startColumnNumber" : 78,
+        "endLineNumber" : 334,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (finished) {\n    throw new IOException(\"Stream has already been finished\");\n  }\n  TarArchiveEntry entry=(TarArchiveEntry)archiveEntry;\n  Map<String,String> paxHeaders=new HashMap<String,String>();\n  final String entryName=entry.getName();\n  final ByteBuffer encodedName=encoding.encode(entryName);\n  final int nameLen=encodedName.limit() - encodedName.position();\n  boolean paxHeaderContainsPath=false;\n  if (nameLen >= TarConstants.NAMELEN) {\n    if (longFileMode == LONGFILE_POSIX) {\n      paxHeaders.put(\"path\",entryName);\n      paxHeaderContainsPath=true;\n    }\n else     if (longFileMode == LONGFILE_GNU) {\n      TarArchiveEntry longLinkEntry=new TarArchiveEntry(TarConstants.GNU_LONGLINK,TarConstants.LF_GNUTYPE_LONGNAME);\n      longLinkEntry.setSize(nameLen + 1);\n      putArchiveEntry(longLinkEntry);\n      write(encodedName.array(),encodedName.arrayOffset(),nameLen);\n      write(0);\n      closeArchiveEntry();\n    }\n else     if (longFileMode != LONGFILE_TRUNCATE) {\n      throw new RuntimeException(\"file name '\" + entryName + \"' is too long ( > \"+ TarConstants.NAMELEN+ \" bytes)\");\n    }\n  }\n  if (bigNumberMode == BIGNUMBER_POSIX) {\n    addPaxHeadersForBigNumbers(paxHeaders,entry);\n  }\n else   if (bigNumberMode != BIGNUMBER_STAR) {\n    failForBigNumbers(entry);\n  }\n  if (addPaxHeadersForNonAsciiNames && !paxHeaderContainsPath && !ASCII.canEncode(entryName)) {\n    paxHeaders.put(\"path\",entryName);\n  }\n  if (addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())) {\n    paxHeaders.put(\"linkpath\",entry.getLinkName());\n  }\n  if (paxHeaders.size() > 0) {\n    writePaxHeaders(entryName,paxHeaders);\n  }\n  entry.writeEntryHeader(recordBuf,encoding,bigNumberMode == BIGNUMBER_STAR);\n  writeRecord(recordBuf);\n  currBytes=0;\n  if (entry.isDirectory()) {\n    currSize=0;\n  }\n else {\n    currSize=entry.getSize();\n  }\n  currName=entryName;\n  haveUnclosedEntry=true;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 274,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3450,
+        "startLineNumber" : 253,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 334,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Put an entry on the output stream. This writes the entry's header record and positions the output stream for writing the contents of the entry. Once this method is called, the stream is ready for calls to write() to write the entry's contents. Once the contents are written, closeArchiveEntry() <B>MUST</B> be called to ensure that all buffered data is completely written to the output stream.\n * @param archiveEntry The TarEntry to be written to the archive.\n * @throws IOException on error\n * @throws ClassCastException if archiveEntry is not an instance of TarArchiveEntry\n */\n@Override public void putArchiveEntry(ArchiveEntry archiveEntry) throws IOException {\n  if (finished) {\n    throw new IOException(\"Stream has already been finished\");\n  }\n  TarArchiveEntry entry=(TarArchiveEntry)archiveEntry;\n  Map<String,String> paxHeaders=new HashMap<String,String>();\n  final String entryName=entry.getName();\n  final ByteBuffer encodedName=encoding.encode(entryName);\n  final int nameLen=encodedName.limit() - encodedName.position();\n  boolean paxHeaderContainsPath=false;\n  if (nameLen >= TarConstants.NAMELEN) {\n    if (longFileMode == LONGFILE_POSIX) {\n      paxHeaders.put(\"path\",entryName);\n      paxHeaderContainsPath=true;\n    }\n else     if (longFileMode == LONGFILE_GNU) {\n      TarArchiveEntry longLinkEntry=new TarArchiveEntry(TarConstants.GNU_LONGLINK,TarConstants.LF_GNUTYPE_LONGNAME);\n      longLinkEntry.setSize(nameLen + 1);\n      putArchiveEntry(longLinkEntry);\n      write(encodedName.array(),encodedName.arrayOffset(),nameLen);\n      write(0);\n      closeArchiveEntry();\n    }\n else     if (longFileMode != LONGFILE_TRUNCATE) {\n      throw new RuntimeException(\"file name '\" + entryName + \"' is too long ( > \"+ TarConstants.NAMELEN+ \" bytes)\");\n    }\n  }\n  if (bigNumberMode == BIGNUMBER_POSIX) {\n    addPaxHeadersForBigNumbers(paxHeaders,entry);\n  }\n else   if (bigNumberMode != BIGNUMBER_STAR) {\n    failForBigNumbers(entry);\n  }\n  if (addPaxHeadersForNonAsciiNames && !paxHeaderContainsPath && !ASCII.canEncode(entryName)) {\n    paxHeaders.put(\"path\",entryName);\n  }\n  if (addPaxHeadersForNonAsciiNames && (entry.isLink() || entry.isSymbolicLink()) && !ASCII.canEncode(entry.getLinkName())) {\n    paxHeaders.put(\"linkpath\",entry.getLinkName());\n  }\n  if (paxHeaders.size() > 0) {\n    writePaxHeaders(entryName,paxHeaders);\n  }\n  entry.writeEntryHeader(recordBuf,encoding,bigNumberMode == BIGNUMBER_STAR);\n  writeRecord(recordBuf);\n  currBytes=0;\n  if (entry.isDirectory()) {\n    currSize=0;\n  }\n else {\n    currSize=entry.getSize();\n  }\n  currName=entryName;\n  haveUnclosedEntry=true;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 287,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 27,
+        "startLineNumber" : 330,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 330,
+        "endColumnNumber" : 39
+      },
+      "nodeContext" : "currSize=entry.getSize();\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.tar.TarArchiveEntry"
+  } ],
+  "positionList" : [ {
+    "charLength" : 5,
+    "startLineNumber" : 273,
+    "startColumnNumber" : 33,
+    "endLineNumber" : 273,
+    "endColumnNumber" : 38
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 301,
+    "startColumnNumber" : 51,
+    "endLineNumber" : 301,
+    "endColumnNumber" : 56
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 303,
+    "startColumnNumber" : 30,
+    "endLineNumber" : 303,
+    "endColumnNumber" : 35
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 312,
+    "startColumnNumber" : 16,
+    "endLineNumber" : 312,
+    "endColumnNumber" : 21
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 312,
+    "startColumnNumber" : 34,
+    "endLineNumber" : 312,
+    "endColumnNumber" : 39
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 313,
+    "startColumnNumber" : 32,
+    "endLineNumber" : 313,
+    "endColumnNumber" : 37
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 314,
+    "startColumnNumber" : 39,
+    "endLineNumber" : 314,
+    "endColumnNumber" : 44
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 321,
+    "startColumnNumber" : 8,
+    "endLineNumber" : 321,
+    "endColumnNumber" : 13
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 327,
+    "startColumnNumber" : 12,
+    "endLineNumber" : 327,
+    "endColumnNumber" : 17
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 330,
+    "startColumnNumber" : 23,
+    "endLineNumber" : 330,
+    "endColumnNumber" : 28
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 7,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 5,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 6,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 7,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 8,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 9,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 3,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 4,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 5,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 6,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 7,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 8,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 9,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 4,
+    "layout" : 1
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 6,
+    "layout" : 4
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 7,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 8,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 9,
+    "layout" : 5
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 3,
+    "layout" : 1
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 6,
+    "layout" : 4
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 7,
+    "layout" : 5
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 8,
+    "layout" : 5
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 9,
+    "layout" : 5
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 6,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 7,
+    "layout" : 5
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 8,
+    "layout" : 5
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 9,
+    "layout" : 5
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 5,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 7,
+    "layout" : 5
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 8,
+    "layout" : 5
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 9,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 0,
+    "layout" : 2
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 2,
+    "layout" : 2
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 4,
+    "layout" : 2
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 5,
+    "layout" : 2
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 6,
+    "layout" : 2
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 8,
+    "layout" : 2
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 9,
+    "layout" : 2
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 0,
+    "layout" : 2
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 2,
+    "layout" : 2
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 4,
+    "layout" : 2
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 5,
+    "layout" : 2
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 6,
+    "layout" : 2
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 7,
+    "layout" : 2
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 9,
+    "layout" : 1
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 3,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 4,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 5,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 6,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 7,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 8,
+    "layout" : 4
+  } ]
+}

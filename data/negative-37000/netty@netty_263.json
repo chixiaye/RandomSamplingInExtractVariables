@@ -1,0 +1,100 @@
+{
+  "id" : 263,
+  "expression" : "GET.equals(request.method())",
+  "projectName" : "netty@netty",
+  "commitID" : "8a68c3e58d4663ae42e41a90d0d11aec3c25016b",
+  "filePath" : "/example/src/main/java/io/netty/example/http/file/HttpStaticFileServerHandler.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "GET.equals(request.method())",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 28,
+      "startLineNumber" : 129,
+      "startColumnNumber" : 13,
+      "endLineNumber" : 129,
+      "endColumnNumber" : 41
+    },
+    "astNodeNumber" : 6,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 29,
+        "startLineNumber" : 129,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 129,
+        "endColumnNumber" : 41
+      },
+      "nodeContext" : "!GET.equals(request.method())",
+      "nodeType" : "PrefixExpression",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 117,
+        "startLineNumber" : 129,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 132,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (!GET.equals(request.method())) {\n  sendError(ctx,METHOD_NOT_ALLOWED);\n  return;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3866,
+        "startLineNumber" : 122,
+        "startColumnNumber" : 101,
+        "endLineNumber" : 224,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  this.request=request;\n  if (!request.decoderResult().isSuccess()) {\n    sendError(ctx,BAD_REQUEST);\n    return;\n  }\n  if (!GET.equals(request.method())) {\n    sendError(ctx,METHOD_NOT_ALLOWED);\n    return;\n  }\n  final boolean keepAlive=HttpUtil.isKeepAlive(request);\n  final String uri=request.uri();\n  final String path=sanitizeUri(uri);\n  if (path == null) {\n    sendError(ctx,FORBIDDEN);\n    return;\n  }\n  File file=new File(path);\n  if (file.isHidden() || !file.exists()) {\n    sendError(ctx,NOT_FOUND);\n    return;\n  }\n  if (file.isDirectory()) {\n    if (uri.endsWith(\"/\")) {\n      sendListing(ctx,file,uri);\n    }\n else {\n      sendRedirect(ctx,uri + '/');\n    }\n    return;\n  }\n  if (!file.isFile()) {\n    sendError(ctx,FORBIDDEN);\n    return;\n  }\n  String ifModifiedSince=request.headers().get(HttpHeaderNames.IF_MODIFIED_SINCE);\n  if (ifModifiedSince != null && !ifModifiedSince.isEmpty()) {\n    SimpleDateFormat dateFormatter=new SimpleDateFormat(HTTP_DATE_FORMAT,Locale.US);\n    Date ifModifiedSinceDate=dateFormatter.parse(ifModifiedSince);\n    long ifModifiedSinceDateSeconds=ifModifiedSinceDate.getTime() / 1000;\n    long fileLastModifiedSeconds=file.lastModified() / 1000;\n    if (ifModifiedSinceDateSeconds == fileLastModifiedSeconds) {\n      sendNotModified(ctx);\n      return;\n    }\n  }\n  RandomAccessFile raf;\n  try {\n    raf=new RandomAccessFile(file,\"r\");\n  }\n catch (  FileNotFoundException ignore) {\n    sendError(ctx,NOT_FOUND);\n    return;\n  }\n  long fileLength=raf.length();\n  HttpResponse response=new DefaultHttpResponse(HTTP_1_1,OK);\n  HttpUtil.setContentLength(response,fileLength);\n  setContentTypeHeader(response,file);\n  setDateAndCacheHeaders(response,file);\n  if (!keepAlive) {\n    response.headers().set(HttpHeaderNames.CONNECTION,HttpHeaderValues.CLOSE);\n  }\n else   if (request.protocolVersion().equals(HTTP_1_0)) {\n    response.headers().set(HttpHeaderNames.CONNECTION,HttpHeaderValues.KEEP_ALIVE);\n  }\n  ctx.write(response);\n  Future<Void> sendFileFuture;\n  Future<Void> lastContentFuture;\n  if (ctx.pipeline().get(SslHandler.class) == null) {\n    sendFileFuture=ctx.write(new DefaultFileRegion(raf.getChannel(),0,fileLength));\n    lastContentFuture=ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);\n  }\n else {\n    sendFileFuture=ctx.writeAndFlush(new HttpChunkedInput(new ChunkedFile(raf,0,fileLength,8192)));\n    lastContentFuture=sendFileFuture;\n  }\n  sendFileFuture.addListener(ctx.channel(),(channel,future) -> System.err.println(channel + \" Transfer complete.\"));\n  if (!keepAlive) {\n    lastContentFuture.addListener(ctx,ChannelFutureListeners.CLOSE);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 414,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3978,
+        "startLineNumber" : 121,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 224,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public void messageReceived(ChannelHandlerContext ctx,FullHttpRequest request) throws Exception {\n  this.request=request;\n  if (!request.decoderResult().isSuccess()) {\n    sendError(ctx,BAD_REQUEST);\n    return;\n  }\n  if (!GET.equals(request.method())) {\n    sendError(ctx,METHOD_NOT_ALLOWED);\n    return;\n  }\n  final boolean keepAlive=HttpUtil.isKeepAlive(request);\n  final String uri=request.uri();\n  final String path=sanitizeUri(uri);\n  if (path == null) {\n    sendError(ctx,FORBIDDEN);\n    return;\n  }\n  File file=new File(path);\n  if (file.isHidden() || !file.exists()) {\n    sendError(ctx,NOT_FOUND);\n    return;\n  }\n  if (file.isDirectory()) {\n    if (uri.endsWith(\"/\")) {\n      sendListing(ctx,file,uri);\n    }\n else {\n      sendRedirect(ctx,uri + '/');\n    }\n    return;\n  }\n  if (!file.isFile()) {\n    sendError(ctx,FORBIDDEN);\n    return;\n  }\n  String ifModifiedSince=request.headers().get(HttpHeaderNames.IF_MODIFIED_SINCE);\n  if (ifModifiedSince != null && !ifModifiedSince.isEmpty()) {\n    SimpleDateFormat dateFormatter=new SimpleDateFormat(HTTP_DATE_FORMAT,Locale.US);\n    Date ifModifiedSinceDate=dateFormatter.parse(ifModifiedSince);\n    long ifModifiedSinceDateSeconds=ifModifiedSinceDate.getTime() / 1000;\n    long fileLastModifiedSeconds=file.lastModified() / 1000;\n    if (ifModifiedSinceDateSeconds == fileLastModifiedSeconds) {\n      sendNotModified(ctx);\n      return;\n    }\n  }\n  RandomAccessFile raf;\n  try {\n    raf=new RandomAccessFile(file,\"r\");\n  }\n catch (  FileNotFoundException ignore) {\n    sendError(ctx,NOT_FOUND);\n    return;\n  }\n  long fileLength=raf.length();\n  HttpResponse response=new DefaultHttpResponse(HTTP_1_1,OK);\n  HttpUtil.setContentLength(response,fileLength);\n  setContentTypeHeader(response,file);\n  setDateAndCacheHeaders(response,file);\n  if (!keepAlive) {\n    response.headers().set(HttpHeaderNames.CONNECTION,HttpHeaderValues.CLOSE);\n  }\n else   if (request.protocolVersion().equals(HTTP_1_0)) {\n    response.headers().set(HttpHeaderNames.CONNECTION,HttpHeaderValues.KEEP_ALIVE);\n  }\n  ctx.write(response);\n  Future<Void> sendFileFuture;\n  Future<Void> lastContentFuture;\n  if (ctx.pipeline().get(SslHandler.class) == null) {\n    sendFileFuture=ctx.write(new DefaultFileRegion(raf.getChannel(),0,fileLength));\n    lastContentFuture=ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);\n  }\n else {\n    sendFileFuture=ctx.writeAndFlush(new HttpChunkedInput(new ChunkedFile(raf,0,fileLength,8192)));\n    lastContentFuture=sendFileFuture;\n  }\n  sendFileFuture.addListener(ctx.channel(),(channel,future) -> System.err.println(channel + \" Transfer complete.\"));\n  if (!keepAlive) {\n    lastContentFuture.addListener(ctx,ChannelFutureListeners.CLOSE);\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 430,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 29,
+        "startLineNumber" : 129,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 129,
+        "endColumnNumber" : 41
+      },
+      "nodeContext" : "!GET.equals(request.method())",
+      "nodeType" : "PrefixExpression",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    },
+    "tokenLength" : 4,
+    "type" : "boolean"
+  } ],
+  "positionList" : [ {
+    "charLength" : 28,
+    "startLineNumber" : 129,
+    "startColumnNumber" : 13,
+    "endLineNumber" : 129,
+    "endColumnNumber" : 41
+  } ],
+  "layoutRelationDataList" : [ ]
+}

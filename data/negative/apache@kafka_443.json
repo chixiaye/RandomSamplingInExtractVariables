@@ -1,100 +1,195 @@
 {
   "id" : 443,
-  "expression" : "type",
+  "expression" : "streamsConfiguration()",
   "projectName" : "apache@kafka",
-  "commitID" : "539f006e65d9060cd46a4052d1b70f2312d8ca34",
-  "filePath" : "/connect/runtime/src/main/java/org/apache/kafka/connect/runtime/rest/entities/ConnectorStateInfo.java",
-  "occurrences" : 1,
+  "commitID" : "265d3199ec741928c1731397302f6c320cf6af40",
+  "filePath" : "streams/src/test/java/org/apache/kafka/streams/integration/StoreQueryIntegrationTest.java",
+  "occurrences" : 2,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "type",
-    "nodeType" : "SimpleName",
+    "nodeContext" : "streamsConfiguration()",
+    "nodeType" : "MethodInvocation",
     "nodePosition" : {
-      "charLength" : 4,
-      "startLineNumber" : 41,
-      "startColumnNumber" : 20,
-      "endLineNumber" : 41,
-      "endColumnNumber" : 24
+      "charLength" : 22,
+      "startLineNumber" : 403,
+      "startColumnNumber" : 49,
+      "endLineNumber" : 403,
+      "endColumnNumber" : 71
     },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
+    "astNodeNumber" : 2,
+    "astHeight" : 2,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
       "nodePosition" : {
-        "charLength" : 16,
-        "startLineNumber" : 41,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 41,
-        "endColumnNumber" : 24
+        "charLength" : 46,
+        "startLineNumber" : 403,
+        "startColumnNumber" : 25,
+        "endLineNumber" : 403,
+        "endColumnNumber" : 71
       },
-      "nodeContext" : "this.type=type",
-      "nodeType" : "Assignment",
-      "astNodeNumber" : 5,
+      "nodeContext" : "streamsConfiguration1=streamsConfiguration()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 4,
       "astHeight" : 3
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 17,
-        "startLineNumber" : 41,
+        "charLength" : 64,
+        "startLineNumber" : 403,
         "startColumnNumber" : 8,
-        "endLineNumber" : 41,
-        "endColumnNumber" : 25
+        "endLineNumber" : 403,
+        "endColumnNumber" : 72
       },
-      "nodeContext" : "this.type=type;\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 6,
+      "nodeContext" : "final Properties streamsConfiguration1=streamsConfiguration();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 8,
       "astHeight" : 4
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 123,
-        "startLineNumber" : 37,
-        "startColumnNumber" : 72,
-        "endLineNumber" : 42,
+        "charLength" : 3803,
+        "startLineNumber" : 397,
+        "startColumnNumber" : 106,
+        "endLineNumber" : 465,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  this.name=name;\n  this.connector=connector;\n  this.tasks=tasks;\n  this.type=type;\n}\n",
+      "nodeContext" : "{\n  final int batch1NumMessages=100;\n  final int key=1;\n  final Semaphore semaphore=new Semaphore(0);\n  final int numStreamThreads=2;\n  final Properties streamsConfiguration1=streamsConfiguration();\n  streamsConfiguration1.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG,numStreamThreads);\n  final Properties streamsConfiguration2=streamsConfiguration();\n  streamsConfiguration2.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG,numStreamThreads);\n  final String topologyA=\"topology-A\";\n  final KafkaStreamsNamedTopologyWrapper kafkaStreams1=createNamedTopologyKafkaStreams(streamsConfiguration1);\n  final KafkaStreamsNamedTopologyWrapper kafkaStreams2=createNamedTopologyKafkaStreams(streamsConfiguration2);\n  final List<KafkaStreams> kafkaStreamsList=Arrays.asList(kafkaStreams1,kafkaStreams2);\n  final NamedTopologyBuilder builder1A=kafkaStreams1.newNamedTopologyBuilder(topologyA,streamsConfiguration1);\n  getStreamsBuilderWithTopology(builder1A,semaphore);\n  final NamedTopologyBuilder builder2A=kafkaStreams2.newNamedTopologyBuilder(topologyA,streamsConfiguration2);\n  getStreamsBuilderWithTopology(builder2A,semaphore);\n  kafkaStreams1.start(builder1A.build());\n  kafkaStreams2.start(builder2A.build());\n  waitForApplicationState(kafkaStreamsList,State.RUNNING,Duration.ofSeconds(60));\n  assertTrue(kafkaStreams1.metadataForLocalThreads().size() > 1);\n  assertTrue(kafkaStreams2.metadataForLocalThreads().size() > 1);\n  produceValueRange(key,0,batch1NumMessages);\n  assertThat(semaphore.tryAcquire(batch1NumMessages,60,TimeUnit.SECONDS),is(equalTo(true)));\n  final KeyQueryMetadata keyQueryMetadata=kafkaStreams1.queryMetadataForKey(TABLE_NAME,key,new IntegerSerializer(),topologyA);\n  final int keyPartition=keyQueryMetadata.partition();\n  final int keyDontBelongPartition=(keyPartition == 0) ? 1 : 0;\n  final QueryableStoreType<ReadOnlyKeyValueStore<Integer,Integer>> queryableStoreType=keyValueStore();\n  final NamedTopologyStoreQueryParameters<ReadOnlyKeyValueStore<Integer,Integer>> param=NamedTopologyStoreQueryParameters.fromNamedTopologyAndStoreNameAndType(topologyA,TABLE_NAME,queryableStoreType).enableStaleStores().withPartition(keyPartition);\n  TestUtils.waitForCondition(() -> {\n    final ReadOnlyKeyValueStore<Integer,Integer> store1=getStore(kafkaStreams1,param);\n    return store1.get(key) != null;\n  }\n,\"store1 cannot find results for key\");\n  TestUtils.waitForCondition(() -> {\n    final ReadOnlyKeyValueStore<Integer,Integer> store2=getStore(kafkaStreams2,param);\n    return store2.get(key) != null;\n  }\n,\"store2 cannot find results for key\");\n  final NamedTopologyStoreQueryParameters<ReadOnlyKeyValueStore<Integer,Integer>> otherParam=NamedTopologyStoreQueryParameters.fromNamedTopologyAndStoreNameAndType(topologyA,TABLE_NAME,queryableStoreType).enableStaleStores().withPartition(keyDontBelongPartition);\n  final ReadOnlyKeyValueStore<Integer,Integer> store3=getStore(kafkaStreams1,otherParam);\n  final ReadOnlyKeyValueStore<Integer,Integer> store4=getStore(kafkaStreams2,otherParam);\n  assertThat(store3.get(key),is(nullValue()));\n  assertThat(store4.get(key),is(nullValue()));\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 25,
-      "astHeight" : 5
+      "astNodeNumber" : 410,
+      "astHeight" : 9
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 432,
-        "startLineNumber" : 33,
+        "charLength" : 3915,
+        "startLineNumber" : 396,
         "startColumnNumber" : 4,
-        "endLineNumber" : 42,
+        "endLineNumber" : 465,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "@JsonCreator public ConnectorStateInfo(@JsonProperty(\"name\") String name,@JsonProperty(\"connector\") ConnectorState connector,@JsonProperty(\"tasks\") List<TaskState> tasks,@JsonProperty(\"type\") ConnectorType type){\n  this.name=name;\n  this.connector=connector;\n  this.tasks=tasks;\n  this.type=type;\n}\n",
+      "nodeContext" : "@Test public void shouldQuerySpecificStalePartitionStoresMultiStreamThreadsNamedTopology() throws Exception {\n  final int batch1NumMessages=100;\n  final int key=1;\n  final Semaphore semaphore=new Semaphore(0);\n  final int numStreamThreads=2;\n  final Properties streamsConfiguration1=streamsConfiguration();\n  streamsConfiguration1.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG,numStreamThreads);\n  final Properties streamsConfiguration2=streamsConfiguration();\n  streamsConfiguration2.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG,numStreamThreads);\n  final String topologyA=\"topology-A\";\n  final KafkaStreamsNamedTopologyWrapper kafkaStreams1=createNamedTopologyKafkaStreams(streamsConfiguration1);\n  final KafkaStreamsNamedTopologyWrapper kafkaStreams2=createNamedTopologyKafkaStreams(streamsConfiguration2);\n  final List<KafkaStreams> kafkaStreamsList=Arrays.asList(kafkaStreams1,kafkaStreams2);\n  final NamedTopologyBuilder builder1A=kafkaStreams1.newNamedTopologyBuilder(topologyA,streamsConfiguration1);\n  getStreamsBuilderWithTopology(builder1A,semaphore);\n  final NamedTopologyBuilder builder2A=kafkaStreams2.newNamedTopologyBuilder(topologyA,streamsConfiguration2);\n  getStreamsBuilderWithTopology(builder2A,semaphore);\n  kafkaStreams1.start(builder1A.build());\n  kafkaStreams2.start(builder2A.build());\n  waitForApplicationState(kafkaStreamsList,State.RUNNING,Duration.ofSeconds(60));\n  assertTrue(kafkaStreams1.metadataForLocalThreads().size() > 1);\n  assertTrue(kafkaStreams2.metadataForLocalThreads().size() > 1);\n  produceValueRange(key,0,batch1NumMessages);\n  assertThat(semaphore.tryAcquire(batch1NumMessages,60,TimeUnit.SECONDS),is(equalTo(true)));\n  final KeyQueryMetadata keyQueryMetadata=kafkaStreams1.queryMetadataForKey(TABLE_NAME,key,new IntegerSerializer(),topologyA);\n  final int keyPartition=keyQueryMetadata.partition();\n  final int keyDontBelongPartition=(keyPartition == 0) ? 1 : 0;\n  final QueryableStoreType<ReadOnlyKeyValueStore<Integer,Integer>> queryableStoreType=keyValueStore();\n  final NamedTopologyStoreQueryParameters<ReadOnlyKeyValueStore<Integer,Integer>> param=NamedTopologyStoreQueryParameters.fromNamedTopologyAndStoreNameAndType(topologyA,TABLE_NAME,queryableStoreType).enableStaleStores().withPartition(keyPartition);\n  TestUtils.waitForCondition(() -> {\n    final ReadOnlyKeyValueStore<Integer,Integer> store1=getStore(kafkaStreams1,param);\n    return store1.get(key) != null;\n  }\n,\"store1 cannot find results for key\");\n  TestUtils.waitForCondition(() -> {\n    final ReadOnlyKeyValueStore<Integer,Integer> store2=getStore(kafkaStreams2,param);\n    return store2.get(key) != null;\n  }\n,\"store2 cannot find results for key\");\n  final NamedTopologyStoreQueryParameters<ReadOnlyKeyValueStore<Integer,Integer>> otherParam=NamedTopologyStoreQueryParameters.fromNamedTopologyAndStoreNameAndType(topologyA,TABLE_NAME,queryableStoreType).enableStaleStores().withPartition(keyDontBelongPartition);\n  final ReadOnlyKeyValueStore<Integer,Integer> store3=getStore(kafkaStreams1,otherParam);\n  final ReadOnlyKeyValueStore<Integer,Integer> store4=getStore(kafkaStreams2,otherParam);\n  assertThat(store3.get(key),is(nullValue()));\n  assertThat(store4.get(key),is(nullValue()));\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 61,
-      "astHeight" : 6
+      "astNodeNumber" : 418,
+      "astHeight" : 10
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 17,
-        "startLineNumber" : 41,
+        "charLength" : 64,
+        "startLineNumber" : 403,
         "startColumnNumber" : 8,
-        "endLineNumber" : 41,
-        "endColumnNumber" : 25
+        "endLineNumber" : 403,
+        "endColumnNumber" : 72
       },
-      "nodeContext" : "this.type=type;\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 6,
+      "nodeContext" : "final Properties streamsConfiguration1=streamsConfiguration();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 8,
       "astHeight" : 4
     },
     "tokenLength" : 1,
-    "type" : "org.apache.kafka.connect.runtime.rest.entities.ConnectorType"
+    "type" : "java.util.Properties"
+  }, {
+    "nodeContext" : "streamsConfiguration()",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 22,
+      "startLineNumber" : 406,
+      "startColumnNumber" : 49,
+      "endLineNumber" : 406,
+      "endColumnNumber" : 71
+    },
+    "astNodeNumber" : 2,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 46,
+        "startLineNumber" : 406,
+        "startColumnNumber" : 25,
+        "endLineNumber" : 406,
+        "endColumnNumber" : 71
+      },
+      "nodeContext" : "streamsConfiguration2=streamsConfiguration()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 4,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 64,
+        "startLineNumber" : 406,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 406,
+        "endColumnNumber" : 72
+      },
+      "nodeContext" : "final Properties streamsConfiguration2=streamsConfiguration();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3803,
+        "startLineNumber" : 397,
+        "startColumnNumber" : 106,
+        "endLineNumber" : 465,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final int batch1NumMessages=100;\n  final int key=1;\n  final Semaphore semaphore=new Semaphore(0);\n  final int numStreamThreads=2;\n  final Properties streamsConfiguration1=streamsConfiguration();\n  streamsConfiguration1.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG,numStreamThreads);\n  final Properties streamsConfiguration2=streamsConfiguration();\n  streamsConfiguration2.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG,numStreamThreads);\n  final String topologyA=\"topology-A\";\n  final KafkaStreamsNamedTopologyWrapper kafkaStreams1=createNamedTopologyKafkaStreams(streamsConfiguration1);\n  final KafkaStreamsNamedTopologyWrapper kafkaStreams2=createNamedTopologyKafkaStreams(streamsConfiguration2);\n  final List<KafkaStreams> kafkaStreamsList=Arrays.asList(kafkaStreams1,kafkaStreams2);\n  final NamedTopologyBuilder builder1A=kafkaStreams1.newNamedTopologyBuilder(topologyA,streamsConfiguration1);\n  getStreamsBuilderWithTopology(builder1A,semaphore);\n  final NamedTopologyBuilder builder2A=kafkaStreams2.newNamedTopologyBuilder(topologyA,streamsConfiguration2);\n  getStreamsBuilderWithTopology(builder2A,semaphore);\n  kafkaStreams1.start(builder1A.build());\n  kafkaStreams2.start(builder2A.build());\n  waitForApplicationState(kafkaStreamsList,State.RUNNING,Duration.ofSeconds(60));\n  assertTrue(kafkaStreams1.metadataForLocalThreads().size() > 1);\n  assertTrue(kafkaStreams2.metadataForLocalThreads().size() > 1);\n  produceValueRange(key,0,batch1NumMessages);\n  assertThat(semaphore.tryAcquire(batch1NumMessages,60,TimeUnit.SECONDS),is(equalTo(true)));\n  final KeyQueryMetadata keyQueryMetadata=kafkaStreams1.queryMetadataForKey(TABLE_NAME,key,new IntegerSerializer(),topologyA);\n  final int keyPartition=keyQueryMetadata.partition();\n  final int keyDontBelongPartition=(keyPartition == 0) ? 1 : 0;\n  final QueryableStoreType<ReadOnlyKeyValueStore<Integer,Integer>> queryableStoreType=keyValueStore();\n  final NamedTopologyStoreQueryParameters<ReadOnlyKeyValueStore<Integer,Integer>> param=NamedTopologyStoreQueryParameters.fromNamedTopologyAndStoreNameAndType(topologyA,TABLE_NAME,queryableStoreType).enableStaleStores().withPartition(keyPartition);\n  TestUtils.waitForCondition(() -> {\n    final ReadOnlyKeyValueStore<Integer,Integer> store1=getStore(kafkaStreams1,param);\n    return store1.get(key) != null;\n  }\n,\"store1 cannot find results for key\");\n  TestUtils.waitForCondition(() -> {\n    final ReadOnlyKeyValueStore<Integer,Integer> store2=getStore(kafkaStreams2,param);\n    return store2.get(key) != null;\n  }\n,\"store2 cannot find results for key\");\n  final NamedTopologyStoreQueryParameters<ReadOnlyKeyValueStore<Integer,Integer>> otherParam=NamedTopologyStoreQueryParameters.fromNamedTopologyAndStoreNameAndType(topologyA,TABLE_NAME,queryableStoreType).enableStaleStores().withPartition(keyDontBelongPartition);\n  final ReadOnlyKeyValueStore<Integer,Integer> store3=getStore(kafkaStreams1,otherParam);\n  final ReadOnlyKeyValueStore<Integer,Integer> store4=getStore(kafkaStreams2,otherParam);\n  assertThat(store3.get(key),is(nullValue()));\n  assertThat(store4.get(key),is(nullValue()));\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 410,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3915,
+        "startLineNumber" : 396,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 465,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test public void shouldQuerySpecificStalePartitionStoresMultiStreamThreadsNamedTopology() throws Exception {\n  final int batch1NumMessages=100;\n  final int key=1;\n  final Semaphore semaphore=new Semaphore(0);\n  final int numStreamThreads=2;\n  final Properties streamsConfiguration1=streamsConfiguration();\n  streamsConfiguration1.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG,numStreamThreads);\n  final Properties streamsConfiguration2=streamsConfiguration();\n  streamsConfiguration2.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG,numStreamThreads);\n  final String topologyA=\"topology-A\";\n  final KafkaStreamsNamedTopologyWrapper kafkaStreams1=createNamedTopologyKafkaStreams(streamsConfiguration1);\n  final KafkaStreamsNamedTopologyWrapper kafkaStreams2=createNamedTopologyKafkaStreams(streamsConfiguration2);\n  final List<KafkaStreams> kafkaStreamsList=Arrays.asList(kafkaStreams1,kafkaStreams2);\n  final NamedTopologyBuilder builder1A=kafkaStreams1.newNamedTopologyBuilder(topologyA,streamsConfiguration1);\n  getStreamsBuilderWithTopology(builder1A,semaphore);\n  final NamedTopologyBuilder builder2A=kafkaStreams2.newNamedTopologyBuilder(topologyA,streamsConfiguration2);\n  getStreamsBuilderWithTopology(builder2A,semaphore);\n  kafkaStreams1.start(builder1A.build());\n  kafkaStreams2.start(builder2A.build());\n  waitForApplicationState(kafkaStreamsList,State.RUNNING,Duration.ofSeconds(60));\n  assertTrue(kafkaStreams1.metadataForLocalThreads().size() > 1);\n  assertTrue(kafkaStreams2.metadataForLocalThreads().size() > 1);\n  produceValueRange(key,0,batch1NumMessages);\n  assertThat(semaphore.tryAcquire(batch1NumMessages,60,TimeUnit.SECONDS),is(equalTo(true)));\n  final KeyQueryMetadata keyQueryMetadata=kafkaStreams1.queryMetadataForKey(TABLE_NAME,key,new IntegerSerializer(),topologyA);\n  final int keyPartition=keyQueryMetadata.partition();\n  final int keyDontBelongPartition=(keyPartition == 0) ? 1 : 0;\n  final QueryableStoreType<ReadOnlyKeyValueStore<Integer,Integer>> queryableStoreType=keyValueStore();\n  final NamedTopologyStoreQueryParameters<ReadOnlyKeyValueStore<Integer,Integer>> param=NamedTopologyStoreQueryParameters.fromNamedTopologyAndStoreNameAndType(topologyA,TABLE_NAME,queryableStoreType).enableStaleStores().withPartition(keyPartition);\n  TestUtils.waitForCondition(() -> {\n    final ReadOnlyKeyValueStore<Integer,Integer> store1=getStore(kafkaStreams1,param);\n    return store1.get(key) != null;\n  }\n,\"store1 cannot find results for key\");\n  TestUtils.waitForCondition(() -> {\n    final ReadOnlyKeyValueStore<Integer,Integer> store2=getStore(kafkaStreams2,param);\n    return store2.get(key) != null;\n  }\n,\"store2 cannot find results for key\");\n  final NamedTopologyStoreQueryParameters<ReadOnlyKeyValueStore<Integer,Integer>> otherParam=NamedTopologyStoreQueryParameters.fromNamedTopologyAndStoreNameAndType(topologyA,TABLE_NAME,queryableStoreType).enableStaleStores().withPartition(keyDontBelongPartition);\n  final ReadOnlyKeyValueStore<Integer,Integer> store3=getStore(kafkaStreams1,otherParam);\n  final ReadOnlyKeyValueStore<Integer,Integer> store4=getStore(kafkaStreams2,otherParam);\n  assertThat(store3.get(key),is(nullValue()));\n  assertThat(store4.get(key),is(nullValue()));\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 418,
+      "astHeight" : 10
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 64,
+        "startLineNumber" : 406,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 406,
+        "endColumnNumber" : 72
+      },
+      "nodeContext" : "final Properties streamsConfiguration2=streamsConfiguration();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "java.util.Properties"
   } ],
   "positionList" : [ {
-    "charLength" : 4,
-    "startLineNumber" : 41,
-    "startColumnNumber" : 20,
-    "endLineNumber" : 41,
-    "endColumnNumber" : 24
+    "charLength" : 22,
+    "startLineNumber" : 403,
+    "startColumnNumber" : 49,
+    "endLineNumber" : 403,
+    "endColumnNumber" : 71
+  }, {
+    "charLength" : 22,
+    "startLineNumber" : 406,
+    "startColumnNumber" : 49,
+    "endLineNumber" : 406,
+    "endColumnNumber" : 71
   } ],
-  "layoutRelationDataList" : [ ]
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 2
+  } ]
 }

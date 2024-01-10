@@ -1,0 +1,113 @@
+{
+  "id" : 100,
+  "expression" : "\"FetcherThread\"",
+  "projectName" : "apache@flink",
+  "commitID" : "f8cb19e70ca7da6423dfb01b97e05c4d520c9fde",
+  "filePath" : "/flink-connectors/flink-connector-base/src/test/java/org/apache/flink/connector/base/source/reader/fetcher/SplitFetcherTest.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "\"FetcherThread\"",
+    "nodeType" : "StringLiteral",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 201,
+      "startColumnNumber" : 51,
+      "endLineNumber" : 201,
+      "endColumnNumber" : 66
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 36,
+        "startLineNumber" : 201,
+        "startColumnNumber" : 31,
+        "endLineNumber" : 201,
+        "endColumnNumber" : 67
+      },
+      "nodeContext" : "new Thread(fetcher,\"FetcherThread\")",
+      "nodeType" : "ClassInstanceCreation",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 52,
+        "startLineNumber" : 201,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 201,
+        "endColumnNumber" : 67
+      },
+      "nodeContext" : "fetcherThread=new Thread(fetcher,\"FetcherThread\")",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 60,
+        "startLineNumber" : 201,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 201,
+        "endColumnNumber" : 68
+      },
+      "nodeContext" : "Thread fetcherThread=new Thread(fetcher,\"FetcherThread\");\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3321,
+        "startLineNumber" : 168,
+        "startColumnNumber" : 57,
+        "endLineNumber" : 248,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final int numSplits=3;\n  final int numRecordsPerSplit=10_000;\n  final int wakeupRecordsInterval=10;\n  final int numTotalRecords=numRecordsPerSplit * numSplits;\n  FutureCompletingBlockingQueue<RecordsWithSplitIds<int[]>> elementQueue=new FutureCompletingBlockingQueue<>(1);\n  SplitFetcher<int[],MockSourceSplit> fetcher=new SplitFetcher<>(0,elementQueue,MockSplitReader.newBuilder().setNumRecordsPerSplitPerFetch(2).setBlockingFetch(true).build(),ExceptionUtils::rethrow,() -> {\n  }\n,(ignore) -> {\n  }\n);\n  List<MockSourceSplit> splits=new ArrayList<>();\n  for (int i=0; i < numSplits; i++) {\n    splits.add(new MockSourceSplit(i,0,numRecordsPerSplit));\n    int base=i * numRecordsPerSplit;\n    for (int j=base; j < base + numRecordsPerSplit; j++) {\n      splits.get(splits.size() - 1).addRecord(j);\n    }\n  }\n  fetcher.addSplits(splits);\n  Thread fetcherThread=new Thread(fetcher,\"FetcherThread\");\n  SortedSet<Integer> recordsRead=Collections.synchronizedSortedSet(new TreeSet<>());\n  AtomicInteger wakeupTimes=new AtomicInteger(0);\n  AtomicBoolean stop=new AtomicBoolean(false);\n  Thread wakeUpCaller=new Thread(\"Wakeup Caller\"){\n    @Override public void run(){\n      int lastWakeup=0;\n      while (recordsRead.size() < numTotalRecords && !stop.get()) {\n        int numRecordsRead=recordsRead.size();\n        if (numRecordsRead >= lastWakeup + wakeupRecordsInterval) {\n          fetcher.wakeUp(false);\n          wakeupTimes.incrementAndGet();\n          lastWakeup=numRecordsRead;\n        }\n      }\n    }\n  }\n;\n  try {\n    fetcherThread.start();\n    wakeUpCaller.start();\n    while (recordsRead.size() < numSplits * numRecordsPerSplit) {\n      final RecordsWithSplitIds<int[]> nextBatch=elementQueue.take();\n      while (nextBatch.nextSplit() != null) {\n        int[] arr;\n        while ((arr=nextBatch.nextRecordFromSplit()) != null) {\n          assertTrue(recordsRead.add(arr[0]));\n        }\n      }\n    }\n    assertEquals(numTotalRecords,recordsRead.size());\n    assertEquals(0,(int)recordsRead.first());\n    assertEquals(numTotalRecords - 1,(int)recordsRead.last());\n    assertTrue(wakeupTimes.get() > 0);\n  }\n  finally {\n    stop.set(true);\n    fetcher.shutdown();\n    fetcherThread.join();\n    wakeUpCaller.join();\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 374,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3384,
+        "startLineNumber" : 167,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 248,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test public void testWakeup() throws InterruptedException {\n  final int numSplits=3;\n  final int numRecordsPerSplit=10_000;\n  final int wakeupRecordsInterval=10;\n  final int numTotalRecords=numRecordsPerSplit * numSplits;\n  FutureCompletingBlockingQueue<RecordsWithSplitIds<int[]>> elementQueue=new FutureCompletingBlockingQueue<>(1);\n  SplitFetcher<int[],MockSourceSplit> fetcher=new SplitFetcher<>(0,elementQueue,MockSplitReader.newBuilder().setNumRecordsPerSplitPerFetch(2).setBlockingFetch(true).build(),ExceptionUtils::rethrow,() -> {\n  }\n,(ignore) -> {\n  }\n);\n  List<MockSourceSplit> splits=new ArrayList<>();\n  for (int i=0; i < numSplits; i++) {\n    splits.add(new MockSourceSplit(i,0,numRecordsPerSplit));\n    int base=i * numRecordsPerSplit;\n    for (int j=base; j < base + numRecordsPerSplit; j++) {\n      splits.get(splits.size() - 1).addRecord(j);\n    }\n  }\n  fetcher.addSplits(splits);\n  Thread fetcherThread=new Thread(fetcher,\"FetcherThread\");\n  SortedSet<Integer> recordsRead=Collections.synchronizedSortedSet(new TreeSet<>());\n  AtomicInteger wakeupTimes=new AtomicInteger(0);\n  AtomicBoolean stop=new AtomicBoolean(false);\n  Thread wakeUpCaller=new Thread(\"Wakeup Caller\"){\n    @Override public void run(){\n      int lastWakeup=0;\n      while (recordsRead.size() < numTotalRecords && !stop.get()) {\n        int numRecordsRead=recordsRead.size();\n        if (numRecordsRead >= lastWakeup + wakeupRecordsInterval) {\n          fetcher.wakeUp(false);\n          wakeupTimes.incrementAndGet();\n          lastWakeup=numRecordsRead;\n        }\n      }\n    }\n  }\n;\n  try {\n    fetcherThread.start();\n    wakeUpCaller.start();\n    while (recordsRead.size() < numSplits * numRecordsPerSplit) {\n      final RecordsWithSplitIds<int[]> nextBatch=elementQueue.take();\n      while (nextBatch.nextSplit() != null) {\n        int[] arr;\n        while ((arr=nextBatch.nextRecordFromSplit()) != null) {\n          assertTrue(recordsRead.add(arr[0]));\n        }\n      }\n    }\n    assertEquals(numTotalRecords,recordsRead.size());\n    assertEquals(0,(int)recordsRead.first());\n    assertEquals(numTotalRecords - 1,(int)recordsRead.last());\n    assertTrue(wakeupTimes.get() > 0);\n  }\n  finally {\n    stop.set(true);\n    fetcher.shutdown();\n    fetcherThread.join();\n    wakeUpCaller.join();\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 382,
+      "astHeight" : 15
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 60,
+        "startLineNumber" : 201,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 201,
+        "endColumnNumber" : 68
+      },
+      "nodeContext" : "Thread fetcherThread=new Thread(fetcher,\"FetcherThread\");\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "java.lang.String"
+  } ],
+  "positionList" : [ {
+    "charLength" : 15,
+    "startLineNumber" : 201,
+    "startColumnNumber" : 51,
+    "endLineNumber" : 201,
+    "endColumnNumber" : 66
+  } ],
+  "layoutRelationDataList" : [ ]
+}

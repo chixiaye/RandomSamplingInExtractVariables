@@ -1,113 +1,234 @@
 {
   "id" : 92,
-  "expression" : "1",
+  "expression" : "tasksToAssign",
   "projectName" : "apache@kafka",
-  "commitID" : "539f006e65d9060cd46a4052d1b70f2312d8ca34",
-  "filePath" : "/clients/src/test/java/org/apache/kafka/common/PartitionInfoTest.java",
-  "occurrences" : 1,
+  "commitID" : "e3ef29ea0300e3ed5edf5c800f914f19273c9851",
+  "filePath" : "streams/src/main/java/org/apache/kafka/streams/processor/internals/StreamsPartitionAssignor.java",
+  "occurrences" : 2,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "1",
-    "nodeType" : "NumberLiteral",
+    "nodeContext" : "tasksToAssign",
+    "nodeType" : "SimpleName",
     "nodePosition" : {
-      "charLength" : 1,
-      "startLineNumber" : 30,
-      "startColumnNumber" : 27,
-      "endLineNumber" : 30,
-      "endColumnNumber" : 28
+      "charLength" : 13,
+      "startLineNumber" : 1085,
+      "startColumnNumber" : 67,
+      "endLineNumber" : 1085,
+      "endColumnNumber" : 80
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 20,
+        "startLineNumber" : 1085,
+        "startColumnNumber" : 67,
+        "endLineNumber" : 1085,
+        "endColumnNumber" : 87
+      },
+      "nodeContext" : "tasksToAssign.size()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 71,
+        "startLineNumber" : 1085,
+        "startColumnNumber" : 31,
+        "endLineNumber" : 1085,
+        "endColumnNumber" : 102
+      },
+      "nodeContext" : "threadLoad.values().stream().reduce(tasksToAssign.size(),Integer::sum)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 13,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 84,
+        "startLineNumber" : 1085,
+        "startColumnNumber" : 18,
+        "endLineNumber" : 1085,
+        "endColumnNumber" : 102
+      },
+      "nodeContext" : "totalTasks=threadLoad.values().stream().reduce(tasksToAssign.size(),Integer::sum)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 95,
+        "startLineNumber" : 1085,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1085,
+        "endColumnNumber" : 103
+      },
+      "nodeContext" : "final int totalTasks=threadLoad.values().stream().reduce(tasksToAssign.size(),Integer::sum);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 18,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5237,
+        "startLineNumber" : 1079,
+        "startColumnNumber" : 97,
+        "endLineNumber" : 1176,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final Map<String,List<TaskId>> assignment=new HashMap<>();\n  for (  final String consumer : consumers) {\n    assignment.put(consumer,new ArrayList<>());\n  }\n  final int totalTasks=threadLoad.values().stream().reduce(tasksToAssign.size(),Integer::sum);\n  final int minTasksPerThread=(int)Math.floor(((double)totalTasks) / consumers.size());\n  final PriorityQueue<TaskId> unassignedTasks=new PriorityQueue<>(tasksToAssign);\n  final Queue<String> consumersToFill=new LinkedList<>();\n  final Map<TaskId,String> unassignedTaskToPreviousOwner=new TreeMap<>();\n  if (!unassignedTasks.isEmpty()) {\n    for (    final String consumer : consumers) {\n      final List<TaskId> threadAssignment=assignment.get(consumer);\n      final int tasksTargetCount=minTasksPerThread - threadLoad.getOrDefault(consumer,0);\n      if (isStateful) {\n        for (        final TaskId task : state.prevTasksByLag(consumer)) {\n          if (unassignedTasks.contains(task)) {\n            if (threadAssignment.size() < tasksTargetCount) {\n              threadAssignment.add(task);\n              unassignedTasks.remove(task);\n            }\n else {\n              unassignedTaskToPreviousOwner.put(task,consumer);\n            }\n          }\n        }\n      }\n      if (threadAssignment.size() < tasksTargetCount) {\n        consumersToFill.offer(consumer);\n      }\n    }\n    while (!consumersToFill.isEmpty()) {\n      final TaskId task=unassignedTasks.poll();\n      if (task != null) {\n        final String consumer=consumersToFill.poll();\n        final List<TaskId> threadAssignment=assignment.get(consumer);\n        threadAssignment.add(task);\n        final int threadTaskCount=threadAssignment.size() + threadLoad.getOrDefault(consumer,0);\n        if (threadTaskCount < minTasksPerThread) {\n          consumersToFill.offer(consumer);\n        }\n      }\n else {\n        throw new TaskAssignmentException(\"Ran out of unassigned stateful tasks but some members were not at capacity\");\n      }\n    }\n    if (!unassignedTasks.isEmpty()) {\n      for (      final String consumer : consumers) {\n        final int taskCount=assignment.get(consumer).size() + threadLoad.getOrDefault(consumer,0);\n        if (taskCount == minTasksPerThread) {\n          consumersToFill.add(consumer);\n        }\n      }\n      for (      final Map.Entry<TaskId,String> taskEntry : unassignedTaskToPreviousOwner.entrySet()) {\n        final TaskId task=taskEntry.getKey();\n        final String consumer=taskEntry.getValue();\n        if (consumersToFill.contains(consumer) && unassignedTasks.contains(task)) {\n          assignment.get(consumer).add(task);\n          unassignedTasks.remove(task);\n          consumersToFill.remove(consumer);\n        }\n      }\n      for (      final TaskId task : unassignedTasks) {\n        final String consumer=consumersToFill.poll();\n        final List<TaskId> threadAssignment=assignment.get(consumer);\n        threadAssignment.add(task);\n      }\n    }\n  }\n  for (  final Map.Entry<String,List<TaskId>> taskEntry : assignment.entrySet()) {\n    final String consumer=taskEntry.getKey();\n    final int totalCount=threadLoad.getOrDefault(consumer,0) + taskEntry.getValue().size();\n    threadLoad.put(consumer,totalCount);\n  }\n  return assignment;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 479,
+      "astHeight" : 16
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 6276,
+        "startLineNumber" : 1067,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1176,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Generate an assignment that tries to preserve thread-level stickiness for stateful tasks without violating balance. The tasks are balanced across threads. Stateful tasks without previous owners will be interleaved by group id to spread subtopologies across threads and further balance the workload. Stateless tasks are simply spread across threads without taking into account previous ownership. threadLoad is a map that keeps track of task load per thread across multiple calls so active and standby tasks are evenly distributed\n */\nstatic Map<String,List<TaskId>> assignTasksToThreads(final Collection<TaskId> tasksToAssign,final boolean isStateful,final SortedSet<String> consumers,final ClientState state,final Map<String,Integer> threadLoad){\n  final Map<String,List<TaskId>> assignment=new HashMap<>();\n  for (  final String consumer : consumers) {\n    assignment.put(consumer,new ArrayList<>());\n  }\n  final int totalTasks=threadLoad.values().stream().reduce(tasksToAssign.size(),Integer::sum);\n  final int minTasksPerThread=(int)Math.floor(((double)totalTasks) / consumers.size());\n  final PriorityQueue<TaskId> unassignedTasks=new PriorityQueue<>(tasksToAssign);\n  final Queue<String> consumersToFill=new LinkedList<>();\n  final Map<TaskId,String> unassignedTaskToPreviousOwner=new TreeMap<>();\n  if (!unassignedTasks.isEmpty()) {\n    for (    final String consumer : consumers) {\n      final List<TaskId> threadAssignment=assignment.get(consumer);\n      final int tasksTargetCount=minTasksPerThread - threadLoad.getOrDefault(consumer,0);\n      if (isStateful) {\n        for (        final TaskId task : state.prevTasksByLag(consumer)) {\n          if (unassignedTasks.contains(task)) {\n            if (threadAssignment.size() < tasksTargetCount) {\n              threadAssignment.add(task);\n              unassignedTasks.remove(task);\n            }\n else {\n              unassignedTaskToPreviousOwner.put(task,consumer);\n            }\n          }\n        }\n      }\n      if (threadAssignment.size() < tasksTargetCount) {\n        consumersToFill.offer(consumer);\n      }\n    }\n    while (!consumersToFill.isEmpty()) {\n      final TaskId task=unassignedTasks.poll();\n      if (task != null) {\n        final String consumer=consumersToFill.poll();\n        final List<TaskId> threadAssignment=assignment.get(consumer);\n        threadAssignment.add(task);\n        final int threadTaskCount=threadAssignment.size() + threadLoad.getOrDefault(consumer,0);\n        if (threadTaskCount < minTasksPerThread) {\n          consumersToFill.offer(consumer);\n        }\n      }\n else {\n        throw new TaskAssignmentException(\"Ran out of unassigned stateful tasks but some members were not at capacity\");\n      }\n    }\n    if (!unassignedTasks.isEmpty()) {\n      for (      final String consumer : consumers) {\n        final int taskCount=assignment.get(consumer).size() + threadLoad.getOrDefault(consumer,0);\n        if (taskCount == minTasksPerThread) {\n          consumersToFill.add(consumer);\n        }\n      }\n      for (      final Map.Entry<TaskId,String> taskEntry : unassignedTaskToPreviousOwner.entrySet()) {\n        final TaskId task=taskEntry.getKey();\n        final String consumer=taskEntry.getValue();\n        if (consumersToFill.contains(consumer) && unassignedTasks.contains(task)) {\n          assignment.get(consumer).add(task);\n          unassignedTasks.remove(task);\n          consumersToFill.remove(consumer);\n        }\n      }\n      for (      final TaskId task : unassignedTasks) {\n        final String consumer=consumersToFill.poll();\n        final List<TaskId> threadAssignment=assignment.get(consumer);\n        threadAssignment.add(task);\n      }\n    }\n  }\n  for (  final Map.Entry<String,List<TaskId>> taskEntry : assignment.entrySet()) {\n    final String consumer=taskEntry.getKey();\n    final int totalCount=threadLoad.getOrDefault(consumer,0) + taskEntry.getValue().size();\n    threadLoad.put(consumer,totalCount);\n  }\n  return assignment;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 528,
+      "astHeight" : 17
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 95,
+        "startLineNumber" : 1085,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1085,
+        "endColumnNumber" : 103
+      },
+      "nodeContext" : "final int totalTasks=threadLoad.values().stream().reduce(tasksToAssign.size(),Integer::sum);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 18,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "java.util.Collection<org.apache.kafka.streams.processor.TaskId>"
+  }, {
+    "nodeContext" : "tasksToAssign",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 13,
+      "startLineNumber" : 1088,
+      "startColumnNumber" : 74,
+      "endLineNumber" : 1088,
+      "endColumnNumber" : 87
     },
     "astNodeNumber" : 1,
     "astHeight" : 1,
     "parentDataList" : [ {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
       "nodePosition" : {
-        "charLength" : 30,
-        "startLineNumber" : 30,
-        "startColumnNumber" : 18,
-        "endLineNumber" : 30,
-        "endColumnNumber" : 48
+        "charLength" : 34,
+        "startLineNumber" : 1088,
+        "startColumnNumber" : 54,
+        "endLineNumber" : 1088,
+        "endColumnNumber" : 88
       },
-      "nodeContext" : "new Node(1,\"localhost\",9093)",
+      "nodeContext" : "new PriorityQueue<>(tasksToAssign)",
       "nodeType" : "ClassInstanceCreation",
-      "astNodeNumber" : 6,
-      "astHeight" : 3
+      "astNodeNumber" : 5,
+      "astHeight" : 4
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
       "nodePosition" : {
-        "charLength" : 35,
-        "startLineNumber" : 30,
-        "startColumnNumber" : 13,
-        "endLineNumber" : 30,
-        "endColumnNumber" : 48
+        "charLength" : 52,
+        "startLineNumber" : 1088,
+        "startColumnNumber" : 36,
+        "endLineNumber" : 1088,
+        "endColumnNumber" : 88
       },
-      "nodeContext" : "r1=new Node(1,\"localhost\",9093)",
+      "nodeContext" : "unassignedTasks=new PriorityQueue<>(tasksToAssign)",
       "nodeType" : "VariableDeclarationFragment",
-      "astNodeNumber" : 8,
-      "astHeight" : 4
+      "astNodeNumber" : 7,
+      "astHeight" : 5
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 41,
-        "startLineNumber" : 30,
+        "charLength" : 81,
+        "startLineNumber" : 1088,
         "startColumnNumber" : 8,
-        "endLineNumber" : 30,
-        "endColumnNumber" : 49
+        "endLineNumber" : 1088,
+        "endColumnNumber" : 89
       },
-      "nodeContext" : "Node r1=new Node(1,\"localhost\",9093);\n",
+      "nodeContext" : "final PriorityQueue<TaskId> unassignedTasks=new PriorityQueue<>(tasksToAssign);\n",
       "nodeType" : "VariableDeclarationStatement",
-      "astNodeNumber" : 11,
-      "astHeight" : 5
+      "astNodeNumber" : 14,
+      "astHeight" : 6
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 790,
-        "startLineNumber" : 26,
-        "startColumnNumber" : 31,
-        "endLineNumber" : 40,
+        "charLength" : 5237,
+        "startLineNumber" : 1079,
+        "startColumnNumber" : 97,
+        "endLineNumber" : 1176,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  String topic=\"sample\";\n  int partition=0;\n  Node leader=new Node(0,\"localhost\",9092);\n  Node r1=new Node(1,\"localhost\",9093);\n  Node r2=new Node(2,\"localhost\",9094);\n  Node[] replicas=new Node[]{leader,r1,r2};\n  Node[] inSyncReplicas=new Node[]{leader,r1};\n  Node[] offlineReplicas=new Node[]{r2};\n  PartitionInfo partitionInfo=new PartitionInfo(topic,partition,leader,replicas,inSyncReplicas,offlineReplicas);\n  String expected=String.format(\"Partition(topic = %s, partition = %d, leader = %s, replicas = %s, isr = %s, offlineReplicas = %s)\",topic,partition,leader.idString(),\"[0,1,2]\",\"[0,1]\",\"[2]\");\n  assertEquals(expected,partitionInfo.toString());\n}\n",
+      "nodeContext" : "{\n  final Map<String,List<TaskId>> assignment=new HashMap<>();\n  for (  final String consumer : consumers) {\n    assignment.put(consumer,new ArrayList<>());\n  }\n  final int totalTasks=threadLoad.values().stream().reduce(tasksToAssign.size(),Integer::sum);\n  final int minTasksPerThread=(int)Math.floor(((double)totalTasks) / consumers.size());\n  final PriorityQueue<TaskId> unassignedTasks=new PriorityQueue<>(tasksToAssign);\n  final Queue<String> consumersToFill=new LinkedList<>();\n  final Map<TaskId,String> unassignedTaskToPreviousOwner=new TreeMap<>();\n  if (!unassignedTasks.isEmpty()) {\n    for (    final String consumer : consumers) {\n      final List<TaskId> threadAssignment=assignment.get(consumer);\n      final int tasksTargetCount=minTasksPerThread - threadLoad.getOrDefault(consumer,0);\n      if (isStateful) {\n        for (        final TaskId task : state.prevTasksByLag(consumer)) {\n          if (unassignedTasks.contains(task)) {\n            if (threadAssignment.size() < tasksTargetCount) {\n              threadAssignment.add(task);\n              unassignedTasks.remove(task);\n            }\n else {\n              unassignedTaskToPreviousOwner.put(task,consumer);\n            }\n          }\n        }\n      }\n      if (threadAssignment.size() < tasksTargetCount) {\n        consumersToFill.offer(consumer);\n      }\n    }\n    while (!consumersToFill.isEmpty()) {\n      final TaskId task=unassignedTasks.poll();\n      if (task != null) {\n        final String consumer=consumersToFill.poll();\n        final List<TaskId> threadAssignment=assignment.get(consumer);\n        threadAssignment.add(task);\n        final int threadTaskCount=threadAssignment.size() + threadLoad.getOrDefault(consumer,0);\n        if (threadTaskCount < minTasksPerThread) {\n          consumersToFill.offer(consumer);\n        }\n      }\n else {\n        throw new TaskAssignmentException(\"Ran out of unassigned stateful tasks but some members were not at capacity\");\n      }\n    }\n    if (!unassignedTasks.isEmpty()) {\n      for (      final String consumer : consumers) {\n        final int taskCount=assignment.get(consumer).size() + threadLoad.getOrDefault(consumer,0);\n        if (taskCount == minTasksPerThread) {\n          consumersToFill.add(consumer);\n        }\n      }\n      for (      final Map.Entry<TaskId,String> taskEntry : unassignedTaskToPreviousOwner.entrySet()) {\n        final TaskId task=taskEntry.getKey();\n        final String consumer=taskEntry.getValue();\n        if (consumersToFill.contains(consumer) && unassignedTasks.contains(task)) {\n          assignment.get(consumer).add(task);\n          unassignedTasks.remove(task);\n          consumersToFill.remove(consumer);\n        }\n      }\n      for (      final TaskId task : unassignedTasks) {\n        final String consumer=consumersToFill.poll();\n        final List<TaskId> threadAssignment=assignment.get(consumer);\n        threadAssignment.add(task);\n      }\n    }\n  }\n  for (  final Map.Entry<String,List<TaskId>> taskEntry : assignment.entrySet()) {\n    final String consumer=taskEntry.getKey();\n    final int totalCount=threadLoad.getOrDefault(consumer,0) + taskEntry.getValue().size();\n    threadLoad.put(consumer,totalCount);\n  }\n  return assignment;\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 128,
-      "astHeight" : 7
+      "astNodeNumber" : 479,
+      "astHeight" : 16
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 827,
-        "startLineNumber" : 25,
+        "charLength" : 6276,
+        "startLineNumber" : 1067,
         "startColumnNumber" : 4,
-        "endLineNumber" : 40,
+        "endLineNumber" : 1176,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "@Test public void testToString(){\n  String topic=\"sample\";\n  int partition=0;\n  Node leader=new Node(0,\"localhost\",9092);\n  Node r1=new Node(1,\"localhost\",9093);\n  Node r2=new Node(2,\"localhost\",9094);\n  Node[] replicas=new Node[]{leader,r1,r2};\n  Node[] inSyncReplicas=new Node[]{leader,r1};\n  Node[] offlineReplicas=new Node[]{r2};\n  PartitionInfo partitionInfo=new PartitionInfo(topic,partition,leader,replicas,inSyncReplicas,offlineReplicas);\n  String expected=String.format(\"Partition(topic = %s, partition = %d, leader = %s, replicas = %s, isr = %s, offlineReplicas = %s)\",topic,partition,leader.idString(),\"[0,1,2]\",\"[0,1]\",\"[2]\");\n  assertEquals(expected,partitionInfo.toString());\n}\n",
+      "nodeContext" : "/** \n * Generate an assignment that tries to preserve thread-level stickiness for stateful tasks without violating balance. The tasks are balanced across threads. Stateful tasks without previous owners will be interleaved by group id to spread subtopologies across threads and further balance the workload. Stateless tasks are simply spread across threads without taking into account previous ownership. threadLoad is a map that keeps track of task load per thread across multiple calls so active and standby tasks are evenly distributed\n */\nstatic Map<String,List<TaskId>> assignTasksToThreads(final Collection<TaskId> tasksToAssign,final boolean isStateful,final SortedSet<String> consumers,final ClientState state,final Map<String,Integer> threadLoad){\n  final Map<String,List<TaskId>> assignment=new HashMap<>();\n  for (  final String consumer : consumers) {\n    assignment.put(consumer,new ArrayList<>());\n  }\n  final int totalTasks=threadLoad.values().stream().reduce(tasksToAssign.size(),Integer::sum);\n  final int minTasksPerThread=(int)Math.floor(((double)totalTasks) / consumers.size());\n  final PriorityQueue<TaskId> unassignedTasks=new PriorityQueue<>(tasksToAssign);\n  final Queue<String> consumersToFill=new LinkedList<>();\n  final Map<TaskId,String> unassignedTaskToPreviousOwner=new TreeMap<>();\n  if (!unassignedTasks.isEmpty()) {\n    for (    final String consumer : consumers) {\n      final List<TaskId> threadAssignment=assignment.get(consumer);\n      final int tasksTargetCount=minTasksPerThread - threadLoad.getOrDefault(consumer,0);\n      if (isStateful) {\n        for (        final TaskId task : state.prevTasksByLag(consumer)) {\n          if (unassignedTasks.contains(task)) {\n            if (threadAssignment.size() < tasksTargetCount) {\n              threadAssignment.add(task);\n              unassignedTasks.remove(task);\n            }\n else {\n              unassignedTaskToPreviousOwner.put(task,consumer);\n            }\n          }\n        }\n      }\n      if (threadAssignment.size() < tasksTargetCount) {\n        consumersToFill.offer(consumer);\n      }\n    }\n    while (!consumersToFill.isEmpty()) {\n      final TaskId task=unassignedTasks.poll();\n      if (task != null) {\n        final String consumer=consumersToFill.poll();\n        final List<TaskId> threadAssignment=assignment.get(consumer);\n        threadAssignment.add(task);\n        final int threadTaskCount=threadAssignment.size() + threadLoad.getOrDefault(consumer,0);\n        if (threadTaskCount < minTasksPerThread) {\n          consumersToFill.offer(consumer);\n        }\n      }\n else {\n        throw new TaskAssignmentException(\"Ran out of unassigned stateful tasks but some members were not at capacity\");\n      }\n    }\n    if (!unassignedTasks.isEmpty()) {\n      for (      final String consumer : consumers) {\n        final int taskCount=assignment.get(consumer).size() + threadLoad.getOrDefault(consumer,0);\n        if (taskCount == minTasksPerThread) {\n          consumersToFill.add(consumer);\n        }\n      }\n      for (      final Map.Entry<TaskId,String> taskEntry : unassignedTaskToPreviousOwner.entrySet()) {\n        final TaskId task=taskEntry.getKey();\n        final String consumer=taskEntry.getValue();\n        if (consumersToFill.contains(consumer) && unassignedTasks.contains(task)) {\n          assignment.get(consumer).add(task);\n          unassignedTasks.remove(task);\n          consumersToFill.remove(consumer);\n        }\n      }\n      for (      final TaskId task : unassignedTasks) {\n        final String consumer=consumersToFill.poll();\n        final List<TaskId> threadAssignment=assignment.get(consumer);\n        threadAssignment.add(task);\n      }\n    }\n  }\n  for (  final Map.Entry<String,List<TaskId>> taskEntry : assignment.entrySet()) {\n    final String consumer=taskEntry.getKey();\n    final int totalCount=threadLoad.getOrDefault(consumer,0) + taskEntry.getValue().size();\n    threadLoad.put(consumer,totalCount);\n  }\n  return assignment;\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 134,
-      "astHeight" : 8
+      "astNodeNumber" : 528,
+      "astHeight" : 17
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 41,
-        "startLineNumber" : 30,
+        "charLength" : 81,
+        "startLineNumber" : 1088,
         "startColumnNumber" : 8,
-        "endLineNumber" : 30,
-        "endColumnNumber" : 49
+        "endLineNumber" : 1088,
+        "endColumnNumber" : 89
       },
-      "nodeContext" : "Node r1=new Node(1,\"localhost\",9093);\n",
+      "nodeContext" : "final PriorityQueue<TaskId> unassignedTasks=new PriorityQueue<>(tasksToAssign);\n",
       "nodeType" : "VariableDeclarationStatement",
-      "astNodeNumber" : 11,
-      "astHeight" : 5
+      "astNodeNumber" : 14,
+      "astHeight" : 6
     },
     "tokenLength" : 1,
-    "type" : "int"
+    "type" : "java.util.Collection<org.apache.kafka.streams.processor.TaskId>"
   } ],
   "positionList" : [ {
-    "charLength" : 1,
-    "startLineNumber" : 30,
-    "startColumnNumber" : 27,
-    "endLineNumber" : 30,
-    "endColumnNumber" : 28
+    "charLength" : 13,
+    "startLineNumber" : 1085,
+    "startColumnNumber" : 67,
+    "endLineNumber" : 1085,
+    "endColumnNumber" : 80
+  }, {
+    "charLength" : 13,
+    "startLineNumber" : 1088,
+    "startColumnNumber" : 74,
+    "endLineNumber" : 1088,
+    "endColumnNumber" : 87
   } ],
-  "layoutRelationDataList" : [ ]
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 3
+  } ]
 }

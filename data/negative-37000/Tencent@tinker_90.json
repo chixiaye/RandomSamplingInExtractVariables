@@ -1,0 +1,100 @@
+{
+  "id" : 90,
+  "expression" : "SharePatchFileUtil.checkIfMd5Valid(resPatchInfo.resArscMd5)",
+  "projectName" : "Tencent@tinker",
+  "commitID" : "df9e1d29420d53a650ab73569d828a22e3cfe728",
+  "filePath" : "/tinker-android/tinker-android-lib/src/main/java/com/tencent/tinker/lib/patch/ResDiffPatchInternal.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "SharePatchFileUtil.checkIfMd5Valid(resPatchInfo.resArscMd5)",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 59,
+      "startLineNumber" : 91,
+      "startColumnNumber" : 13,
+      "endLineNumber" : 91,
+      "endColumnNumber" : 72
+    },
+    "astNodeNumber" : 6,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 60,
+        "startLineNumber" : 91,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 91,
+        "endColumnNumber" : 72
+      },
+      "nodeContext" : "!SharePatchFileUtil.checkIfMd5Valid(resPatchInfo.resArscMd5)",
+      "nodeType" : "PrefixExpression",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 379,
+        "startLineNumber" : 91,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 95,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (!SharePatchFileUtil.checkIfMd5Valid(resPatchInfo.resArscMd5)) {\n  ShareTinkerLog.w(TAG,\"resource meta file md5 mismatch, type:%s, md5: %s\",ShareTinkerInternals.getTypeString(type),resPatchInfo.resArscMd5);\n  manager.getPatchReporter().onPatchPackageCheckFail(patchFile,BasePatchInternal.getMetaCorruptedCode(type));\n  return false;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 35,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 7951,
+        "startLineNumber" : 85,
+        "startColumnNumber" : 124,
+        "endLineNumber" : 236,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  ShareResPatchInfo resPatchInfo=new ShareResPatchInfo();\n  ShareResPatchInfo.parseAllResPatchInfo(meta,resPatchInfo);\n  ShareTinkerLog.i(TAG,\"res dir: %s, meta: %s\",dir,resPatchInfo.toString());\n  Tinker manager=Tinker.with(context);\n  if (!SharePatchFileUtil.checkIfMd5Valid(resPatchInfo.resArscMd5)) {\n    ShareTinkerLog.w(TAG,\"resource meta file md5 mismatch, type:%s, md5: %s\",ShareTinkerInternals.getTypeString(type),resPatchInfo.resArscMd5);\n    manager.getPatchReporter().onPatchPackageCheckFail(patchFile,BasePatchInternal.getMetaCorruptedCode(type));\n    return false;\n  }\n  File directory=new File(dir);\n  File tempResFileDirectory=new File(directory,\"res_temp\");\n  File resOutput=new File(directory,ShareConstants.RES_NAME);\n  if (resOutput.exists()) {\n    if (SharePatchFileUtil.checkResourceArscMd5(resOutput,resPatchInfo.resArscMd5)) {\n      ShareTinkerLog.w(TAG,\"resource file %s is already exist, and md5 match, just return true\",resOutput.getPath());\n      return true;\n    }\n else {\n      ShareTinkerLog.w(TAG,\"have a mismatch corrupted resource \" + resOutput.getPath());\n      resOutput.delete();\n    }\n  }\n else {\n    resOutput.getParentFile().mkdirs();\n  }\n  try {\n    ApplicationInfo applicationInfo=context.getApplicationInfo();\n    if (applicationInfo == null) {\n      ShareTinkerLog.w(TAG,\"applicationInfo == null!!!!\");\n      return false;\n    }\n    String apkPath=applicationInfo.sourceDir;\n    if (!checkAndExtractResourceLargeFile(context,apkPath,directory,tempResFileDirectory,patchFile,resPatchInfo,type)) {\n      return false;\n    }\n    TinkerZipOutputStream out=null;\n    TinkerZipFile oldApk=null;\n    TinkerZipFile newApk=null;\n    int totalEntryCount=0;\n    try {\n      out=new TinkerZipOutputStream(new BufferedOutputStream(new FileOutputStream(resOutput)));\n      oldApk=new TinkerZipFile(apkPath);\n      newApk=new TinkerZipFile(patchFile);\n      final Enumeration<? extends TinkerZipEntry> entries=oldApk.entries();\n      while (entries.hasMoreElements()) {\n        TinkerZipEntry zipEntry=entries.nextElement();\n        if (zipEntry == null) {\n          throw new TinkerRuntimeException(\"zipEntry is null when get from oldApk\");\n        }\n        String name=zipEntry.getName();\n        if (name.contains(\"../\")) {\n          continue;\n        }\n        if (ShareResPatchInfo.checkFileInPattern(resPatchInfo.patterns,name)) {\n          if (!resPatchInfo.deleteRes.contains(name) && !resPatchInfo.modRes.contains(name) && !resPatchInfo.largeModRes.contains(name)&& !name.equals(ShareConstants.RES_MANIFEST)) {\n            TinkerZipUtil.extractTinkerEntry(oldApk,zipEntry,out);\n            totalEntryCount++;\n          }\n        }\n      }\n      TinkerZipEntry manifestZipEntry=oldApk.getEntry(ShareConstants.RES_MANIFEST);\n      if (manifestZipEntry == null) {\n        ShareTinkerLog.w(TAG,\"manifest patch entry is null. path:\" + ShareConstants.RES_MANIFEST);\n        manager.getPatchReporter().onPatchTypeExtractFail(patchFile,resOutput,ShareConstants.RES_MANIFEST,type);\n        return false;\n      }\n      TinkerZipUtil.extractTinkerEntry(oldApk,manifestZipEntry,out);\n      totalEntryCount++;\n      for (      String name : resPatchInfo.largeModRes) {\n        TinkerZipEntry largeZipEntry=oldApk.getEntry(name);\n        if (largeZipEntry == null) {\n          ShareTinkerLog.w(TAG,\"large patch entry is null. path:\" + name);\n          manager.getPatchReporter().onPatchTypeExtractFail(patchFile,resOutput,name,type);\n          return false;\n        }\n        ShareResPatchInfo.LargeModeInfo largeModeInfo=resPatchInfo.largeModMap.get(name);\n        TinkerZipUtil.extractLargeModifyFile(largeZipEntry,largeModeInfo.file,largeModeInfo.crc,out);\n        totalEntryCount++;\n      }\n      for (      String name : resPatchInfo.addRes) {\n        TinkerZipEntry addZipEntry=newApk.getEntry(name);\n        if (addZipEntry == null) {\n          ShareTinkerLog.w(TAG,\"add patch entry is null. path:\" + name);\n          manager.getPatchReporter().onPatchTypeExtractFail(patchFile,resOutput,name,type);\n          return false;\n        }\n        if (resPatchInfo.storeRes.containsKey(name)) {\n          File storeFile=resPatchInfo.storeRes.get(name);\n          TinkerZipUtil.extractLargeModifyFile(addZipEntry,storeFile,addZipEntry.getCrc(),out);\n        }\n else {\n          TinkerZipUtil.extractTinkerEntry(newApk,addZipEntry,out);\n        }\n        totalEntryCount++;\n      }\n      for (      String name : resPatchInfo.modRes) {\n        TinkerZipEntry modZipEntry=newApk.getEntry(name);\n        if (modZipEntry == null) {\n          ShareTinkerLog.w(TAG,\"mod patch entry is null. path:\" + name);\n          manager.getPatchReporter().onPatchTypeExtractFail(patchFile,resOutput,name,type);\n          return false;\n        }\n        if (resPatchInfo.storeRes.containsKey(name)) {\n          File storeFile=resPatchInfo.storeRes.get(name);\n          TinkerZipUtil.extractLargeModifyFile(modZipEntry,storeFile,modZipEntry.getCrc(),out);\n        }\n else {\n          TinkerZipUtil.extractTinkerEntry(newApk,modZipEntry,out);\n        }\n        totalEntryCount++;\n      }\n      out.setComment(oldApk.getComment());\n    }\n  finally {\n      IOHelper.closeQuietly(out);\n      IOHelper.closeQuietly(oldApk);\n      IOHelper.closeQuietly(newApk);\n      SharePatchFileUtil.deleteDir(tempResFileDirectory);\n    }\n    boolean result=SharePatchFileUtil.checkResourceArscMd5(resOutput,resPatchInfo.resArscMd5);\n    if (!result) {\n      ShareTinkerLog.i(TAG,\"check final new resource file fail path:%s, entry count:%d, size:%d\",resOutput.getAbsolutePath(),totalEntryCount,resOutput.length());\n      SharePatchFileUtil.safeDeleteFile(resOutput);\n      manager.getPatchReporter().onPatchTypeExtractFail(patchFile,resOutput,ShareConstants.RES_NAME,type);\n      return false;\n    }\n    ShareTinkerLog.i(TAG,\"final new resource file:%s, entry count:%d, size:%d\",resOutput.getAbsolutePath(),totalEntryCount,resOutput.length());\n  }\n catch (  Throwable e) {\n    throw new TinkerRuntimeException(\"patch \" + ShareTinkerInternals.getTypeString(type) + \" extract failed (\"+ e.getMessage()+ \").\",e);\n  }\n  return true;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 744,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 8071,
+        "startLineNumber" : 85,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 236,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "private static boolean extractResourceDiffInternals(Context context,String dir,String meta,File patchFile,int type){\n  ShareResPatchInfo resPatchInfo=new ShareResPatchInfo();\n  ShareResPatchInfo.parseAllResPatchInfo(meta,resPatchInfo);\n  ShareTinkerLog.i(TAG,\"res dir: %s, meta: %s\",dir,resPatchInfo.toString());\n  Tinker manager=Tinker.with(context);\n  if (!SharePatchFileUtil.checkIfMd5Valid(resPatchInfo.resArscMd5)) {\n    ShareTinkerLog.w(TAG,\"resource meta file md5 mismatch, type:%s, md5: %s\",ShareTinkerInternals.getTypeString(type),resPatchInfo.resArscMd5);\n    manager.getPatchReporter().onPatchPackageCheckFail(patchFile,BasePatchInternal.getMetaCorruptedCode(type));\n    return false;\n  }\n  File directory=new File(dir);\n  File tempResFileDirectory=new File(directory,\"res_temp\");\n  File resOutput=new File(directory,ShareConstants.RES_NAME);\n  if (resOutput.exists()) {\n    if (SharePatchFileUtil.checkResourceArscMd5(resOutput,resPatchInfo.resArscMd5)) {\n      ShareTinkerLog.w(TAG,\"resource file %s is already exist, and md5 match, just return true\",resOutput.getPath());\n      return true;\n    }\n else {\n      ShareTinkerLog.w(TAG,\"have a mismatch corrupted resource \" + resOutput.getPath());\n      resOutput.delete();\n    }\n  }\n else {\n    resOutput.getParentFile().mkdirs();\n  }\n  try {\n    ApplicationInfo applicationInfo=context.getApplicationInfo();\n    if (applicationInfo == null) {\n      ShareTinkerLog.w(TAG,\"applicationInfo == null!!!!\");\n      return false;\n    }\n    String apkPath=applicationInfo.sourceDir;\n    if (!checkAndExtractResourceLargeFile(context,apkPath,directory,tempResFileDirectory,patchFile,resPatchInfo,type)) {\n      return false;\n    }\n    TinkerZipOutputStream out=null;\n    TinkerZipFile oldApk=null;\n    TinkerZipFile newApk=null;\n    int totalEntryCount=0;\n    try {\n      out=new TinkerZipOutputStream(new BufferedOutputStream(new FileOutputStream(resOutput)));\n      oldApk=new TinkerZipFile(apkPath);\n      newApk=new TinkerZipFile(patchFile);\n      final Enumeration<? extends TinkerZipEntry> entries=oldApk.entries();\n      while (entries.hasMoreElements()) {\n        TinkerZipEntry zipEntry=entries.nextElement();\n        if (zipEntry == null) {\n          throw new TinkerRuntimeException(\"zipEntry is null when get from oldApk\");\n        }\n        String name=zipEntry.getName();\n        if (name.contains(\"../\")) {\n          continue;\n        }\n        if (ShareResPatchInfo.checkFileInPattern(resPatchInfo.patterns,name)) {\n          if (!resPatchInfo.deleteRes.contains(name) && !resPatchInfo.modRes.contains(name) && !resPatchInfo.largeModRes.contains(name)&& !name.equals(ShareConstants.RES_MANIFEST)) {\n            TinkerZipUtil.extractTinkerEntry(oldApk,zipEntry,out);\n            totalEntryCount++;\n          }\n        }\n      }\n      TinkerZipEntry manifestZipEntry=oldApk.getEntry(ShareConstants.RES_MANIFEST);\n      if (manifestZipEntry == null) {\n        ShareTinkerLog.w(TAG,\"manifest patch entry is null. path:\" + ShareConstants.RES_MANIFEST);\n        manager.getPatchReporter().onPatchTypeExtractFail(patchFile,resOutput,ShareConstants.RES_MANIFEST,type);\n        return false;\n      }\n      TinkerZipUtil.extractTinkerEntry(oldApk,manifestZipEntry,out);\n      totalEntryCount++;\n      for (      String name : resPatchInfo.largeModRes) {\n        TinkerZipEntry largeZipEntry=oldApk.getEntry(name);\n        if (largeZipEntry == null) {\n          ShareTinkerLog.w(TAG,\"large patch entry is null. path:\" + name);\n          manager.getPatchReporter().onPatchTypeExtractFail(patchFile,resOutput,name,type);\n          return false;\n        }\n        ShareResPatchInfo.LargeModeInfo largeModeInfo=resPatchInfo.largeModMap.get(name);\n        TinkerZipUtil.extractLargeModifyFile(largeZipEntry,largeModeInfo.file,largeModeInfo.crc,out);\n        totalEntryCount++;\n      }\n      for (      String name : resPatchInfo.addRes) {\n        TinkerZipEntry addZipEntry=newApk.getEntry(name);\n        if (addZipEntry == null) {\n          ShareTinkerLog.w(TAG,\"add patch entry is null. path:\" + name);\n          manager.getPatchReporter().onPatchTypeExtractFail(patchFile,resOutput,name,type);\n          return false;\n        }\n        if (resPatchInfo.storeRes.containsKey(name)) {\n          File storeFile=resPatchInfo.storeRes.get(name);\n          TinkerZipUtil.extractLargeModifyFile(addZipEntry,storeFile,addZipEntry.getCrc(),out);\n        }\n else {\n          TinkerZipUtil.extractTinkerEntry(newApk,addZipEntry,out);\n        }\n        totalEntryCount++;\n      }\n      for (      String name : resPatchInfo.modRes) {\n        TinkerZipEntry modZipEntry=newApk.getEntry(name);\n        if (modZipEntry == null) {\n          ShareTinkerLog.w(TAG,\"mod patch entry is null. path:\" + name);\n          manager.getPatchReporter().onPatchTypeExtractFail(patchFile,resOutput,name,type);\n          return false;\n        }\n        if (resPatchInfo.storeRes.containsKey(name)) {\n          File storeFile=resPatchInfo.storeRes.get(name);\n          TinkerZipUtil.extractLargeModifyFile(modZipEntry,storeFile,modZipEntry.getCrc(),out);\n        }\n else {\n          TinkerZipUtil.extractTinkerEntry(newApk,modZipEntry,out);\n        }\n        totalEntryCount++;\n      }\n      out.setComment(oldApk.getComment());\n    }\n  finally {\n      IOHelper.closeQuietly(out);\n      IOHelper.closeQuietly(oldApk);\n      IOHelper.closeQuietly(newApk);\n      SharePatchFileUtil.deleteDir(tempResFileDirectory);\n    }\n    boolean result=SharePatchFileUtil.checkResourceArscMd5(resOutput,resPatchInfo.resArscMd5);\n    if (!result) {\n      ShareTinkerLog.i(TAG,\"check final new resource file fail path:%s, entry count:%d, size:%d\",resOutput.getAbsolutePath(),totalEntryCount,resOutput.length());\n      SharePatchFileUtil.safeDeleteFile(resOutput);\n      manager.getPatchReporter().onPatchTypeExtractFail(patchFile,resOutput,ShareConstants.RES_NAME,type);\n      return false;\n    }\n    ShareTinkerLog.i(TAG,\"final new resource file:%s, entry count:%d, size:%d\",resOutput.getAbsolutePath(),totalEntryCount,resOutput.length());\n  }\n catch (  Throwable e) {\n    throw new TinkerRuntimeException(\"patch \" + ShareTinkerInternals.getTypeString(type) + \" extract failed (\"+ e.getMessage()+ \").\",e);\n  }\n  return true;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 768,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 60,
+        "startLineNumber" : 91,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 91,
+        "endColumnNumber" : 72
+      },
+      "nodeContext" : "!SharePatchFileUtil.checkIfMd5Valid(resPatchInfo.resArscMd5)",
+      "nodeType" : "PrefixExpression",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    },
+    "tokenLength" : 4,
+    "type" : "boolean"
+  } ],
+  "positionList" : [ {
+    "charLength" : 59,
+    "startLineNumber" : 91,
+    "startColumnNumber" : 13,
+    "endLineNumber" : 91,
+    "endColumnNumber" : 72
+  } ],
+  "layoutRelationDataList" : [ ]
+}

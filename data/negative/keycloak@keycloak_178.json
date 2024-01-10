@@ -1,100 +1,409 @@
 {
   "id" : 178,
-  "expression" : "LOOKUP",
+  "expression" : "log",
   "projectName" : "keycloak@keycloak",
-  "commitID" : "aacae9b9acb0fbedc49d4f88c9fbd7aa11922dce",
-  "filePath" : "/saml-core/src/main/java/org/keycloak/saml/processing/core/parsers/saml/protocol/AbstractStaxSamlProtocolParser.java",
-  "occurrences" : 1,
+  "commitID" : "ebfc24d6c105971f00f86d1c96fc0dc2aed45bf9",
+  "filePath" : "testsuite/model/src/test/java/org/keycloak/testsuite/model/infinispan/CacheExpirationTest.java",
+  "occurrences" : 4,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "LOOKUP",
+    "nodeContext" : "log",
     "nodeType" : "SimpleName",
     "nodePosition" : {
-      "charLength" : 6,
-      "startLineNumber" : 37,
-      "startColumnNumber" : 15,
-      "endLineNumber" : 37,
-      "endColumnNumber" : 21
+      "charLength" : 3,
+      "startLineNumber" : 56,
+      "startColumnNumber" : 8,
+      "endLineNumber" : 56,
+      "endColumnNumber" : 11
     },
     "astNodeNumber" : 1,
     "astHeight" : 1,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ReturnStatement,expression]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
       "nodePosition" : {
-        "charLength" : 17,
-        "startLineNumber" : 37,
-        "startColumnNumber" : 15,
-        "endLineNumber" : 37,
-        "endColumnNumber" : 32
+        "charLength" : 148,
+        "startLineNumber" : 56,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 56,
+        "endColumnNumber" : 156
       },
-      "nodeContext" : "LOOKUP.from(name)",
+      "nodeContext" : "log.debugf(\"Number of previous instances of the class on the heap: %d\",getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 149,
+        "startLineNumber" : 56,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 56,
+        "endColumnNumber" : 157
+      },
+      "nodeContext" : "log.debugf(\"Number of previous instances of the class on the heap: %d\",getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class));\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4636,
+        "startLineNumber" : 54,
+        "startColumnNumber" : 55,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  log.debugf(\"Number of previous instances of the class on the heap: %d\",getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class));\n  log.debug(\"Put two events to the main cache\");\n  inComittedTransaction(session -> {\n    InfinispanConnectionProvider provider=session.getProvider(InfinispanConnectionProvider.class);\n    Cache<String,Object> cache=provider.getCache(InfinispanConnectionProvider.WORK_CACHE_NAME);\n    cache.entrySet().stream().filter(me -> me.getValue() instanceof AuthenticationSessionAuthNoteUpdateEvent).forEach((c,me) -> c.remove(me.getKey()));\n    cache.put(\"1-2\",AuthenticationSessionAuthNoteUpdateEvent.create(\"g1\",\"p1\",\"r1\",Collections.emptyMap()),20000,TimeUnit.MILLISECONDS);\n    cache.put(\"1-2-3\",AuthenticationSessionAuthNoteUpdateEvent.create(\"g2\",\"p2\",\"r2\",Collections.emptyMap()),20000,TimeUnit.MILLISECONDS);\n  }\n);\n  assumeThat(\"jmap output format unsupported\",getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class),notNullValue());\n  Integer instancesAfterInsertion=getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class);\n  assertThat(instancesAfterInsertion,greaterThanOrEqualTo(2));\n  int previousInstancesOfClass=instancesAfterInsertion - 2;\n  log.debug(\"Expecting instance count to go down to \" + previousInstancesOfClass);\n  log.debug(\"Starting other nodes and see that they join, receive the data and have their data expired\");\n  inIndependentFactories(NUM_EXTRA_FACTORIES,2 * 60,() -> {\n    log.debug(\"Joining the cluster\");\n    inComittedTransaction(session -> {\n      InfinispanConnectionProvider provider=session.getProvider(InfinispanConnectionProvider.class);\n      Cache<String,Object> cache=provider.getCache(InfinispanConnectionProvider.WORK_CACHE_NAME);\n      log.debug(\"Waiting for caches to join the cluster\");\n      do {\n        try {\n          Thread.sleep(1000);\n        }\n catch (        InterruptedException ex) {\n          Thread.currentThread().interrupt();\n          throw new RuntimeException(ex);\n        }\n      }\n while (!cache.getAdvancedCache().getDistributionManager().isJoinComplete());\n      String site=CONFIG.scope(\"connectionsInfinispan\",\"default\").get(\"siteName\");\n      log.debug(\"Cluster joined \" + site);\n      log.debug(\"Waiting for cache to receive the two elements within the cluster\");\n      do {\n        try {\n          Thread.sleep(1000);\n        }\n catch (        InterruptedException ex) {\n          Thread.currentThread().interrupt();\n          throw new RuntimeException(ex);\n        }\n      }\n while (cache.entrySet().stream().filter(me -> me.getValue() instanceof AuthenticationSessionAuthNoteUpdateEvent).count() != 2);\n      assertThat(cache.get(\"1-2\"),notNullValue());\n      assertThat(cache.get(\"1-2-3\"),notNullValue());\n      log.debug(\"Waiting for garbage collection to collect the entries across all caches in JVM\");\n      do {\n        try {\n          Thread.sleep(1000);\n        }\n catch (        InterruptedException ex) {\n          Thread.currentThread().interrupt();\n          throw new RuntimeException(ex);\n        }\n      }\n while (getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class) > previousInstancesOfClass);\n      log.debug(\"Test completed\");\n    }\n);\n  }\n);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 382,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4697,
+        "startLineNumber" : 53,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test public void testCacheExpiration() throws Exception {\n  log.debugf(\"Number of previous instances of the class on the heap: %d\",getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class));\n  log.debug(\"Put two events to the main cache\");\n  inComittedTransaction(session -> {\n    InfinispanConnectionProvider provider=session.getProvider(InfinispanConnectionProvider.class);\n    Cache<String,Object> cache=provider.getCache(InfinispanConnectionProvider.WORK_CACHE_NAME);\n    cache.entrySet().stream().filter(me -> me.getValue() instanceof AuthenticationSessionAuthNoteUpdateEvent).forEach((c,me) -> c.remove(me.getKey()));\n    cache.put(\"1-2\",AuthenticationSessionAuthNoteUpdateEvent.create(\"g1\",\"p1\",\"r1\",Collections.emptyMap()),20000,TimeUnit.MILLISECONDS);\n    cache.put(\"1-2-3\",AuthenticationSessionAuthNoteUpdateEvent.create(\"g2\",\"p2\",\"r2\",Collections.emptyMap()),20000,TimeUnit.MILLISECONDS);\n  }\n);\n  assumeThat(\"jmap output format unsupported\",getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class),notNullValue());\n  Integer instancesAfterInsertion=getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class);\n  assertThat(instancesAfterInsertion,greaterThanOrEqualTo(2));\n  int previousInstancesOfClass=instancesAfterInsertion - 2;\n  log.debug(\"Expecting instance count to go down to \" + previousInstancesOfClass);\n  log.debug(\"Starting other nodes and see that they join, receive the data and have their data expired\");\n  inIndependentFactories(NUM_EXTRA_FACTORIES,2 * 60,() -> {\n    log.debug(\"Joining the cluster\");\n    inComittedTransaction(session -> {\n      InfinispanConnectionProvider provider=session.getProvider(InfinispanConnectionProvider.class);\n      Cache<String,Object> cache=provider.getCache(InfinispanConnectionProvider.WORK_CACHE_NAME);\n      log.debug(\"Waiting for caches to join the cluster\");\n      do {\n        try {\n          Thread.sleep(1000);\n        }\n catch (        InterruptedException ex) {\n          Thread.currentThread().interrupt();\n          throw new RuntimeException(ex);\n        }\n      }\n while (!cache.getAdvancedCache().getDistributionManager().isJoinComplete());\n      String site=CONFIG.scope(\"connectionsInfinispan\",\"default\").get(\"siteName\");\n      log.debug(\"Cluster joined \" + site);\n      log.debug(\"Waiting for cache to receive the two elements within the cluster\");\n      do {\n        try {\n          Thread.sleep(1000);\n        }\n catch (        InterruptedException ex) {\n          Thread.currentThread().interrupt();\n          throw new RuntimeException(ex);\n        }\n      }\n while (cache.entrySet().stream().filter(me -> me.getValue() instanceof AuthenticationSessionAuthNoteUpdateEvent).count() != 2);\n      assertThat(cache.get(\"1-2\"),notNullValue());\n      assertThat(cache.get(\"1-2-3\"),notNullValue());\n      log.debug(\"Waiting for garbage collection to collect the entries across all caches in JVM\");\n      do {\n        try {\n          Thread.sleep(1000);\n        }\n catch (        InterruptedException ex) {\n          Thread.currentThread().interrupt();\n          throw new RuntimeException(ex);\n        }\n      }\n while (getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class) > previousInstancesOfClass);\n      log.debug(\"Test completed\");\n    }\n);\n  }\n);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 390,
+      "astHeight" : 19
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 149,
+        "startLineNumber" : 56,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 56,
+        "endColumnNumber" : 157
+      },
+      "nodeContext" : "log.debugf(\"Number of previous instances of the class on the heap: %d\",getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class));\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "org.keycloak.testsuite.model.Logger"
+  }, {
+    "nodeContext" : "log",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 3,
+      "startLineNumber" : 58,
+      "startColumnNumber" : 8,
+      "endLineNumber" : 58,
+      "endColumnNumber" : 11
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 45,
+        "startLineNumber" : 58,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 58,
+        "endColumnNumber" : 53
+      },
+      "nodeContext" : "log.debug(\"Put two events to the main cache\")",
       "nodeType" : "MethodInvocation",
       "astNodeNumber" : 4,
       "astHeight" : 2
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 25,
-        "startLineNumber" : 37,
+        "charLength" : 46,
+        "startLineNumber" : 58,
         "startColumnNumber" : 8,
-        "endLineNumber" : 37,
-        "endColumnNumber" : 33
+        "endLineNumber" : 58,
+        "endColumnNumber" : 54
       },
-      "nodeContext" : "return LOOKUP.from(name);\n",
-      "nodeType" : "ReturnStatement",
+      "nodeContext" : "log.debug(\"Put two events to the main cache\");\n",
+      "nodeType" : "ExpressionStatement",
       "astNodeNumber" : 5,
       "astHeight" : 3
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 41,
-        "startLineNumber" : 36,
-        "startColumnNumber" : 64,
-        "endLineNumber" : 38,
+        "charLength" : 4636,
+        "startLineNumber" : 54,
+        "startColumnNumber" : 55,
+        "endLineNumber" : 123,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  return LOOKUP.from(name);\n}\n",
+      "nodeContext" : "{\n  log.debugf(\"Number of previous instances of the class on the heap: %d\",getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class));\n  log.debug(\"Put two events to the main cache\");\n  inComittedTransaction(session -> {\n    InfinispanConnectionProvider provider=session.getProvider(InfinispanConnectionProvider.class);\n    Cache<String,Object> cache=provider.getCache(InfinispanConnectionProvider.WORK_CACHE_NAME);\n    cache.entrySet().stream().filter(me -> me.getValue() instanceof AuthenticationSessionAuthNoteUpdateEvent).forEach((c,me) -> c.remove(me.getKey()));\n    cache.put(\"1-2\",AuthenticationSessionAuthNoteUpdateEvent.create(\"g1\",\"p1\",\"r1\",Collections.emptyMap()),20000,TimeUnit.MILLISECONDS);\n    cache.put(\"1-2-3\",AuthenticationSessionAuthNoteUpdateEvent.create(\"g2\",\"p2\",\"r2\",Collections.emptyMap()),20000,TimeUnit.MILLISECONDS);\n  }\n);\n  assumeThat(\"jmap output format unsupported\",getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class),notNullValue());\n  Integer instancesAfterInsertion=getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class);\n  assertThat(instancesAfterInsertion,greaterThanOrEqualTo(2));\n  int previousInstancesOfClass=instancesAfterInsertion - 2;\n  log.debug(\"Expecting instance count to go down to \" + previousInstancesOfClass);\n  log.debug(\"Starting other nodes and see that they join, receive the data and have their data expired\");\n  inIndependentFactories(NUM_EXTRA_FACTORIES,2 * 60,() -> {\n    log.debug(\"Joining the cluster\");\n    inComittedTransaction(session -> {\n      InfinispanConnectionProvider provider=session.getProvider(InfinispanConnectionProvider.class);\n      Cache<String,Object> cache=provider.getCache(InfinispanConnectionProvider.WORK_CACHE_NAME);\n      log.debug(\"Waiting for caches to join the cluster\");\n      do {\n        try {\n          Thread.sleep(1000);\n        }\n catch (        InterruptedException ex) {\n          Thread.currentThread().interrupt();\n          throw new RuntimeException(ex);\n        }\n      }\n while (!cache.getAdvancedCache().getDistributionManager().isJoinComplete());\n      String site=CONFIG.scope(\"connectionsInfinispan\",\"default\").get(\"siteName\");\n      log.debug(\"Cluster joined \" + site);\n      log.debug(\"Waiting for cache to receive the two elements within the cluster\");\n      do {\n        try {\n          Thread.sleep(1000);\n        }\n catch (        InterruptedException ex) {\n          Thread.currentThread().interrupt();\n          throw new RuntimeException(ex);\n        }\n      }\n while (cache.entrySet().stream().filter(me -> me.getValue() instanceof AuthenticationSessionAuthNoteUpdateEvent).count() != 2);\n      assertThat(cache.get(\"1-2\"),notNullValue());\n      assertThat(cache.get(\"1-2-3\"),notNullValue());\n      log.debug(\"Waiting for garbage collection to collect the entries across all caches in JVM\");\n      do {\n        try {\n          Thread.sleep(1000);\n        }\n catch (        InterruptedException ex) {\n          Thread.currentThread().interrupt();\n          throw new RuntimeException(ex);\n        }\n      }\n while (getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class) > previousInstancesOfClass);\n      log.debug(\"Test completed\");\n    }\n);\n  }\n);\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 6,
-      "astHeight" : 4
+      "astNodeNumber" : 382,
+      "astHeight" : 18
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 115,
-        "startLineNumber" : 35,
+        "charLength" : 4697,
+        "startLineNumber" : 53,
         "startColumnNumber" : 4,
-        "endLineNumber" : 38,
+        "endLineNumber" : 123,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "@Override protected SAMLProtocolQNames getElementFromName(QName name){\n  return LOOKUP.from(name);\n}\n",
+      "nodeContext" : "@Test public void testCacheExpiration() throws Exception {\n  log.debugf(\"Number of previous instances of the class on the heap: %d\",getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class));\n  log.debug(\"Put two events to the main cache\");\n  inComittedTransaction(session -> {\n    InfinispanConnectionProvider provider=session.getProvider(InfinispanConnectionProvider.class);\n    Cache<String,Object> cache=provider.getCache(InfinispanConnectionProvider.WORK_CACHE_NAME);\n    cache.entrySet().stream().filter(me -> me.getValue() instanceof AuthenticationSessionAuthNoteUpdateEvent).forEach((c,me) -> c.remove(me.getKey()));\n    cache.put(\"1-2\",AuthenticationSessionAuthNoteUpdateEvent.create(\"g1\",\"p1\",\"r1\",Collections.emptyMap()),20000,TimeUnit.MILLISECONDS);\n    cache.put(\"1-2-3\",AuthenticationSessionAuthNoteUpdateEvent.create(\"g2\",\"p2\",\"r2\",Collections.emptyMap()),20000,TimeUnit.MILLISECONDS);\n  }\n);\n  assumeThat(\"jmap output format unsupported\",getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class),notNullValue());\n  Integer instancesAfterInsertion=getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class);\n  assertThat(instancesAfterInsertion,greaterThanOrEqualTo(2));\n  int previousInstancesOfClass=instancesAfterInsertion - 2;\n  log.debug(\"Expecting instance count to go down to \" + previousInstancesOfClass);\n  log.debug(\"Starting other nodes and see that they join, receive the data and have their data expired\");\n  inIndependentFactories(NUM_EXTRA_FACTORIES,2 * 60,() -> {\n    log.debug(\"Joining the cluster\");\n    inComittedTransaction(session -> {\n      InfinispanConnectionProvider provider=session.getProvider(InfinispanConnectionProvider.class);\n      Cache<String,Object> cache=provider.getCache(InfinispanConnectionProvider.WORK_CACHE_NAME);\n      log.debug(\"Waiting for caches to join the cluster\");\n      do {\n        try {\n          Thread.sleep(1000);\n        }\n catch (        InterruptedException ex) {\n          Thread.currentThread().interrupt();\n          throw new RuntimeException(ex);\n        }\n      }\n while (!cache.getAdvancedCache().getDistributionManager().isJoinComplete());\n      String site=CONFIG.scope(\"connectionsInfinispan\",\"default\").get(\"siteName\");\n      log.debug(\"Cluster joined \" + site);\n      log.debug(\"Waiting for cache to receive the two elements within the cluster\");\n      do {\n        try {\n          Thread.sleep(1000);\n        }\n catch (        InterruptedException ex) {\n          Thread.currentThread().interrupt();\n          throw new RuntimeException(ex);\n        }\n      }\n while (cache.entrySet().stream().filter(me -> me.getValue() instanceof AuthenticationSessionAuthNoteUpdateEvent).count() != 2);\n      assertThat(cache.get(\"1-2\"),notNullValue());\n      assertThat(cache.get(\"1-2-3\"),notNullValue());\n      log.debug(\"Waiting for garbage collection to collect the entries across all caches in JVM\");\n      do {\n        try {\n          Thread.sleep(1000);\n        }\n catch (        InterruptedException ex) {\n          Thread.currentThread().interrupt();\n          throw new RuntimeException(ex);\n        }\n      }\n while (getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class) > previousInstancesOfClass);\n      log.debug(\"Test completed\");\n    }\n);\n  }\n);\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 17,
-      "astHeight" : 5
+      "astNodeNumber" : 390,
+      "astHeight" : 19
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 25,
-        "startLineNumber" : 37,
+        "charLength" : 46,
+        "startLineNumber" : 58,
         "startColumnNumber" : 8,
-        "endLineNumber" : 37,
-        "endColumnNumber" : 33
+        "endLineNumber" : 58,
+        "endColumnNumber" : 54
       },
-      "nodeContext" : "return LOOKUP.from(name);\n",
-      "nodeType" : "ReturnStatement",
+      "nodeContext" : "log.debug(\"Put two events to the main cache\");\n",
+      "nodeType" : "ExpressionStatement",
       "astNodeNumber" : 5,
       "astHeight" : 3
     },
     "tokenLength" : 1,
-    "type" : "org.keycloak.saml.processing.core.parsers.util.QNameEnumLookup<org.keycloak.saml.processing.core.parsers.saml.protocol.SAMLProtocolQNames>"
+    "type" : "org.keycloak.testsuite.model.Logger"
+  }, {
+    "nodeContext" : "log",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 3,
+      "startLineNumber" : 81,
+      "startColumnNumber" : 8,
+      "endLineNumber" : 81,
+      "endColumnNumber" : 11
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 79,
+        "startLineNumber" : 81,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 81,
+        "endColumnNumber" : 87
+      },
+      "nodeContext" : "log.debug(\"Expecting instance count to go down to \" + previousInstancesOfClass)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 80,
+        "startLineNumber" : 81,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 81,
+        "endColumnNumber" : 88
+      },
+      "nodeContext" : "log.debug(\"Expecting instance count to go down to \" + previousInstancesOfClass);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4636,
+        "startLineNumber" : 54,
+        "startColumnNumber" : 55,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  log.debugf(\"Number of previous instances of the class on the heap: %d\",getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class));\n  log.debug(\"Put two events to the main cache\");\n  inComittedTransaction(session -> {\n    InfinispanConnectionProvider provider=session.getProvider(InfinispanConnectionProvider.class);\n    Cache<String,Object> cache=provider.getCache(InfinispanConnectionProvider.WORK_CACHE_NAME);\n    cache.entrySet().stream().filter(me -> me.getValue() instanceof AuthenticationSessionAuthNoteUpdateEvent).forEach((c,me) -> c.remove(me.getKey()));\n    cache.put(\"1-2\",AuthenticationSessionAuthNoteUpdateEvent.create(\"g1\",\"p1\",\"r1\",Collections.emptyMap()),20000,TimeUnit.MILLISECONDS);\n    cache.put(\"1-2-3\",AuthenticationSessionAuthNoteUpdateEvent.create(\"g2\",\"p2\",\"r2\",Collections.emptyMap()),20000,TimeUnit.MILLISECONDS);\n  }\n);\n  assumeThat(\"jmap output format unsupported\",getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class),notNullValue());\n  Integer instancesAfterInsertion=getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class);\n  assertThat(instancesAfterInsertion,greaterThanOrEqualTo(2));\n  int previousInstancesOfClass=instancesAfterInsertion - 2;\n  log.debug(\"Expecting instance count to go down to \" + previousInstancesOfClass);\n  log.debug(\"Starting other nodes and see that they join, receive the data and have their data expired\");\n  inIndependentFactories(NUM_EXTRA_FACTORIES,2 * 60,() -> {\n    log.debug(\"Joining the cluster\");\n    inComittedTransaction(session -> {\n      InfinispanConnectionProvider provider=session.getProvider(InfinispanConnectionProvider.class);\n      Cache<String,Object> cache=provider.getCache(InfinispanConnectionProvider.WORK_CACHE_NAME);\n      log.debug(\"Waiting for caches to join the cluster\");\n      do {\n        try {\n          Thread.sleep(1000);\n        }\n catch (        InterruptedException ex) {\n          Thread.currentThread().interrupt();\n          throw new RuntimeException(ex);\n        }\n      }\n while (!cache.getAdvancedCache().getDistributionManager().isJoinComplete());\n      String site=CONFIG.scope(\"connectionsInfinispan\",\"default\").get(\"siteName\");\n      log.debug(\"Cluster joined \" + site);\n      log.debug(\"Waiting for cache to receive the two elements within the cluster\");\n      do {\n        try {\n          Thread.sleep(1000);\n        }\n catch (        InterruptedException ex) {\n          Thread.currentThread().interrupt();\n          throw new RuntimeException(ex);\n        }\n      }\n while (cache.entrySet().stream().filter(me -> me.getValue() instanceof AuthenticationSessionAuthNoteUpdateEvent).count() != 2);\n      assertThat(cache.get(\"1-2\"),notNullValue());\n      assertThat(cache.get(\"1-2-3\"),notNullValue());\n      log.debug(\"Waiting for garbage collection to collect the entries across all caches in JVM\");\n      do {\n        try {\n          Thread.sleep(1000);\n        }\n catch (        InterruptedException ex) {\n          Thread.currentThread().interrupt();\n          throw new RuntimeException(ex);\n        }\n      }\n while (getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class) > previousInstancesOfClass);\n      log.debug(\"Test completed\");\n    }\n);\n  }\n);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 382,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4697,
+        "startLineNumber" : 53,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test public void testCacheExpiration() throws Exception {\n  log.debugf(\"Number of previous instances of the class on the heap: %d\",getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class));\n  log.debug(\"Put two events to the main cache\");\n  inComittedTransaction(session -> {\n    InfinispanConnectionProvider provider=session.getProvider(InfinispanConnectionProvider.class);\n    Cache<String,Object> cache=provider.getCache(InfinispanConnectionProvider.WORK_CACHE_NAME);\n    cache.entrySet().stream().filter(me -> me.getValue() instanceof AuthenticationSessionAuthNoteUpdateEvent).forEach((c,me) -> c.remove(me.getKey()));\n    cache.put(\"1-2\",AuthenticationSessionAuthNoteUpdateEvent.create(\"g1\",\"p1\",\"r1\",Collections.emptyMap()),20000,TimeUnit.MILLISECONDS);\n    cache.put(\"1-2-3\",AuthenticationSessionAuthNoteUpdateEvent.create(\"g2\",\"p2\",\"r2\",Collections.emptyMap()),20000,TimeUnit.MILLISECONDS);\n  }\n);\n  assumeThat(\"jmap output format unsupported\",getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class),notNullValue());\n  Integer instancesAfterInsertion=getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class);\n  assertThat(instancesAfterInsertion,greaterThanOrEqualTo(2));\n  int previousInstancesOfClass=instancesAfterInsertion - 2;\n  log.debug(\"Expecting instance count to go down to \" + previousInstancesOfClass);\n  log.debug(\"Starting other nodes and see that they join, receive the data and have their data expired\");\n  inIndependentFactories(NUM_EXTRA_FACTORIES,2 * 60,() -> {\n    log.debug(\"Joining the cluster\");\n    inComittedTransaction(session -> {\n      InfinispanConnectionProvider provider=session.getProvider(InfinispanConnectionProvider.class);\n      Cache<String,Object> cache=provider.getCache(InfinispanConnectionProvider.WORK_CACHE_NAME);\n      log.debug(\"Waiting for caches to join the cluster\");\n      do {\n        try {\n          Thread.sleep(1000);\n        }\n catch (        InterruptedException ex) {\n          Thread.currentThread().interrupt();\n          throw new RuntimeException(ex);\n        }\n      }\n while (!cache.getAdvancedCache().getDistributionManager().isJoinComplete());\n      String site=CONFIG.scope(\"connectionsInfinispan\",\"default\").get(\"siteName\");\n      log.debug(\"Cluster joined \" + site);\n      log.debug(\"Waiting for cache to receive the two elements within the cluster\");\n      do {\n        try {\n          Thread.sleep(1000);\n        }\n catch (        InterruptedException ex) {\n          Thread.currentThread().interrupt();\n          throw new RuntimeException(ex);\n        }\n      }\n while (cache.entrySet().stream().filter(me -> me.getValue() instanceof AuthenticationSessionAuthNoteUpdateEvent).count() != 2);\n      assertThat(cache.get(\"1-2\"),notNullValue());\n      assertThat(cache.get(\"1-2-3\"),notNullValue());\n      log.debug(\"Waiting for garbage collection to collect the entries across all caches in JVM\");\n      do {\n        try {\n          Thread.sleep(1000);\n        }\n catch (        InterruptedException ex) {\n          Thread.currentThread().interrupt();\n          throw new RuntimeException(ex);\n        }\n      }\n while (getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class) > previousInstancesOfClass);\n      log.debug(\"Test completed\");\n    }\n);\n  }\n);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 390,
+      "astHeight" : 19
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 80,
+        "startLineNumber" : 81,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 81,
+        "endColumnNumber" : 88
+      },
+      "nodeContext" : "log.debug(\"Expecting instance count to go down to \" + previousInstancesOfClass);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.keycloak.testsuite.model.Logger"
+  }, {
+    "nodeContext" : "log",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 3,
+      "startLineNumber" : 83,
+      "startColumnNumber" : 8,
+      "endLineNumber" : 83,
+      "endColumnNumber" : 11
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 102,
+        "startLineNumber" : 83,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 83,
+        "endColumnNumber" : 110
+      },
+      "nodeContext" : "log.debug(\"Starting other nodes and see that they join, receive the data and have their data expired\")",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 103,
+        "startLineNumber" : 83,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 83,
+        "endColumnNumber" : 111
+      },
+      "nodeContext" : "log.debug(\"Starting other nodes and see that they join, receive the data and have their data expired\");\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4636,
+        "startLineNumber" : 54,
+        "startColumnNumber" : 55,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  log.debugf(\"Number of previous instances of the class on the heap: %d\",getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class));\n  log.debug(\"Put two events to the main cache\");\n  inComittedTransaction(session -> {\n    InfinispanConnectionProvider provider=session.getProvider(InfinispanConnectionProvider.class);\n    Cache<String,Object> cache=provider.getCache(InfinispanConnectionProvider.WORK_CACHE_NAME);\n    cache.entrySet().stream().filter(me -> me.getValue() instanceof AuthenticationSessionAuthNoteUpdateEvent).forEach((c,me) -> c.remove(me.getKey()));\n    cache.put(\"1-2\",AuthenticationSessionAuthNoteUpdateEvent.create(\"g1\",\"p1\",\"r1\",Collections.emptyMap()),20000,TimeUnit.MILLISECONDS);\n    cache.put(\"1-2-3\",AuthenticationSessionAuthNoteUpdateEvent.create(\"g2\",\"p2\",\"r2\",Collections.emptyMap()),20000,TimeUnit.MILLISECONDS);\n  }\n);\n  assumeThat(\"jmap output format unsupported\",getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class),notNullValue());\n  Integer instancesAfterInsertion=getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class);\n  assertThat(instancesAfterInsertion,greaterThanOrEqualTo(2));\n  int previousInstancesOfClass=instancesAfterInsertion - 2;\n  log.debug(\"Expecting instance count to go down to \" + previousInstancesOfClass);\n  log.debug(\"Starting other nodes and see that they join, receive the data and have their data expired\");\n  inIndependentFactories(NUM_EXTRA_FACTORIES,2 * 60,() -> {\n    log.debug(\"Joining the cluster\");\n    inComittedTransaction(session -> {\n      InfinispanConnectionProvider provider=session.getProvider(InfinispanConnectionProvider.class);\n      Cache<String,Object> cache=provider.getCache(InfinispanConnectionProvider.WORK_CACHE_NAME);\n      log.debug(\"Waiting for caches to join the cluster\");\n      do {\n        try {\n          Thread.sleep(1000);\n        }\n catch (        InterruptedException ex) {\n          Thread.currentThread().interrupt();\n          throw new RuntimeException(ex);\n        }\n      }\n while (!cache.getAdvancedCache().getDistributionManager().isJoinComplete());\n      String site=CONFIG.scope(\"connectionsInfinispan\",\"default\").get(\"siteName\");\n      log.debug(\"Cluster joined \" + site);\n      log.debug(\"Waiting for cache to receive the two elements within the cluster\");\n      do {\n        try {\n          Thread.sleep(1000);\n        }\n catch (        InterruptedException ex) {\n          Thread.currentThread().interrupt();\n          throw new RuntimeException(ex);\n        }\n      }\n while (cache.entrySet().stream().filter(me -> me.getValue() instanceof AuthenticationSessionAuthNoteUpdateEvent).count() != 2);\n      assertThat(cache.get(\"1-2\"),notNullValue());\n      assertThat(cache.get(\"1-2-3\"),notNullValue());\n      log.debug(\"Waiting for garbage collection to collect the entries across all caches in JVM\");\n      do {\n        try {\n          Thread.sleep(1000);\n        }\n catch (        InterruptedException ex) {\n          Thread.currentThread().interrupt();\n          throw new RuntimeException(ex);\n        }\n      }\n while (getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class) > previousInstancesOfClass);\n      log.debug(\"Test completed\");\n    }\n);\n  }\n);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 382,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4697,
+        "startLineNumber" : 53,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test public void testCacheExpiration() throws Exception {\n  log.debugf(\"Number of previous instances of the class on the heap: %d\",getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class));\n  log.debug(\"Put two events to the main cache\");\n  inComittedTransaction(session -> {\n    InfinispanConnectionProvider provider=session.getProvider(InfinispanConnectionProvider.class);\n    Cache<String,Object> cache=provider.getCache(InfinispanConnectionProvider.WORK_CACHE_NAME);\n    cache.entrySet().stream().filter(me -> me.getValue() instanceof AuthenticationSessionAuthNoteUpdateEvent).forEach((c,me) -> c.remove(me.getKey()));\n    cache.put(\"1-2\",AuthenticationSessionAuthNoteUpdateEvent.create(\"g1\",\"p1\",\"r1\",Collections.emptyMap()),20000,TimeUnit.MILLISECONDS);\n    cache.put(\"1-2-3\",AuthenticationSessionAuthNoteUpdateEvent.create(\"g2\",\"p2\",\"r2\",Collections.emptyMap()),20000,TimeUnit.MILLISECONDS);\n  }\n);\n  assumeThat(\"jmap output format unsupported\",getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class),notNullValue());\n  Integer instancesAfterInsertion=getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class);\n  assertThat(instancesAfterInsertion,greaterThanOrEqualTo(2));\n  int previousInstancesOfClass=instancesAfterInsertion - 2;\n  log.debug(\"Expecting instance count to go down to \" + previousInstancesOfClass);\n  log.debug(\"Starting other nodes and see that they join, receive the data and have their data expired\");\n  inIndependentFactories(NUM_EXTRA_FACTORIES,2 * 60,() -> {\n    log.debug(\"Joining the cluster\");\n    inComittedTransaction(session -> {\n      InfinispanConnectionProvider provider=session.getProvider(InfinispanConnectionProvider.class);\n      Cache<String,Object> cache=provider.getCache(InfinispanConnectionProvider.WORK_CACHE_NAME);\n      log.debug(\"Waiting for caches to join the cluster\");\n      do {\n        try {\n          Thread.sleep(1000);\n        }\n catch (        InterruptedException ex) {\n          Thread.currentThread().interrupt();\n          throw new RuntimeException(ex);\n        }\n      }\n while (!cache.getAdvancedCache().getDistributionManager().isJoinComplete());\n      String site=CONFIG.scope(\"connectionsInfinispan\",\"default\").get(\"siteName\");\n      log.debug(\"Cluster joined \" + site);\n      log.debug(\"Waiting for cache to receive the two elements within the cluster\");\n      do {\n        try {\n          Thread.sleep(1000);\n        }\n catch (        InterruptedException ex) {\n          Thread.currentThread().interrupt();\n          throw new RuntimeException(ex);\n        }\n      }\n while (cache.entrySet().stream().filter(me -> me.getValue() instanceof AuthenticationSessionAuthNoteUpdateEvent).count() != 2);\n      assertThat(cache.get(\"1-2\"),notNullValue());\n      assertThat(cache.get(\"1-2-3\"),notNullValue());\n      log.debug(\"Waiting for garbage collection to collect the entries across all caches in JVM\");\n      do {\n        try {\n          Thread.sleep(1000);\n        }\n catch (        InterruptedException ex) {\n          Thread.currentThread().interrupt();\n          throw new RuntimeException(ex);\n        }\n      }\n while (getNumberOfInstancesOfClass(AuthenticationSessionAuthNoteUpdateEvent.class) > previousInstancesOfClass);\n      log.debug(\"Test completed\");\n    }\n);\n  }\n);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 390,
+      "astHeight" : 19
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 103,
+        "startLineNumber" : 83,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 83,
+        "endColumnNumber" : 111
+      },
+      "nodeContext" : "log.debug(\"Starting other nodes and see that they join, receive the data and have their data expired\");\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "org.keycloak.testsuite.model.Logger"
   } ],
   "positionList" : [ {
-    "charLength" : 6,
-    "startLineNumber" : 37,
-    "startColumnNumber" : 15,
-    "endLineNumber" : 37,
-    "endColumnNumber" : 21
+    "charLength" : 3,
+    "startLineNumber" : 56,
+    "startColumnNumber" : 8,
+    "endLineNumber" : 56,
+    "endColumnNumber" : 11
+  }, {
+    "charLength" : 3,
+    "startLineNumber" : 58,
+    "startColumnNumber" : 8,
+    "endLineNumber" : 58,
+    "endColumnNumber" : 11
+  }, {
+    "charLength" : 3,
+    "startLineNumber" : 81,
+    "startColumnNumber" : 8,
+    "endLineNumber" : 81,
+    "endColumnNumber" : 11
+  }, {
+    "charLength" : 3,
+    "startLineNumber" : 83,
+    "startColumnNumber" : 8,
+    "endLineNumber" : 83,
+    "endColumnNumber" : 11
   } ],
-  "layoutRelationDataList" : [ ]
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 0,
+    "layout" : 2
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 2,
+    "layout" : 2
+  } ]
 }

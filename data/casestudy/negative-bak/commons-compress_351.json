@@ -1,0 +1,1620 @@
+{
+  "id" : 351,
+  "expression" : "k",
+  "projectName" : "commons-compress",
+  "commitID" : "e3ea7b6607e7c96b9e2b6813c05bfba887c8e226",
+  "filePath" : "src/main/java/org/apache/commons/compress/archivers/zip/BinaryTree.java",
+  "occurrences" : 10,
+  "isArithmeticExpression" : 1,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "k",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 1,
+      "startLineNumber" : 155,
+      "startColumnNumber" : 24,
+      "endLineNumber" : 155,
+      "endColumnNumber" : 25
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 22,
+        "startLineNumber" : 155,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 155,
+        "endColumnNumber" : 46
+      },
+      "nodeContext" : "k < permutation.length",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 90,
+        "startLineNumber" : 155,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 157,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "for (int k=0; k < permutation.length; k++) {\n  permutation[k]=k;\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 20,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3358,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 110,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (totalNumberOfValues < 0) {\n    throw new IllegalArgumentException(\"totalNumberOfValues must be bigger than 0, is \" + totalNumberOfValues);\n  }\n  final int size=inputStream.read() + 1;\n  if (size == 0) {\n    throw new IOException(\"Cannot read the size of the encoded tree, unexpected end of stream\");\n  }\n  final byte[] encodedTree=new byte[size];\n  final int read=IOUtils.readFully(inputStream,encodedTree);\n  if (read != size) {\n    throw new EOFException();\n  }\n  int maxLength=0;\n  final int[] originalBitLengths=new int[totalNumberOfValues];\n  int pos=0;\n  for (  final byte b : encodedTree) {\n    final int numberOfValues=((b & 0xF0) >> 4) + 1;\n    if (pos + numberOfValues > totalNumberOfValues) {\n      throw new IOException(\"Number of values exceeds given total number of values\");\n    }\n    final int bitLength=(b & 0x0F) + 1;\n    for (int j=0; j < numberOfValues; j++) {\n      originalBitLengths[pos++]=bitLength;\n    }\n    maxLength=Math.max(maxLength,bitLength);\n  }\n  final int[] permutation=new int[originalBitLengths.length];\n  for (int k=0; k < permutation.length; k++) {\n    permutation[k]=k;\n  }\n  int c=0;\n  final int[] sortedBitLengths=new int[originalBitLengths.length];\n  for (int k=0; k < originalBitLengths.length; k++) {\n    for (int l=0; l < originalBitLengths.length; l++) {\n      if (originalBitLengths[l] == k) {\n        sortedBitLengths[c]=k;\n        permutation[c]=l;\n        c++;\n      }\n    }\n  }\n  int code=0;\n  int codeIncrement=0;\n  int lastBitLength=0;\n  final int[] codes=new int[totalNumberOfValues];\n  for (int i=totalNumberOfValues - 1; i >= 0; i--) {\n    code=code + codeIncrement;\n    if (sortedBitLengths[i] != lastBitLength) {\n      lastBitLength=sortedBitLengths[i];\n      codeIncrement=1 << (16 - lastBitLength);\n    }\n    codes[permutation[i]]=code;\n  }\n  final BinaryTree tree=new BinaryTree(maxLength);\n  for (int k=0; k < codes.length; k++) {\n    final int bitLength=originalBitLengths[k];\n    if (bitLength > 0) {\n      tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n    }\n  }\n  return tree;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 391,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3548,
+        "startLineNumber" : 113,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Decodes the packed binary tree from the specified stream.\n */\nstatic BinaryTree decode(final InputStream inputStream,final int totalNumberOfValues) throws IOException {\n  if (totalNumberOfValues < 0) {\n    throw new IllegalArgumentException(\"totalNumberOfValues must be bigger than 0, is \" + totalNumberOfValues);\n  }\n  final int size=inputStream.read() + 1;\n  if (size == 0) {\n    throw new IOException(\"Cannot read the size of the encoded tree, unexpected end of stream\");\n  }\n  final byte[] encodedTree=new byte[size];\n  final int read=IOUtils.readFully(inputStream,encodedTree);\n  if (read != size) {\n    throw new EOFException();\n  }\n  int maxLength=0;\n  final int[] originalBitLengths=new int[totalNumberOfValues];\n  int pos=0;\n  for (  final byte b : encodedTree) {\n    final int numberOfValues=((b & 0xF0) >> 4) + 1;\n    if (pos + numberOfValues > totalNumberOfValues) {\n      throw new IOException(\"Number of values exceeds given total number of values\");\n    }\n    final int bitLength=(b & 0x0F) + 1;\n    for (int j=0; j < numberOfValues; j++) {\n      originalBitLengths[pos++]=bitLength;\n    }\n    maxLength=Math.max(maxLength,bitLength);\n  }\n  final int[] permutation=new int[originalBitLengths.length];\n  for (int k=0; k < permutation.length; k++) {\n    permutation[k]=k;\n  }\n  int c=0;\n  final int[] sortedBitLengths=new int[originalBitLengths.length];\n  for (int k=0; k < originalBitLengths.length; k++) {\n    for (int l=0; l < originalBitLengths.length; l++) {\n      if (originalBitLengths[l] == k) {\n        sortedBitLengths[c]=k;\n        permutation[c]=l;\n        c++;\n      }\n    }\n  }\n  int code=0;\n  int codeIncrement=0;\n  int lastBitLength=0;\n  final int[] codes=new int[totalNumberOfValues];\n  for (int i=totalNumberOfValues - 1; i >= 0; i--) {\n    code=code + codeIncrement;\n    if (sortedBitLengths[i] != lastBitLength) {\n      lastBitLength=sortedBitLengths[i];\n      codeIncrement=1 << (16 - lastBitLength);\n    }\n    codes[permutation[i]]=code;\n  }\n  final BinaryTree tree=new BinaryTree(maxLength);\n  for (int k=0; k < codes.length; k++) {\n    final int bitLength=originalBitLengths[k];\n    if (bitLength > 0) {\n      tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n    }\n  }\n  return tree;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 408,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 22,
+        "startLineNumber" : 155,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 155,
+        "endColumnNumber" : 46
+      },
+      "nodeContext" : "k < permutation.length",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "int"
+  }, {
+    "nodeContext" : "k",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 1,
+      "startLineNumber" : 156,
+      "startColumnNumber" : 24,
+      "endLineNumber" : 156,
+      "endColumnNumber" : 25
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,leftHandSide]",
+      "nodePosition" : {
+        "charLength" : 14,
+        "startLineNumber" : 156,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 156,
+        "endColumnNumber" : 26
+      },
+      "nodeContext" : "permutation[k]",
+      "nodeType" : "ArrayAccess",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 18,
+        "startLineNumber" : 156,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 156,
+        "endColumnNumber" : 30
+      },
+      "nodeContext" : "permutation[k]=k",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 19,
+        "startLineNumber" : 156,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 156,
+        "endColumnNumber" : 31
+      },
+      "nodeContext" : "permutation[k]=k;\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 45,
+        "startLineNumber" : 155,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 157,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  permutation[k]=k;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 7,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 90,
+        "startLineNumber" : 155,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 157,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "for (int k=0; k < permutation.length; k++) {\n  permutation[k]=k;\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 20,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3358,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 110,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (totalNumberOfValues < 0) {\n    throw new IllegalArgumentException(\"totalNumberOfValues must be bigger than 0, is \" + totalNumberOfValues);\n  }\n  final int size=inputStream.read() + 1;\n  if (size == 0) {\n    throw new IOException(\"Cannot read the size of the encoded tree, unexpected end of stream\");\n  }\n  final byte[] encodedTree=new byte[size];\n  final int read=IOUtils.readFully(inputStream,encodedTree);\n  if (read != size) {\n    throw new EOFException();\n  }\n  int maxLength=0;\n  final int[] originalBitLengths=new int[totalNumberOfValues];\n  int pos=0;\n  for (  final byte b : encodedTree) {\n    final int numberOfValues=((b & 0xF0) >> 4) + 1;\n    if (pos + numberOfValues > totalNumberOfValues) {\n      throw new IOException(\"Number of values exceeds given total number of values\");\n    }\n    final int bitLength=(b & 0x0F) + 1;\n    for (int j=0; j < numberOfValues; j++) {\n      originalBitLengths[pos++]=bitLength;\n    }\n    maxLength=Math.max(maxLength,bitLength);\n  }\n  final int[] permutation=new int[originalBitLengths.length];\n  for (int k=0; k < permutation.length; k++) {\n    permutation[k]=k;\n  }\n  int c=0;\n  final int[] sortedBitLengths=new int[originalBitLengths.length];\n  for (int k=0; k < originalBitLengths.length; k++) {\n    for (int l=0; l < originalBitLengths.length; l++) {\n      if (originalBitLengths[l] == k) {\n        sortedBitLengths[c]=k;\n        permutation[c]=l;\n        c++;\n      }\n    }\n  }\n  int code=0;\n  int codeIncrement=0;\n  int lastBitLength=0;\n  final int[] codes=new int[totalNumberOfValues];\n  for (int i=totalNumberOfValues - 1; i >= 0; i--) {\n    code=code + codeIncrement;\n    if (sortedBitLengths[i] != lastBitLength) {\n      lastBitLength=sortedBitLengths[i];\n      codeIncrement=1 << (16 - lastBitLength);\n    }\n    codes[permutation[i]]=code;\n  }\n  final BinaryTree tree=new BinaryTree(maxLength);\n  for (int k=0; k < codes.length; k++) {\n    final int bitLength=originalBitLengths[k];\n    if (bitLength > 0) {\n      tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n    }\n  }\n  return tree;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 391,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3548,
+        "startLineNumber" : 113,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Decodes the packed binary tree from the specified stream.\n */\nstatic BinaryTree decode(final InputStream inputStream,final int totalNumberOfValues) throws IOException {\n  if (totalNumberOfValues < 0) {\n    throw new IllegalArgumentException(\"totalNumberOfValues must be bigger than 0, is \" + totalNumberOfValues);\n  }\n  final int size=inputStream.read() + 1;\n  if (size == 0) {\n    throw new IOException(\"Cannot read the size of the encoded tree, unexpected end of stream\");\n  }\n  final byte[] encodedTree=new byte[size];\n  final int read=IOUtils.readFully(inputStream,encodedTree);\n  if (read != size) {\n    throw new EOFException();\n  }\n  int maxLength=0;\n  final int[] originalBitLengths=new int[totalNumberOfValues];\n  int pos=0;\n  for (  final byte b : encodedTree) {\n    final int numberOfValues=((b & 0xF0) >> 4) + 1;\n    if (pos + numberOfValues > totalNumberOfValues) {\n      throw new IOException(\"Number of values exceeds given total number of values\");\n    }\n    final int bitLength=(b & 0x0F) + 1;\n    for (int j=0; j < numberOfValues; j++) {\n      originalBitLengths[pos++]=bitLength;\n    }\n    maxLength=Math.max(maxLength,bitLength);\n  }\n  final int[] permutation=new int[originalBitLengths.length];\n  for (int k=0; k < permutation.length; k++) {\n    permutation[k]=k;\n  }\n  int c=0;\n  final int[] sortedBitLengths=new int[originalBitLengths.length];\n  for (int k=0; k < originalBitLengths.length; k++) {\n    for (int l=0; l < originalBitLengths.length; l++) {\n      if (originalBitLengths[l] == k) {\n        sortedBitLengths[c]=k;\n        permutation[c]=l;\n        c++;\n      }\n    }\n  }\n  int code=0;\n  int codeIncrement=0;\n  int lastBitLength=0;\n  final int[] codes=new int[totalNumberOfValues];\n  for (int i=totalNumberOfValues - 1; i >= 0; i--) {\n    code=code + codeIncrement;\n    if (sortedBitLengths[i] != lastBitLength) {\n      lastBitLength=sortedBitLengths[i];\n      codeIncrement=1 << (16 - lastBitLength);\n    }\n    codes[permutation[i]]=code;\n  }\n  final BinaryTree tree=new BinaryTree(maxLength);\n  for (int k=0; k < codes.length; k++) {\n    final int bitLength=originalBitLengths[k];\n    if (bitLength > 0) {\n      tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n    }\n  }\n  return tree;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 408,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 19,
+        "startLineNumber" : 156,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 156,
+        "endColumnNumber" : 31
+      },
+      "nodeContext" : "permutation[k]=k;\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "int"
+  }, {
+    "nodeContext" : "k",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 1,
+      "startLineNumber" : 156,
+      "startColumnNumber" : 29,
+      "endLineNumber" : 156,
+      "endColumnNumber" : 30
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 18,
+        "startLineNumber" : 156,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 156,
+        "endColumnNumber" : 30
+      },
+      "nodeContext" : "permutation[k]=k",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 19,
+        "startLineNumber" : 156,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 156,
+        "endColumnNumber" : 31
+      },
+      "nodeContext" : "permutation[k]=k;\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 45,
+        "startLineNumber" : 155,
+        "startColumnNumber" : 53,
+        "endLineNumber" : 157,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  permutation[k]=k;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 7,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 90,
+        "startLineNumber" : 155,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 157,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "for (int k=0; k < permutation.length; k++) {\n  permutation[k]=k;\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 20,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3358,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 110,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (totalNumberOfValues < 0) {\n    throw new IllegalArgumentException(\"totalNumberOfValues must be bigger than 0, is \" + totalNumberOfValues);\n  }\n  final int size=inputStream.read() + 1;\n  if (size == 0) {\n    throw new IOException(\"Cannot read the size of the encoded tree, unexpected end of stream\");\n  }\n  final byte[] encodedTree=new byte[size];\n  final int read=IOUtils.readFully(inputStream,encodedTree);\n  if (read != size) {\n    throw new EOFException();\n  }\n  int maxLength=0;\n  final int[] originalBitLengths=new int[totalNumberOfValues];\n  int pos=0;\n  for (  final byte b : encodedTree) {\n    final int numberOfValues=((b & 0xF0) >> 4) + 1;\n    if (pos + numberOfValues > totalNumberOfValues) {\n      throw new IOException(\"Number of values exceeds given total number of values\");\n    }\n    final int bitLength=(b & 0x0F) + 1;\n    for (int j=0; j < numberOfValues; j++) {\n      originalBitLengths[pos++]=bitLength;\n    }\n    maxLength=Math.max(maxLength,bitLength);\n  }\n  final int[] permutation=new int[originalBitLengths.length];\n  for (int k=0; k < permutation.length; k++) {\n    permutation[k]=k;\n  }\n  int c=0;\n  final int[] sortedBitLengths=new int[originalBitLengths.length];\n  for (int k=0; k < originalBitLengths.length; k++) {\n    for (int l=0; l < originalBitLengths.length; l++) {\n      if (originalBitLengths[l] == k) {\n        sortedBitLengths[c]=k;\n        permutation[c]=l;\n        c++;\n      }\n    }\n  }\n  int code=0;\n  int codeIncrement=0;\n  int lastBitLength=0;\n  final int[] codes=new int[totalNumberOfValues];\n  for (int i=totalNumberOfValues - 1; i >= 0; i--) {\n    code=code + codeIncrement;\n    if (sortedBitLengths[i] != lastBitLength) {\n      lastBitLength=sortedBitLengths[i];\n      codeIncrement=1 << (16 - lastBitLength);\n    }\n    codes[permutation[i]]=code;\n  }\n  final BinaryTree tree=new BinaryTree(maxLength);\n  for (int k=0; k < codes.length; k++) {\n    final int bitLength=originalBitLengths[k];\n    if (bitLength > 0) {\n      tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n    }\n  }\n  return tree;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 391,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3548,
+        "startLineNumber" : 113,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Decodes the packed binary tree from the specified stream.\n */\nstatic BinaryTree decode(final InputStream inputStream,final int totalNumberOfValues) throws IOException {\n  if (totalNumberOfValues < 0) {\n    throw new IllegalArgumentException(\"totalNumberOfValues must be bigger than 0, is \" + totalNumberOfValues);\n  }\n  final int size=inputStream.read() + 1;\n  if (size == 0) {\n    throw new IOException(\"Cannot read the size of the encoded tree, unexpected end of stream\");\n  }\n  final byte[] encodedTree=new byte[size];\n  final int read=IOUtils.readFully(inputStream,encodedTree);\n  if (read != size) {\n    throw new EOFException();\n  }\n  int maxLength=0;\n  final int[] originalBitLengths=new int[totalNumberOfValues];\n  int pos=0;\n  for (  final byte b : encodedTree) {\n    final int numberOfValues=((b & 0xF0) >> 4) + 1;\n    if (pos + numberOfValues > totalNumberOfValues) {\n      throw new IOException(\"Number of values exceeds given total number of values\");\n    }\n    final int bitLength=(b & 0x0F) + 1;\n    for (int j=0; j < numberOfValues; j++) {\n      originalBitLengths[pos++]=bitLength;\n    }\n    maxLength=Math.max(maxLength,bitLength);\n  }\n  final int[] permutation=new int[originalBitLengths.length];\n  for (int k=0; k < permutation.length; k++) {\n    permutation[k]=k;\n  }\n  int c=0;\n  final int[] sortedBitLengths=new int[originalBitLengths.length];\n  for (int k=0; k < originalBitLengths.length; k++) {\n    for (int l=0; l < originalBitLengths.length; l++) {\n      if (originalBitLengths[l] == k) {\n        sortedBitLengths[c]=k;\n        permutation[c]=l;\n        c++;\n      }\n    }\n  }\n  int code=0;\n  int codeIncrement=0;\n  int lastBitLength=0;\n  final int[] codes=new int[totalNumberOfValues];\n  for (int i=totalNumberOfValues - 1; i >= 0; i--) {\n    code=code + codeIncrement;\n    if (sortedBitLengths[i] != lastBitLength) {\n      lastBitLength=sortedBitLengths[i];\n      codeIncrement=1 << (16 - lastBitLength);\n    }\n    codes[permutation[i]]=code;\n  }\n  final BinaryTree tree=new BinaryTree(maxLength);\n  for (int k=0; k < codes.length; k++) {\n    final int bitLength=originalBitLengths[k];\n    if (bitLength > 0) {\n      tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n    }\n  }\n  return tree;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 408,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 19,
+        "startLineNumber" : 156,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 156,
+        "endColumnNumber" : 31
+      },
+      "nodeContext" : "permutation[k]=k;\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "int"
+  }, {
+    "nodeContext" : "k",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 1,
+      "startLineNumber" : 161,
+      "startColumnNumber" : 24,
+      "endLineNumber" : 161,
+      "endColumnNumber" : 25
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 29,
+        "startLineNumber" : 161,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 53
+      },
+      "nodeContext" : "k < originalBitLengths.length",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 575,
+        "startLineNumber" : 161,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 175,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "for (int k=0; k < originalBitLengths.length; k++) {\n  for (int l=0; l < originalBitLengths.length; l++) {\n    if (originalBitLengths[l] == k) {\n      sortedBitLengths[c]=k;\n      permutation[c]=l;\n      c++;\n    }\n  }\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 50,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3358,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 110,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (totalNumberOfValues < 0) {\n    throw new IllegalArgumentException(\"totalNumberOfValues must be bigger than 0, is \" + totalNumberOfValues);\n  }\n  final int size=inputStream.read() + 1;\n  if (size == 0) {\n    throw new IOException(\"Cannot read the size of the encoded tree, unexpected end of stream\");\n  }\n  final byte[] encodedTree=new byte[size];\n  final int read=IOUtils.readFully(inputStream,encodedTree);\n  if (read != size) {\n    throw new EOFException();\n  }\n  int maxLength=0;\n  final int[] originalBitLengths=new int[totalNumberOfValues];\n  int pos=0;\n  for (  final byte b : encodedTree) {\n    final int numberOfValues=((b & 0xF0) >> 4) + 1;\n    if (pos + numberOfValues > totalNumberOfValues) {\n      throw new IOException(\"Number of values exceeds given total number of values\");\n    }\n    final int bitLength=(b & 0x0F) + 1;\n    for (int j=0; j < numberOfValues; j++) {\n      originalBitLengths[pos++]=bitLength;\n    }\n    maxLength=Math.max(maxLength,bitLength);\n  }\n  final int[] permutation=new int[originalBitLengths.length];\n  for (int k=0; k < permutation.length; k++) {\n    permutation[k]=k;\n  }\n  int c=0;\n  final int[] sortedBitLengths=new int[originalBitLengths.length];\n  for (int k=0; k < originalBitLengths.length; k++) {\n    for (int l=0; l < originalBitLengths.length; l++) {\n      if (originalBitLengths[l] == k) {\n        sortedBitLengths[c]=k;\n        permutation[c]=l;\n        c++;\n      }\n    }\n  }\n  int code=0;\n  int codeIncrement=0;\n  int lastBitLength=0;\n  final int[] codes=new int[totalNumberOfValues];\n  for (int i=totalNumberOfValues - 1; i >= 0; i--) {\n    code=code + codeIncrement;\n    if (sortedBitLengths[i] != lastBitLength) {\n      lastBitLength=sortedBitLengths[i];\n      codeIncrement=1 << (16 - lastBitLength);\n    }\n    codes[permutation[i]]=code;\n  }\n  final BinaryTree tree=new BinaryTree(maxLength);\n  for (int k=0; k < codes.length; k++) {\n    final int bitLength=originalBitLengths[k];\n    if (bitLength > 0) {\n      tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n    }\n  }\n  return tree;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 391,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3548,
+        "startLineNumber" : 113,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Decodes the packed binary tree from the specified stream.\n */\nstatic BinaryTree decode(final InputStream inputStream,final int totalNumberOfValues) throws IOException {\n  if (totalNumberOfValues < 0) {\n    throw new IllegalArgumentException(\"totalNumberOfValues must be bigger than 0, is \" + totalNumberOfValues);\n  }\n  final int size=inputStream.read() + 1;\n  if (size == 0) {\n    throw new IOException(\"Cannot read the size of the encoded tree, unexpected end of stream\");\n  }\n  final byte[] encodedTree=new byte[size];\n  final int read=IOUtils.readFully(inputStream,encodedTree);\n  if (read != size) {\n    throw new EOFException();\n  }\n  int maxLength=0;\n  final int[] originalBitLengths=new int[totalNumberOfValues];\n  int pos=0;\n  for (  final byte b : encodedTree) {\n    final int numberOfValues=((b & 0xF0) >> 4) + 1;\n    if (pos + numberOfValues > totalNumberOfValues) {\n      throw new IOException(\"Number of values exceeds given total number of values\");\n    }\n    final int bitLength=(b & 0x0F) + 1;\n    for (int j=0; j < numberOfValues; j++) {\n      originalBitLengths[pos++]=bitLength;\n    }\n    maxLength=Math.max(maxLength,bitLength);\n  }\n  final int[] permutation=new int[originalBitLengths.length];\n  for (int k=0; k < permutation.length; k++) {\n    permutation[k]=k;\n  }\n  int c=0;\n  final int[] sortedBitLengths=new int[originalBitLengths.length];\n  for (int k=0; k < originalBitLengths.length; k++) {\n    for (int l=0; l < originalBitLengths.length; l++) {\n      if (originalBitLengths[l] == k) {\n        sortedBitLengths[c]=k;\n        permutation[c]=l;\n        c++;\n      }\n    }\n  }\n  int code=0;\n  int codeIncrement=0;\n  int lastBitLength=0;\n  final int[] codes=new int[totalNumberOfValues];\n  for (int i=totalNumberOfValues - 1; i >= 0; i--) {\n    code=code + codeIncrement;\n    if (sortedBitLengths[i] != lastBitLength) {\n      lastBitLength=sortedBitLengths[i];\n      codeIncrement=1 << (16 - lastBitLength);\n    }\n    codes[permutation[i]]=code;\n  }\n  final BinaryTree tree=new BinaryTree(maxLength);\n  for (int k=0; k < codes.length; k++) {\n    final int bitLength=originalBitLengths[k];\n    if (bitLength > 0) {\n      tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n    }\n  }\n  return tree;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 408,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 29,
+        "startLineNumber" : 161,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 53
+      },
+      "nodeContext" : "k < originalBitLengths.length",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "int"
+  }, {
+    "nodeContext" : "k",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 1,
+      "startLineNumber" : 165,
+      "startColumnNumber" : 45,
+      "endLineNumber" : 165,
+      "endColumnNumber" : 46
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 26,
+        "startLineNumber" : 165,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 165,
+        "endColumnNumber" : 46
+      },
+      "nodeContext" : "originalBitLengths[l] == k",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 310,
+        "startLineNumber" : 165,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 173,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "if (originalBitLengths[l] == k) {\n  sortedBitLengths[c]=k;\n  permutation[c]=l;\n  c++;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 22,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 405,
+        "startLineNumber" : 163,
+        "startColumnNumber" : 64,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  if (originalBitLengths[l] == k) {\n    sortedBitLengths[c]=k;\n    permutation[c]=l;\n    c++;\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 23,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 457,
+        "startLineNumber" : 163,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "for (int l=0; l < originalBitLengths.length; l++) {\n  if (originalBitLengths[l] == k) {\n    sortedBitLengths[c]=k;\n    permutation[c]=l;\n    c++;\n  }\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 36,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 523,
+        "startLineNumber" : 161,
+        "startColumnNumber" : 60,
+        "endLineNumber" : 175,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  for (int l=0; l < originalBitLengths.length; l++) {\n    if (originalBitLengths[l] == k) {\n      sortedBitLengths[c]=k;\n      permutation[c]=l;\n      c++;\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 37,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 575,
+        "startLineNumber" : 161,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 175,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "for (int k=0; k < originalBitLengths.length; k++) {\n  for (int l=0; l < originalBitLengths.length; l++) {\n    if (originalBitLengths[l] == k) {\n      sortedBitLengths[c]=k;\n      permutation[c]=l;\n      c++;\n    }\n  }\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 50,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3358,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 110,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (totalNumberOfValues < 0) {\n    throw new IllegalArgumentException(\"totalNumberOfValues must be bigger than 0, is \" + totalNumberOfValues);\n  }\n  final int size=inputStream.read() + 1;\n  if (size == 0) {\n    throw new IOException(\"Cannot read the size of the encoded tree, unexpected end of stream\");\n  }\n  final byte[] encodedTree=new byte[size];\n  final int read=IOUtils.readFully(inputStream,encodedTree);\n  if (read != size) {\n    throw new EOFException();\n  }\n  int maxLength=0;\n  final int[] originalBitLengths=new int[totalNumberOfValues];\n  int pos=0;\n  for (  final byte b : encodedTree) {\n    final int numberOfValues=((b & 0xF0) >> 4) + 1;\n    if (pos + numberOfValues > totalNumberOfValues) {\n      throw new IOException(\"Number of values exceeds given total number of values\");\n    }\n    final int bitLength=(b & 0x0F) + 1;\n    for (int j=0; j < numberOfValues; j++) {\n      originalBitLengths[pos++]=bitLength;\n    }\n    maxLength=Math.max(maxLength,bitLength);\n  }\n  final int[] permutation=new int[originalBitLengths.length];\n  for (int k=0; k < permutation.length; k++) {\n    permutation[k]=k;\n  }\n  int c=0;\n  final int[] sortedBitLengths=new int[originalBitLengths.length];\n  for (int k=0; k < originalBitLengths.length; k++) {\n    for (int l=0; l < originalBitLengths.length; l++) {\n      if (originalBitLengths[l] == k) {\n        sortedBitLengths[c]=k;\n        permutation[c]=l;\n        c++;\n      }\n    }\n  }\n  int code=0;\n  int codeIncrement=0;\n  int lastBitLength=0;\n  final int[] codes=new int[totalNumberOfValues];\n  for (int i=totalNumberOfValues - 1; i >= 0; i--) {\n    code=code + codeIncrement;\n    if (sortedBitLengths[i] != lastBitLength) {\n      lastBitLength=sortedBitLengths[i];\n      codeIncrement=1 << (16 - lastBitLength);\n    }\n    codes[permutation[i]]=code;\n  }\n  final BinaryTree tree=new BinaryTree(maxLength);\n  for (int k=0; k < codes.length; k++) {\n    final int bitLength=originalBitLengths[k];\n    if (bitLength > 0) {\n      tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n    }\n  }\n  return tree;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 391,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3548,
+        "startLineNumber" : 113,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Decodes the packed binary tree from the specified stream.\n */\nstatic BinaryTree decode(final InputStream inputStream,final int totalNumberOfValues) throws IOException {\n  if (totalNumberOfValues < 0) {\n    throw new IllegalArgumentException(\"totalNumberOfValues must be bigger than 0, is \" + totalNumberOfValues);\n  }\n  final int size=inputStream.read() + 1;\n  if (size == 0) {\n    throw new IOException(\"Cannot read the size of the encoded tree, unexpected end of stream\");\n  }\n  final byte[] encodedTree=new byte[size];\n  final int read=IOUtils.readFully(inputStream,encodedTree);\n  if (read != size) {\n    throw new EOFException();\n  }\n  int maxLength=0;\n  final int[] originalBitLengths=new int[totalNumberOfValues];\n  int pos=0;\n  for (  final byte b : encodedTree) {\n    final int numberOfValues=((b & 0xF0) >> 4) + 1;\n    if (pos + numberOfValues > totalNumberOfValues) {\n      throw new IOException(\"Number of values exceeds given total number of values\");\n    }\n    final int bitLength=(b & 0x0F) + 1;\n    for (int j=0; j < numberOfValues; j++) {\n      originalBitLengths[pos++]=bitLength;\n    }\n    maxLength=Math.max(maxLength,bitLength);\n  }\n  final int[] permutation=new int[originalBitLengths.length];\n  for (int k=0; k < permutation.length; k++) {\n    permutation[k]=k;\n  }\n  int c=0;\n  final int[] sortedBitLengths=new int[originalBitLengths.length];\n  for (int k=0; k < originalBitLengths.length; k++) {\n    for (int l=0; l < originalBitLengths.length; l++) {\n      if (originalBitLengths[l] == k) {\n        sortedBitLengths[c]=k;\n        permutation[c]=l;\n        c++;\n      }\n    }\n  }\n  int code=0;\n  int codeIncrement=0;\n  int lastBitLength=0;\n  final int[] codes=new int[totalNumberOfValues];\n  for (int i=totalNumberOfValues - 1; i >= 0; i--) {\n    code=code + codeIncrement;\n    if (sortedBitLengths[i] != lastBitLength) {\n      lastBitLength=sortedBitLengths[i];\n      codeIncrement=1 << (16 - lastBitLength);\n    }\n    codes[permutation[i]]=code;\n  }\n  final BinaryTree tree=new BinaryTree(maxLength);\n  for (int k=0; k < codes.length; k++) {\n    final int bitLength=originalBitLengths[k];\n    if (bitLength > 0) {\n      tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n    }\n  }\n  return tree;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 408,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 26,
+        "startLineNumber" : 165,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 165,
+        "endColumnNumber" : 46
+      },
+      "nodeContext" : "originalBitLengths[l] == k",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "int"
+  }, {
+    "nodeContext" : "k",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 1,
+      "startLineNumber" : 167,
+      "startColumnNumber" : 42,
+      "endLineNumber" : 167,
+      "endColumnNumber" : 43
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 23,
+        "startLineNumber" : 167,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 167,
+        "endColumnNumber" : 43
+      },
+      "nodeContext" : "sortedBitLengths[c]=k",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 24,
+        "startLineNumber" : 167,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 167,
+        "endColumnNumber" : 44
+      },
+      "nodeContext" : "sortedBitLengths[c]=k;\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 278,
+        "startLineNumber" : 165,
+        "startColumnNumber" : 48,
+        "endLineNumber" : 173,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "{\n  sortedBitLengths[c]=k;\n  permutation[c]=l;\n  c++;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 16,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 310,
+        "startLineNumber" : 165,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 173,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "if (originalBitLengths[l] == k) {\n  sortedBitLengths[c]=k;\n  permutation[c]=l;\n  c++;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 22,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 405,
+        "startLineNumber" : 163,
+        "startColumnNumber" : 64,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  if (originalBitLengths[l] == k) {\n    sortedBitLengths[c]=k;\n    permutation[c]=l;\n    c++;\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 23,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 457,
+        "startLineNumber" : 163,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 174,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "for (int l=0; l < originalBitLengths.length; l++) {\n  if (originalBitLengths[l] == k) {\n    sortedBitLengths[c]=k;\n    permutation[c]=l;\n    c++;\n  }\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 36,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 523,
+        "startLineNumber" : 161,
+        "startColumnNumber" : 60,
+        "endLineNumber" : 175,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  for (int l=0; l < originalBitLengths.length; l++) {\n    if (originalBitLengths[l] == k) {\n      sortedBitLengths[c]=k;\n      permutation[c]=l;\n      c++;\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 37,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 575,
+        "startLineNumber" : 161,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 175,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "for (int k=0; k < originalBitLengths.length; k++) {\n  for (int l=0; l < originalBitLengths.length; l++) {\n    if (originalBitLengths[l] == k) {\n      sortedBitLengths[c]=k;\n      permutation[c]=l;\n      c++;\n    }\n  }\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 50,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3358,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 110,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (totalNumberOfValues < 0) {\n    throw new IllegalArgumentException(\"totalNumberOfValues must be bigger than 0, is \" + totalNumberOfValues);\n  }\n  final int size=inputStream.read() + 1;\n  if (size == 0) {\n    throw new IOException(\"Cannot read the size of the encoded tree, unexpected end of stream\");\n  }\n  final byte[] encodedTree=new byte[size];\n  final int read=IOUtils.readFully(inputStream,encodedTree);\n  if (read != size) {\n    throw new EOFException();\n  }\n  int maxLength=0;\n  final int[] originalBitLengths=new int[totalNumberOfValues];\n  int pos=0;\n  for (  final byte b : encodedTree) {\n    final int numberOfValues=((b & 0xF0) >> 4) + 1;\n    if (pos + numberOfValues > totalNumberOfValues) {\n      throw new IOException(\"Number of values exceeds given total number of values\");\n    }\n    final int bitLength=(b & 0x0F) + 1;\n    for (int j=0; j < numberOfValues; j++) {\n      originalBitLengths[pos++]=bitLength;\n    }\n    maxLength=Math.max(maxLength,bitLength);\n  }\n  final int[] permutation=new int[originalBitLengths.length];\n  for (int k=0; k < permutation.length; k++) {\n    permutation[k]=k;\n  }\n  int c=0;\n  final int[] sortedBitLengths=new int[originalBitLengths.length];\n  for (int k=0; k < originalBitLengths.length; k++) {\n    for (int l=0; l < originalBitLengths.length; l++) {\n      if (originalBitLengths[l] == k) {\n        sortedBitLengths[c]=k;\n        permutation[c]=l;\n        c++;\n      }\n    }\n  }\n  int code=0;\n  int codeIncrement=0;\n  int lastBitLength=0;\n  final int[] codes=new int[totalNumberOfValues];\n  for (int i=totalNumberOfValues - 1; i >= 0; i--) {\n    code=code + codeIncrement;\n    if (sortedBitLengths[i] != lastBitLength) {\n      lastBitLength=sortedBitLengths[i];\n      codeIncrement=1 << (16 - lastBitLength);\n    }\n    codes[permutation[i]]=code;\n  }\n  final BinaryTree tree=new BinaryTree(maxLength);\n  for (int k=0; k < codes.length; k++) {\n    final int bitLength=originalBitLengths[k];\n    if (bitLength > 0) {\n      tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n    }\n  }\n  return tree;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 391,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3548,
+        "startLineNumber" : 113,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Decodes the packed binary tree from the specified stream.\n */\nstatic BinaryTree decode(final InputStream inputStream,final int totalNumberOfValues) throws IOException {\n  if (totalNumberOfValues < 0) {\n    throw new IllegalArgumentException(\"totalNumberOfValues must be bigger than 0, is \" + totalNumberOfValues);\n  }\n  final int size=inputStream.read() + 1;\n  if (size == 0) {\n    throw new IOException(\"Cannot read the size of the encoded tree, unexpected end of stream\");\n  }\n  final byte[] encodedTree=new byte[size];\n  final int read=IOUtils.readFully(inputStream,encodedTree);\n  if (read != size) {\n    throw new EOFException();\n  }\n  int maxLength=0;\n  final int[] originalBitLengths=new int[totalNumberOfValues];\n  int pos=0;\n  for (  final byte b : encodedTree) {\n    final int numberOfValues=((b & 0xF0) >> 4) + 1;\n    if (pos + numberOfValues > totalNumberOfValues) {\n      throw new IOException(\"Number of values exceeds given total number of values\");\n    }\n    final int bitLength=(b & 0x0F) + 1;\n    for (int j=0; j < numberOfValues; j++) {\n      originalBitLengths[pos++]=bitLength;\n    }\n    maxLength=Math.max(maxLength,bitLength);\n  }\n  final int[] permutation=new int[originalBitLengths.length];\n  for (int k=0; k < permutation.length; k++) {\n    permutation[k]=k;\n  }\n  int c=0;\n  final int[] sortedBitLengths=new int[originalBitLengths.length];\n  for (int k=0; k < originalBitLengths.length; k++) {\n    for (int l=0; l < originalBitLengths.length; l++) {\n      if (originalBitLengths[l] == k) {\n        sortedBitLengths[c]=k;\n        permutation[c]=l;\n        c++;\n      }\n    }\n  }\n  int code=0;\n  int codeIncrement=0;\n  int lastBitLength=0;\n  final int[] codes=new int[totalNumberOfValues];\n  for (int i=totalNumberOfValues - 1; i >= 0; i--) {\n    code=code + codeIncrement;\n    if (sortedBitLengths[i] != lastBitLength) {\n      lastBitLength=sortedBitLengths[i];\n      codeIncrement=1 << (16 - lastBitLength);\n    }\n    codes[permutation[i]]=code;\n  }\n  final BinaryTree tree=new BinaryTree(maxLength);\n  for (int k=0; k < codes.length; k++) {\n    final int bitLength=originalBitLengths[k];\n    if (bitLength > 0) {\n      tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n    }\n  }\n  return tree;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 408,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 24,
+        "startLineNumber" : 167,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 167,
+        "endColumnNumber" : 44
+      },
+      "nodeContext" : "sortedBitLengths[c]=k;\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "int"
+  }, {
+    "nodeContext" : "k",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 1,
+      "startLineNumber" : 196,
+      "startColumnNumber" : 24,
+      "endLineNumber" : 196,
+      "endColumnNumber" : 25
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 16,
+        "startLineNumber" : 196,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 196,
+        "endColumnNumber" : 40
+      },
+      "nodeContext" : "k < codes.length",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 239,
+        "startLineNumber" : 196,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 201,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "for (int k=0; k < codes.length; k++) {\n  final int bitLength=originalBitLengths[k];\n  if (bitLength > 0) {\n    tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n  }\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 42,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3358,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 110,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (totalNumberOfValues < 0) {\n    throw new IllegalArgumentException(\"totalNumberOfValues must be bigger than 0, is \" + totalNumberOfValues);\n  }\n  final int size=inputStream.read() + 1;\n  if (size == 0) {\n    throw new IOException(\"Cannot read the size of the encoded tree, unexpected end of stream\");\n  }\n  final byte[] encodedTree=new byte[size];\n  final int read=IOUtils.readFully(inputStream,encodedTree);\n  if (read != size) {\n    throw new EOFException();\n  }\n  int maxLength=0;\n  final int[] originalBitLengths=new int[totalNumberOfValues];\n  int pos=0;\n  for (  final byte b : encodedTree) {\n    final int numberOfValues=((b & 0xF0) >> 4) + 1;\n    if (pos + numberOfValues > totalNumberOfValues) {\n      throw new IOException(\"Number of values exceeds given total number of values\");\n    }\n    final int bitLength=(b & 0x0F) + 1;\n    for (int j=0; j < numberOfValues; j++) {\n      originalBitLengths[pos++]=bitLength;\n    }\n    maxLength=Math.max(maxLength,bitLength);\n  }\n  final int[] permutation=new int[originalBitLengths.length];\n  for (int k=0; k < permutation.length; k++) {\n    permutation[k]=k;\n  }\n  int c=0;\n  final int[] sortedBitLengths=new int[originalBitLengths.length];\n  for (int k=0; k < originalBitLengths.length; k++) {\n    for (int l=0; l < originalBitLengths.length; l++) {\n      if (originalBitLengths[l] == k) {\n        sortedBitLengths[c]=k;\n        permutation[c]=l;\n        c++;\n      }\n    }\n  }\n  int code=0;\n  int codeIncrement=0;\n  int lastBitLength=0;\n  final int[] codes=new int[totalNumberOfValues];\n  for (int i=totalNumberOfValues - 1; i >= 0; i--) {\n    code=code + codeIncrement;\n    if (sortedBitLengths[i] != lastBitLength) {\n      lastBitLength=sortedBitLengths[i];\n      codeIncrement=1 << (16 - lastBitLength);\n    }\n    codes[permutation[i]]=code;\n  }\n  final BinaryTree tree=new BinaryTree(maxLength);\n  for (int k=0; k < codes.length; k++) {\n    final int bitLength=originalBitLengths[k];\n    if (bitLength > 0) {\n      tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n    }\n  }\n  return tree;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 391,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3548,
+        "startLineNumber" : 113,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Decodes the packed binary tree from the specified stream.\n */\nstatic BinaryTree decode(final InputStream inputStream,final int totalNumberOfValues) throws IOException {\n  if (totalNumberOfValues < 0) {\n    throw new IllegalArgumentException(\"totalNumberOfValues must be bigger than 0, is \" + totalNumberOfValues);\n  }\n  final int size=inputStream.read() + 1;\n  if (size == 0) {\n    throw new IOException(\"Cannot read the size of the encoded tree, unexpected end of stream\");\n  }\n  final byte[] encodedTree=new byte[size];\n  final int read=IOUtils.readFully(inputStream,encodedTree);\n  if (read != size) {\n    throw new EOFException();\n  }\n  int maxLength=0;\n  final int[] originalBitLengths=new int[totalNumberOfValues];\n  int pos=0;\n  for (  final byte b : encodedTree) {\n    final int numberOfValues=((b & 0xF0) >> 4) + 1;\n    if (pos + numberOfValues > totalNumberOfValues) {\n      throw new IOException(\"Number of values exceeds given total number of values\");\n    }\n    final int bitLength=(b & 0x0F) + 1;\n    for (int j=0; j < numberOfValues; j++) {\n      originalBitLengths[pos++]=bitLength;\n    }\n    maxLength=Math.max(maxLength,bitLength);\n  }\n  final int[] permutation=new int[originalBitLengths.length];\n  for (int k=0; k < permutation.length; k++) {\n    permutation[k]=k;\n  }\n  int c=0;\n  final int[] sortedBitLengths=new int[originalBitLengths.length];\n  for (int k=0; k < originalBitLengths.length; k++) {\n    for (int l=0; l < originalBitLengths.length; l++) {\n      if (originalBitLengths[l] == k) {\n        sortedBitLengths[c]=k;\n        permutation[c]=l;\n        c++;\n      }\n    }\n  }\n  int code=0;\n  int codeIncrement=0;\n  int lastBitLength=0;\n  final int[] codes=new int[totalNumberOfValues];\n  for (int i=totalNumberOfValues - 1; i >= 0; i--) {\n    code=code + codeIncrement;\n    if (sortedBitLengths[i] != lastBitLength) {\n      lastBitLength=sortedBitLengths[i];\n      codeIncrement=1 << (16 - lastBitLength);\n    }\n    codes[permutation[i]]=code;\n  }\n  final BinaryTree tree=new BinaryTree(maxLength);\n  for (int k=0; k < codes.length; k++) {\n    final int bitLength=originalBitLengths[k];\n    if (bitLength > 0) {\n      tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n    }\n  }\n  return tree;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 408,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 16,
+        "startLineNumber" : 196,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 196,
+        "endColumnNumber" : 40
+      },
+      "nodeContext" : "k < codes.length",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "int"
+  }, {
+    "nodeContext" : "k",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 1,
+      "startLineNumber" : 197,
+      "startColumnNumber" : 53,
+      "endLineNumber" : 197,
+      "endColumnNumber" : 54
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 21,
+        "startLineNumber" : 197,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 197,
+        "endColumnNumber" : 55
+      },
+      "nodeContext" : "originalBitLengths[k]",
+      "nodeType" : "ArrayAccess",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 33,
+        "startLineNumber" : 197,
+        "startColumnNumber" : 22,
+        "endLineNumber" : 197,
+        "endColumnNumber" : 55
+      },
+      "nodeContext" : "bitLength=originalBitLengths[k]",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 44,
+        "startLineNumber" : 197,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 197,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "final int bitLength=originalBitLengths[k];\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 200,
+        "startLineNumber" : 196,
+        "startColumnNumber" : 47,
+        "endLineNumber" : 201,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  final int bitLength=originalBitLengths[k];\n  if (bitLength > 0) {\n    tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 29,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 239,
+        "startLineNumber" : 196,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 201,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "for (int k=0; k < codes.length; k++) {\n  final int bitLength=originalBitLengths[k];\n  if (bitLength > 0) {\n    tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n  }\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 42,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3358,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 110,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (totalNumberOfValues < 0) {\n    throw new IllegalArgumentException(\"totalNumberOfValues must be bigger than 0, is \" + totalNumberOfValues);\n  }\n  final int size=inputStream.read() + 1;\n  if (size == 0) {\n    throw new IOException(\"Cannot read the size of the encoded tree, unexpected end of stream\");\n  }\n  final byte[] encodedTree=new byte[size];\n  final int read=IOUtils.readFully(inputStream,encodedTree);\n  if (read != size) {\n    throw new EOFException();\n  }\n  int maxLength=0;\n  final int[] originalBitLengths=new int[totalNumberOfValues];\n  int pos=0;\n  for (  final byte b : encodedTree) {\n    final int numberOfValues=((b & 0xF0) >> 4) + 1;\n    if (pos + numberOfValues > totalNumberOfValues) {\n      throw new IOException(\"Number of values exceeds given total number of values\");\n    }\n    final int bitLength=(b & 0x0F) + 1;\n    for (int j=0; j < numberOfValues; j++) {\n      originalBitLengths[pos++]=bitLength;\n    }\n    maxLength=Math.max(maxLength,bitLength);\n  }\n  final int[] permutation=new int[originalBitLengths.length];\n  for (int k=0; k < permutation.length; k++) {\n    permutation[k]=k;\n  }\n  int c=0;\n  final int[] sortedBitLengths=new int[originalBitLengths.length];\n  for (int k=0; k < originalBitLengths.length; k++) {\n    for (int l=0; l < originalBitLengths.length; l++) {\n      if (originalBitLengths[l] == k) {\n        sortedBitLengths[c]=k;\n        permutation[c]=l;\n        c++;\n      }\n    }\n  }\n  int code=0;\n  int codeIncrement=0;\n  int lastBitLength=0;\n  final int[] codes=new int[totalNumberOfValues];\n  for (int i=totalNumberOfValues - 1; i >= 0; i--) {\n    code=code + codeIncrement;\n    if (sortedBitLengths[i] != lastBitLength) {\n      lastBitLength=sortedBitLengths[i];\n      codeIncrement=1 << (16 - lastBitLength);\n    }\n    codes[permutation[i]]=code;\n  }\n  final BinaryTree tree=new BinaryTree(maxLength);\n  for (int k=0; k < codes.length; k++) {\n    final int bitLength=originalBitLengths[k];\n    if (bitLength > 0) {\n      tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n    }\n  }\n  return tree;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 391,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3548,
+        "startLineNumber" : 113,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Decodes the packed binary tree from the specified stream.\n */\nstatic BinaryTree decode(final InputStream inputStream,final int totalNumberOfValues) throws IOException {\n  if (totalNumberOfValues < 0) {\n    throw new IllegalArgumentException(\"totalNumberOfValues must be bigger than 0, is \" + totalNumberOfValues);\n  }\n  final int size=inputStream.read() + 1;\n  if (size == 0) {\n    throw new IOException(\"Cannot read the size of the encoded tree, unexpected end of stream\");\n  }\n  final byte[] encodedTree=new byte[size];\n  final int read=IOUtils.readFully(inputStream,encodedTree);\n  if (read != size) {\n    throw new EOFException();\n  }\n  int maxLength=0;\n  final int[] originalBitLengths=new int[totalNumberOfValues];\n  int pos=0;\n  for (  final byte b : encodedTree) {\n    final int numberOfValues=((b & 0xF0) >> 4) + 1;\n    if (pos + numberOfValues > totalNumberOfValues) {\n      throw new IOException(\"Number of values exceeds given total number of values\");\n    }\n    final int bitLength=(b & 0x0F) + 1;\n    for (int j=0; j < numberOfValues; j++) {\n      originalBitLengths[pos++]=bitLength;\n    }\n    maxLength=Math.max(maxLength,bitLength);\n  }\n  final int[] permutation=new int[originalBitLengths.length];\n  for (int k=0; k < permutation.length; k++) {\n    permutation[k]=k;\n  }\n  int c=0;\n  final int[] sortedBitLengths=new int[originalBitLengths.length];\n  for (int k=0; k < originalBitLengths.length; k++) {\n    for (int l=0; l < originalBitLengths.length; l++) {\n      if (originalBitLengths[l] == k) {\n        sortedBitLengths[c]=k;\n        permutation[c]=l;\n        c++;\n      }\n    }\n  }\n  int code=0;\n  int codeIncrement=0;\n  int lastBitLength=0;\n  final int[] codes=new int[totalNumberOfValues];\n  for (int i=totalNumberOfValues - 1; i >= 0; i--) {\n    code=code + codeIncrement;\n    if (sortedBitLengths[i] != lastBitLength) {\n      lastBitLength=sortedBitLengths[i];\n      codeIncrement=1 << (16 - lastBitLength);\n    }\n    codes[permutation[i]]=code;\n  }\n  final BinaryTree tree=new BinaryTree(maxLength);\n  for (int k=0; k < codes.length; k++) {\n    final int bitLength=originalBitLengths[k];\n    if (bitLength > 0) {\n      tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n    }\n  }\n  return tree;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 408,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 44,
+        "startLineNumber" : 197,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 197,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "final int bitLength=originalBitLengths[k];\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "int"
+  }, {
+    "nodeContext" : "k",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 1,
+      "startLineNumber" : 199,
+      "startColumnNumber" : 54,
+      "endLineNumber" : 199,
+      "endColumnNumber" : 55
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 8,
+        "startLineNumber" : 199,
+        "startColumnNumber" : 48,
+        "endLineNumber" : 199,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "codes[k]",
+      "nodeType" : "ArrayAccess",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 14,
+        "startLineNumber" : 199,
+        "startColumnNumber" : 48,
+        "endLineNumber" : 199,
+        "endColumnNumber" : 62
+      },
+      "nodeContext" : "codes[k] << 16",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 31,
+        "startLineNumber" : 199,
+        "startColumnNumber" : 32,
+        "endLineNumber" : 199,
+        "endColumnNumber" : 63
+      },
+      "nodeContext" : "Integer.reverse(codes[k] << 16)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 62,
+        "startLineNumber" : 199,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 199,
+        "endColumnNumber" : 78
+      },
+      "nodeContext" : "tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 14,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 63,
+        "startLineNumber" : 199,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 199,
+        "endColumnNumber" : 79
+      },
+      "nodeContext" : "tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 97,
+        "startLineNumber" : 198,
+        "startColumnNumber" : 31,
+        "endLineNumber" : 200,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 16,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 116,
+        "startLineNumber" : 198,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 200,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "if (bitLength > 0) {\n  tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 20,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 200,
+        "startLineNumber" : 196,
+        "startColumnNumber" : 47,
+        "endLineNumber" : 201,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  final int bitLength=originalBitLengths[k];\n  if (bitLength > 0) {\n    tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 29,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 239,
+        "startLineNumber" : 196,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 201,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "for (int k=0; k < codes.length; k++) {\n  final int bitLength=originalBitLengths[k];\n  if (bitLength > 0) {\n    tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n  }\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 42,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3358,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 110,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (totalNumberOfValues < 0) {\n    throw new IllegalArgumentException(\"totalNumberOfValues must be bigger than 0, is \" + totalNumberOfValues);\n  }\n  final int size=inputStream.read() + 1;\n  if (size == 0) {\n    throw new IOException(\"Cannot read the size of the encoded tree, unexpected end of stream\");\n  }\n  final byte[] encodedTree=new byte[size];\n  final int read=IOUtils.readFully(inputStream,encodedTree);\n  if (read != size) {\n    throw new EOFException();\n  }\n  int maxLength=0;\n  final int[] originalBitLengths=new int[totalNumberOfValues];\n  int pos=0;\n  for (  final byte b : encodedTree) {\n    final int numberOfValues=((b & 0xF0) >> 4) + 1;\n    if (pos + numberOfValues > totalNumberOfValues) {\n      throw new IOException(\"Number of values exceeds given total number of values\");\n    }\n    final int bitLength=(b & 0x0F) + 1;\n    for (int j=0; j < numberOfValues; j++) {\n      originalBitLengths[pos++]=bitLength;\n    }\n    maxLength=Math.max(maxLength,bitLength);\n  }\n  final int[] permutation=new int[originalBitLengths.length];\n  for (int k=0; k < permutation.length; k++) {\n    permutation[k]=k;\n  }\n  int c=0;\n  final int[] sortedBitLengths=new int[originalBitLengths.length];\n  for (int k=0; k < originalBitLengths.length; k++) {\n    for (int l=0; l < originalBitLengths.length; l++) {\n      if (originalBitLengths[l] == k) {\n        sortedBitLengths[c]=k;\n        permutation[c]=l;\n        c++;\n      }\n    }\n  }\n  int code=0;\n  int codeIncrement=0;\n  int lastBitLength=0;\n  final int[] codes=new int[totalNumberOfValues];\n  for (int i=totalNumberOfValues - 1; i >= 0; i--) {\n    code=code + codeIncrement;\n    if (sortedBitLengths[i] != lastBitLength) {\n      lastBitLength=sortedBitLengths[i];\n      codeIncrement=1 << (16 - lastBitLength);\n    }\n    codes[permutation[i]]=code;\n  }\n  final BinaryTree tree=new BinaryTree(maxLength);\n  for (int k=0; k < codes.length; k++) {\n    final int bitLength=originalBitLengths[k];\n    if (bitLength > 0) {\n      tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n    }\n  }\n  return tree;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 391,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3548,
+        "startLineNumber" : 113,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Decodes the packed binary tree from the specified stream.\n */\nstatic BinaryTree decode(final InputStream inputStream,final int totalNumberOfValues) throws IOException {\n  if (totalNumberOfValues < 0) {\n    throw new IllegalArgumentException(\"totalNumberOfValues must be bigger than 0, is \" + totalNumberOfValues);\n  }\n  final int size=inputStream.read() + 1;\n  if (size == 0) {\n    throw new IOException(\"Cannot read the size of the encoded tree, unexpected end of stream\");\n  }\n  final byte[] encodedTree=new byte[size];\n  final int read=IOUtils.readFully(inputStream,encodedTree);\n  if (read != size) {\n    throw new EOFException();\n  }\n  int maxLength=0;\n  final int[] originalBitLengths=new int[totalNumberOfValues];\n  int pos=0;\n  for (  final byte b : encodedTree) {\n    final int numberOfValues=((b & 0xF0) >> 4) + 1;\n    if (pos + numberOfValues > totalNumberOfValues) {\n      throw new IOException(\"Number of values exceeds given total number of values\");\n    }\n    final int bitLength=(b & 0x0F) + 1;\n    for (int j=0; j < numberOfValues; j++) {\n      originalBitLengths[pos++]=bitLength;\n    }\n    maxLength=Math.max(maxLength,bitLength);\n  }\n  final int[] permutation=new int[originalBitLengths.length];\n  for (int k=0; k < permutation.length; k++) {\n    permutation[k]=k;\n  }\n  int c=0;\n  final int[] sortedBitLengths=new int[originalBitLengths.length];\n  for (int k=0; k < originalBitLengths.length; k++) {\n    for (int l=0; l < originalBitLengths.length; l++) {\n      if (originalBitLengths[l] == k) {\n        sortedBitLengths[c]=k;\n        permutation[c]=l;\n        c++;\n      }\n    }\n  }\n  int code=0;\n  int codeIncrement=0;\n  int lastBitLength=0;\n  final int[] codes=new int[totalNumberOfValues];\n  for (int i=totalNumberOfValues - 1; i >= 0; i--) {\n    code=code + codeIncrement;\n    if (sortedBitLengths[i] != lastBitLength) {\n      lastBitLength=sortedBitLengths[i];\n      codeIncrement=1 << (16 - lastBitLength);\n    }\n    codes[permutation[i]]=code;\n  }\n  final BinaryTree tree=new BinaryTree(maxLength);\n  for (int k=0; k < codes.length; k++) {\n    final int bitLength=originalBitLengths[k];\n    if (bitLength > 0) {\n      tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n    }\n  }\n  return tree;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 408,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 63,
+        "startLineNumber" : 199,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 199,
+        "endColumnNumber" : 79
+      },
+      "nodeContext" : "tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "int"
+  }, {
+    "nodeContext" : "k",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 1,
+      "startLineNumber" : 199,
+      "startColumnNumber" : 76,
+      "endLineNumber" : 199,
+      "endColumnNumber" : 77
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 62,
+        "startLineNumber" : 199,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 199,
+        "endColumnNumber" : 78
+      },
+      "nodeContext" : "tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 14,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 63,
+        "startLineNumber" : 199,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 199,
+        "endColumnNumber" : 79
+      },
+      "nodeContext" : "tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 97,
+        "startLineNumber" : 198,
+        "startColumnNumber" : 31,
+        "endLineNumber" : 200,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 16,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 116,
+        "startLineNumber" : 198,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 200,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "if (bitLength > 0) {\n  tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 20,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 200,
+        "startLineNumber" : 196,
+        "startColumnNumber" : 47,
+        "endLineNumber" : 201,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  final int bitLength=originalBitLengths[k];\n  if (bitLength > 0) {\n    tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 29,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 239,
+        "startLineNumber" : 196,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 201,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "for (int k=0; k < codes.length; k++) {\n  final int bitLength=originalBitLengths[k];\n  if (bitLength > 0) {\n    tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n  }\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 42,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3358,
+        "startLineNumber" : 116,
+        "startColumnNumber" : 110,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (totalNumberOfValues < 0) {\n    throw new IllegalArgumentException(\"totalNumberOfValues must be bigger than 0, is \" + totalNumberOfValues);\n  }\n  final int size=inputStream.read() + 1;\n  if (size == 0) {\n    throw new IOException(\"Cannot read the size of the encoded tree, unexpected end of stream\");\n  }\n  final byte[] encodedTree=new byte[size];\n  final int read=IOUtils.readFully(inputStream,encodedTree);\n  if (read != size) {\n    throw new EOFException();\n  }\n  int maxLength=0;\n  final int[] originalBitLengths=new int[totalNumberOfValues];\n  int pos=0;\n  for (  final byte b : encodedTree) {\n    final int numberOfValues=((b & 0xF0) >> 4) + 1;\n    if (pos + numberOfValues > totalNumberOfValues) {\n      throw new IOException(\"Number of values exceeds given total number of values\");\n    }\n    final int bitLength=(b & 0x0F) + 1;\n    for (int j=0; j < numberOfValues; j++) {\n      originalBitLengths[pos++]=bitLength;\n    }\n    maxLength=Math.max(maxLength,bitLength);\n  }\n  final int[] permutation=new int[originalBitLengths.length];\n  for (int k=0; k < permutation.length; k++) {\n    permutation[k]=k;\n  }\n  int c=0;\n  final int[] sortedBitLengths=new int[originalBitLengths.length];\n  for (int k=0; k < originalBitLengths.length; k++) {\n    for (int l=0; l < originalBitLengths.length; l++) {\n      if (originalBitLengths[l] == k) {\n        sortedBitLengths[c]=k;\n        permutation[c]=l;\n        c++;\n      }\n    }\n  }\n  int code=0;\n  int codeIncrement=0;\n  int lastBitLength=0;\n  final int[] codes=new int[totalNumberOfValues];\n  for (int i=totalNumberOfValues - 1; i >= 0; i--) {\n    code=code + codeIncrement;\n    if (sortedBitLengths[i] != lastBitLength) {\n      lastBitLength=sortedBitLengths[i];\n      codeIncrement=1 << (16 - lastBitLength);\n    }\n    codes[permutation[i]]=code;\n  }\n  final BinaryTree tree=new BinaryTree(maxLength);\n  for (int k=0; k < codes.length; k++) {\n    final int bitLength=originalBitLengths[k];\n    if (bitLength > 0) {\n      tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n    }\n  }\n  return tree;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 391,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3548,
+        "startLineNumber" : 113,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Decodes the packed binary tree from the specified stream.\n */\nstatic BinaryTree decode(final InputStream inputStream,final int totalNumberOfValues) throws IOException {\n  if (totalNumberOfValues < 0) {\n    throw new IllegalArgumentException(\"totalNumberOfValues must be bigger than 0, is \" + totalNumberOfValues);\n  }\n  final int size=inputStream.read() + 1;\n  if (size == 0) {\n    throw new IOException(\"Cannot read the size of the encoded tree, unexpected end of stream\");\n  }\n  final byte[] encodedTree=new byte[size];\n  final int read=IOUtils.readFully(inputStream,encodedTree);\n  if (read != size) {\n    throw new EOFException();\n  }\n  int maxLength=0;\n  final int[] originalBitLengths=new int[totalNumberOfValues];\n  int pos=0;\n  for (  final byte b : encodedTree) {\n    final int numberOfValues=((b & 0xF0) >> 4) + 1;\n    if (pos + numberOfValues > totalNumberOfValues) {\n      throw new IOException(\"Number of values exceeds given total number of values\");\n    }\n    final int bitLength=(b & 0x0F) + 1;\n    for (int j=0; j < numberOfValues; j++) {\n      originalBitLengths[pos++]=bitLength;\n    }\n    maxLength=Math.max(maxLength,bitLength);\n  }\n  final int[] permutation=new int[originalBitLengths.length];\n  for (int k=0; k < permutation.length; k++) {\n    permutation[k]=k;\n  }\n  int c=0;\n  final int[] sortedBitLengths=new int[originalBitLengths.length];\n  for (int k=0; k < originalBitLengths.length; k++) {\n    for (int l=0; l < originalBitLengths.length; l++) {\n      if (originalBitLengths[l] == k) {\n        sortedBitLengths[c]=k;\n        permutation[c]=l;\n        c++;\n      }\n    }\n  }\n  int code=0;\n  int codeIncrement=0;\n  int lastBitLength=0;\n  final int[] codes=new int[totalNumberOfValues];\n  for (int i=totalNumberOfValues - 1; i >= 0; i--) {\n    code=code + codeIncrement;\n    if (sortedBitLengths[i] != lastBitLength) {\n      lastBitLength=sortedBitLengths[i];\n      codeIncrement=1 << (16 - lastBitLength);\n    }\n    codes[permutation[i]]=code;\n  }\n  final BinaryTree tree=new BinaryTree(maxLength);\n  for (int k=0; k < codes.length; k++) {\n    final int bitLength=originalBitLengths[k];\n    if (bitLength > 0) {\n      tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n    }\n  }\n  return tree;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 408,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 63,
+        "startLineNumber" : 199,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 199,
+        "endColumnNumber" : 79
+      },
+      "nodeContext" : "tree.addLeaf(0,Integer.reverse(codes[k] << 16),bitLength,k);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "int"
+  } ],
+  "positionList" : [ {
+    "charLength" : 1,
+    "startLineNumber" : 155,
+    "startColumnNumber" : 24,
+    "endLineNumber" : 155,
+    "endColumnNumber" : 25
+  }, {
+    "charLength" : 1,
+    "startLineNumber" : 156,
+    "startColumnNumber" : 24,
+    "endLineNumber" : 156,
+    "endColumnNumber" : 25
+  }, {
+    "charLength" : 1,
+    "startLineNumber" : 156,
+    "startColumnNumber" : 29,
+    "endLineNumber" : 156,
+    "endColumnNumber" : 30
+  }, {
+    "charLength" : 1,
+    "startLineNumber" : 161,
+    "startColumnNumber" : 24,
+    "endLineNumber" : 161,
+    "endColumnNumber" : 25
+  }, {
+    "charLength" : 1,
+    "startLineNumber" : 165,
+    "startColumnNumber" : 45,
+    "endLineNumber" : 165,
+    "endColumnNumber" : 46
+  }, {
+    "charLength" : 1,
+    "startLineNumber" : 167,
+    "startColumnNumber" : 42,
+    "endLineNumber" : 167,
+    "endColumnNumber" : 43
+  }, {
+    "charLength" : 1,
+    "startLineNumber" : 196,
+    "startColumnNumber" : 24,
+    "endLineNumber" : 196,
+    "endColumnNumber" : 25
+  }, {
+    "charLength" : 1,
+    "startLineNumber" : 197,
+    "startColumnNumber" : 53,
+    "endLineNumber" : 197,
+    "endColumnNumber" : 54
+  }, {
+    "charLength" : 1,
+    "startLineNumber" : 199,
+    "startColumnNumber" : 54,
+    "endLineNumber" : 199,
+    "endColumnNumber" : 55
+  }, {
+    "charLength" : 1,
+    "startLineNumber" : 199,
+    "startColumnNumber" : 76,
+    "endLineNumber" : 199,
+    "endColumnNumber" : 77
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 1
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 1
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 4,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 5,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 6,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 7,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 8,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 9,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 1
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 3,
+    "layout" : 5
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 4,
+    "layout" : 5
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 5,
+    "layout" : 5
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 6,
+    "layout" : 5
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 7,
+    "layout" : 5
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 8,
+    "layout" : 5
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 9,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 0
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 5,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 6,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 7,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 8,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 9,
+    "layout" : 4
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 0,
+    "layout" : 2
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 2,
+    "layout" : 2
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 4,
+    "layout" : 1
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 5,
+    "layout" : 1
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 6,
+    "layout" : 2
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 7,
+    "layout" : 2
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 8,
+    "layout" : 2
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 9,
+    "layout" : 2
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 0,
+    "layout" : 6
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 1,
+    "layout" : 6
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 2,
+    "layout" : 6
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 3,
+    "layout" : 5
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 5,
+    "layout" : 1
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 6,
+    "layout" : 6
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 7,
+    "layout" : 6
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 8,
+    "layout" : 6
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 9,
+    "layout" : 6
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 0,
+    "layout" : 8
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 1,
+    "layout" : 8
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 2,
+    "layout" : 8
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 3,
+    "layout" : 7
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 6,
+    "layout" : 8
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 7,
+    "layout" : 8
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 8,
+    "layout" : 8
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 9,
+    "layout" : 8
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 0,
+    "layout" : 2
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 2,
+    "layout" : 2
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 4,
+    "layout" : 2
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 5,
+    "layout" : 2
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 7,
+    "layout" : 1
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 8,
+    "layout" : 1
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 9,
+    "layout" : 1
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 3,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 4,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 5,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 6,
+    "layout" : 4
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 0,
+    "layout" : 9
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 1,
+    "layout" : 9
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 2,
+    "layout" : 9
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 3,
+    "layout" : 9
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 4,
+    "layout" : 9
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 5,
+    "layout" : 9
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 6,
+    "layout" : 8
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 7,
+    "layout" : 7
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 0,
+    "layout" : 6
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 1,
+    "layout" : 6
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 2,
+    "layout" : 6
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 3,
+    "layout" : 6
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 4,
+    "layout" : 6
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 5,
+    "layout" : 6
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 6,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 7,
+    "layout" : 4
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 8,
+    "layout" : 0
+  } ]
+}

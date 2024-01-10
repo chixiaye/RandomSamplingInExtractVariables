@@ -1,113 +1,100 @@
 {
   "id" : 131,
-  "expression" : "\"realm_jni64d\"",
+  "expression" : "TEST_SIZE",
   "projectName" : "realm@realm-java",
-  "commitID" : "9da3b229a46407f73e2003fb40857cadf062086b",
-  "filePath" : "/realm/realm-library/src/main/java/io/realm/internal/RealmCore.java",
+  "commitID" : "8a874c4492afa96a554c9eb1ce026f6fb1fc5148",
+  "filePath" : "realm/realm-library/src/syncIntegrationTest/java/io/realm/PermissionManagerTests.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "\"realm_jni64d\"",
-    "nodeType" : "StringLiteral",
+    "nodeContext" : "TEST_SIZE",
+    "nodeType" : "SimpleName",
     "nodePosition" : {
-      "charLength" : 14,
-      "startLineNumber" : 75,
-      "startColumnNumber" : 52,
-      "endLineNumber" : 75,
-      "endColumnNumber" : 66
+      "charLength" : 9,
+      "startLineNumber" : 165,
+      "startColumnNumber" : 36,
+      "endLineNumber" : 165,
+      "endColumnNumber" : 45
     },
     "astNodeNumber" : 1,
     "astHeight" : 1,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,expression]",
       "nodePosition" : {
-        "charLength" : 50,
-        "startLineNumber" : 75,
-        "startColumnNumber" : 17,
-        "endLineNumber" : 75,
-        "endColumnNumber" : 67
+        "charLength" : 13,
+        "startLineNumber" : 165,
+        "startColumnNumber" : 32,
+        "endLineNumber" : 165,
+        "endColumnNumber" : 45
       },
-      "nodeContext" : "loadCorrectLibrary(\"realm_jni32d\",\"realm_jni64d\")",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 4,
+      "nodeContext" : "i < TEST_SIZE",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
       "astHeight" : 2
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
-      "nodePosition" : {
-        "charLength" : 59,
-        "startLineNumber" : 75,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 75,
-        "endColumnNumber" : 67
-      },
-      "nodeContext" : "jnilib=loadCorrectLibrary(\"realm_jni32d\",\"realm_jni64d\")",
-      "nodeType" : "Assignment",
-      "astNodeNumber" : 6,
-      "astHeight" : 3
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 60,
-        "startLineNumber" : 75,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 75,
-        "endColumnNumber" : 68
+        "charLength" : 321,
+        "startLineNumber" : 165,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 169,
+        "endColumnNumber" : 17
       },
-      "nodeContext" : "jnilib=loadCorrectLibrary(\"realm_jni32d\",\"realm_jni64d\");\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 7,
-      "astHeight" : 4
+      "nodeContext" : "for (int i=0; i < TEST_SIZE; i++) {\n  SyncConfiguration configNew=new SyncConfiguration.Builder(user,\"realm://\" + Constants.HOST + \"/~/test\"+ i).build();\n  Realm newRealm=Realm.getInstance(configNew);\n  looperThread.closeAfterTest(newRealm);\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 46,
+      "astHeight" : 9
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 943,
-        "startLineNumber" : 64,
-        "startColumnNumber" : 47,
-        "endLineNumber" : 87,
-        "endColumnNumber" : 5
+        "charLength" : 1398,
+        "startLineNumber" : 161,
+        "startColumnNumber" : 72,
+        "endLineNumber" : 186,
+        "endColumnNumber" : 13
       },
-      "nodeContext" : "{\n  try {\n    addNativeLibraryPath(BINARIES_PATH);\n    resetLibraryPath();\n  }\n catch (  Throwable e) {\n  }\n  String jnilib;\n  jnilib=loadCorrectLibrary(\"realm_jni32d\",\"realm_jni64d\");\n  if (jnilib != null) {\n    System.out.println(\"!!! Realm debug version loaded. !!!\\n\");\n  }\n else {\n    jnilib=loadCorrectLibrary(\"realm_jni32\",\"realm_jni64\");\n    if (jnilib == null) {\n      System.err.println(\"Searched java.library.path=\" + System.getProperty(\"java.library.path\"));\n      throw new RuntimeException(\"Couldn't load the Realm JNI library 'realm_jni32.dll or realm_jni64.dll\" + \"'. Please include the directory to the library in java.library.path.\");\n    }\n  }\n  return jnilib;\n}\n",
+      "nodeContext" : "{\n  assertTrue(permissions.isLoaded());\n  assertInitialPermissions(permissions);\n  for (int i=0; i < TEST_SIZE; i++) {\n    SyncConfiguration configNew=new SyncConfiguration.Builder(user,\"realm://\" + Constants.HOST + \"/~/test\"+ i).build();\n    Realm newRealm=Realm.getInstance(configNew);\n    looperThread.closeAfterTest(newRealm);\n  }\n  looperThread.keepStrongReference(permissions);\n  permissions.addChangeListener(new RealmChangeListener<RealmResults<Permission>>(){\n    @Override public void onChange(    RealmResults<Permission> permissions){\n      RealmLog.error(String.format(\"Size: %s, Permissions: %s\",permissions.size(),Arrays.toString(permissions.toArray())));\n      Permission p=permissions.where().endsWith(\"path\",\"test\" + (TEST_SIZE - 1)).findFirst();\n      if (p != null) {\n        assertTrue(p.mayRead());\n        assertTrue(p.mayWrite());\n        assertTrue(p.mayManage());\n        looperThread.testComplete();\n      }\n    }\n  }\n);\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 74,
-      "astHeight" : 10
+      "astNodeNumber" : 153,
+      "astHeight" : 15
     }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.AnonymousClassDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 986,
-        "startLineNumber" : 64,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 87,
-        "endColumnNumber" : 5
+        "charLength" : 1480,
+        "startLineNumber" : 160,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 186,
+        "endColumnNumber" : 13
       },
-      "nodeContext" : "private static String loadLibraryWindows(){\n  try {\n    addNativeLibraryPath(BINARIES_PATH);\n    resetLibraryPath();\n  }\n catch (  Throwable e) {\n  }\n  String jnilib;\n  jnilib=loadCorrectLibrary(\"realm_jni32d\",\"realm_jni64d\");\n  if (jnilib != null) {\n    System.out.println(\"!!! Realm debug version loaded. !!!\\n\");\n  }\n else {\n    jnilib=loadCorrectLibrary(\"realm_jni32\",\"realm_jni64\");\n    if (jnilib == null) {\n      System.err.println(\"Searched java.library.path=\" + System.getProperty(\"java.library.path\"));\n      throw new RuntimeException(\"Couldn't load the Realm JNI library 'realm_jni32.dll or realm_jni64.dll\" + \"'. Please include the directory to the library in java.library.path.\");\n    }\n  }\n  return jnilib;\n}\n",
+      "nodeContext" : "@Override public void onSuccess(RealmResults<Permission> permissions){\n  assertTrue(permissions.isLoaded());\n  assertInitialPermissions(permissions);\n  for (int i=0; i < TEST_SIZE; i++) {\n    SyncConfiguration configNew=new SyncConfiguration.Builder(user,\"realm://\" + Constants.HOST + \"/~/test\"+ i).build();\n    Realm newRealm=Realm.getInstance(configNew);\n    looperThread.closeAfterTest(newRealm);\n  }\n  looperThread.keepStrongReference(permissions);\n  permissions.addChangeListener(new RealmChangeListener<RealmResults<Permission>>(){\n    @Override public void onChange(    RealmResults<Permission> permissions){\n      RealmLog.error(String.format(\"Size: %s, Permissions: %s\",permissions.size(),Arrays.toString(permissions.toArray())));\n      Permission p=permissions.where().endsWith(\"path\",\"test\" + (TEST_SIZE - 1)).findFirst();\n      if (p != null) {\n        assertTrue(p.mayRead());\n        assertTrue(p.mayWrite());\n        assertTrue(p.mayManage());\n        looperThread.testComplete();\n      }\n    }\n  }\n);\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 80,
-      "astHeight" : 11
+      "astNodeNumber" : 166,
+      "astHeight" : 16
     } ],
     "currentLineData" : {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,expression]",
       "nodePosition" : {
-        "charLength" : 60,
-        "startLineNumber" : 75,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 75,
-        "endColumnNumber" : 68
+        "charLength" : 13,
+        "startLineNumber" : 165,
+        "startColumnNumber" : 32,
+        "endLineNumber" : 165,
+        "endColumnNumber" : 45
       },
-      "nodeContext" : "jnilib=loadCorrectLibrary(\"realm_jni32d\",\"realm_jni64d\");\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 7,
-      "astHeight" : 4
+      "nodeContext" : "i < TEST_SIZE",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
     },
     "tokenLength" : 2,
-    "type" : "java.lang.String"
+    "type" : "int"
   } ],
   "positionList" : [ {
-    "charLength" : 14,
-    "startLineNumber" : 75,
-    "startColumnNumber" : 52,
-    "endLineNumber" : 75,
-    "endColumnNumber" : 66
+    "charLength" : 9,
+    "startLineNumber" : 165,
+    "startColumnNumber" : 36,
+    "endLineNumber" : 165,
+    "endColumnNumber" : 45
   } ],
   "layoutRelationDataList" : [ ]
 }

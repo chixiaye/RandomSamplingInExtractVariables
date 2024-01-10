@@ -1,0 +1,100 @@
+{
+  "id" : 471,
+  "expression" : "erasedTargetType",
+  "projectName" : "JakeWharton@butterknife",
+  "commitID" : "45b1eb9534d51405b993ae17dabc774a9d4a3892",
+  "filePath" : "butterknife/src/main/java/butterknife/internal/InjectViewProcessor.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "erasedTargetType",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 16,
+      "startLineNumber" : 355,
+      "startColumnNumber" : 26,
+      "endLineNumber" : 355,
+      "endColumnNumber" : 42
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 39,
+        "startLineNumber" : 355,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 355,
+        "endColumnNumber" : 43
+      },
+      "nodeContext" : "erasedTargetTypes.add(erasedTargetType)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 40,
+        "startLineNumber" : 355,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 355,
+        "endColumnNumber" : 44
+      },
+      "nodeContext" : "erasedTargetTypes.add(erasedTargetType);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 6627,
+        "startLineNumber" : 208,
+        "startColumnNumber" : 23,
+        "endLineNumber" : 356,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  if (!(element instanceof ExecutableElement) || element.getKind() != METHOD) {\n    error(element,\"@%s annotation must be on a method.\",annotationClass.getSimpleName());\n    return;\n  }\n  ExecutableElement executableElement=(ExecutableElement)element;\n  TypeElement enclosingElement=(TypeElement)element.getEnclosingElement();\n  Annotation annotation=element.getAnnotation(annotationClass);\n  Method annotationValue=annotationClass.getDeclaredMethod(\"value\");\n  if (annotationValue == null || annotationValue.getReturnType() != int[].class) {\n    error(element,\"@%s annotation lacks int[] value property. (%s.%s)\",annotationClass,enclosingElement.getQualifiedName(),element.getSimpleName());\n    return;\n  }\n  int[] ids=(int[])annotationValue.invoke(annotation);\n  String name=executableElement.getSimpleName().toString();\n  boolean required=element.getAnnotation(Optional.class) == null;\n  boolean hasError=isValidForGeneratedCode(annotationClass,\"methods\",element);\n  Set<Integer> seenIds=new LinkedHashSet<Integer>(ids.length);\n  for (  int id : ids) {\n    if (!seenIds.add(id)) {\n      error(element,\"@%s annotation for method contains duplicate ID %d. (%s.%s)\",annotationClass.getSimpleName(),id,enclosingElement.getQualifiedName(),element.getSimpleName());\n      hasError=true;\n    }\n  }\n  ListenerClass listenerClass=annotationClass.getAnnotation(ListenerClass.class);\n  if (listenerClass == null) {\n    error(element,\"No @%s defined on @%s.\",ListenerClass.class.getSimpleName(),annotationClass.getSimpleName());\n    return;\n  }\n  Class<?> listenerClassClass=listenerClass.value();\n  Listener listener=LISTENER_MAP.get(listenerClassClass);\n  if (listener == null) {\n    try {\n      listener=Listener.from(listenerClassClass);\n      LISTENER_MAP.put(listenerClassClass,listener);\n    }\n catch (    IllegalArgumentException e) {\n      error(elementUtils.getTypeElement(annotationClass.getName()),\"%s (%s on @%s)\",e.getMessage(),listenerClassClass.getName(),annotationClass.getName());\n      return;\n    }\n  }\n  List<? extends VariableElement> methodParameters=executableElement.getParameters();\n  if (methodParameters.size() > listener.getParameterTypes().size()) {\n    error(element,\"@%s methods can have at most %s parameter(s). (%s.%s)\",annotationClass.getSimpleName(),listener.getParameterTypes().size(),enclosingElement.getQualifiedName(),element.getSimpleName());\n    hasError=true;\n  }\n  if (!executableElement.getReturnType().toString().equals(listener.getReturnType())) {\n    error(element,\"@%s methods must have a '%s' return type. (%s.%s)\",annotationClass.getSimpleName(),listener.getReturnType(),enclosingElement.getQualifiedName(),element.getSimpleName());\n    hasError=true;\n  }\n  if (hasError) {\n    return;\n  }\n  Parameter[] parameters=Parameter.NONE;\n  if (!methodParameters.isEmpty()) {\n    parameters=new Parameter[methodParameters.size()];\n    BitSet methodParameterUsed=new BitSet(methodParameters.size());\n    List<String> parameterTypes=listener.getParameterTypes();\n    for (int i=0; i < methodParameters.size(); i++) {\n      VariableElement methodParameter=methodParameters.get(i);\n      TypeMirror methodParameterType=methodParameter.asType();\n      for (int j=0; j < parameterTypes.size(); j++) {\n        if (methodParameterUsed.get(j)) {\n          continue;\n        }\n        if (isSubtypeOfType(methodParameterType,parameterTypes.get(j))) {\n          parameters[i]=new Parameter(j,methodParameterType.toString());\n          methodParameterUsed.set(j);\n          break;\n        }\n      }\n      if (parameters[i] == null) {\n        StringBuilder builder=new StringBuilder();\n        builder.append(\"Unable to match @\").append(annotationClass.getSimpleName()).append(\" method arguments. (\").append(enclosingElement.getQualifiedName()).append('.').append(element.getSimpleName()).append(')');\n        for (int j=0; j < parameters.length; j++) {\n          Parameter parameter=parameters[j];\n          builder.append(\"\\n\\n  Parameter #\").append(j + 1).append(\": \").append(methodParameters.get(j).asType().toString()).append(\"\\n    \");\n          if (parameter == null) {\n            builder.append(\"did not match any listener parameters\");\n          }\n else {\n            builder.append(\"matched listener parameter #\").append(parameter.getListenerPosition() + 1).append(\": \").append(parameter.getType());\n          }\n        }\n        builder.append(\"\\n\\nMethods may have up to \").append(listener.getParameterTypes().size()).append(\" parameter(s):\\n\");\n        for (        String parameterType : listener.getParameterTypes()) {\n          builder.append(\"\\n  \").append(parameterType);\n        }\n        builder.append(\"\\n\\nThese may be listed in any order but will be searched for from top to bottom.\");\n        error(executableElement,builder.toString());\n        return;\n      }\n    }\n  }\n  ViewInjector viewInjector=getOrCreateTargetClass(targetClassMap,enclosingElement);\n  for (  int id : ids) {\n    if (!viewInjector.addMethod(id,listener,name,Arrays.asList(parameters),required)) {\n      error(element,\"Multiple @%s methods declared for ID %s in %s.\",annotationClass.getSimpleName(),id,enclosingElement.getQualifiedName());\n      return;\n    }\n  }\n  TypeMirror erasedTargetType=typeUtils.erasure(enclosingElement.asType());\n  erasedTargetTypes.add(erasedTargetType);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 716,
+      "astHeight" : 18
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 6837,
+        "startLineNumber" : 206,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 356,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "private void parseListenerAnnotation(Class<? extends Annotation> annotationClass,Element element,Map<TypeElement,ViewInjector> targetClassMap,Set<TypeMirror> erasedTargetTypes) throws Exception {\n  if (!(element instanceof ExecutableElement) || element.getKind() != METHOD) {\n    error(element,\"@%s annotation must be on a method.\",annotationClass.getSimpleName());\n    return;\n  }\n  ExecutableElement executableElement=(ExecutableElement)element;\n  TypeElement enclosingElement=(TypeElement)element.getEnclosingElement();\n  Annotation annotation=element.getAnnotation(annotationClass);\n  Method annotationValue=annotationClass.getDeclaredMethod(\"value\");\n  if (annotationValue == null || annotationValue.getReturnType() != int[].class) {\n    error(element,\"@%s annotation lacks int[] value property. (%s.%s)\",annotationClass,enclosingElement.getQualifiedName(),element.getSimpleName());\n    return;\n  }\n  int[] ids=(int[])annotationValue.invoke(annotation);\n  String name=executableElement.getSimpleName().toString();\n  boolean required=element.getAnnotation(Optional.class) == null;\n  boolean hasError=isValidForGeneratedCode(annotationClass,\"methods\",element);\n  Set<Integer> seenIds=new LinkedHashSet<Integer>(ids.length);\n  for (  int id : ids) {\n    if (!seenIds.add(id)) {\n      error(element,\"@%s annotation for method contains duplicate ID %d. (%s.%s)\",annotationClass.getSimpleName(),id,enclosingElement.getQualifiedName(),element.getSimpleName());\n      hasError=true;\n    }\n  }\n  ListenerClass listenerClass=annotationClass.getAnnotation(ListenerClass.class);\n  if (listenerClass == null) {\n    error(element,\"No @%s defined on @%s.\",ListenerClass.class.getSimpleName(),annotationClass.getSimpleName());\n    return;\n  }\n  Class<?> listenerClassClass=listenerClass.value();\n  Listener listener=LISTENER_MAP.get(listenerClassClass);\n  if (listener == null) {\n    try {\n      listener=Listener.from(listenerClassClass);\n      LISTENER_MAP.put(listenerClassClass,listener);\n    }\n catch (    IllegalArgumentException e) {\n      error(elementUtils.getTypeElement(annotationClass.getName()),\"%s (%s on @%s)\",e.getMessage(),listenerClassClass.getName(),annotationClass.getName());\n      return;\n    }\n  }\n  List<? extends VariableElement> methodParameters=executableElement.getParameters();\n  if (methodParameters.size() > listener.getParameterTypes().size()) {\n    error(element,\"@%s methods can have at most %s parameter(s). (%s.%s)\",annotationClass.getSimpleName(),listener.getParameterTypes().size(),enclosingElement.getQualifiedName(),element.getSimpleName());\n    hasError=true;\n  }\n  if (!executableElement.getReturnType().toString().equals(listener.getReturnType())) {\n    error(element,\"@%s methods must have a '%s' return type. (%s.%s)\",annotationClass.getSimpleName(),listener.getReturnType(),enclosingElement.getQualifiedName(),element.getSimpleName());\n    hasError=true;\n  }\n  if (hasError) {\n    return;\n  }\n  Parameter[] parameters=Parameter.NONE;\n  if (!methodParameters.isEmpty()) {\n    parameters=new Parameter[methodParameters.size()];\n    BitSet methodParameterUsed=new BitSet(methodParameters.size());\n    List<String> parameterTypes=listener.getParameterTypes();\n    for (int i=0; i < methodParameters.size(); i++) {\n      VariableElement methodParameter=methodParameters.get(i);\n      TypeMirror methodParameterType=methodParameter.asType();\n      for (int j=0; j < parameterTypes.size(); j++) {\n        if (methodParameterUsed.get(j)) {\n          continue;\n        }\n        if (isSubtypeOfType(methodParameterType,parameterTypes.get(j))) {\n          parameters[i]=new Parameter(j,methodParameterType.toString());\n          methodParameterUsed.set(j);\n          break;\n        }\n      }\n      if (parameters[i] == null) {\n        StringBuilder builder=new StringBuilder();\n        builder.append(\"Unable to match @\").append(annotationClass.getSimpleName()).append(\" method arguments. (\").append(enclosingElement.getQualifiedName()).append('.').append(element.getSimpleName()).append(')');\n        for (int j=0; j < parameters.length; j++) {\n          Parameter parameter=parameters[j];\n          builder.append(\"\\n\\n  Parameter #\").append(j + 1).append(\": \").append(methodParameters.get(j).asType().toString()).append(\"\\n    \");\n          if (parameter == null) {\n            builder.append(\"did not match any listener parameters\");\n          }\n else {\n            builder.append(\"matched listener parameter #\").append(parameter.getListenerPosition() + 1).append(\": \").append(parameter.getType());\n          }\n        }\n        builder.append(\"\\n\\nMethods may have up to \").append(listener.getParameterTypes().size()).append(\" parameter(s):\\n\");\n        for (        String parameterType : listener.getParameterTypes()) {\n          builder.append(\"\\n  \").append(parameterType);\n        }\n        builder.append(\"\\n\\nThese may be listed in any order but will be searched for from top to bottom.\");\n        error(executableElement,builder.toString());\n        return;\n      }\n    }\n  }\n  ViewInjector viewInjector=getOrCreateTargetClass(targetClassMap,enclosingElement);\n  for (  int id : ids) {\n    if (!viewInjector.addMethod(id,listener,name,Arrays.asList(parameters),required)) {\n      error(element,\"Multiple @%s methods declared for ID %s in %s.\",annotationClass.getSimpleName(),id,enclosingElement.getQualifiedName());\n      return;\n    }\n  }\n  TypeMirror erasedTargetType=typeUtils.erasure(enclosingElement.asType());\n  erasedTargetTypes.add(erasedTargetType);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 750,
+      "astHeight" : 19
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 40,
+        "startLineNumber" : 355,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 355,
+        "endColumnNumber" : 44
+      },
+      "nodeContext" : "erasedTargetTypes.add(erasedTargetType);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "javax.lang.model.type.TypeMirror"
+  } ],
+  "positionList" : [ {
+    "charLength" : 16,
+    "startLineNumber" : 355,
+    "startColumnNumber" : 26,
+    "endLineNumber" : 355,
+    "endColumnNumber" : 42
+  } ],
+  "layoutRelationDataList" : [ ]
+}

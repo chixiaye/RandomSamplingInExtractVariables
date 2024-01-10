@@ -1,113 +1,87 @@
 {
   "id" : 172,
-  "expression" : "this",
+  "expression" : "httpRequest.getUrl() == null",
   "projectName" : "libgdx@libgdx",
-  "commitID" : "3485b16e8979c0141421bc80cb8831b7a0403f67",
-  "filePath" : "/gdx/src/com/badlogic/gdx/net/HttpStatus.java",
+  "commitID" : "a5a87fdf07d60ed0ad72e32150c88bbd9877474e",
+  "filePath" : "gdx/src/com/badlogic/gdx/net/NetJavaImpl.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "this",
-    "nodeType" : "ThisExpression",
+    "nodeContext" : "httpRequest.getUrl() == null",
+    "nodeType" : "InfixExpression",
     "nodePosition" : {
-      "charLength" : 4,
-      "startLineNumber" : 41,
-      "startColumnNumber" : 2,
-      "endLineNumber" : 41,
-      "endColumnNumber" : 6
+      "charLength" : 28,
+      "startLineNumber" : 155,
+      "startColumnNumber" : 6,
+      "endLineNumber" : 155,
+      "endColumnNumber" : 34
     },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
+    "astNodeNumber" : 5,
+    "astHeight" : 3,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,leftHandSide]",
-      "nodePosition" : {
-        "charLength" : 15,
-        "startLineNumber" : 41,
-        "startColumnNumber" : 2,
-        "endLineNumber" : 41,
-        "endColumnNumber" : 17
-      },
-      "nodeContext" : "this.statusCode",
-      "nodeType" : "FieldAccess",
-      "astNodeNumber" : 3,
-      "astHeight" : 2
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
-      "nodePosition" : {
-        "charLength" : 28,
-        "startLineNumber" : 41,
-        "startColumnNumber" : 2,
-        "endLineNumber" : 41,
-        "endColumnNumber" : 30
-      },
-      "nodeContext" : "this.statusCode=statusCode",
-      "nodeType" : "Assignment",
-      "astNodeNumber" : 5,
-      "astHeight" : 3
-    }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 29,
-        "startLineNumber" : 41,
+        "charLength" : 158,
+        "startLineNumber" : 155,
         "startColumnNumber" : 2,
-        "endLineNumber" : 41,
-        "endColumnNumber" : 31
+        "endLineNumber" : 158,
+        "endColumnNumber" : 3
       },
-      "nodeContext" : "this.statusCode=statusCode;\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 6,
-      "astHeight" : 4
+      "nodeContext" : "if (httpRequest.getUrl() == null) {\n  httpResponseListener.failed(new GdxRuntimeException(\"can't process a HTTP request without URL set\"));\n  return;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 16,
+      "astHeight" : 7
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 38,
-        "startLineNumber" : 40,
-        "startColumnNumber" : 36,
-        "endLineNumber" : 42,
+        "charLength" : 3414,
+        "startLineNumber" : 154,
+        "startColumnNumber" : 110,
+        "endLineNumber" : 254,
         "endColumnNumber" : 2
       },
-      "nodeContext" : "{\n  this.statusCode=statusCode;\n}\n",
+      "nodeContext" : "{\n  if (httpRequest.getUrl() == null) {\n    httpResponseListener.failed(new GdxRuntimeException(\"can't process a HTTP request without URL set\"));\n    return;\n  }\n  try {\n    final String method=httpRequest.getMethod();\n    URL url;\n    final boolean doInput=!method.equalsIgnoreCase(HttpMethods.HEAD);\n    final boolean doingOutPut=method.equalsIgnoreCase(HttpMethods.POST) || method.equalsIgnoreCase(HttpMethods.PUT) || method.equalsIgnoreCase(HttpMethods.PATCH);\n    if (method.equalsIgnoreCase(HttpMethods.GET) || method.equalsIgnoreCase(HttpMethods.HEAD)) {\n      String queryString=\"\";\n      String value=httpRequest.getContent();\n      if (value != null && !\"\".equals(value))       queryString=\"?\" + value;\n      url=new URL(httpRequest.getUrl() + queryString);\n    }\n else {\n      url=new URL(httpRequest.getUrl());\n    }\n    final HttpURLConnection connection=(HttpURLConnection)url.openConnection();\n    connection.setDoOutput(doingOutPut);\n    connection.setDoInput(doInput);\n    connection.setRequestMethod(method);\n    HttpURLConnection.setFollowRedirects(httpRequest.getFollowRedirects());\n    putIntoConnectionsAndListeners(httpRequest,httpResponseListener,connection);\n    for (    Map.Entry<String,String> header : httpRequest.getHeaders().entrySet())     connection.addRequestProperty(header.getKey(),header.getValue());\n    connection.setConnectTimeout(httpRequest.getTimeOut());\n    connection.setReadTimeout(httpRequest.getTimeOut());\n    executorService.submit(new Runnable(){\n      @Override public void run(){\n        try {\n          if (doingOutPut) {\n            String contentAsString=httpRequest.getContent();\n            if (contentAsString != null) {\n              OutputStreamWriter writer=new OutputStreamWriter(connection.getOutputStream(),\"UTF8\");\n              try {\n                writer.write(contentAsString);\n              }\n  finally {\n                StreamUtils.closeQuietly(writer);\n              }\n            }\n else {\n              InputStream contentAsStream=httpRequest.getContentStream();\n              if (contentAsStream != null) {\n                OutputStream os=connection.getOutputStream();\n                try {\n                  StreamUtils.copyStream(contentAsStream,os);\n                }\n  finally {\n                  StreamUtils.closeQuietly(os);\n                }\n              }\n            }\n          }\n          connection.connect();\n          final HttpClientResponse clientResponse=new HttpClientResponse(connection);\n          try {\n            HttpResponseListener listener=getFromListeners(httpRequest);\n            if (listener != null) {\n              listener.handleHttpResponse(clientResponse);\n            }\n            removeFromConnectionsAndListeners(httpRequest);\n          }\n  finally {\n            connection.disconnect();\n          }\n        }\n catch (        final Exception e) {\n          connection.disconnect();\n          try {\n            httpResponseListener.failed(e);\n          }\n  finally {\n            removeFromConnectionsAndListeners(httpRequest);\n          }\n        }\n      }\n    }\n);\n  }\n catch (  Exception e) {\n    try {\n      httpResponseListener.failed(e);\n    }\n  finally {\n      removeFromConnectionsAndListeners(httpRequest);\n    }\n    return;\n  }\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 7,
-      "astHeight" : 5
+      "astNodeNumber" : 395,
+      "astHeight" : 22
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 73,
-        "startLineNumber" : 40,
+        "charLength" : 3523,
+        "startLineNumber" : 154,
         "startColumnNumber" : 1,
-        "endLineNumber" : 42,
+        "endLineNumber" : 254,
         "endColumnNumber" : 2
       },
-      "nodeContext" : "public HttpStatus(int statusCode){\n  this.statusCode=statusCode;\n}\n",
+      "nodeContext" : "public void sendHttpRequest(final HttpRequest httpRequest,final HttpResponseListener httpResponseListener){\n  if (httpRequest.getUrl() == null) {\n    httpResponseListener.failed(new GdxRuntimeException(\"can't process a HTTP request without URL set\"));\n    return;\n  }\n  try {\n    final String method=httpRequest.getMethod();\n    URL url;\n    final boolean doInput=!method.equalsIgnoreCase(HttpMethods.HEAD);\n    final boolean doingOutPut=method.equalsIgnoreCase(HttpMethods.POST) || method.equalsIgnoreCase(HttpMethods.PUT) || method.equalsIgnoreCase(HttpMethods.PATCH);\n    if (method.equalsIgnoreCase(HttpMethods.GET) || method.equalsIgnoreCase(HttpMethods.HEAD)) {\n      String queryString=\"\";\n      String value=httpRequest.getContent();\n      if (value != null && !\"\".equals(value))       queryString=\"?\" + value;\n      url=new URL(httpRequest.getUrl() + queryString);\n    }\n else {\n      url=new URL(httpRequest.getUrl());\n    }\n    final HttpURLConnection connection=(HttpURLConnection)url.openConnection();\n    connection.setDoOutput(doingOutPut);\n    connection.setDoInput(doInput);\n    connection.setRequestMethod(method);\n    HttpURLConnection.setFollowRedirects(httpRequest.getFollowRedirects());\n    putIntoConnectionsAndListeners(httpRequest,httpResponseListener,connection);\n    for (    Map.Entry<String,String> header : httpRequest.getHeaders().entrySet())     connection.addRequestProperty(header.getKey(),header.getValue());\n    connection.setConnectTimeout(httpRequest.getTimeOut());\n    connection.setReadTimeout(httpRequest.getTimeOut());\n    executorService.submit(new Runnable(){\n      @Override public void run(){\n        try {\n          if (doingOutPut) {\n            String contentAsString=httpRequest.getContent();\n            if (contentAsString != null) {\n              OutputStreamWriter writer=new OutputStreamWriter(connection.getOutputStream(),\"UTF8\");\n              try {\n                writer.write(contentAsString);\n              }\n  finally {\n                StreamUtils.closeQuietly(writer);\n              }\n            }\n else {\n              InputStream contentAsStream=httpRequest.getContentStream();\n              if (contentAsStream != null) {\n                OutputStream os=connection.getOutputStream();\n                try {\n                  StreamUtils.copyStream(contentAsStream,os);\n                }\n  finally {\n                  StreamUtils.closeQuietly(os);\n                }\n              }\n            }\n          }\n          connection.connect();\n          final HttpClientResponse clientResponse=new HttpClientResponse(connection);\n          try {\n            HttpResponseListener listener=getFromListeners(httpRequest);\n            if (listener != null) {\n              listener.handleHttpResponse(clientResponse);\n            }\n            removeFromConnectionsAndListeners(httpRequest);\n          }\n  finally {\n            connection.disconnect();\n          }\n        }\n catch (        final Exception e) {\n          connection.disconnect();\n          try {\n            httpResponseListener.failed(e);\n          }\n  finally {\n            removeFromConnectionsAndListeners(httpRequest);\n          }\n        }\n      }\n    }\n);\n  }\n catch (  Exception e) {\n    try {\n      httpResponseListener.failed(e);\n    }\n  finally {\n      removeFromConnectionsAndListeners(httpRequest);\n    }\n    return;\n  }\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 13,
-      "astHeight" : 6
+      "astNodeNumber" : 409,
+      "astHeight" : 23
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 29,
-        "startLineNumber" : 41,
+        "charLength" : 158,
+        "startLineNumber" : 155,
         "startColumnNumber" : 2,
-        "endLineNumber" : 41,
-        "endColumnNumber" : 31
+        "endLineNumber" : 158,
+        "endColumnNumber" : 3
       },
-      "nodeContext" : "this.statusCode=statusCode;\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 6,
-      "astHeight" : 4
+      "nodeContext" : "if (httpRequest.getUrl() == null) {\n  httpResponseListener.failed(new GdxRuntimeException(\"can't process a HTTP request without URL set\"));\n  return;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 16,
+      "astHeight" : 7
     },
-    "tokenLength" : 1,
-    "type" : "com.badlogic.gdx.net.HttpStatus"
+    "tokenLength" : 4,
+    "type" : "boolean"
   } ],
   "positionList" : [ {
-    "charLength" : 4,
-    "startLineNumber" : 41,
-    "startColumnNumber" : 2,
-    "endLineNumber" : 41,
-    "endColumnNumber" : 6
+    "charLength" : 28,
+    "startLineNumber" : 155,
+    "startColumnNumber" : 6,
+    "endLineNumber" : 155,
+    "endColumnNumber" : 34
   } ],
   "layoutRelationDataList" : [ ]
 }

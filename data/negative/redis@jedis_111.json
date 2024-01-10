@@ -1,87 +1,100 @@
 {
   "id" : 111,
-  "expression" : "message",
+  "expression" : "\"Redis master running at \" + master + \", starting Sentinel listeners...\"",
   "projectName" : "redis@jedis",
-  "commitID" : "eaa5b16af93d575cd1f340c2cd23595dc29d5638",
-  "filePath" : "/src/main/java/redis/clients/jedis/exceptions/JedisMovedDataException.java",
+  "commitID" : "80f8584d03a770ae3d15bc0ea8ea687e9f7b8015",
+  "filePath" : "src/main/java/redis/clients/jedis/JedisSentinelPool.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "message",
-    "nodeType" : "SimpleName",
+    "nodeContext" : "\"Redis master running at \" + master + \", starting Sentinel listeners...\"",
+    "nodeType" : "InfixExpression",
     "nodePosition" : {
-      "charLength" : 7,
-      "startLineNumber" : 9,
+      "charLength" : 74,
+      "startLineNumber" : 164,
       "startColumnNumber" : 10,
-      "endLineNumber" : 9,
-      "endColumnNumber" : 17
+      "endLineNumber" : 165,
+      "endColumnNumber" : 38
     },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
+    "astNodeNumber" : 4,
+    "astHeight" : 2,
     "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 84,
+        "startLineNumber" : 164,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 165,
+        "endColumnNumber" : 39
+      },
+      "nodeContext" : "log.info(\"Redis master running at \" + master + \", starting Sentinel listeners...\")",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 33,
-        "startLineNumber" : 9,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 9,
-        "endColumnNumber" : 37
+        "charLength" : 85,
+        "startLineNumber" : 164,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 165,
+        "endColumnNumber" : 40
       },
-      "nodeContext" : "super(message,targetNode,slot);\n",
-      "nodeType" : "SuperConstructorInvocation",
-      "astNodeNumber" : 4,
-      "astHeight" : 2
+      "nodeContext" : "log.info(\"Redis master running at \" + master + \", starting Sentinel listeners...\");\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 43,
-        "startLineNumber" : 8,
-        "startColumnNumber" : 83,
-        "endLineNumber" : 10,
-        "endColumnNumber" : 3
+        "charLength" : 1678,
+        "startLineNumber" : 112,
+        "startColumnNumber" : 30,
+        "endLineNumber" : 177,
+        "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  super(message,targetNode,slot);\n}\n",
+      "nodeContext" : "{\n  HostAndPort master=null;\n  boolean running=true;\n  outer:   while (running) {\n    log.info(\"Trying to find master from available Sentinels...\");\n    for (    String sentinel : sentinels) {\n      final HostAndPort hap=toHostAndPort(Arrays.asList(sentinel.split(\":\")));\n      log.fine(\"Connecting to Sentinel \" + hap);\n      Jedis jedis=null;\n      try {\n        jedis=new Jedis(hap.getHost(),hap.getPort());\n        if (master == null) {\n          List<String> masterAddr=jedis.sentinelGetMasterAddrByName(masterName);\n          if (masterAddr == null || masterAddr.size() != 2) {\n            log.warning(\"Can not get master addr, master name: \" + masterName + \". Sentinel: \"+ hap+ \".\");\n            continue;\n          }\n          master=toHostAndPort(masterAddr);\n          log.fine(\"Found Redis master at \" + master);\n          break outer;\n        }\n      }\n catch (      JedisConnectionException e) {\n        log.warning(\"Cannot connect to sentinel running @ \" + hap + \". Trying next one.\");\n      }\n finally {\n        if (jedis != null) {\n          jedis.close();\n        }\n      }\n    }\n    try {\n      log.severe(\"All sentinels down, cannot determine where is \" + masterName + \" master is running... sleeping 1000ms.\");\n      Thread.sleep(1000);\n    }\n catch (    InterruptedException e) {\n      e.printStackTrace();\n    }\n  }\n  log.info(\"Redis master running at \" + master + \", starting Sentinel listeners...\");\n  for (  String sentinel : sentinels) {\n    final HostAndPort hap=toHostAndPort(Arrays.asList(sentinel.split(\":\")));\n    MasterListener masterListener=new MasterListener(masterName,hap.getHost(),hap.getPort());\n    masterListeners.add(masterListener);\n    masterListener.start();\n  }\n  return master;\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 5,
-      "astHeight" : 3
+      "astNodeNumber" : 230,
+      "astHeight" : 16
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 124,
-        "startLineNumber" : 8,
-        "startColumnNumber" : 2,
-        "endLineNumber" : 10,
-        "endColumnNumber" : 3
+        "charLength" : 1765,
+        "startLineNumber" : 111,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 177,
+        "endColumnNumber" : 5
       },
-      "nodeContext" : "public JedisMovedDataException(String message,HostAndPort targetNode,int slot){\n  super(message,targetNode,slot);\n}\n",
+      "nodeContext" : "private HostAndPort initSentinels(Set<String> sentinels,final String masterName){\n  HostAndPort master=null;\n  boolean running=true;\n  outer:   while (running) {\n    log.info(\"Trying to find master from available Sentinels...\");\n    for (    String sentinel : sentinels) {\n      final HostAndPort hap=toHostAndPort(Arrays.asList(sentinel.split(\":\")));\n      log.fine(\"Connecting to Sentinel \" + hap);\n      Jedis jedis=null;\n      try {\n        jedis=new Jedis(hap.getHost(),hap.getPort());\n        if (master == null) {\n          List<String> masterAddr=jedis.sentinelGetMasterAddrByName(masterName);\n          if (masterAddr == null || masterAddr.size() != 2) {\n            log.warning(\"Can not get master addr, master name: \" + masterName + \". Sentinel: \"+ hap+ \".\");\n            continue;\n          }\n          master=toHostAndPort(masterAddr);\n          log.fine(\"Found Redis master at \" + master);\n          break outer;\n        }\n      }\n catch (      JedisConnectionException e) {\n        log.warning(\"Cannot connect to sentinel running @ \" + hap + \". Trying next one.\");\n      }\n finally {\n        if (jedis != null) {\n          jedis.close();\n        }\n      }\n    }\n    try {\n      log.severe(\"All sentinels down, cannot determine where is \" + masterName + \" master is running... sleeping 1000ms.\");\n      Thread.sleep(1000);\n    }\n catch (    InterruptedException e) {\n      e.printStackTrace();\n    }\n  }\n  log.info(\"Redis master running at \" + master + \", starting Sentinel listeners...\");\n  for (  String sentinel : sentinels) {\n    final HostAndPort hap=toHostAndPort(Arrays.asList(sentinel.split(\":\")));\n    MasterListener masterListener=new MasterListener(masterName,hap.getHost(),hap.getPort());\n    masterListeners.add(masterListener);\n    masterListener.start();\n  }\n  return master;\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 19,
-      "astHeight" : 4
+      "astNodeNumber" : 247,
+      "astHeight" : 17
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 33,
-        "startLineNumber" : 9,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 9,
-        "endColumnNumber" : 37
+        "charLength" : 85,
+        "startLineNumber" : 164,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 165,
+        "endColumnNumber" : 40
       },
-      "nodeContext" : "super(message,targetNode,slot);\n",
-      "nodeType" : "SuperConstructorInvocation",
-      "astNodeNumber" : 4,
-      "astHeight" : 2
+      "nodeContext" : "log.info(\"Redis master running at \" + master + \", starting Sentinel listeners...\");\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
     },
-    "tokenLength" : 1,
+    "tokenLength" : 10,
     "type" : "java.lang.String"
   } ],
   "positionList" : [ {
-    "charLength" : 7,
-    "startLineNumber" : 9,
+    "charLength" : 74,
+    "startLineNumber" : 164,
     "startColumnNumber" : 10,
-    "endLineNumber" : 9,
-    "endColumnNumber" : 17
+    "endLineNumber" : 165,
+    "endColumnNumber" : 38
   } ],
   "layoutRelationDataList" : [ ]
 }

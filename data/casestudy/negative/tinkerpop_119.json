@@ -1,0 +1,126 @@
+{
+  "id" : 119,
+  "expression" : "msg.getArgs().getOrDefault(Tokens.ARGS_MANAGE_TRANSACTION,false)",
+  "projectName" : "tinkerpop",
+  "commitID" : "595cf3b7d880b2bfefa386dabbb1b9c1275fc97f",
+  "filePath" : "gremlin-server/src/main/java/org/apache/tinkerpop/gremlin/server/op/AbstractOpProcessor.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 1,
+  "isGetTypeMethod" : 1,
+  "expressionList" : [ {
+    "nodeContext" : "msg.getArgs().getOrDefault(Tokens.ARGS_MANAGE_TRANSACTION,false)",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 65,
+      "startLineNumber" : 85,
+      "startColumnNumber" : 33,
+      "endLineNumber" : 85,
+      "endColumnNumber" : 98
+    },
+    "astNodeNumber" : 9,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ConditionalExpression,elseExpression]",
+      "nodePosition" : {
+        "charLength" : 75,
+        "startLineNumber" : 85,
+        "startColumnNumber" : 23,
+        "endLineNumber" : 85,
+        "endColumnNumber" : 98
+      },
+      "nodeContext" : "(Boolean)msg.getArgs().getOrDefault(Tokens.ARGS_MANAGE_TRANSACTION,false)",
+      "nodeType" : "CastExpression",
+      "astNodeNumber" : 12,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 119,
+        "startLineNumber" : 84,
+        "startColumnNumber" : 54,
+        "endLineNumber" : 85,
+        "endColumnNumber" : 98
+      },
+      "nodeContext" : "manageTransactions ? true : (Boolean)msg.getArgs().getOrDefault(Tokens.ARGS_MANAGE_TRANSACTION,false)",
+      "nodeType" : "ConditionalExpression",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 151,
+        "startLineNumber" : 84,
+        "startColumnNumber" : 22,
+        "endLineNumber" : 85,
+        "endColumnNumber" : 98
+      },
+      "nodeContext" : "managedTransactionsForRequest=manageTransactions ? true : (Boolean)msg.getArgs().getOrDefault(Tokens.ARGS_MANAGE_TRANSACTION,false)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 17,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 166,
+        "startLineNumber" : 84,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 85,
+        "endColumnNumber" : 99
+      },
+      "nodeContext" : "final boolean managedTransactionsForRequest=manageTransactions ? true : (Boolean)msg.getArgs().getOrDefault(Tokens.ARGS_MANAGE_TRANSACTION,false);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 20,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 8818,
+        "startLineNumber" : 75,
+        "startColumnNumber" : 124,
+        "endLineNumber" : 213,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final ChannelHandlerContext ctx=context.getChannelHandlerContext();\n  final RequestMessage msg=context.getRequestMessage();\n  final Settings settings=context.getSettings();\n  final MessageSerializer serializer=ctx.channel().attr(StateKey.SERIALIZER).get();\n  final boolean useBinary=ctx.channel().attr(StateKey.USE_BINARY).get();\n  boolean warnOnce=false;\n  final boolean managedTransactionsForRequest=manageTransactions ? true : (Boolean)msg.getArgs().getOrDefault(Tokens.ARGS_MANAGE_TRANSACTION,false);\n  if (!itty.hasNext()) {\n    if (managedTransactionsForRequest)     attemptCommit(msg,context.getGraphManager(),settings.strictTransactionManagement);\n    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.NO_CONTENT).create());\n    return;\n  }\n  final StopWatch stopWatch=new StopWatch();\n  stopWatch.start();\n  final int resultIterationBatchSize=(Integer)msg.optionalArgs(Tokens.ARGS_BATCH_SIZE).orElse(settings.resultIterationBatchSize);\n  List<Object> aggregate=new ArrayList<>(resultIterationBatchSize);\n  boolean hasMore=itty.hasNext();\n  while (hasMore) {\n    if (Thread.interrupted())     throw new InterruptedException();\n    final boolean forceFlush=isForceFlushed(ctx,msg,itty);\n    if (aggregate.size() < resultIterationBatchSize && itty.hasNext() && !forceFlush)     aggregate.add(itty.next());\n    if (ctx.channel().isWritable()) {\n      if (forceFlush || aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {\n        final ResponseStatusCode code=itty.hasNext() ? ResponseStatusCode.PARTIAL_CONTENT : ResponseStatusCode.SUCCESS;\n        Frame frame=null;\n        try {\n          frame=makeFrame(ctx,msg,serializer,useBinary,aggregate,code,generateMetaData(ctx,msg,code,itty));\n        }\n catch (        Exception ex) {\n          if (frame != null)           frame.tryRelease();\n          if (managedTransactionsForRequest)           attemptRollback(msg,context.getGraphManager(),settings.strictTransactionManagement);\n          break;\n        }\n        try {\n          if (itty.hasNext())           aggregate=new ArrayList<>(resultIterationBatchSize);\n else {\n            if (managedTransactionsForRequest)             attemptCommit(msg,context.getGraphManager(),settings.strictTransactionManagement);\n            hasMore=false;\n          }\n        }\n catch (        Exception ex) {\n          if (frame != null)           frame.tryRelease();\n          throw ex;\n        }\n        if (!itty.hasNext())         iterateComplete(ctx,msg,itty);\n        ctx.writeAndFlush(frame);\n      }\n    }\n else {\n      if (!warnOnce) {\n        logger.warn(\"Pausing response writing as writeBufferHighWaterMark exceeded on {} - writing will continue once client has caught up\",msg);\n        warnOnce=true;\n      }\n      TimeUnit.MILLISECONDS.sleep(10);\n    }\n    stopWatch.split();\n    if (settings.serializedResponseTimeout > 0 && stopWatch.getSplitTime() > settings.serializedResponseTimeout) {\n      final String timeoutMsg=String.format(\"Serialization of the entire response exceeded the 'serializeResponseTimeout' setting %s\",warnOnce ? \"[Gremlin Server paused writes to client as messages were not being consumed quickly enough]\" : \"\");\n      throw new TimeoutException(timeoutMsg.trim());\n    }\n    stopWatch.unsplit();\n  }\n  stopWatch.stop();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 433,
+      "astHeight" : 16
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 9557,
+        "startLineNumber" : 65,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 213,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Provides a generic way of iterating a result set back to the client. Implementers should respect the {@link Settings#serializedResponseTimeout} configuration and break the serialization process ifit begins to take too long to do so, throwing a  {@link java.util.concurrent.TimeoutException} in suchcases.\n * @param context The Gremlin Server {@link Context} object containing settings, request message, etc.\n * @param itty The result to iterator\n * @throws TimeoutException if the time taken to serialize the entire result set exceeds the allowable time.\n */\nprotected void handleIterator(final Context context,final Iterator itty) throws TimeoutException, InterruptedException {\n  final ChannelHandlerContext ctx=context.getChannelHandlerContext();\n  final RequestMessage msg=context.getRequestMessage();\n  final Settings settings=context.getSettings();\n  final MessageSerializer serializer=ctx.channel().attr(StateKey.SERIALIZER).get();\n  final boolean useBinary=ctx.channel().attr(StateKey.USE_BINARY).get();\n  boolean warnOnce=false;\n  final boolean managedTransactionsForRequest=manageTransactions ? true : (Boolean)msg.getArgs().getOrDefault(Tokens.ARGS_MANAGE_TRANSACTION,false);\n  if (!itty.hasNext()) {\n    if (managedTransactionsForRequest)     attemptCommit(msg,context.getGraphManager(),settings.strictTransactionManagement);\n    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.NO_CONTENT).create());\n    return;\n  }\n  final StopWatch stopWatch=new StopWatch();\n  stopWatch.start();\n  final int resultIterationBatchSize=(Integer)msg.optionalArgs(Tokens.ARGS_BATCH_SIZE).orElse(settings.resultIterationBatchSize);\n  List<Object> aggregate=new ArrayList<>(resultIterationBatchSize);\n  boolean hasMore=itty.hasNext();\n  while (hasMore) {\n    if (Thread.interrupted())     throw new InterruptedException();\n    final boolean forceFlush=isForceFlushed(ctx,msg,itty);\n    if (aggregate.size() < resultIterationBatchSize && itty.hasNext() && !forceFlush)     aggregate.add(itty.next());\n    if (ctx.channel().isWritable()) {\n      if (forceFlush || aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {\n        final ResponseStatusCode code=itty.hasNext() ? ResponseStatusCode.PARTIAL_CONTENT : ResponseStatusCode.SUCCESS;\n        Frame frame=null;\n        try {\n          frame=makeFrame(ctx,msg,serializer,useBinary,aggregate,code,generateMetaData(ctx,msg,code,itty));\n        }\n catch (        Exception ex) {\n          if (frame != null)           frame.tryRelease();\n          if (managedTransactionsForRequest)           attemptRollback(msg,context.getGraphManager(),settings.strictTransactionManagement);\n          break;\n        }\n        try {\n          if (itty.hasNext())           aggregate=new ArrayList<>(resultIterationBatchSize);\n else {\n            if (managedTransactionsForRequest)             attemptCommit(msg,context.getGraphManager(),settings.strictTransactionManagement);\n            hasMore=false;\n          }\n        }\n catch (        Exception ex) {\n          if (frame != null)           frame.tryRelease();\n          throw ex;\n        }\n        if (!itty.hasNext())         iterateComplete(ctx,msg,itty);\n        ctx.writeAndFlush(frame);\n      }\n    }\n else {\n      if (!warnOnce) {\n        logger.warn(\"Pausing response writing as writeBufferHighWaterMark exceeded on {} - writing will continue once client has caught up\",msg);\n        warnOnce=true;\n      }\n      TimeUnit.MILLISECONDS.sleep(10);\n    }\n    stopWatch.split();\n    if (settings.serializedResponseTimeout > 0 && stopWatch.getSplitTime() > settings.serializedResponseTimeout) {\n      final String timeoutMsg=String.format(\"Serialization of the entire response exceeded the 'serializeResponseTimeout' setting %s\",warnOnce ? \"[Gremlin Server paused writes to client as messages were not being consumed quickly enough]\" : \"\");\n      throw new TimeoutException(timeoutMsg.trim());\n    }\n    stopWatch.unsplit();\n  }\n  stopWatch.stop();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 452,
+      "astHeight" : 17
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ConditionalExpression,elseExpression]",
+      "nodePosition" : {
+        "charLength" : 75,
+        "startLineNumber" : 85,
+        "startColumnNumber" : 23,
+        "endLineNumber" : 85,
+        "endColumnNumber" : 98
+      },
+      "nodeContext" : "(Boolean)msg.getArgs().getOrDefault(Tokens.ARGS_MANAGE_TRANSACTION,false)",
+      "nodeType" : "CastExpression",
+      "astNodeNumber" : 12,
+      "astHeight" : 4
+    },
+    "tokenLength" : 8,
+    "type" : "java.lang.Object"
+  } ],
+  "positionList" : [ {
+    "charLength" : 65,
+    "startLineNumber" : 85,
+    "startColumnNumber" : 33,
+    "endLineNumber" : 85,
+    "endColumnNumber" : 98
+  } ],
+  "layoutRelationDataList" : [ ]
+}

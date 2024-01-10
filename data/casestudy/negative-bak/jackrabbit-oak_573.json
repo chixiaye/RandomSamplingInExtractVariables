@@ -1,0 +1,113 @@
+{
+  "id" : 573,
+  "expression" : "name.substring(0,pos) + (char)(generation + 1) + \".tar\"",
+  "projectName" : "jackrabbit-oak",
+  "commitID" : "c0119aa9a0be04495d99a8b7560a083271f1382b",
+  "filePath" : "oak-segment-tar/src/main/java/org/apache/jackrabbit/oak/segment/file/TarReader.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 1,
+  "isGetTypeMethod" : 1,
+  "expressionList" : [ {
+    "nodeContext" : "name.substring(0,pos) + (char)(generation + 1) + \".tar\"",
+    "nodeType" : "InfixExpression",
+    "nodePosition" : {
+      "charLength" : 57,
+      "startLineNumber" : 842,
+      "startColumnNumber" : 16,
+      "endLineNumber" : 842,
+      "endColumnNumber" : 73
+    },
+    "astNodeNumber" : 13,
+    "astHeight" : 5,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 122,
+        "startLineNumber" : 840,
+        "startColumnNumber" : 23,
+        "endLineNumber" : 842,
+        "endColumnNumber" : 74
+      },
+      "nodeContext" : "new File(file.getParentFile(),name.substring(0,pos) + (char)(generation + 1) + \".tar\")",
+      "nodeType" : "ClassInstanceCreation",
+      "astNodeNumber" : 19,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 132,
+        "startLineNumber" : 840,
+        "startColumnNumber" : 13,
+        "endLineNumber" : 842,
+        "endColumnNumber" : 74
+      },
+      "nodeContext" : "newFile=new File(file.getParentFile(),name.substring(0,pos) + (char)(generation + 1) + \".tar\")",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 21,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 138,
+        "startLineNumber" : 840,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 842,
+        "endColumnNumber" : 75
+      },
+      "nodeContext" : "File newFile=new File(file.getParentFile(),name.substring(0,pos) + (char)(generation + 1) + \".tar\");\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 24,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4031,
+        "startLineNumber" : 793,
+        "startColumnNumber" : 97,
+        "endLineNumber" : 905,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  String name=file.getName();\n  log.debug(\"Cleaning up {}\",name);\n  Set<UUID> cleaned=newHashSet();\n  int afterSize=0;\n  int beforeSize=0;\n  int afterCount=0;\n  TarEntry[] entries=getEntries();\n  for (int i=0; i < entries.length; i++) {\n    TarEntry entry=entries[i];\n    beforeSize+=getEntrySize(entry.size());\n    UUID id=new UUID(entry.msb(),entry.lsb());\n    if (reclaim.contains(id)) {\n      cleaned.add(id);\n      entries[i]=null;\n    }\n else {\n      afterSize+=getEntrySize(entry.size());\n      afterCount+=1;\n    }\n  }\n  if (afterCount == 0) {\n    log.debug(\"None of the entries of {} are referenceable.\",name);\n    return null;\n  }\n  if (afterSize >= beforeSize * 3 / 4 && hasGraph()) {\n    log.debug(\"Not enough space savings. ({}/{}). Skipping clean up of {}\",access.length() - afterSize,access.length(),name);\n    return this;\n  }\n  if (!hasGraph()) {\n    log.warn(\"Recovering {}, which is missing its graph.\",name);\n  }\n  int pos=name.length() - \"a.tar\".length();\n  char generation=name.charAt(pos);\n  if (generation == 'z') {\n    log.debug(\"No garbage collection after reaching generation z: {}\",name);\n    return this;\n  }\n  File newFile=new File(file.getParentFile(),name.substring(0,pos) + (char)(generation + 1) + \".tar\");\n  log.debug(\"Writing new generation {}\",newFile.getName());\n  TarWriter writer=new TarWriter(newFile);\n  for (  TarEntry entry : entries) {\n    if (entry != null) {\n      byte[] data=new byte[entry.size()];\n      ioMonitor.onSegmentRead(file,entry.msb(),entry.lsb(),entry.size());\n      access.read(entry.offset(),entry.size()).get(data);\n      writer.writeEntry(entry.msb(),entry.lsb(),data,0,entry.size(),entry.generation());\n    }\n  }\n  Map<UUID,List<UUID>> graph=getGraph(false);\n  for (  Entry<UUID,List<UUID>> e : graph.entrySet()) {\n    if (cleaned.contains(e.getKey())) {\n      continue;\n    }\n    Set<UUID> vertices=newHashSet();\n    for (    UUID vertex : e.getValue()) {\n      if (cleaned.contains(vertex)) {\n        continue;\n      }\n      vertices.add(vertex);\n    }\n    for (    UUID vertex : vertices) {\n      writer.addGraphEdge(e.getKey(),vertex);\n    }\n  }\n  Map<Integer,Map<UUID,Set<String>>> references=getBinaryReferences();\n  for (  Entry<Integer,Map<UUID,Set<String>>> ge : references.entrySet()) {\n    for (    Entry<UUID,Set<String>> se : ge.getValue().entrySet()) {\n      if (cleaned.contains(se.getKey())) {\n        continue;\n      }\n      for (      String reference : se.getValue()) {\n        writer.addBinaryReference(ge.getKey(),se.getKey(),reference);\n      }\n    }\n  }\n  writer.close();\n  TarReader reader=openFirstFileWithValidIndex(singletonList(newFile),access.isMemoryMapped(),ioMonitor);\n  if (reader != null) {\n    reclaimed.addAll(cleaned);\n    return reader;\n  }\n else {\n    log.warn(\"Failed to open cleaned up tar file {}\",file);\n    return this;\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 535,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4421,
+        "startLineNumber" : 786,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 905,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Remove reclaimable segments and collect actually reclaimed segments.\n * @param reclaim       segments to reclaim\n * @param reclaimed     actually reclaimed segments\n * @return              reader resulting from the reclamation process\n * @throws IOException\n */\nTarReader sweep(@Nonnull Set<UUID> reclaim,@Nonnull Set<UUID> reclaimed) throws IOException {\n  String name=file.getName();\n  log.debug(\"Cleaning up {}\",name);\n  Set<UUID> cleaned=newHashSet();\n  int afterSize=0;\n  int beforeSize=0;\n  int afterCount=0;\n  TarEntry[] entries=getEntries();\n  for (int i=0; i < entries.length; i++) {\n    TarEntry entry=entries[i];\n    beforeSize+=getEntrySize(entry.size());\n    UUID id=new UUID(entry.msb(),entry.lsb());\n    if (reclaim.contains(id)) {\n      cleaned.add(id);\n      entries[i]=null;\n    }\n else {\n      afterSize+=getEntrySize(entry.size());\n      afterCount+=1;\n    }\n  }\n  if (afterCount == 0) {\n    log.debug(\"None of the entries of {} are referenceable.\",name);\n    return null;\n  }\n  if (afterSize >= beforeSize * 3 / 4 && hasGraph()) {\n    log.debug(\"Not enough space savings. ({}/{}). Skipping clean up of {}\",access.length() - afterSize,access.length(),name);\n    return this;\n  }\n  if (!hasGraph()) {\n    log.warn(\"Recovering {}, which is missing its graph.\",name);\n  }\n  int pos=name.length() - \"a.tar\".length();\n  char generation=name.charAt(pos);\n  if (generation == 'z') {\n    log.debug(\"No garbage collection after reaching generation z: {}\",name);\n    return this;\n  }\n  File newFile=new File(file.getParentFile(),name.substring(0,pos) + (char)(generation + 1) + \".tar\");\n  log.debug(\"Writing new generation {}\",newFile.getName());\n  TarWriter writer=new TarWriter(newFile);\n  for (  TarEntry entry : entries) {\n    if (entry != null) {\n      byte[] data=new byte[entry.size()];\n      ioMonitor.onSegmentRead(file,entry.msb(),entry.lsb(),entry.size());\n      access.read(entry.offset(),entry.size()).get(data);\n      writer.writeEntry(entry.msb(),entry.lsb(),data,0,entry.size(),entry.generation());\n    }\n  }\n  Map<UUID,List<UUID>> graph=getGraph(false);\n  for (  Entry<UUID,List<UUID>> e : graph.entrySet()) {\n    if (cleaned.contains(e.getKey())) {\n      continue;\n    }\n    Set<UUID> vertices=newHashSet();\n    for (    UUID vertex : e.getValue()) {\n      if (cleaned.contains(vertex)) {\n        continue;\n      }\n      vertices.add(vertex);\n    }\n    for (    UUID vertex : vertices) {\n      writer.addGraphEdge(e.getKey(),vertex);\n    }\n  }\n  Map<Integer,Map<UUID,Set<String>>> references=getBinaryReferences();\n  for (  Entry<Integer,Map<UUID,Set<String>>> ge : references.entrySet()) {\n    for (    Entry<UUID,Set<String>> se : ge.getValue().entrySet()) {\n      if (cleaned.contains(se.getKey())) {\n        continue;\n      }\n      for (      String reference : se.getValue()) {\n        writer.addBinaryReference(ge.getKey(),se.getKey(),reference);\n      }\n    }\n  }\n  writer.close();\n  TarReader reader=openFirstFileWithValidIndex(singletonList(newFile),access.isMemoryMapped(),ioMonitor);\n  if (reader != null) {\n    reclaimed.addAll(cleaned);\n    return reader;\n  }\n else {\n    log.warn(\"Failed to open cleaned up tar file {}\",file);\n    return this;\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 560,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 122,
+        "startLineNumber" : 840,
+        "startColumnNumber" : 23,
+        "endLineNumber" : 842,
+        "endColumnNumber" : 74
+      },
+      "nodeContext" : "new File(file.getParentFile(),name.substring(0,pos) + (char)(generation + 1) + \".tar\")",
+      "nodeType" : "ClassInstanceCreation",
+      "astNodeNumber" : 19,
+      "astHeight" : 6
+    },
+    "tokenLength" : 10,
+    "type" : "java.lang.String"
+  } ],
+  "positionList" : [ {
+    "charLength" : 57,
+    "startLineNumber" : 842,
+    "startColumnNumber" : 16,
+    "endLineNumber" : 842,
+    "endColumnNumber" : 73
+  } ],
+  "layoutRelationDataList" : [ ]
+}

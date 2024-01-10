@@ -1,126 +1,165 @@
 {
   "id" : 322,
-  "expression" : "leader.startForwarding(this,peerLastZxid)",
+  "expression" : "(now - lastSend)",
   "projectName" : "apache@zookeeper",
-  "commitID" : "c6639c9842973a7954c8baa412d6825cb833d51f",
-  "filePath" : "/src/java/main/org/apache/zookeeper/server/quorum/FollowerHandler.java",
+  "commitID" : "1a85483357106cf0993080a56ddd5c1e2644100c",
+  "filePath" : "zookeeper/java/src/com/yahoo/zookeeper/ClientCnxn.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "leader.startForwarding(this,peerLastZxid)",
-    "nodeType" : "MethodInvocation",
+    "nodeContext" : "(now - lastSend)",
+    "nodeType" : "ParenthesizedExpression",
     "nodePosition" : {
-      "charLength" : 42,
-      "startLineNumber" : 231,
-      "startColumnNumber" : 34,
-      "endLineNumber" : 231,
-      "endColumnNumber" : 76
+      "charLength" : 16,
+      "startLineNumber" : 660,
+      "startColumnNumber" : 41,
+      "endLineNumber" : 660,
+      "endColumnNumber" : 57
     },
-    "astNodeNumber" : 5,
-    "astHeight" : 2,
+    "astNodeNumber" : 4,
+    "astHeight" : 3,
     "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 22,
+        "startLineNumber" : 660,
+        "startColumnNumber" : 35,
+        "endLineNumber" : 660,
+        "endColumnNumber" : 57
+      },
+      "nodeContext" : "(int)(now - lastSend)",
+      "nodeType" : "CastExpression",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
+    }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
       "nodePosition" : {
-        "charLength" : 59,
-        "startLineNumber" : 231,
-        "startColumnNumber" : 17,
-        "endLineNumber" : 231,
-        "endColumnNumber" : 76
+        "charLength" : 33,
+        "startLineNumber" : 660,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 660,
+        "endColumnNumber" : 57
       },
-      "nodeContext" : "leaderLastZxid=leader.startForwarding(this,peerLastZxid)",
+      "nodeContext" : "idleSend=(int)(now - lastSend)",
       "nodeType" : "VariableDeclarationFragment",
-      "astNodeNumber" : 7,
-      "astHeight" : 3
+      "astNodeNumber" : 8,
+      "astHeight" : 5
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 65,
-        "startLineNumber" : 231,
-        "startColumnNumber" : 12,
-        "endLineNumber" : 231,
-        "endColumnNumber" : 77
+        "charLength" : 38,
+        "startLineNumber" : 660,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 660,
+        "endColumnNumber" : 58
       },
-      "nodeContext" : "long leaderLastZxid=leader.startForwarding(this,peerLastZxid);\n",
+      "nodeContext" : "int idleSend=(int)(now - lastSend);\n",
       "nodeType" : "VariableDeclarationStatement",
-      "astNodeNumber" : 9,
-      "astHeight" : 4
+      "astNodeNumber" : 10,
+      "astHeight" : 6
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
       "nodePosition" : {
-        "charLength" : 7359,
-        "startLineNumber" : 191,
-        "startColumnNumber" : 12,
-        "endLineNumber" : 354,
-        "endColumnNumber" : 9
+        "charLength" : 3059,
+        "startLineNumber" : 653,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 718,
+        "endColumnNumber" : 17
       },
-      "nodeContext" : "{\n  ia=BinaryInputArchive.getArchive(new BufferedInputStream(sock.getInputStream()));\n  bufferedOutput=new BufferedOutputStream(sock.getOutputStream());\n  oa=BinaryOutputArchive.getArchive(bufferedOutput);\n  QuorumPacket qp=new QuorumPacket();\n  ia.readRecord(qp,\"packet\");\n  if (qp.getType() != Leader.LASTZXID) {\n    LOG.error(\"First packet \" + qp.toString() + \" is not LASTZXID!\");\n    return;\n  }\n  long peerLastZxid=qp.getZxid();\n  int packetToSend=Leader.SNAP;\n  boolean logTxns=true;\n  long zxidToSend=0;\nsynchronized (leader.zk.committedLog) {\n    if (leader.zk.committedLog.size() != 0) {\n      if ((leader.zk.maxCommittedLog >= peerLastZxid) && (leader.zk.minCommittedLog <= peerLastZxid)) {\n        packetToSend=Leader.DIFF;\n        zxidToSend=leader.zk.maxCommittedLog;\n        for (        Proposal propose : leader.zk.committedLog) {\n          if (propose.packet.getZxid() > peerLastZxid) {\n            queuePacket(propose.packet);\n            QuorumPacket qcommit=new QuorumPacket(Leader.COMMIT,propose.packet.getZxid(),null,null);\n            queuePacket(qcommit);\n          }\n        }\n      }\n    }\n else {\n      logTxns=false;\n    }\n  }\n  long leaderLastZxid=leader.startForwarding(this,peerLastZxid);\n  QuorumPacket newLeaderQP=new QuorumPacket(Leader.NEWLEADER,leaderLastZxid,null,null);\n  oa.writeRecord(newLeaderQP,\"packet\");\n  bufferedOutput.flush();\n  if (peerLastZxid == leaderLastZxid) {\n    packetToSend=Leader.DIFF;\n    zxidToSend=leaderLastZxid;\n  }\n  if (logTxns && (peerLastZxid > leader.zk.maxCommittedLog)) {\n    packetToSend=Leader.TRUNC;\n    zxidToSend=leader.zk.maxCommittedLog;\n  }\n  oa.writeRecord(new QuorumPacket(packetToSend,zxidToSend,null,null),\"packet\");\n  bufferedOutput.flush();\n  if (packetToSend == Leader.SNAP) {\n    LOG.warn(\"Sending snapshot last zxid of peer is 0x\" + Long.toHexString(peerLastZxid) + \" \"+ \" zxid of leader is 0x\"+ Long.toHexString(leaderLastZxid));\n    leader.zk.serializeSnapshot(oa);\n    oa.writeString(\"BenWasHere\",\"signature\");\n  }\n  bufferedOutput.flush();\n  queuedPackets.add(new QuorumPacket(Leader.UPTODATE,-1,null,null));\n  new Thread(){\n    public void run(){\n      Thread.currentThread().setName(\"Sender-\" + sock.getRemoteSocketAddress());\n      try {\n        sendPackets();\n      }\n catch (      InterruptedException e) {\n        LOG.warn(\"Unexpected interruption\",e);\n      }\n    }\n  }\n.start();\n  while (true) {\n    qp=new QuorumPacket();\n    ia.readRecord(qp,\"packet\");\n    long traceMask=ZooTrace.SERVER_PACKET_TRACE_MASK;\n    if (qp.getType() == Leader.PING) {\n      traceMask=ZooTrace.SERVER_PING_TRACE_MASK;\n    }\n    ZooTrace.logQuorumPacket(LOG,traceMask,'i',qp);\n    tickOfLastAck=leader.self.tick;\n    ByteBuffer bb;\n    long sessionId;\n    int cxid;\n    int type;\nswitch (qp.getType()) {\ncase Leader.ACK:      leader.processAck(qp.getZxid(),sock.getLocalSocketAddress());\n    break;\ncase Leader.PING:  ByteArrayInputStream bis=new ByteArrayInputStream(qp.getData());\nDataInputStream dis=new DataInputStream(bis);\nwhile (dis.available() > 0) {\nlong sess=dis.readLong();\nint to=dis.readInt();\nleader.zk.touch(sess,to);\n}\nbreak;\ncase Leader.REVALIDATE:bis=new ByteArrayInputStream(qp.getData());\ndis=new DataInputStream(bis);\nlong id=dis.readLong();\nint to=dis.readInt();\nByteArrayOutputStream bos=new ByteArrayOutputStream();\nDataOutputStream dos=new DataOutputStream(bos);\ndos.writeLong(id);\nboolean valid=leader.zk.touch(id,to);\nZooTrace.logTraceMessage(LOG,ZooTrace.SESSION_TRACE_MASK,\"Session 0x\" + Long.toHexString(id) + \" is valid: \"+ valid);\ndos.writeBoolean(valid);\nqp.setData(bos.toByteArray());\nqueuedPackets.add(qp);\nbreak;\ncase Leader.REQUEST:bb=ByteBuffer.wrap(qp.getData());\nsessionId=bb.getLong();\ncxid=bb.getInt();\ntype=bb.getInt();\nbb=bb.slice();\nif (type == OpCode.sync) {\nleader.zk.submitRequest(new FollowerSyncRequest(this,sessionId,cxid,type,bb,qp.getAuthinfo()));\n}\n else {\nleader.zk.submitRequest(null,sessionId,type,cxid,bb,qp.getAuthinfo());\n}\nbreak;\ndefault:}\n}\n}\n",
+      "nodeContext" : "{\n  if (sockKey == null) {\n    startConnect();\n    lastSend=now;\n    lastHeard=now;\n  }\n  int idleRecv=(int)(now - lastHeard);\n  int idleSend=(int)(now - lastSend);\n  int to=readTimeout - idleRecv;\n  if (zooKeeper.state != States.CONNECTED) {\n    to=connectTimeout - idleRecv;\n  }\n  if (to <= 0) {\n    throw new IOException(\"TIMED OUT\");\n  }\n  if (zooKeeper.state == States.CONNECTED) {\n    int timeToNextPing=readTimeout / 2 - idleSend;\n    if (timeToNextPing <= 0) {\n      sendPing();\n      lastSend=now;\n      enableWrite();\n    }\n else {\n      if (timeToNextPing < to) {\n        to=timeToNextPing;\n      }\n    }\n  }\n  selector.select(to);\n  Set<SelectionKey> selected;\nsynchronized (this) {\n    selected=selector.selectedKeys();\n  }\n  now=System.currentTimeMillis();\n  for (  SelectionKey k : selected) {\n    SocketChannel sc=((SocketChannel)k.channel());\n    if ((k.readyOps() & SelectionKey.OP_CONNECT) != 0) {\n      if (sc.finishConnect()) {\n        zooKeeper.state=States.CONNECTED;\n        lastHeard=now;\n        lastSend=now;\n        primeConnection(k);\n      }\n    }\n else     if ((k.readyOps() & (SelectionKey.OP_READ | SelectionKey.OP_WRITE)) != 0) {\n      if (outgoingQueue.size() > 0) {\n        lastSend=now;\n      }\n      if (doIO()) {\n        lastHeard=now;\n      }\n    }\n  }\n  if (zooKeeper.state == States.CONNECTED) {\n    if (outgoingQueue.size() > 0) {\n      enableWrite();\n    }\n else {\n      disableWrite();\n    }\n  }\n  selected.clear();\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 697,
-      "astHeight" : 17
+      "astNodeNumber" : 259,
+      "astHeight" : 12
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 8129,
-        "startLineNumber" : 191,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 372,
-        "endColumnNumber" : 9
+        "charLength" : 3530,
+        "startLineNumber" : 653,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 729,
+        "endColumnNumber" : 17
       },
-      "nodeContext" : "try {\n  ia=BinaryInputArchive.getArchive(new BufferedInputStream(sock.getInputStream()));\n  bufferedOutput=new BufferedOutputStream(sock.getOutputStream());\n  oa=BinaryOutputArchive.getArchive(bufferedOutput);\n  QuorumPacket qp=new QuorumPacket();\n  ia.readRecord(qp,\"packet\");\n  if (qp.getType() != Leader.LASTZXID) {\n    LOG.error(\"First packet \" + qp.toString() + \" is not LASTZXID!\");\n    return;\n  }\n  long peerLastZxid=qp.getZxid();\n  int packetToSend=Leader.SNAP;\n  boolean logTxns=true;\n  long zxidToSend=0;\nsynchronized (leader.zk.committedLog) {\n    if (leader.zk.committedLog.size() != 0) {\n      if ((leader.zk.maxCommittedLog >= peerLastZxid) && (leader.zk.minCommittedLog <= peerLastZxid)) {\n        packetToSend=Leader.DIFF;\n        zxidToSend=leader.zk.maxCommittedLog;\n        for (        Proposal propose : leader.zk.committedLog) {\n          if (propose.packet.getZxid() > peerLastZxid) {\n            queuePacket(propose.packet);\n            QuorumPacket qcommit=new QuorumPacket(Leader.COMMIT,propose.packet.getZxid(),null,null);\n            queuePacket(qcommit);\n          }\n        }\n      }\n    }\n else {\n      logTxns=false;\n    }\n  }\n  long leaderLastZxid=leader.startForwarding(this,peerLastZxid);\n  QuorumPacket newLeaderQP=new QuorumPacket(Leader.NEWLEADER,leaderLastZxid,null,null);\n  oa.writeRecord(newLeaderQP,\"packet\");\n  bufferedOutput.flush();\n  if (peerLastZxid == leaderLastZxid) {\n    packetToSend=Leader.DIFF;\n    zxidToSend=leaderLastZxid;\n  }\n  if (logTxns && (peerLastZxid > leader.zk.maxCommittedLog)) {\n    packetToSend=Leader.TRUNC;\n    zxidToSend=leader.zk.maxCommittedLog;\n  }\n  oa.writeRecord(new QuorumPacket(packetToSend,zxidToSend,null,null),\"packet\");\n  bufferedOutput.flush();\n  if (packetToSend == Leader.SNAP) {\n    LOG.warn(\"Sending snapshot last zxid of peer is 0x\" + Long.toHexString(peerLastZxid) + \" \"+ \" zxid of leader is 0x\"+ Long.toHexString(leaderLastZxid));\n    leader.zk.serializeSnapshot(oa);\n    oa.writeString(\"BenWasHere\",\"signature\");\n  }\n  bufferedOutput.flush();\n  queuedPackets.add(new QuorumPacket(Leader.UPTODATE,-1,null,null));\n  new Thread(){\n    public void run(){\n      Thread.currentThread().setName(\"Sender-\" + sock.getRemoteSocketAddress());\n      try {\n        sendPackets();\n      }\n catch (      InterruptedException e) {\n        LOG.warn(\"Unexpected interruption\",e);\n      }\n    }\n  }\n.start();\n  while (true) {\n    qp=new QuorumPacket();\n    ia.readRecord(qp,\"packet\");\n    long traceMask=ZooTrace.SERVER_PACKET_TRACE_MASK;\n    if (qp.getType() == Leader.PING) {\n      traceMask=ZooTrace.SERVER_PING_TRACE_MASK;\n    }\n    ZooTrace.logQuorumPacket(LOG,traceMask,'i',qp);\n    tickOfLastAck=leader.self.tick;\n    ByteBuffer bb;\n    long sessionId;\n    int cxid;\n    int type;\nswitch (qp.getType()) {\ncase Leader.ACK:      leader.processAck(qp.getZxid(),sock.getLocalSocketAddress());\n    break;\ncase Leader.PING:  ByteArrayInputStream bis=new ByteArrayInputStream(qp.getData());\nDataInputStream dis=new DataInputStream(bis);\nwhile (dis.available() > 0) {\nlong sess=dis.readLong();\nint to=dis.readInt();\nleader.zk.touch(sess,to);\n}\nbreak;\ncase Leader.REVALIDATE:bis=new ByteArrayInputStream(qp.getData());\ndis=new DataInputStream(bis);\nlong id=dis.readLong();\nint to=dis.readInt();\nByteArrayOutputStream bos=new ByteArrayOutputStream();\nDataOutputStream dos=new DataOutputStream(bos);\ndos.writeLong(id);\nboolean valid=leader.zk.touch(id,to);\nZooTrace.logTraceMessage(LOG,ZooTrace.SESSION_TRACE_MASK,\"Session 0x\" + Long.toHexString(id) + \" is valid: \"+ valid);\ndos.writeBoolean(valid);\nqp.setData(bos.toByteArray());\nqueuedPackets.add(qp);\nbreak;\ncase Leader.REQUEST:bb=ByteBuffer.wrap(qp.getData());\nsessionId=bb.getLong();\ncxid=bb.getInt();\ntype=bb.getInt();\nbb=bb.slice();\nif (type == OpCode.sync) {\nleader.zk.submitRequest(new FollowerSyncRequest(this,sessionId,cxid,type,bb,qp.getAuthinfo()));\n}\n else {\nleader.zk.submitRequest(null,sessionId,type,cxid,bb,qp.getAuthinfo());\n}\nbreak;\ndefault:}\n}\n}\n catch (IOException e) {\nif (sock != null && !sock.isClosed()) {\nLOG.error(\"Unexpected exception causing shutdown while sock \" + \"still open\",e);\n}\n}\ncatch (InterruptedException e) {\nLOG.error(\"Unexpected exception causing shutdown\",e);\n}\n finally {\nLOG.warn(\"******* GOODBYE \" + (sock != null ? sock.getRemoteSocketAddress() : \"<null>\") + \" ********\");\ntry {\nqueuedPackets.put(proposalOfDeath);\n}\n catch (InterruptedException e) {\nLOG.warn(\"Ignoring unexpected exception\",e);\n}\nshutdown();\n}\n",
+      "nodeContext" : "try {\n  if (sockKey == null) {\n    startConnect();\n    lastSend=now;\n    lastHeard=now;\n  }\n  int idleRecv=(int)(now - lastHeard);\n  int idleSend=(int)(now - lastSend);\n  int to=readTimeout - idleRecv;\n  if (zooKeeper.state != States.CONNECTED) {\n    to=connectTimeout - idleRecv;\n  }\n  if (to <= 0) {\n    throw new IOException(\"TIMED OUT\");\n  }\n  if (zooKeeper.state == States.CONNECTED) {\n    int timeToNextPing=readTimeout / 2 - idleSend;\n    if (timeToNextPing <= 0) {\n      sendPing();\n      lastSend=now;\n      enableWrite();\n    }\n else {\n      if (timeToNextPing < to) {\n        to=timeToNextPing;\n      }\n    }\n  }\n  selector.select(to);\n  Set<SelectionKey> selected;\nsynchronized (this) {\n    selected=selector.selectedKeys();\n  }\n  now=System.currentTimeMillis();\n  for (  SelectionKey k : selected) {\n    SocketChannel sc=((SocketChannel)k.channel());\n    if ((k.readyOps() & SelectionKey.OP_CONNECT) != 0) {\n      if (sc.finishConnect()) {\n        zooKeeper.state=States.CONNECTED;\n        lastHeard=now;\n        lastSend=now;\n        primeConnection(k);\n      }\n    }\n else     if ((k.readyOps() & (SelectionKey.OP_READ | SelectionKey.OP_WRITE)) != 0) {\n      if (outgoingQueue.size() > 0) {\n        lastSend=now;\n      }\n      if (doIO()) {\n        lastHeard=now;\n      }\n    }\n  }\n  if (zooKeeper.state == States.CONNECTED) {\n    if (outgoingQueue.size() > 0) {\n      enableWrite();\n    }\n else {\n      disableWrite();\n    }\n  }\n  selected.clear();\n}\n catch (Exception e) {\n  LOG.warn(\"Closing: \",e);\n  cleanup();\n  if (zooKeeper.state.isAlive()) {\n    waitingEvents.add(new WatcherEvent(Event.EventNone,Event.KeeperStateDisconnected,null));\n  }\n  now=System.currentTimeMillis();\n  lastHeard=now;\n  lastSend=now;\n}\n",
       "nodeType" : "TryStatement",
-      "astNodeNumber" : 773,
-      "astHeight" : 18
+      "astNodeNumber" : 310,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.WhileStatement,body]",
+      "nodePosition" : {
+        "charLength" : 3562,
+        "startLineNumber" : 652,
+        "startColumnNumber" : 46,
+        "endLineNumber" : 730,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  try {\n    if (sockKey == null) {\n      startConnect();\n      lastSend=now;\n      lastHeard=now;\n    }\n    int idleRecv=(int)(now - lastHeard);\n    int idleSend=(int)(now - lastSend);\n    int to=readTimeout - idleRecv;\n    if (zooKeeper.state != States.CONNECTED) {\n      to=connectTimeout - idleRecv;\n    }\n    if (to <= 0) {\n      throw new IOException(\"TIMED OUT\");\n    }\n    if (zooKeeper.state == States.CONNECTED) {\n      int timeToNextPing=readTimeout / 2 - idleSend;\n      if (timeToNextPing <= 0) {\n        sendPing();\n        lastSend=now;\n        enableWrite();\n      }\n else {\n        if (timeToNextPing < to) {\n          to=timeToNextPing;\n        }\n      }\n    }\n    selector.select(to);\n    Set<SelectionKey> selected;\nsynchronized (this) {\n      selected=selector.selectedKeys();\n    }\n    now=System.currentTimeMillis();\n    for (    SelectionKey k : selected) {\n      SocketChannel sc=((SocketChannel)k.channel());\n      if ((k.readyOps() & SelectionKey.OP_CONNECT) != 0) {\n        if (sc.finishConnect()) {\n          zooKeeper.state=States.CONNECTED;\n          lastHeard=now;\n          lastSend=now;\n          primeConnection(k);\n        }\n      }\n else       if ((k.readyOps() & (SelectionKey.OP_READ | SelectionKey.OP_WRITE)) != 0) {\n        if (outgoingQueue.size() > 0) {\n          lastSend=now;\n        }\n        if (doIO()) {\n          lastHeard=now;\n        }\n      }\n    }\n    if (zooKeeper.state == States.CONNECTED) {\n      if (outgoingQueue.size() > 0) {\n        enableWrite();\n      }\n else {\n        disableWrite();\n      }\n    }\n    selected.clear();\n  }\n catch (  Exception e) {\n    LOG.warn(\"Closing: \",e);\n    cleanup();\n    if (zooKeeper.state.isAlive()) {\n      waitingEvents.add(new WatcherEvent(Event.EventNone,Event.KeeperStateDisconnected,null));\n    }\n    now=System.currentTimeMillis();\n    lastHeard=now;\n    lastSend=now;\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 311,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 3596,
+        "startLineNumber" : 652,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 730,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "while (zooKeeper.state.isAlive()) {\n  try {\n    if (sockKey == null) {\n      startConnect();\n      lastSend=now;\n      lastHeard=now;\n    }\n    int idleRecv=(int)(now - lastHeard);\n    int idleSend=(int)(now - lastSend);\n    int to=readTimeout - idleRecv;\n    if (zooKeeper.state != States.CONNECTED) {\n      to=connectTimeout - idleRecv;\n    }\n    if (to <= 0) {\n      throw new IOException(\"TIMED OUT\");\n    }\n    if (zooKeeper.state == States.CONNECTED) {\n      int timeToNextPing=readTimeout / 2 - idleSend;\n      if (timeToNextPing <= 0) {\n        sendPing();\n        lastSend=now;\n        enableWrite();\n      }\n else {\n        if (timeToNextPing < to) {\n          to=timeToNextPing;\n        }\n      }\n    }\n    selector.select(to);\n    Set<SelectionKey> selected;\nsynchronized (this) {\n      selected=selector.selectedKeys();\n    }\n    now=System.currentTimeMillis();\n    for (    SelectionKey k : selected) {\n      SocketChannel sc=((SocketChannel)k.channel());\n      if ((k.readyOps() & SelectionKey.OP_CONNECT) != 0) {\n        if (sc.finishConnect()) {\n          zooKeeper.state=States.CONNECTED;\n          lastHeard=now;\n          lastSend=now;\n          primeConnection(k);\n        }\n      }\n else       if ((k.readyOps() & (SelectionKey.OP_READ | SelectionKey.OP_WRITE)) != 0) {\n        if (outgoingQueue.size() > 0) {\n          lastSend=now;\n        }\n        if (doIO()) {\n          lastHeard=now;\n        }\n      }\n    }\n    if (zooKeeper.state == States.CONNECTED) {\n      if (outgoingQueue.size() > 0) {\n        enableWrite();\n      }\n else {\n        disableWrite();\n      }\n    }\n    selected.clear();\n  }\n catch (  Exception e) {\n    LOG.warn(\"Closing: \",e);\n    cleanup();\n    if (zooKeeper.state.isAlive()) {\n      waitingEvents.add(new WatcherEvent(Event.EventNone,Event.KeeperStateDisconnected,null));\n    }\n    now=System.currentTimeMillis();\n    lastHeard=now;\n    lastSend=now;\n  }\n}\n",
+      "nodeType" : "WhileStatement",
+      "astNodeNumber" : 317,
+      "astHeight" : 15
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 8145,
-        "startLineNumber" : 190,
-        "startColumnNumber" : 22,
-        "endLineNumber" : 373,
-        "endColumnNumber" : 5
+        "charLength" : 3869,
+        "startLineNumber" : 648,
+        "startColumnNumber" : 26,
+        "endLineNumber" : 734,
+        "endColumnNumber" : 9
       },
-      "nodeContext" : "{\n  try {\n    ia=BinaryInputArchive.getArchive(new BufferedInputStream(sock.getInputStream()));\n    bufferedOutput=new BufferedOutputStream(sock.getOutputStream());\n    oa=BinaryOutputArchive.getArchive(bufferedOutput);\n    QuorumPacket qp=new QuorumPacket();\n    ia.readRecord(qp,\"packet\");\n    if (qp.getType() != Leader.LASTZXID) {\n      LOG.error(\"First packet \" + qp.toString() + \" is not LASTZXID!\");\n      return;\n    }\n    long peerLastZxid=qp.getZxid();\n    int packetToSend=Leader.SNAP;\n    boolean logTxns=true;\n    long zxidToSend=0;\nsynchronized (leader.zk.committedLog) {\n      if (leader.zk.committedLog.size() != 0) {\n        if ((leader.zk.maxCommittedLog >= peerLastZxid) && (leader.zk.minCommittedLog <= peerLastZxid)) {\n          packetToSend=Leader.DIFF;\n          zxidToSend=leader.zk.maxCommittedLog;\n          for (          Proposal propose : leader.zk.committedLog) {\n            if (propose.packet.getZxid() > peerLastZxid) {\n              queuePacket(propose.packet);\n              QuorumPacket qcommit=new QuorumPacket(Leader.COMMIT,propose.packet.getZxid(),null,null);\n              queuePacket(qcommit);\n            }\n          }\n        }\n      }\n else {\n        logTxns=false;\n      }\n    }\n    long leaderLastZxid=leader.startForwarding(this,peerLastZxid);\n    QuorumPacket newLeaderQP=new QuorumPacket(Leader.NEWLEADER,leaderLastZxid,null,null);\n    oa.writeRecord(newLeaderQP,\"packet\");\n    bufferedOutput.flush();\n    if (peerLastZxid == leaderLastZxid) {\n      packetToSend=Leader.DIFF;\n      zxidToSend=leaderLastZxid;\n    }\n    if (logTxns && (peerLastZxid > leader.zk.maxCommittedLog)) {\n      packetToSend=Leader.TRUNC;\n      zxidToSend=leader.zk.maxCommittedLog;\n    }\n    oa.writeRecord(new QuorumPacket(packetToSend,zxidToSend,null,null),\"packet\");\n    bufferedOutput.flush();\n    if (packetToSend == Leader.SNAP) {\n      LOG.warn(\"Sending snapshot last zxid of peer is 0x\" + Long.toHexString(peerLastZxid) + \" \"+ \" zxid of leader is 0x\"+ Long.toHexString(leaderLastZxid));\n      leader.zk.serializeSnapshot(oa);\n      oa.writeString(\"BenWasHere\",\"signature\");\n    }\n    bufferedOutput.flush();\n    queuedPackets.add(new QuorumPacket(Leader.UPTODATE,-1,null,null));\n    new Thread(){\n      public void run(){\n        Thread.currentThread().setName(\"Sender-\" + sock.getRemoteSocketAddress());\n        try {\n          sendPackets();\n        }\n catch (        InterruptedException e) {\n          LOG.warn(\"Unexpected interruption\",e);\n        }\n      }\n    }\n.start();\n    while (true) {\n      qp=new QuorumPacket();\n      ia.readRecord(qp,\"packet\");\n      long traceMask=ZooTrace.SERVER_PACKET_TRACE_MASK;\n      if (qp.getType() == Leader.PING) {\n        traceMask=ZooTrace.SERVER_PING_TRACE_MASK;\n      }\n      ZooTrace.logQuorumPacket(LOG,traceMask,'i',qp);\n      tickOfLastAck=leader.self.tick;\n      ByteBuffer bb;\n      long sessionId;\n      int cxid;\n      int type;\nswitch (qp.getType()) {\ncase Leader.ACK:        leader.processAck(qp.getZxid(),sock.getLocalSocketAddress());\n      break;\ncase Leader.PING:    ByteArrayInputStream bis=new ByteArrayInputStream(qp.getData());\n  DataInputStream dis=new DataInputStream(bis);\nwhile (dis.available() > 0) {\n  long sess=dis.readLong();\n  int to=dis.readInt();\n  leader.zk.touch(sess,to);\n}\nbreak;\ncase Leader.REVALIDATE:bis=new ByteArrayInputStream(qp.getData());\ndis=new DataInputStream(bis);\nlong id=dis.readLong();\nint to=dis.readInt();\nByteArrayOutputStream bos=new ByteArrayOutputStream();\nDataOutputStream dos=new DataOutputStream(bos);\ndos.writeLong(id);\nboolean valid=leader.zk.touch(id,to);\nZooTrace.logTraceMessage(LOG,ZooTrace.SESSION_TRACE_MASK,\"Session 0x\" + Long.toHexString(id) + \" is valid: \"+ valid);\ndos.writeBoolean(valid);\nqp.setData(bos.toByteArray());\nqueuedPackets.add(qp);\nbreak;\ncase Leader.REQUEST:bb=ByteBuffer.wrap(qp.getData());\nsessionId=bb.getLong();\ncxid=bb.getInt();\ntype=bb.getInt();\nbb=bb.slice();\nif (type == OpCode.sync) {\nleader.zk.submitRequest(new FollowerSyncRequest(this,sessionId,cxid,type,bb,qp.getAuthinfo()));\n}\n else {\nleader.zk.submitRequest(null,sessionId,type,cxid,bb,qp.getAuthinfo());\n}\nbreak;\ndefault:}\n}\n}\n catch (IOException e) {\nif (sock != null && !sock.isClosed()) {\nLOG.error(\"Unexpected exception causing shutdown while sock \" + \"still open\",e);\n}\n}\ncatch (InterruptedException e) {\nLOG.error(\"Unexpected exception causing shutdown\",e);\n}\n finally {\nLOG.warn(\"******* GOODBYE \" + (sock != null ? sock.getRemoteSocketAddress() : \"<null>\") + \" ********\");\ntry {\nqueuedPackets.put(proposalOfDeath);\n}\n catch (InterruptedException e) {\nLOG.warn(\"Ignoring unexpected exception\",e);\n}\nshutdown();\n}\n}\n",
+      "nodeContext" : "{\n  long now=System.currentTimeMillis();\n  long lastHeard=now;\n  long lastSend=now;\n  while (zooKeeper.state.isAlive()) {\n    try {\n      if (sockKey == null) {\n        startConnect();\n        lastSend=now;\n        lastHeard=now;\n      }\n      int idleRecv=(int)(now - lastHeard);\n      int idleSend=(int)(now - lastSend);\n      int to=readTimeout - idleRecv;\n      if (zooKeeper.state != States.CONNECTED) {\n        to=connectTimeout - idleRecv;\n      }\n      if (to <= 0) {\n        throw new IOException(\"TIMED OUT\");\n      }\n      if (zooKeeper.state == States.CONNECTED) {\n        int timeToNextPing=readTimeout / 2 - idleSend;\n        if (timeToNextPing <= 0) {\n          sendPing();\n          lastSend=now;\n          enableWrite();\n        }\n else {\n          if (timeToNextPing < to) {\n            to=timeToNextPing;\n          }\n        }\n      }\n      selector.select(to);\n      Set<SelectionKey> selected;\nsynchronized (this) {\n        selected=selector.selectedKeys();\n      }\n      now=System.currentTimeMillis();\n      for (      SelectionKey k : selected) {\n        SocketChannel sc=((SocketChannel)k.channel());\n        if ((k.readyOps() & SelectionKey.OP_CONNECT) != 0) {\n          if (sc.finishConnect()) {\n            zooKeeper.state=States.CONNECTED;\n            lastHeard=now;\n            lastSend=now;\n            primeConnection(k);\n          }\n        }\n else         if ((k.readyOps() & (SelectionKey.OP_READ | SelectionKey.OP_WRITE)) != 0) {\n          if (outgoingQueue.size() > 0) {\n            lastSend=now;\n          }\n          if (doIO()) {\n            lastHeard=now;\n          }\n        }\n      }\n      if (zooKeeper.state == States.CONNECTED) {\n        if (outgoingQueue.size() > 0) {\n          enableWrite();\n        }\n else {\n          disableWrite();\n        }\n      }\n      selected.clear();\n    }\n catch (    Exception e) {\n      LOG.warn(\"Closing: \",e);\n      cleanup();\n      if (zooKeeper.state.isAlive()) {\n        waitingEvents.add(new WatcherEvent(Event.EventNone,Event.KeeperStateDisconnected,null));\n      }\n      now=System.currentTimeMillis();\n      lastHeard=now;\n      lastSend=now;\n    }\n  }\n  cleanup();\n  ZooLog.logTextTraceMessage(\"SendThread exitedloop.\",ZooLog.textTraceMask);\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 774,
-      "astHeight" : 19
+      "astNodeNumber" : 346,
+      "astHeight" : 16
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 8330,
-        "startLineNumber" : 185,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 373,
-        "endColumnNumber" : 5
+        "charLength" : 3905,
+        "startLineNumber" : 647,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 734,
+        "endColumnNumber" : 9
       },
-      "nodeContext" : "/** \n * This thread will receive packets from the follower and process them and also listen to new connections from new followers.\n */\n@Override public void run(){\n  try {\n    ia=BinaryInputArchive.getArchive(new BufferedInputStream(sock.getInputStream()));\n    bufferedOutput=new BufferedOutputStream(sock.getOutputStream());\n    oa=BinaryOutputArchive.getArchive(bufferedOutput);\n    QuorumPacket qp=new QuorumPacket();\n    ia.readRecord(qp,\"packet\");\n    if (qp.getType() != Leader.LASTZXID) {\n      LOG.error(\"First packet \" + qp.toString() + \" is not LASTZXID!\");\n      return;\n    }\n    long peerLastZxid=qp.getZxid();\n    int packetToSend=Leader.SNAP;\n    boolean logTxns=true;\n    long zxidToSend=0;\nsynchronized (leader.zk.committedLog) {\n      if (leader.zk.committedLog.size() != 0) {\n        if ((leader.zk.maxCommittedLog >= peerLastZxid) && (leader.zk.minCommittedLog <= peerLastZxid)) {\n          packetToSend=Leader.DIFF;\n          zxidToSend=leader.zk.maxCommittedLog;\n          for (          Proposal propose : leader.zk.committedLog) {\n            if (propose.packet.getZxid() > peerLastZxid) {\n              queuePacket(propose.packet);\n              QuorumPacket qcommit=new QuorumPacket(Leader.COMMIT,propose.packet.getZxid(),null,null);\n              queuePacket(qcommit);\n            }\n          }\n        }\n      }\n else {\n        logTxns=false;\n      }\n    }\n    long leaderLastZxid=leader.startForwarding(this,peerLastZxid);\n    QuorumPacket newLeaderQP=new QuorumPacket(Leader.NEWLEADER,leaderLastZxid,null,null);\n    oa.writeRecord(newLeaderQP,\"packet\");\n    bufferedOutput.flush();\n    if (peerLastZxid == leaderLastZxid) {\n      packetToSend=Leader.DIFF;\n      zxidToSend=leaderLastZxid;\n    }\n    if (logTxns && (peerLastZxid > leader.zk.maxCommittedLog)) {\n      packetToSend=Leader.TRUNC;\n      zxidToSend=leader.zk.maxCommittedLog;\n    }\n    oa.writeRecord(new QuorumPacket(packetToSend,zxidToSend,null,null),\"packet\");\n    bufferedOutput.flush();\n    if (packetToSend == Leader.SNAP) {\n      LOG.warn(\"Sending snapshot last zxid of peer is 0x\" + Long.toHexString(peerLastZxid) + \" \"+ \" zxid of leader is 0x\"+ Long.toHexString(leaderLastZxid));\n      leader.zk.serializeSnapshot(oa);\n      oa.writeString(\"BenWasHere\",\"signature\");\n    }\n    bufferedOutput.flush();\n    queuedPackets.add(new QuorumPacket(Leader.UPTODATE,-1,null,null));\n    new Thread(){\n      public void run(){\n        Thread.currentThread().setName(\"Sender-\" + sock.getRemoteSocketAddress());\n        try {\n          sendPackets();\n        }\n catch (        InterruptedException e) {\n          LOG.warn(\"Unexpected interruption\",e);\n        }\n      }\n    }\n.start();\n    while (true) {\n      qp=new QuorumPacket();\n      ia.readRecord(qp,\"packet\");\n      long traceMask=ZooTrace.SERVER_PACKET_TRACE_MASK;\n      if (qp.getType() == Leader.PING) {\n        traceMask=ZooTrace.SERVER_PING_TRACE_MASK;\n      }\n      ZooTrace.logQuorumPacket(LOG,traceMask,'i',qp);\n      tickOfLastAck=leader.self.tick;\n      ByteBuffer bb;\n      long sessionId;\n      int cxid;\n      int type;\nswitch (qp.getType()) {\ncase Leader.ACK:        leader.processAck(qp.getZxid(),sock.getLocalSocketAddress());\n      break;\ncase Leader.PING:    ByteArrayInputStream bis=new ByteArrayInputStream(qp.getData());\n  DataInputStream dis=new DataInputStream(bis);\nwhile (dis.available() > 0) {\n  long sess=dis.readLong();\n  int to=dis.readInt();\n  leader.zk.touch(sess,to);\n}\nbreak;\ncase Leader.REVALIDATE:bis=new ByteArrayInputStream(qp.getData());\ndis=new DataInputStream(bis);\nlong id=dis.readLong();\nint to=dis.readInt();\nByteArrayOutputStream bos=new ByteArrayOutputStream();\nDataOutputStream dos=new DataOutputStream(bos);\ndos.writeLong(id);\nboolean valid=leader.zk.touch(id,to);\nZooTrace.logTraceMessage(LOG,ZooTrace.SESSION_TRACE_MASK,\"Session 0x\" + Long.toHexString(id) + \" is valid: \"+ valid);\ndos.writeBoolean(valid);\nqp.setData(bos.toByteArray());\nqueuedPackets.add(qp);\nbreak;\ncase Leader.REQUEST:bb=ByteBuffer.wrap(qp.getData());\nsessionId=bb.getLong();\ncxid=bb.getInt();\ntype=bb.getInt();\nbb=bb.slice();\nif (type == OpCode.sync) {\nleader.zk.submitRequest(new FollowerSyncRequest(this,sessionId,cxid,type,bb,qp.getAuthinfo()));\n}\n else {\nleader.zk.submitRequest(null,sessionId,type,cxid,bb,qp.getAuthinfo());\n}\nbreak;\ndefault:}\n}\n}\n catch (IOException e) {\nif (sock != null && !sock.isClosed()) {\nLOG.error(\"Unexpected exception causing shutdown while sock \" + \"still open\",e);\n}\n}\ncatch (InterruptedException e) {\nLOG.error(\"Unexpected exception causing shutdown\",e);\n}\n finally {\nLOG.warn(\"******* GOODBYE \" + (sock != null ? sock.getRemoteSocketAddress() : \"<null>\") + \" ********\");\ntry {\nqueuedPackets.put(proposalOfDeath);\n}\n catch (InterruptedException e) {\nLOG.warn(\"Ignoring unexpected exception\",e);\n}\nshutdown();\n}\n}\n",
+      "nodeContext" : "@Override public void run(){\n  long now=System.currentTimeMillis();\n  long lastHeard=now;\n  long lastSend=now;\n  while (zooKeeper.state.isAlive()) {\n    try {\n      if (sockKey == null) {\n        startConnect();\n        lastSend=now;\n        lastHeard=now;\n      }\n      int idleRecv=(int)(now - lastHeard);\n      int idleSend=(int)(now - lastSend);\n      int to=readTimeout - idleRecv;\n      if (zooKeeper.state != States.CONNECTED) {\n        to=connectTimeout - idleRecv;\n      }\n      if (to <= 0) {\n        throw new IOException(\"TIMED OUT\");\n      }\n      if (zooKeeper.state == States.CONNECTED) {\n        int timeToNextPing=readTimeout / 2 - idleSend;\n        if (timeToNextPing <= 0) {\n          sendPing();\n          lastSend=now;\n          enableWrite();\n        }\n else {\n          if (timeToNextPing < to) {\n            to=timeToNextPing;\n          }\n        }\n      }\n      selector.select(to);\n      Set<SelectionKey> selected;\nsynchronized (this) {\n        selected=selector.selectedKeys();\n      }\n      now=System.currentTimeMillis();\n      for (      SelectionKey k : selected) {\n        SocketChannel sc=((SocketChannel)k.channel());\n        if ((k.readyOps() & SelectionKey.OP_CONNECT) != 0) {\n          if (sc.finishConnect()) {\n            zooKeeper.state=States.CONNECTED;\n            lastHeard=now;\n            lastSend=now;\n            primeConnection(k);\n          }\n        }\n else         if ((k.readyOps() & (SelectionKey.OP_READ | SelectionKey.OP_WRITE)) != 0) {\n          if (outgoingQueue.size() > 0) {\n            lastSend=now;\n          }\n          if (doIO()) {\n            lastHeard=now;\n          }\n        }\n      }\n      if (zooKeeper.state == States.CONNECTED) {\n        if (outgoingQueue.size() > 0) {\n          enableWrite();\n        }\n else {\n          disableWrite();\n        }\n      }\n      selected.clear();\n    }\n catch (    Exception e) {\n      LOG.warn(\"Closing: \",e);\n      cleanup();\n      if (zooKeeper.state.isAlive()) {\n        waitingEvents.add(new WatcherEvent(Event.EventNone,Event.KeeperStateDisconnected,null));\n      }\n      now=System.currentTimeMillis();\n      lastHeard=now;\n      lastSend=now;\n    }\n  }\n  cleanup();\n  ZooLog.logTextTraceMessage(\"SendThread exitedloop.\",ZooLog.textTraceMask);\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 781,
-      "astHeight" : 20
+      "astNodeNumber" : 352,
+      "astHeight" : 17
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 65,
-        "startLineNumber" : 231,
-        "startColumnNumber" : 12,
-        "endLineNumber" : 231,
-        "endColumnNumber" : 77
+        "charLength" : 38,
+        "startLineNumber" : 660,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 660,
+        "endColumnNumber" : 58
       },
-      "nodeContext" : "long leaderLastZxid=leader.startForwarding(this,peerLastZxid);\n",
+      "nodeContext" : "int idleSend=(int)(now - lastSend);\n",
       "nodeType" : "VariableDeclarationStatement",
-      "astNodeNumber" : 9,
-      "astHeight" : 4
+      "astNodeNumber" : 10,
+      "astHeight" : 6
     },
     "tokenLength" : 3,
     "type" : "long"
   } ],
   "positionList" : [ {
-    "charLength" : 42,
-    "startLineNumber" : 231,
-    "startColumnNumber" : 34,
-    "endLineNumber" : 231,
-    "endColumnNumber" : 76
+    "charLength" : 16,
+    "startLineNumber" : 660,
+    "startColumnNumber" : 41,
+    "endLineNumber" : 660,
+    "endColumnNumber" : 57
   } ],
   "layoutRelationDataList" : [ ]
 }

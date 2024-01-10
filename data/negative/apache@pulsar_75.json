@@ -1,87 +1,617 @@
 {
   "id" : 75,
-  "expression" : "metadataStore != null",
+  "expression" : "timeout",
   "projectName" : "apache@pulsar",
-  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
-  "filePath" : "/pulsar-broker/src/main/java/org/apache/pulsar/broker/TransactionMetadataStoreService.java",
-  "occurrences" : 1,
+  "commitID" : "be9d4d473fccad8cd93be12aa5d03d53783c24b7",
+  "filePath" : "pulsar-broker/src/main/java/org/apache/pulsar/broker/transaction/timeout/TransactionTimeoutTrackerImpl.java",
+  "occurrences" : 4,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "metadataStore != null",
-    "nodeType" : "InfixExpression",
+    "nodeContext" : "timeout",
+    "nodeType" : "SimpleName",
     "nodePosition" : {
-      "charLength" : 21,
-      "startLineNumber" : 164,
+      "charLength" : 7,
+      "startLineNumber" : 61,
       "startColumnNumber" : 12,
-      "endLineNumber" : 164,
-      "endColumnNumber" : 33
+      "endLineNumber" : 61,
+      "endColumnNumber" : 19
     },
-    "astNodeNumber" : 3,
-    "astHeight" : 2,
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
     "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 24,
+        "startLineNumber" : 61,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 61,
+        "endColumnNumber" : 36
+      },
+      "nodeContext" : "timeout < tickTimeMillis",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 367,
-        "startLineNumber" : 164,
+        "charLength" : 206,
+        "startLineNumber" : 61,
         "startColumnNumber" : 8,
-        "endLineNumber" : 172,
+        "endLineNumber" : 64,
         "endColumnNumber" : 9
       },
-      "nodeContext" : "if (metadataStore != null) {\n  metadataStore.closeAsync().whenComplete((v,ex) -> {\n    if (ex != null) {\n      LOG.error(\"Close transaction metadata store with id \" + tcId,ex);\n    }\n else {\n      LOG.info(\"Removed and closed transaction meta store {}\",tcId);\n    }\n  }\n);\n}\n",
+      "nodeContext" : "if (timeout < tickTimeMillis) {\n  this.transactionMetadataStoreService.endTransactionForTimeout(new TxnID(tcId,sequenceId));\n  return CompletableFuture.completedFuture(false);\n}\n",
       "nodeType" : "IfStatement",
-      "astNodeNumber" : 37,
-      "astHeight" : 12
+      "astNodeNumber" : 21,
+      "astHeight" : 7
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 453,
-        "startLineNumber" : 162,
-        "startColumnNumber" : 78,
-        "endLineNumber" : 173,
+        "charLength" : 999,
+        "startLineNumber" : 60,
+        "startColumnNumber" : 84,
+        "endLineNumber" : 80,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  TransactionMetadataStore metadataStore=stores.remove(tcId);\n  if (metadataStore != null) {\n    metadataStore.closeAsync().whenComplete((v,ex) -> {\n      if (ex != null) {\n        LOG.error(\"Close transaction metadata store with id \" + tcId,ex);\n      }\n else {\n        LOG.info(\"Removed and closed transaction meta store {}\",tcId);\n      }\n    }\n);\n  }\n}\n",
+      "nodeContext" : "{\n  if (timeout < tickTimeMillis) {\n    this.transactionMetadataStoreService.endTransactionForTimeout(new TxnID(tcId,sequenceId));\n    return CompletableFuture.completedFuture(false);\n  }\nsynchronized (this) {\n    long nowTime=clock.millis();\n    long transactionTimeoutTime=nowTime + timeout;\n    priorityQueue.add(transactionTimeoutTime,tcId,sequenceId);\n    if (this.currentTimeout == null) {\n      currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n      nowTaskTimeoutTime=transactionTimeoutTime;\n    }\n else     if (nowTaskTimeoutTime > transactionTimeoutTime) {\n      if (currentTimeout.cancel()) {\n        currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n        nowTaskTimeoutTime=transactionTimeoutTime;\n      }\n    }\n  }\n  return CompletableFuture.completedFuture(false);\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 47,
+      "astNodeNumber" : 98,
       "astHeight" : 13
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 527,
-        "startLineNumber" : 162,
+        "charLength" : 1093,
+        "startLineNumber" : 59,
         "startColumnNumber" : 4,
-        "endLineNumber" : 173,
+        "endLineNumber" : 80,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "public void removeTransactionMetadataStore(TransactionCoordinatorID tcId){\n  TransactionMetadataStore metadataStore=stores.remove(tcId);\n  if (metadataStore != null) {\n    metadataStore.closeAsync().whenComplete((v,ex) -> {\n      if (ex != null) {\n        LOG.error(\"Close transaction metadata store with id \" + tcId,ex);\n      }\n else {\n        LOG.info(\"Removed and closed transaction meta store {}\",tcId);\n      }\n    }\n);\n  }\n}\n",
+      "nodeContext" : "@Override public CompletableFuture<Boolean> addTransaction(long sequenceId,long timeout){\n  if (timeout < tickTimeMillis) {\n    this.transactionMetadataStoreService.endTransactionForTimeout(new TxnID(tcId,sequenceId));\n    return CompletableFuture.completedFuture(false);\n  }\nsynchronized (this) {\n    long nowTime=clock.millis();\n    long transactionTimeoutTime=nowTime + timeout;\n    priorityQueue.add(transactionTimeoutTime,tcId,sequenceId);\n    if (this.currentTimeout == null) {\n      currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n      nowTaskTimeoutTime=transactionTimeoutTime;\n    }\n else     if (nowTaskTimeoutTime > transactionTimeoutTime) {\n      if (currentTimeout.cancel()) {\n        currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n        nowTaskTimeoutTime=transactionTimeoutTime;\n      }\n    }\n  }\n  return CompletableFuture.completedFuture(false);\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 55,
+      "astNodeNumber" : 114,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 24,
+        "startLineNumber" : 61,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 61,
+        "endColumnNumber" : 36
+      },
+      "nodeContext" : "timeout < tickTimeMillis",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    },
+    "tokenLength" : 1,
+    "type" : "long"
+  }, {
+    "nodeContext" : "timeout",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 7,
+      "startLineNumber" : 67,
+      "startColumnNumber" : 52,
+      "endLineNumber" : 67,
+      "endColumnNumber" : 59
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 17,
+        "startLineNumber" : 67,
+        "startColumnNumber" : 42,
+        "endLineNumber" : 67,
+        "endColumnNumber" : 59
+      },
+      "nodeContext" : "nowTime + timeout",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 42,
+        "startLineNumber" : 67,
+        "startColumnNumber" : 17,
+        "endLineNumber" : 67,
+        "endColumnNumber" : 59
+      },
+      "nodeContext" : "transactionTimeoutTime=nowTime + timeout",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 48,
+        "startLineNumber" : 67,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 67,
+        "endColumnNumber" : 60
+      },
+      "nodeContext" : "long transactionTimeoutTime=nowTime + timeout;\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.SynchronizedStatement,body]",
+      "nodePosition" : {
+        "charLength" : 692,
+        "startLineNumber" : 65,
+        "startColumnNumber" : 27,
+        "endLineNumber" : 78,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  long nowTime=clock.millis();\n  long transactionTimeoutTime=nowTime + timeout;\n  priorityQueue.add(transactionTimeoutTime,tcId,sequenceId);\n  if (this.currentTimeout == null) {\n    currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n    nowTaskTimeoutTime=transactionTimeoutTime;\n  }\n else   if (nowTaskTimeoutTime > transactionTimeoutTime) {\n    if (currentTimeout.cancel()) {\n      currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n      nowTaskTimeoutTime=transactionTimeoutTime;\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 69,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 711,
+        "startLineNumber" : 65,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 78,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "synchronized (this) {\n  long nowTime=clock.millis();\n  long transactionTimeoutTime=nowTime + timeout;\n  priorityQueue.add(transactionTimeoutTime,tcId,sequenceId);\n  if (this.currentTimeout == null) {\n    currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n    nowTaskTimeoutTime=transactionTimeoutTime;\n  }\n else   if (nowTaskTimeoutTime > transactionTimeoutTime) {\n    if (currentTimeout.cancel()) {\n      currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n      nowTaskTimeoutTime=transactionTimeoutTime;\n    }\n  }\n}\n",
+      "nodeType" : "SynchronizedStatement",
+      "astNodeNumber" : 71,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 999,
+        "startLineNumber" : 60,
+        "startColumnNumber" : 84,
+        "endLineNumber" : 80,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (timeout < tickTimeMillis) {\n    this.transactionMetadataStoreService.endTransactionForTimeout(new TxnID(tcId,sequenceId));\n    return CompletableFuture.completedFuture(false);\n  }\nsynchronized (this) {\n    long nowTime=clock.millis();\n    long transactionTimeoutTime=nowTime + timeout;\n    priorityQueue.add(transactionTimeoutTime,tcId,sequenceId);\n    if (this.currentTimeout == null) {\n      currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n      nowTaskTimeoutTime=transactionTimeoutTime;\n    }\n else     if (nowTaskTimeoutTime > transactionTimeoutTime) {\n      if (currentTimeout.cancel()) {\n        currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n        nowTaskTimeoutTime=transactionTimeoutTime;\n      }\n    }\n  }\n  return CompletableFuture.completedFuture(false);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 98,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 1093,
+        "startLineNumber" : 59,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 80,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public CompletableFuture<Boolean> addTransaction(long sequenceId,long timeout){\n  if (timeout < tickTimeMillis) {\n    this.transactionMetadataStoreService.endTransactionForTimeout(new TxnID(tcId,sequenceId));\n    return CompletableFuture.completedFuture(false);\n  }\nsynchronized (this) {\n    long nowTime=clock.millis();\n    long transactionTimeoutTime=nowTime + timeout;\n    priorityQueue.add(transactionTimeoutTime,tcId,sequenceId);\n    if (this.currentTimeout == null) {\n      currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n      nowTaskTimeoutTime=transactionTimeoutTime;\n    }\n else     if (nowTaskTimeoutTime > transactionTimeoutTime) {\n      if (currentTimeout.cancel()) {\n        currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n        nowTaskTimeoutTime=transactionTimeoutTime;\n      }\n    }\n  }\n  return CompletableFuture.completedFuture(false);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 114,
       "astHeight" : 14
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 367,
-        "startLineNumber" : 164,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 172,
+        "charLength" : 48,
+        "startLineNumber" : 67,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 67,
+        "endColumnNumber" : 60
+      },
+      "nodeContext" : "long transactionTimeoutTime=nowTime + timeout;\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "long"
+  }, {
+    "nodeContext" : "timeout",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 7,
+      "startLineNumber" : 70,
+      "startColumnNumber" : 56,
+      "endLineNumber" : 70,
+      "endColumnNumber" : 63
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
+      "nodePosition" : {
+        "charLength" : 54,
+        "startLineNumber" : 70,
+        "startColumnNumber" : 33,
+        "endLineNumber" : 70,
+        "endColumnNumber" : 87
+      },
+      "nodeContext" : "timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 8,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 71,
+        "startLineNumber" : 70,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 70,
+        "endColumnNumber" : 87
+      },
+      "nodeContext" : "currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS)",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 72,
+        "startLineNumber" : 70,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 70,
+        "endColumnNumber" : 88
+      },
+      "nodeContext" : "currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 165,
+        "startLineNumber" : 69,
+        "startColumnNumber" : 45,
+        "endLineNumber" : 72,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n  nowTaskTimeoutTime=transactionTimeoutTime;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 16,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 491,
+        "startLineNumber" : 69,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 77,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "if (this.currentTimeout == null) {\n  currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n  nowTaskTimeoutTime=transactionTimeoutTime;\n}\n else if (nowTaskTimeoutTime > transactionTimeoutTime) {\n  if (currentTimeout.cancel()) {\n    currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n    nowTaskTimeoutTime=transactionTimeoutTime;\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 47,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.SynchronizedStatement,body]",
+      "nodePosition" : {
+        "charLength" : 692,
+        "startLineNumber" : 65,
+        "startColumnNumber" : 27,
+        "endLineNumber" : 78,
         "endColumnNumber" : 9
       },
-      "nodeContext" : "if (metadataStore != null) {\n  metadataStore.closeAsync().whenComplete((v,ex) -> {\n    if (ex != null) {\n      LOG.error(\"Close transaction metadata store with id \" + tcId,ex);\n    }\n else {\n      LOG.info(\"Removed and closed transaction meta store {}\",tcId);\n    }\n  }\n);\n}\n",
-      "nodeType" : "IfStatement",
-      "astNodeNumber" : 37,
+      "nodeContext" : "{\n  long nowTime=clock.millis();\n  long transactionTimeoutTime=nowTime + timeout;\n  priorityQueue.add(transactionTimeoutTime,tcId,sequenceId);\n  if (this.currentTimeout == null) {\n    currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n    nowTaskTimeoutTime=transactionTimeoutTime;\n  }\n else   if (nowTaskTimeoutTime > transactionTimeoutTime) {\n    if (currentTimeout.cancel()) {\n      currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n      nowTaskTimeoutTime=transactionTimeoutTime;\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 69,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 711,
+        "startLineNumber" : 65,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 78,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "synchronized (this) {\n  long nowTime=clock.millis();\n  long transactionTimeoutTime=nowTime + timeout;\n  priorityQueue.add(transactionTimeoutTime,tcId,sequenceId);\n  if (this.currentTimeout == null) {\n    currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n    nowTaskTimeoutTime=transactionTimeoutTime;\n  }\n else   if (nowTaskTimeoutTime > transactionTimeoutTime) {\n    if (currentTimeout.cancel()) {\n      currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n      nowTaskTimeoutTime=transactionTimeoutTime;\n    }\n  }\n}\n",
+      "nodeType" : "SynchronizedStatement",
+      "astNodeNumber" : 71,
       "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 999,
+        "startLineNumber" : 60,
+        "startColumnNumber" : 84,
+        "endLineNumber" : 80,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (timeout < tickTimeMillis) {\n    this.transactionMetadataStoreService.endTransactionForTimeout(new TxnID(tcId,sequenceId));\n    return CompletableFuture.completedFuture(false);\n  }\nsynchronized (this) {\n    long nowTime=clock.millis();\n    long transactionTimeoutTime=nowTime + timeout;\n    priorityQueue.add(transactionTimeoutTime,tcId,sequenceId);\n    if (this.currentTimeout == null) {\n      currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n      nowTaskTimeoutTime=transactionTimeoutTime;\n    }\n else     if (nowTaskTimeoutTime > transactionTimeoutTime) {\n      if (currentTimeout.cancel()) {\n        currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n        nowTaskTimeoutTime=transactionTimeoutTime;\n      }\n    }\n  }\n  return CompletableFuture.completedFuture(false);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 98,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 1093,
+        "startLineNumber" : 59,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 80,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public CompletableFuture<Boolean> addTransaction(long sequenceId,long timeout){\n  if (timeout < tickTimeMillis) {\n    this.transactionMetadataStoreService.endTransactionForTimeout(new TxnID(tcId,sequenceId));\n    return CompletableFuture.completedFuture(false);\n  }\nsynchronized (this) {\n    long nowTime=clock.millis();\n    long transactionTimeoutTime=nowTime + timeout;\n    priorityQueue.add(transactionTimeoutTime,tcId,sequenceId);\n    if (this.currentTimeout == null) {\n      currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n      nowTaskTimeoutTime=transactionTimeoutTime;\n    }\n else     if (nowTaskTimeoutTime > transactionTimeoutTime) {\n      if (currentTimeout.cancel()) {\n        currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n        nowTaskTimeoutTime=transactionTimeoutTime;\n      }\n    }\n  }\n  return CompletableFuture.completedFuture(false);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 114,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 72,
+        "startLineNumber" : 70,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 70,
+        "endColumnNumber" : 88
+      },
+      "nodeContext" : "currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 5
     },
-    "tokenLength" : 3,
-    "type" : "boolean"
+    "tokenLength" : 1,
+    "type" : "long"
+  }, {
+    "nodeContext" : "timeout",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 7,
+      "startLineNumber" : 74,
+      "startColumnNumber" : 60,
+      "endLineNumber" : 74,
+      "endColumnNumber" : 67
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
+      "nodePosition" : {
+        "charLength" : 54,
+        "startLineNumber" : 74,
+        "startColumnNumber" : 37,
+        "endLineNumber" : 74,
+        "endColumnNumber" : 91
+      },
+      "nodeContext" : "timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 8,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 71,
+        "startLineNumber" : 74,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 74,
+        "endColumnNumber" : 91
+      },
+      "nodeContext" : "currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS)",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 72,
+        "startLineNumber" : 74,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 74,
+        "endColumnNumber" : 92
+      },
+      "nodeContext" : "currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 177,
+        "startLineNumber" : 73,
+        "startColumnNumber" : 45,
+        "endLineNumber" : 76,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "{\n  currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n  nowTaskTimeoutTime=transactionTimeoutTime;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 16,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 206,
+        "startLineNumber" : 73,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 76,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "if (currentTimeout.cancel()) {\n  currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n  nowTaskTimeoutTime=transactionTimeoutTime;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 20,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 238,
+        "startLineNumber" : 72,
+        "startColumnNumber" : 68,
+        "endLineNumber" : 77,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  if (currentTimeout.cancel()) {\n    currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n    nowTaskTimeoutTime=transactionTimeoutTime;\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 21,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 287,
+        "startLineNumber" : 72,
+        "startColumnNumber" : 19,
+        "endLineNumber" : 77,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "if (nowTaskTimeoutTime > transactionTimeoutTime) {\n  if (currentTimeout.cancel()) {\n    currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n    nowTaskTimeoutTime=transactionTimeoutTime;\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 25,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 491,
+        "startLineNumber" : 69,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 77,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "if (this.currentTimeout == null) {\n  currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n  nowTaskTimeoutTime=transactionTimeoutTime;\n}\n else if (nowTaskTimeoutTime > transactionTimeoutTime) {\n  if (currentTimeout.cancel()) {\n    currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n    nowTaskTimeoutTime=transactionTimeoutTime;\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 47,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.SynchronizedStatement,body]",
+      "nodePosition" : {
+        "charLength" : 692,
+        "startLineNumber" : 65,
+        "startColumnNumber" : 27,
+        "endLineNumber" : 78,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  long nowTime=clock.millis();\n  long transactionTimeoutTime=nowTime + timeout;\n  priorityQueue.add(transactionTimeoutTime,tcId,sequenceId);\n  if (this.currentTimeout == null) {\n    currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n    nowTaskTimeoutTime=transactionTimeoutTime;\n  }\n else   if (nowTaskTimeoutTime > transactionTimeoutTime) {\n    if (currentTimeout.cancel()) {\n      currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n      nowTaskTimeoutTime=transactionTimeoutTime;\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 69,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 711,
+        "startLineNumber" : 65,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 78,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "synchronized (this) {\n  long nowTime=clock.millis();\n  long transactionTimeoutTime=nowTime + timeout;\n  priorityQueue.add(transactionTimeoutTime,tcId,sequenceId);\n  if (this.currentTimeout == null) {\n    currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n    nowTaskTimeoutTime=transactionTimeoutTime;\n  }\n else   if (nowTaskTimeoutTime > transactionTimeoutTime) {\n    if (currentTimeout.cancel()) {\n      currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n      nowTaskTimeoutTime=transactionTimeoutTime;\n    }\n  }\n}\n",
+      "nodeType" : "SynchronizedStatement",
+      "astNodeNumber" : 71,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 999,
+        "startLineNumber" : 60,
+        "startColumnNumber" : 84,
+        "endLineNumber" : 80,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (timeout < tickTimeMillis) {\n    this.transactionMetadataStoreService.endTransactionForTimeout(new TxnID(tcId,sequenceId));\n    return CompletableFuture.completedFuture(false);\n  }\nsynchronized (this) {\n    long nowTime=clock.millis();\n    long transactionTimeoutTime=nowTime + timeout;\n    priorityQueue.add(transactionTimeoutTime,tcId,sequenceId);\n    if (this.currentTimeout == null) {\n      currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n      nowTaskTimeoutTime=transactionTimeoutTime;\n    }\n else     if (nowTaskTimeoutTime > transactionTimeoutTime) {\n      if (currentTimeout.cancel()) {\n        currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n        nowTaskTimeoutTime=transactionTimeoutTime;\n      }\n    }\n  }\n  return CompletableFuture.completedFuture(false);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 98,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 1093,
+        "startLineNumber" : 59,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 80,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public CompletableFuture<Boolean> addTransaction(long sequenceId,long timeout){\n  if (timeout < tickTimeMillis) {\n    this.transactionMetadataStoreService.endTransactionForTimeout(new TxnID(tcId,sequenceId));\n    return CompletableFuture.completedFuture(false);\n  }\nsynchronized (this) {\n    long nowTime=clock.millis();\n    long transactionTimeoutTime=nowTime + timeout;\n    priorityQueue.add(transactionTimeoutTime,tcId,sequenceId);\n    if (this.currentTimeout == null) {\n      currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n      nowTaskTimeoutTime=transactionTimeoutTime;\n    }\n else     if (nowTaskTimeoutTime > transactionTimeoutTime) {\n      if (currentTimeout.cancel()) {\n        currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n        nowTaskTimeoutTime=transactionTimeoutTime;\n      }\n    }\n  }\n  return CompletableFuture.completedFuture(false);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 114,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 72,
+        "startLineNumber" : 74,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 74,
+        "endColumnNumber" : 92
+      },
+      "nodeContext" : "currentTimeout=timer.newTimeout(this,timeout,TimeUnit.MILLISECONDS);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "long"
   } ],
   "positionList" : [ {
-    "charLength" : 21,
-    "startLineNumber" : 164,
+    "charLength" : 7,
+    "startLineNumber" : 61,
     "startColumnNumber" : 12,
-    "endLineNumber" : 164,
-    "endColumnNumber" : 33
+    "endLineNumber" : 61,
+    "endColumnNumber" : 19
+  }, {
+    "charLength" : 7,
+    "startLineNumber" : 67,
+    "startColumnNumber" : 52,
+    "endLineNumber" : 67,
+    "endColumnNumber" : 59
+  }, {
+    "charLength" : 7,
+    "startLineNumber" : 70,
+    "startColumnNumber" : 56,
+    "endLineNumber" : 70,
+    "endColumnNumber" : 63
+  }, {
+    "charLength" : 7,
+    "startLineNumber" : 74,
+    "startColumnNumber" : 60,
+    "endLineNumber" : 74,
+    "endColumnNumber" : 67
   } ],
-  "layoutRelationDataList" : [ ]
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 7
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 0,
+    "layout" : 10
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 1,
+    "layout" : 8
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 2,
+    "layout" : 7
+  } ]
 }

@@ -1,0 +1,113 @@
+{
+  "id" : 21,
+  "expression" : "!methodHasBody || hasRequestBody",
+  "projectName" : "jsoup",
+  "commitID" : "7d4f963539e6206af7f79af5ef08c8fb7535746c",
+  "filePath" : "src/main/java/org/jsoup/helper/HttpConnection.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 1,
+  "isGetTypeMethod" : 1,
+  "expressionList" : [ {
+    "nodeContext" : "!methodHasBody || hasRequestBody",
+    "nodeType" : "InfixExpression",
+    "nodePosition" : {
+      "charLength" : 32,
+      "startLineNumber" : 743,
+      "startColumnNumber" : 42,
+      "endLineNumber" : 743,
+      "endColumnNumber" : 74
+    },
+    "astNodeNumber" : 4,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,rightOperand]",
+      "nodePosition" : {
+        "charLength" : 34,
+        "startLineNumber" : 743,
+        "startColumnNumber" : 41,
+        "endLineNumber" : 743,
+        "endColumnNumber" : 75
+      },
+      "nodeContext" : "(!methodHasBody || hasRequestBody)",
+      "nodeType" : "ParenthesizedExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 59,
+        "startLineNumber" : 743,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 743,
+        "endColumnNumber" : 75
+      },
+      "nodeContext" : "req.data().size() > 0 && (!methodHasBody || hasRequestBody)",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 13,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 200,
+        "startLineNumber" : 743,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 746,
+        "endColumnNumber" : 57
+      },
+      "nodeContext" : "if (req.data().size() > 0 && (!methodHasBody || hasRequestBody)) serialiseRequestUrl(req);\n else if (methodHasBody) mimeBoundary=setOutputContentType(req);\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 26,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5348,
+        "startLineNumber" : 730,
+        "startColumnNumber" : 102,
+        "endLineNumber" : 825,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  Validate.notNull(req,\"Request must not be null\");\n  Validate.notNull(req.url(),\"URL must be specified to connect\");\n  String protocol=req.url().getProtocol();\n  if (!protocol.equals(\"http\") && !protocol.equals(\"https\"))   throw new MalformedURLException(\"Only http & https protocols supported\");\n  final boolean methodHasBody=req.method().hasBody();\n  final boolean hasRequestBody=req.requestBody() != null;\n  if (!methodHasBody)   Validate.isFalse(hasRequestBody,\"Cannot set a request body for HTTP method \" + req.method());\n  String mimeBoundary=null;\n  if (req.data().size() > 0 && (!methodHasBody || hasRequestBody))   serialiseRequestUrl(req);\n else   if (methodHasBody)   mimeBoundary=setOutputContentType(req);\n  long startTime=System.nanoTime();\n  HttpURLConnection conn=createConnection(req);\n  Response res=null;\n  try {\n    conn.connect();\n    if (conn.getDoOutput())     writePost(req,conn.getOutputStream(),mimeBoundary);\n    int status=conn.getResponseCode();\n    res=new Response(previousResponse);\n    res.setupFromConnection(conn,previousResponse);\n    res.req=req;\n    if (res.hasHeader(LOCATION) && req.followRedirects()) {\n      if (status != HTTP_TEMP_REDIR) {\n        req.method(Method.GET);\n        req.data().clear();\n        req.requestBody(null);\n        req.removeHeader(CONTENT_TYPE);\n      }\n      String location=res.header(LOCATION);\n      if (location.startsWith(\"http:/\") && location.charAt(6) != '/')       location=location.substring(6);\n      URL redir=StringUtil.resolve(req.url(),location);\n      req.url(encodeUrl(redir));\n      for (      Map.Entry<String,String> cookie : res.cookies.entrySet()) {\n        req.cookie(cookie.getKey(),cookie.getValue());\n      }\n      return execute(req,res);\n    }\n    if ((status < 200 || status >= 400) && !req.ignoreHttpErrors())     throw new HttpStatusException(\"HTTP error fetching URL\",status,req.url().toString());\n    String contentType=res.contentType();\n    if (contentType != null && !req.ignoreContentType() && !contentType.startsWith(\"text/\") && !xmlContentTypeRxp.matcher(contentType).matches())     throw new UnsupportedMimeTypeException(\"Unhandled content type. Must be text/*, application/xml, or application/*+xml\",contentType,req.url().toString());\n    if (contentType != null && xmlContentTypeRxp.matcher(contentType).matches()) {\n      if (req instanceof HttpConnection.Request && !((Request)req).parserDefined) {\n        req.parser(Parser.xmlParser());\n      }\n    }\n    res.charset=DataUtil.getCharsetFromContentType(res.contentType);\n    if (conn.getContentLength() != 0 && req.method() != HEAD) {\n      res.bodyStream=null;\n      res.bodyStream=conn.getErrorStream() != null ? conn.getErrorStream() : conn.getInputStream();\n      if (res.hasHeaderWithValue(CONTENT_ENCODING,\"gzip\")) {\n        res.bodyStream=new GZIPInputStream(res.bodyStream);\n      }\n else       if (res.hasHeaderWithValue(CONTENT_ENCODING,\"deflate\")) {\n        res.bodyStream=new InflaterInputStream(res.bodyStream,new Inflater(true));\n      }\n      res.bodyStream=ConstrainableInputStream.wrap(res.bodyStream,DataUtil.bufferSize,req.maxBodySize()).timeout(startTime,req.timeout());\n    }\n else {\n      res.byteData=DataUtil.emptyByteBuffer();\n    }\n  }\n catch (  IOException e) {\n    if (res != null)     res.safeClose();\n    throw e;\n  }\n  res.executed=true;\n  return res;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 536,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 5442,
+        "startLineNumber" : 730,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 825,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "static Response execute(Connection.Request req,Response previousResponse) throws IOException {\n  Validate.notNull(req,\"Request must not be null\");\n  Validate.notNull(req.url(),\"URL must be specified to connect\");\n  String protocol=req.url().getProtocol();\n  if (!protocol.equals(\"http\") && !protocol.equals(\"https\"))   throw new MalformedURLException(\"Only http & https protocols supported\");\n  final boolean methodHasBody=req.method().hasBody();\n  final boolean hasRequestBody=req.requestBody() != null;\n  if (!methodHasBody)   Validate.isFalse(hasRequestBody,\"Cannot set a request body for HTTP method \" + req.method());\n  String mimeBoundary=null;\n  if (req.data().size() > 0 && (!methodHasBody || hasRequestBody))   serialiseRequestUrl(req);\n else   if (methodHasBody)   mimeBoundary=setOutputContentType(req);\n  long startTime=System.nanoTime();\n  HttpURLConnection conn=createConnection(req);\n  Response res=null;\n  try {\n    conn.connect();\n    if (conn.getDoOutput())     writePost(req,conn.getOutputStream(),mimeBoundary);\n    int status=conn.getResponseCode();\n    res=new Response(previousResponse);\n    res.setupFromConnection(conn,previousResponse);\n    res.req=req;\n    if (res.hasHeader(LOCATION) && req.followRedirects()) {\n      if (status != HTTP_TEMP_REDIR) {\n        req.method(Method.GET);\n        req.data().clear();\n        req.requestBody(null);\n        req.removeHeader(CONTENT_TYPE);\n      }\n      String location=res.header(LOCATION);\n      if (location.startsWith(\"http:/\") && location.charAt(6) != '/')       location=location.substring(6);\n      URL redir=StringUtil.resolve(req.url(),location);\n      req.url(encodeUrl(redir));\n      for (      Map.Entry<String,String> cookie : res.cookies.entrySet()) {\n        req.cookie(cookie.getKey(),cookie.getValue());\n      }\n      return execute(req,res);\n    }\n    if ((status < 200 || status >= 400) && !req.ignoreHttpErrors())     throw new HttpStatusException(\"HTTP error fetching URL\",status,req.url().toString());\n    String contentType=res.contentType();\n    if (contentType != null && !req.ignoreContentType() && !contentType.startsWith(\"text/\") && !xmlContentTypeRxp.matcher(contentType).matches())     throw new UnsupportedMimeTypeException(\"Unhandled content type. Must be text/*, application/xml, or application/*+xml\",contentType,req.url().toString());\n    if (contentType != null && xmlContentTypeRxp.matcher(contentType).matches()) {\n      if (req instanceof HttpConnection.Request && !((Request)req).parserDefined) {\n        req.parser(Parser.xmlParser());\n      }\n    }\n    res.charset=DataUtil.getCharsetFromContentType(res.contentType);\n    if (conn.getContentLength() != 0 && req.method() != HEAD) {\n      res.bodyStream=null;\n      res.bodyStream=conn.getErrorStream() != null ? conn.getErrorStream() : conn.getInputStream();\n      if (res.hasHeaderWithValue(CONTENT_ENCODING,\"gzip\")) {\n        res.bodyStream=new GZIPInputStream(res.bodyStream);\n      }\n else       if (res.hasHeaderWithValue(CONTENT_ENCODING,\"deflate\")) {\n        res.bodyStream=new InflaterInputStream(res.bodyStream,new Inflater(true));\n      }\n      res.bodyStream=ConstrainableInputStream.wrap(res.bodyStream,DataUtil.bufferSize,req.maxBodySize()).timeout(startTime,req.timeout());\n    }\n else {\n      res.byteData=DataUtil.emptyByteBuffer();\n    }\n  }\n catch (  IOException e) {\n    if (res != null)     res.safeClose();\n    throw e;\n  }\n  res.executed=true;\n  return res;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 553,
+      "astHeight" : 15
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 59,
+        "startLineNumber" : 743,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 743,
+        "endColumnNumber" : 75
+      },
+      "nodeContext" : "req.data().size() > 0 && (!methodHasBody || hasRequestBody)",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 13,
+      "astHeight" : 5
+    },
+    "tokenLength" : 3,
+    "type" : "boolean"
+  } ],
+  "positionList" : [ {
+    "charLength" : 32,
+    "startLineNumber" : 743,
+    "startColumnNumber" : 42,
+    "endLineNumber" : 743,
+    "endColumnNumber" : 74
+  } ],
+  "layoutRelationDataList" : [ ]
+}

@@ -1,100 +1,100 @@
 {
   "id" : 247,
-  "expression" : "admin.topics()",
+  "expression" : "message.getValue().getValue().name",
   "projectName" : "apache@pulsar",
-  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
-  "filePath" : "/pulsar-proxy/src/test/java/org/apache/pulsar/proxy/server/ProxyTlsTest.java",
+  "commitID" : "d488ed2ad35efe3be9791a82c5b7c0ae125dea23",
+  "filePath" : "pulsar-broker/src/test/java/org/apache/pulsar/schema/SchemaTest.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "admin.topics()",
-    "nodeType" : "MethodInvocation",
+    "nodeContext" : "message.getValue().getValue().name",
+    "nodeType" : "FieldAccess",
     "nodePosition" : {
-      "charLength" : 14,
-      "startLineNumber" : 105,
-      "startColumnNumber" : 8,
-      "endLineNumber" : 105,
-      "endColumnNumber" : 22
+      "charLength" : 34,
+      "startLineNumber" : 598,
+      "startColumnNumber" : 21,
+      "endLineNumber" : 598,
+      "endColumnNumber" : 55
     },
-    "astNodeNumber" : 3,
-    "astHeight" : 2,
+    "astNodeNumber" : 7,
+    "astHeight" : 4,
     "parentDataList" : [ {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
       "nodePosition" : {
-        "charLength" : 92,
-        "startLineNumber" : 105,
+        "charLength" : 87,
+        "startLineNumber" : 598,
         "startColumnNumber" : 8,
-        "endLineNumber" : 105,
-        "endColumnNumber" : 100
+        "endLineNumber" : 598,
+        "endColumnNumber" : 95
       },
-      "nodeContext" : "admin.topics().createPartitionedTopic(\"persistent://sample/test/local/partitioned-topic\",2)",
+      "nodeContext" : "assertEquals(message.getValue().getValue().name,keyValue2.getValue().getField(\"name\"))",
       "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 7,
-      "astHeight" : 3
+      "astNodeNumber" : 15,
+      "astHeight" : 5
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 93,
-        "startLineNumber" : 105,
+        "charLength" : 88,
+        "startLineNumber" : 598,
         "startColumnNumber" : 8,
-        "endLineNumber" : 105,
-        "endColumnNumber" : 101
+        "endLineNumber" : 598,
+        "endColumnNumber" : 96
       },
-      "nodeContext" : "admin.topics().createPartitionedTopic(\"persistent://sample/test/local/partitioned-topic\",2);\n",
+      "nodeContext" : "assertEquals(message.getValue().getValue().name,keyValue2.getValue().getField(\"name\"));\n",
       "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 8,
-      "astHeight" : 4
+      "astNodeNumber" : 16,
+      "astHeight" : 6
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 1171,
-        "startLineNumber" : 98,
-        "startColumnNumber" : 50,
-        "endLineNumber" : 122,
+        "charLength" : 3234,
+        "startLineNumber" : 555,
+        "startColumnNumber" : 107,
+        "endLineNumber" : 618,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  @Cleanup PulsarClient client=PulsarClient.builder().serviceUrl(proxyService.getServiceUrlTls()).allowTlsInsecureConnection(false).tlsTrustCertsFilePath(TLS_TRUST_CERT_FILE_PATH).build();\n  TenantInfoImpl tenantInfo=createDefaultTenantInfo();\n  admin.tenants().createTenant(\"sample\",tenantInfo);\n  admin.topics().createPartitionedTopic(\"persistent://sample/test/local/partitioned-topic\",2);\n  Producer<byte[]> producer=client.newProducer(Schema.BYTES).topic(\"persistent://sample/test/local/partitioned-topic\").messageRoutingMode(MessageRoutingMode.RoundRobinPartition).create();\n  Consumer<byte[]> consumer=pulsarClient.newConsumer().topic(\"persistent://sample/test/local/partitioned-topic\").subscriptionName(\"my-sub\").subscribe();\n  for (int i=0; i < 10; i++) {\n    producer.send(\"test\".getBytes());\n  }\n  for (int i=0; i < 10; i++) {\n    Message<byte[]> msg=consumer.receive(1,TimeUnit.SECONDS);\n    checkNotNull(msg);\n  }\n}\n",
+      "nodeContext" : "{\n  final String tenant=PUBLIC_TENANT;\n  final String namespace=\"test-namespace-\" + randomName(16);\n  final String topicName=\"test-kv-schema-\" + randomName(16);\n  final String topic=TopicName.get(TopicDomain.persistent.value(),tenant,namespace,topicName).toString();\n  admin.namespaces().createNamespace(tenant + \"/\" + namespace,Sets.newHashSet(CLUSTER_NAME));\n  admin.topics().createPartitionedTopic(topic,2);\n  Producer<KeyValue<Schemas.PersonOne,Schemas.PersonTwo>> producer=pulsarClient.newProducer(Schema.KeyValue(Schema.AVRO(Schemas.PersonOne.class),Schema.AVRO(Schemas.PersonTwo.class),keyValueEncodingType)).topic(topic).create();\n  Consumer<KeyValue<Schemas.PersonOne,Schemas.PersonTwo>> consumer=pulsarClient.newConsumer(Schema.KeyValue(Schema.AVRO(Schemas.PersonOne.class),Schema.AVRO(Schemas.PersonTwo.class),keyValueEncodingType)).subscriptionName(\"test-sub\").topic(topic).subscribe();\n  Consumer<GenericRecord> consumer2=pulsarClient.newConsumer(Schema.AUTO_CONSUME()).subscriptionName(\"test-sub2\").topic(topic).subscribe();\n  Schemas.PersonOne key=new Schemas.PersonOne(8787);\n  Schemas.PersonTwo value=new Schemas.PersonTwo(323,\"foo\");\n  producer.send(new KeyValue<>(key,value));\n  Message<KeyValue<Schemas.PersonOne,Schemas.PersonTwo>> message=consumer.receive();\n  Message<GenericRecord> message2=consumer2.receive();\n  log.info(\"message: {}\",message.getValue(),message.getValue().getClass());\n  log.info(\"message2: {}\",message2.getValue().getNativeObject(),message2.getValue().getNativeObject().getClass());\n  KeyValue<GenericRecord,GenericRecord> keyValue2=(KeyValue<GenericRecord,GenericRecord>)message2.getValue().getNativeObject();\n  assertEquals(message.getValue().getKey().id,keyValue2.getKey().getField(\"id\"));\n  assertEquals(message.getValue().getValue().id,keyValue2.getValue().getField(\"id\"));\n  assertEquals(message.getValue().getValue().name,keyValue2.getValue().getField(\"name\"));\n  Schema<?> schema=message.getReaderSchema().get();\n  Schema<?> schemaFromGenericRecord=message.getReaderSchema().get();\n  KeyValueSchema keyValueSchema=(KeyValueSchema)schema;\n  KeyValueSchema keyValueSchemaFromGenericRecord=(KeyValueSchema)schemaFromGenericRecord;\n  assertEquals(keyValueSchema.getSchemaInfo(),keyValueSchemaFromGenericRecord.getSchemaInfo());\n  if (keyValueEncodingType == KeyValueEncodingType.SEPARATED) {\n    assertNotNull(message.getKeyBytes());\n    assertNotNull(message2.getKeyBytes());\n  }\n else {\n    assertNull(message.getKey());\n    assertNull(message2.getKey());\n  }\n  producer.close();\n  consumer.close();\n  consumer2.close();\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 143,
-      "astHeight" : 9
+      "astNodeNumber" : 450,
+      "astHeight" : 13
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 1227,
-        "startLineNumber" : 97,
+        "charLength" : 3337,
+        "startLineNumber" : 555,
         "startColumnNumber" : 4,
-        "endLineNumber" : 122,
+        "endLineNumber" : 618,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "@Test public void testPartitions() throws Exception {\n  @Cleanup PulsarClient client=PulsarClient.builder().serviceUrl(proxyService.getServiceUrlTls()).allowTlsInsecureConnection(false).tlsTrustCertsFilePath(TLS_TRUST_CERT_FILE_PATH).build();\n  TenantInfoImpl tenantInfo=createDefaultTenantInfo();\n  admin.tenants().createTenant(\"sample\",tenantInfo);\n  admin.topics().createPartitionedTopic(\"persistent://sample/test/local/partitioned-topic\",2);\n  Producer<byte[]> producer=client.newProducer(Schema.BYTES).topic(\"persistent://sample/test/local/partitioned-topic\").messageRoutingMode(MessageRoutingMode.RoundRobinPartition).create();\n  Consumer<byte[]> consumer=pulsarClient.newConsumer().topic(\"persistent://sample/test/local/partitioned-topic\").subscriptionName(\"my-sub\").subscribe();\n  for (int i=0; i < 10; i++) {\n    producer.send(\"test\".getBytes());\n  }\n  for (int i=0; i < 10; i++) {\n    Message<byte[]> msg=consumer.receive(1,TimeUnit.SECONDS);\n    checkNotNull(msg);\n  }\n}\n",
+      "nodeContext" : "private void testKeyValueSchemaWithStructs(KeyValueEncodingType keyValueEncodingType) throws Exception {\n  final String tenant=PUBLIC_TENANT;\n  final String namespace=\"test-namespace-\" + randomName(16);\n  final String topicName=\"test-kv-schema-\" + randomName(16);\n  final String topic=TopicName.get(TopicDomain.persistent.value(),tenant,namespace,topicName).toString();\n  admin.namespaces().createNamespace(tenant + \"/\" + namespace,Sets.newHashSet(CLUSTER_NAME));\n  admin.topics().createPartitionedTopic(topic,2);\n  Producer<KeyValue<Schemas.PersonOne,Schemas.PersonTwo>> producer=pulsarClient.newProducer(Schema.KeyValue(Schema.AVRO(Schemas.PersonOne.class),Schema.AVRO(Schemas.PersonTwo.class),keyValueEncodingType)).topic(topic).create();\n  Consumer<KeyValue<Schemas.PersonOne,Schemas.PersonTwo>> consumer=pulsarClient.newConsumer(Schema.KeyValue(Schema.AVRO(Schemas.PersonOne.class),Schema.AVRO(Schemas.PersonTwo.class),keyValueEncodingType)).subscriptionName(\"test-sub\").topic(topic).subscribe();\n  Consumer<GenericRecord> consumer2=pulsarClient.newConsumer(Schema.AUTO_CONSUME()).subscriptionName(\"test-sub2\").topic(topic).subscribe();\n  Schemas.PersonOne key=new Schemas.PersonOne(8787);\n  Schemas.PersonTwo value=new Schemas.PersonTwo(323,\"foo\");\n  producer.send(new KeyValue<>(key,value));\n  Message<KeyValue<Schemas.PersonOne,Schemas.PersonTwo>> message=consumer.receive();\n  Message<GenericRecord> message2=consumer2.receive();\n  log.info(\"message: {}\",message.getValue(),message.getValue().getClass());\n  log.info(\"message2: {}\",message2.getValue().getNativeObject(),message2.getValue().getNativeObject().getClass());\n  KeyValue<GenericRecord,GenericRecord> keyValue2=(KeyValue<GenericRecord,GenericRecord>)message2.getValue().getNativeObject();\n  assertEquals(message.getValue().getKey().id,keyValue2.getKey().getField(\"id\"));\n  assertEquals(message.getValue().getValue().id,keyValue2.getValue().getField(\"id\"));\n  assertEquals(message.getValue().getValue().name,keyValue2.getValue().getField(\"name\"));\n  Schema<?> schema=message.getReaderSchema().get();\n  Schema<?> schemaFromGenericRecord=message.getReaderSchema().get();\n  KeyValueSchema keyValueSchema=(KeyValueSchema)schema;\n  KeyValueSchema keyValueSchemaFromGenericRecord=(KeyValueSchema)schemaFromGenericRecord;\n  assertEquals(keyValueSchema.getSchemaInfo(),keyValueSchemaFromGenericRecord.getSchemaInfo());\n  if (keyValueEncodingType == KeyValueEncodingType.SEPARATED) {\n    assertNotNull(message.getKeyBytes());\n    assertNotNull(message2.getKeyBytes());\n  }\n else {\n    assertNull(message.getKey());\n    assertNull(message2.getKey());\n  }\n  producer.close();\n  consumer.close();\n  consumer2.close();\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 151,
-      "astHeight" : 10
+      "astNodeNumber" : 460,
+      "astHeight" : 14
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 93,
-        "startLineNumber" : 105,
+        "charLength" : 88,
+        "startLineNumber" : 598,
         "startColumnNumber" : 8,
-        "endLineNumber" : 105,
-        "endColumnNumber" : 101
+        "endLineNumber" : 598,
+        "endColumnNumber" : 96
       },
-      "nodeContext" : "admin.topics().createPartitionedTopic(\"persistent://sample/test/local/partitioned-topic\",2);\n",
+      "nodeContext" : "assertEquals(message.getValue().getValue().name,keyValue2.getValue().getField(\"name\"));\n",
       "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 8,
-      "astHeight" : 4
+      "astNodeNumber" : 16,
+      "astHeight" : 6
     },
-    "tokenLength" : 2,
-    "type" : "org.apache.pulsar.client.admin.Topics"
+    "tokenLength" : 4,
+    "type" : "java.lang.String"
   } ],
   "positionList" : [ {
-    "charLength" : 14,
-    "startLineNumber" : 105,
-    "startColumnNumber" : 8,
-    "endLineNumber" : 105,
-    "endColumnNumber" : 22
+    "charLength" : 34,
+    "startLineNumber" : 598,
+    "startColumnNumber" : 21,
+    "endLineNumber" : 598,
+    "endColumnNumber" : 55
   } ],
   "layoutRelationDataList" : [ ]
 }

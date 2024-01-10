@@ -1,100 +1,409 @@
 {
   "id" : 377,
-  "expression" : "Objects.equals(name,that.name)",
+  "expression" : "new HashSet<>()",
   "projectName" : "apache@kafka",
   "commitID" : "539f006e65d9060cd46a4052d1b70f2312d8ca34",
-  "filePath" : "/streams/src/main/java/org/apache/kafka/streams/kstream/internals/suppress/FinalResultsSuppressionBuilder.java",
-  "occurrences" : 1,
+  "filePath" : "streams/src/main/java/org/apache/kafka/streams/processor/internals/StreamThread.java",
+  "occurrences" : 4,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "Objects.equals(name,that.name)",
-    "nodeType" : "MethodInvocation",
+    "nodeContext" : "new HashSet<>()",
+    "nodeType" : "ClassInstanceCreation",
     "nodePosition" : {
-      "charLength" : 31,
-      "startLineNumber" : 58,
-      "startColumnNumber" : 15,
-      "endLineNumber" : 58,
-      "endColumnNumber" : 46
+      "charLength" : 15,
+      "startLineNumber" : 976,
+      "startColumnNumber" : 41,
+      "endLineNumber" : 976,
+      "endColumnNumber" : 56
     },
-    "astNodeNumber" : 7,
-    "astHeight" : 3,
+    "astNodeNumber" : 4,
+    "astHeight" : 4,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ReturnStatement,expression]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
       "nodePosition" : {
-        "charLength" : 94,
-        "startLineNumber" : 58,
-        "startColumnNumber" : 15,
-        "endLineNumber" : 59,
-        "endColumnNumber" : 59
+        "charLength" : 30,
+        "startLineNumber" : 976,
+        "startColumnNumber" : 26,
+        "endLineNumber" : 976,
+        "endColumnNumber" : 56
       },
-      "nodeContext" : "Objects.equals(name,that.name) && Objects.equals(bufferConfig,that.bufferConfig)",
-      "nodeType" : "InfixExpression",
-      "astNodeNumber" : 15,
-      "astHeight" : 4
+      "nodeContext" : "loggedTopics=new HashSet<>()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 6,
+      "astHeight" : 5
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 102,
-        "startLineNumber" : 58,
+        "charLength" : 49,
+        "startLineNumber" : 976,
         "startColumnNumber" : 8,
-        "endLineNumber" : 59,
-        "endColumnNumber" : 60
+        "endLineNumber" : 976,
+        "endColumnNumber" : 57
       },
-      "nodeContext" : "return Objects.equals(name,that.name) && Objects.equals(bufferConfig,that.bufferConfig);\n",
-      "nodeType" : "ReturnStatement",
-      "astNodeNumber" : 16,
-      "astHeight" : 5
+      "nodeContext" : "final Set<String> loggedTopics=new HashSet<>();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 13,
+      "astHeight" : 6
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 363,
-        "startLineNumber" : 50,
-        "startColumnNumber" : 42,
-        "endLineNumber" : 60,
+        "charLength" : 3283,
+        "startLineNumber" : 975,
+        "startColumnNumber" : 91,
+        "endLineNumber" : 1038,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  if (this == o) {\n    return true;\n  }\n  if (o == null || getClass() != o.getClass()) {\n    return false;\n  }\n  final FinalResultsSuppressionBuilder<?> that=(FinalResultsSuppressionBuilder<?>)o;\n  return Objects.equals(name,that.name) && Objects.equals(bufferConfig,that.bufferConfig);\n}\n",
+      "nodeContext" : "{\n  final Set<String> loggedTopics=new HashSet<>();\n  final Set<TopicPartition> seekToBeginning=new HashSet<>();\n  final Set<TopicPartition> seekToEnd=new HashSet<>();\n  final Set<TopicPartition> notReset=new HashSet<>();\n  for (  final TopicPartition partition : partitions) {\n    final OffsetResetStrategy offsetResetStrategy=topologyMetadata.offsetResetStrategy(partition.topic());\n    if (offsetResetStrategy != null) {\nswitch (offsetResetStrategy) {\ncase EARLIEST:        addToResetList(partition,seekToBeginning,\"Setting topic '{}' to consume from {} offset\",\"earliest\",loggedTopics);\n      break;\ncase LATEST:    addToResetList(partition,seekToEnd,\"Setting topic '{}' to consume from {} offset\",\"latest\",loggedTopics);\n  break;\ncase NONE:if (\"earliest\".equals(originalReset)) {\n  addToResetList(partition,seekToBeginning,\"No custom setting defined for topic '{}' using original config '{}' for offset reset\",\"earliest\",loggedTopics);\n}\n else if (\"latest\".equals(originalReset)) {\n  addToResetList(partition,seekToEnd,\"No custom setting defined for topic '{}' using original config '{}' for offset reset\",\"latest\",loggedTopics);\n}\n else {\n  notReset.add(partition);\n}\nbreak;\ndefault:throw new IllegalStateException(\"Unable to locate topic \" + partition.topic() + \" in the topology\");\n}\n}\n}\nif (notReset.isEmpty()) {\nif (!seekToBeginning.isEmpty()) {\nmainConsumer.seekToBeginning(seekToBeginning);\n}\nif (!seekToEnd.isEmpty()) {\nmainConsumer.seekToEnd(seekToEnd);\n}\n}\n else {\nfinal String notResetString=notReset.stream().map(TopicPartition::topic).distinct().collect(Collectors.joining(\",\"));\nfinal String format=String.format(\"No valid committed offset found for input [%s] and no valid reset policy configured.\" + \" You need to set configuration parameter \\\"auto.offset.reset\\\" or specify a topic specific reset \" + \"policy via StreamsBuilder#stream(..., Consumed.with(Topology.AutoOffsetReset)) or \"+ \"StreamsBuilder#table(..., Consumed.with(Topology.AutoOffsetReset))\",notResetString);\nif (cause == null) {\nthrow new StreamsException(format);\n}\n else {\nthrow new StreamsException(format,cause);\n}\n}\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 52,
-      "astHeight" : 7
+      "astNodeNumber" : 232,
+      "astHeight" : 12
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 415,
-        "startLineNumber" : 49,
+        "charLength" : 3370,
+        "startLineNumber" : 975,
         "startColumnNumber" : 4,
-        "endLineNumber" : 60,
+        "endLineNumber" : 1038,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "@Override public boolean equals(final Object o){\n  if (this == o) {\n    return true;\n  }\n  if (o == null || getClass() != o.getClass()) {\n    return false;\n  }\n  final FinalResultsSuppressionBuilder<?> that=(FinalResultsSuppressionBuilder<?>)o;\n  return Objects.equals(name,that.name) && Objects.equals(bufferConfig,that.bufferConfig);\n}\n",
+      "nodeContext" : "private void resetOffsets(final Set<TopicPartition> partitions,final Exception cause){\n  final Set<String> loggedTopics=new HashSet<>();\n  final Set<TopicPartition> seekToBeginning=new HashSet<>();\n  final Set<TopicPartition> seekToEnd=new HashSet<>();\n  final Set<TopicPartition> notReset=new HashSet<>();\n  for (  final TopicPartition partition : partitions) {\n    final OffsetResetStrategy offsetResetStrategy=topologyMetadata.offsetResetStrategy(partition.topic());\n    if (offsetResetStrategy != null) {\nswitch (offsetResetStrategy) {\ncase EARLIEST:        addToResetList(partition,seekToBeginning,\"Setting topic '{}' to consume from {} offset\",\"earliest\",loggedTopics);\n      break;\ncase LATEST:    addToResetList(partition,seekToEnd,\"Setting topic '{}' to consume from {} offset\",\"latest\",loggedTopics);\n  break;\ncase NONE:if (\"earliest\".equals(originalReset)) {\n  addToResetList(partition,seekToBeginning,\"No custom setting defined for topic '{}' using original config '{}' for offset reset\",\"earliest\",loggedTopics);\n}\n else if (\"latest\".equals(originalReset)) {\n  addToResetList(partition,seekToEnd,\"No custom setting defined for topic '{}' using original config '{}' for offset reset\",\"latest\",loggedTopics);\n}\n else {\n  notReset.add(partition);\n}\nbreak;\ndefault:throw new IllegalStateException(\"Unable to locate topic \" + partition.topic() + \" in the topology\");\n}\n}\n}\nif (notReset.isEmpty()) {\nif (!seekToBeginning.isEmpty()) {\nmainConsumer.seekToBeginning(seekToBeginning);\n}\nif (!seekToEnd.isEmpty()) {\nmainConsumer.seekToEnd(seekToEnd);\n}\n}\n else {\nfinal String notResetString=notReset.stream().map(TopicPartition::topic).distinct().collect(Collectors.joining(\",\"));\nfinal String format=String.format(\"No valid committed offset found for input [%s] and no valid reset policy configured.\" + \" You need to set configuration parameter \\\"auto.offset.reset\\\" or specify a topic specific reset \" + \"policy via StreamsBuilder#stream(..., Consumed.with(Topology.AutoOffsetReset)) or \"+ \"StreamsBuilder#table(..., Consumed.with(Topology.AutoOffsetReset))\",notResetString);\nif (cause == null) {\nthrow new StreamsException(format);\n}\n else {\nthrow new StreamsException(format,cause);\n}\n}\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 63,
-      "astHeight" : 8
+      "astNodeNumber" : 249,
+      "astHeight" : 13
     } ],
     "currentLineData" : {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ReturnStatement,expression]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 94,
-        "startLineNumber" : 58,
-        "startColumnNumber" : 15,
-        "endLineNumber" : 59,
-        "endColumnNumber" : 59
+        "charLength" : 49,
+        "startLineNumber" : 976,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 976,
+        "endColumnNumber" : 57
       },
-      "nodeContext" : "Objects.equals(name,that.name) && Objects.equals(bufferConfig,that.bufferConfig)",
-      "nodeType" : "InfixExpression",
-      "astNodeNumber" : 15,
-      "astHeight" : 4
+      "nodeContext" : "final Set<String> loggedTopics=new HashSet<>();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 13,
+      "astHeight" : 6
     },
-    "tokenLength" : 5,
-    "type" : "boolean"
+    "tokenLength" : 1,
+    "type" : "java.util.HashSet<java.lang.String>"
+  }, {
+    "nodeContext" : "new HashSet<>()",
+    "nodeType" : "ClassInstanceCreation",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 977,
+      "startColumnNumber" : 52,
+      "endLineNumber" : 977,
+      "endColumnNumber" : 67
+    },
+    "astNodeNumber" : 4,
+    "astHeight" : 4,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 33,
+        "startLineNumber" : 977,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 977,
+        "endColumnNumber" : 67
+      },
+      "nodeContext" : "seekToBeginning=new HashSet<>()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 6,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 60,
+        "startLineNumber" : 977,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 977,
+        "endColumnNumber" : 68
+      },
+      "nodeContext" : "final Set<TopicPartition> seekToBeginning=new HashSet<>();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 13,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3283,
+        "startLineNumber" : 975,
+        "startColumnNumber" : 91,
+        "endLineNumber" : 1038,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final Set<String> loggedTopics=new HashSet<>();\n  final Set<TopicPartition> seekToBeginning=new HashSet<>();\n  final Set<TopicPartition> seekToEnd=new HashSet<>();\n  final Set<TopicPartition> notReset=new HashSet<>();\n  for (  final TopicPartition partition : partitions) {\n    final OffsetResetStrategy offsetResetStrategy=topologyMetadata.offsetResetStrategy(partition.topic());\n    if (offsetResetStrategy != null) {\nswitch (offsetResetStrategy) {\ncase EARLIEST:        addToResetList(partition,seekToBeginning,\"Setting topic '{}' to consume from {} offset\",\"earliest\",loggedTopics);\n      break;\ncase LATEST:    addToResetList(partition,seekToEnd,\"Setting topic '{}' to consume from {} offset\",\"latest\",loggedTopics);\n  break;\ncase NONE:if (\"earliest\".equals(originalReset)) {\n  addToResetList(partition,seekToBeginning,\"No custom setting defined for topic '{}' using original config '{}' for offset reset\",\"earliest\",loggedTopics);\n}\n else if (\"latest\".equals(originalReset)) {\n  addToResetList(partition,seekToEnd,\"No custom setting defined for topic '{}' using original config '{}' for offset reset\",\"latest\",loggedTopics);\n}\n else {\n  notReset.add(partition);\n}\nbreak;\ndefault:throw new IllegalStateException(\"Unable to locate topic \" + partition.topic() + \" in the topology\");\n}\n}\n}\nif (notReset.isEmpty()) {\nif (!seekToBeginning.isEmpty()) {\nmainConsumer.seekToBeginning(seekToBeginning);\n}\nif (!seekToEnd.isEmpty()) {\nmainConsumer.seekToEnd(seekToEnd);\n}\n}\n else {\nfinal String notResetString=notReset.stream().map(TopicPartition::topic).distinct().collect(Collectors.joining(\",\"));\nfinal String format=String.format(\"No valid committed offset found for input [%s] and no valid reset policy configured.\" + \" You need to set configuration parameter \\\"auto.offset.reset\\\" or specify a topic specific reset \" + \"policy via StreamsBuilder#stream(..., Consumed.with(Topology.AutoOffsetReset)) or \"+ \"StreamsBuilder#table(..., Consumed.with(Topology.AutoOffsetReset))\",notResetString);\nif (cause == null) {\nthrow new StreamsException(format);\n}\n else {\nthrow new StreamsException(format,cause);\n}\n}\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 232,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3370,
+        "startLineNumber" : 975,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1038,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "private void resetOffsets(final Set<TopicPartition> partitions,final Exception cause){\n  final Set<String> loggedTopics=new HashSet<>();\n  final Set<TopicPartition> seekToBeginning=new HashSet<>();\n  final Set<TopicPartition> seekToEnd=new HashSet<>();\n  final Set<TopicPartition> notReset=new HashSet<>();\n  for (  final TopicPartition partition : partitions) {\n    final OffsetResetStrategy offsetResetStrategy=topologyMetadata.offsetResetStrategy(partition.topic());\n    if (offsetResetStrategy != null) {\nswitch (offsetResetStrategy) {\ncase EARLIEST:        addToResetList(partition,seekToBeginning,\"Setting topic '{}' to consume from {} offset\",\"earliest\",loggedTopics);\n      break;\ncase LATEST:    addToResetList(partition,seekToEnd,\"Setting topic '{}' to consume from {} offset\",\"latest\",loggedTopics);\n  break;\ncase NONE:if (\"earliest\".equals(originalReset)) {\n  addToResetList(partition,seekToBeginning,\"No custom setting defined for topic '{}' using original config '{}' for offset reset\",\"earliest\",loggedTopics);\n}\n else if (\"latest\".equals(originalReset)) {\n  addToResetList(partition,seekToEnd,\"No custom setting defined for topic '{}' using original config '{}' for offset reset\",\"latest\",loggedTopics);\n}\n else {\n  notReset.add(partition);\n}\nbreak;\ndefault:throw new IllegalStateException(\"Unable to locate topic \" + partition.topic() + \" in the topology\");\n}\n}\n}\nif (notReset.isEmpty()) {\nif (!seekToBeginning.isEmpty()) {\nmainConsumer.seekToBeginning(seekToBeginning);\n}\nif (!seekToEnd.isEmpty()) {\nmainConsumer.seekToEnd(seekToEnd);\n}\n}\n else {\nfinal String notResetString=notReset.stream().map(TopicPartition::topic).distinct().collect(Collectors.joining(\",\"));\nfinal String format=String.format(\"No valid committed offset found for input [%s] and no valid reset policy configured.\" + \" You need to set configuration parameter \\\"auto.offset.reset\\\" or specify a topic specific reset \" + \"policy via StreamsBuilder#stream(..., Consumed.with(Topology.AutoOffsetReset)) or \"+ \"StreamsBuilder#table(..., Consumed.with(Topology.AutoOffsetReset))\",notResetString);\nif (cause == null) {\nthrow new StreamsException(format);\n}\n else {\nthrow new StreamsException(format,cause);\n}\n}\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 249,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 60,
+        "startLineNumber" : 977,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 977,
+        "endColumnNumber" : 68
+      },
+      "nodeContext" : "final Set<TopicPartition> seekToBeginning=new HashSet<>();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 13,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "java.util.HashSet<org.apache.kafka.common.TopicPartition>"
+  }, {
+    "nodeContext" : "new HashSet<>()",
+    "nodeType" : "ClassInstanceCreation",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 978,
+      "startColumnNumber" : 46,
+      "endLineNumber" : 978,
+      "endColumnNumber" : 61
+    },
+    "astNodeNumber" : 4,
+    "astHeight" : 4,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 27,
+        "startLineNumber" : 978,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 978,
+        "endColumnNumber" : 61
+      },
+      "nodeContext" : "seekToEnd=new HashSet<>()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 6,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 54,
+        "startLineNumber" : 978,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 978,
+        "endColumnNumber" : 62
+      },
+      "nodeContext" : "final Set<TopicPartition> seekToEnd=new HashSet<>();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 13,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3283,
+        "startLineNumber" : 975,
+        "startColumnNumber" : 91,
+        "endLineNumber" : 1038,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final Set<String> loggedTopics=new HashSet<>();\n  final Set<TopicPartition> seekToBeginning=new HashSet<>();\n  final Set<TopicPartition> seekToEnd=new HashSet<>();\n  final Set<TopicPartition> notReset=new HashSet<>();\n  for (  final TopicPartition partition : partitions) {\n    final OffsetResetStrategy offsetResetStrategy=topologyMetadata.offsetResetStrategy(partition.topic());\n    if (offsetResetStrategy != null) {\nswitch (offsetResetStrategy) {\ncase EARLIEST:        addToResetList(partition,seekToBeginning,\"Setting topic '{}' to consume from {} offset\",\"earliest\",loggedTopics);\n      break;\ncase LATEST:    addToResetList(partition,seekToEnd,\"Setting topic '{}' to consume from {} offset\",\"latest\",loggedTopics);\n  break;\ncase NONE:if (\"earliest\".equals(originalReset)) {\n  addToResetList(partition,seekToBeginning,\"No custom setting defined for topic '{}' using original config '{}' for offset reset\",\"earliest\",loggedTopics);\n}\n else if (\"latest\".equals(originalReset)) {\n  addToResetList(partition,seekToEnd,\"No custom setting defined for topic '{}' using original config '{}' for offset reset\",\"latest\",loggedTopics);\n}\n else {\n  notReset.add(partition);\n}\nbreak;\ndefault:throw new IllegalStateException(\"Unable to locate topic \" + partition.topic() + \" in the topology\");\n}\n}\n}\nif (notReset.isEmpty()) {\nif (!seekToBeginning.isEmpty()) {\nmainConsumer.seekToBeginning(seekToBeginning);\n}\nif (!seekToEnd.isEmpty()) {\nmainConsumer.seekToEnd(seekToEnd);\n}\n}\n else {\nfinal String notResetString=notReset.stream().map(TopicPartition::topic).distinct().collect(Collectors.joining(\",\"));\nfinal String format=String.format(\"No valid committed offset found for input [%s] and no valid reset policy configured.\" + \" You need to set configuration parameter \\\"auto.offset.reset\\\" or specify a topic specific reset \" + \"policy via StreamsBuilder#stream(..., Consumed.with(Topology.AutoOffsetReset)) or \"+ \"StreamsBuilder#table(..., Consumed.with(Topology.AutoOffsetReset))\",notResetString);\nif (cause == null) {\nthrow new StreamsException(format);\n}\n else {\nthrow new StreamsException(format,cause);\n}\n}\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 232,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3370,
+        "startLineNumber" : 975,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1038,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "private void resetOffsets(final Set<TopicPartition> partitions,final Exception cause){\n  final Set<String> loggedTopics=new HashSet<>();\n  final Set<TopicPartition> seekToBeginning=new HashSet<>();\n  final Set<TopicPartition> seekToEnd=new HashSet<>();\n  final Set<TopicPartition> notReset=new HashSet<>();\n  for (  final TopicPartition partition : partitions) {\n    final OffsetResetStrategy offsetResetStrategy=topologyMetadata.offsetResetStrategy(partition.topic());\n    if (offsetResetStrategy != null) {\nswitch (offsetResetStrategy) {\ncase EARLIEST:        addToResetList(partition,seekToBeginning,\"Setting topic '{}' to consume from {} offset\",\"earliest\",loggedTopics);\n      break;\ncase LATEST:    addToResetList(partition,seekToEnd,\"Setting topic '{}' to consume from {} offset\",\"latest\",loggedTopics);\n  break;\ncase NONE:if (\"earliest\".equals(originalReset)) {\n  addToResetList(partition,seekToBeginning,\"No custom setting defined for topic '{}' using original config '{}' for offset reset\",\"earliest\",loggedTopics);\n}\n else if (\"latest\".equals(originalReset)) {\n  addToResetList(partition,seekToEnd,\"No custom setting defined for topic '{}' using original config '{}' for offset reset\",\"latest\",loggedTopics);\n}\n else {\n  notReset.add(partition);\n}\nbreak;\ndefault:throw new IllegalStateException(\"Unable to locate topic \" + partition.topic() + \" in the topology\");\n}\n}\n}\nif (notReset.isEmpty()) {\nif (!seekToBeginning.isEmpty()) {\nmainConsumer.seekToBeginning(seekToBeginning);\n}\nif (!seekToEnd.isEmpty()) {\nmainConsumer.seekToEnd(seekToEnd);\n}\n}\n else {\nfinal String notResetString=notReset.stream().map(TopicPartition::topic).distinct().collect(Collectors.joining(\",\"));\nfinal String format=String.format(\"No valid committed offset found for input [%s] and no valid reset policy configured.\" + \" You need to set configuration parameter \\\"auto.offset.reset\\\" or specify a topic specific reset \" + \"policy via StreamsBuilder#stream(..., Consumed.with(Topology.AutoOffsetReset)) or \"+ \"StreamsBuilder#table(..., Consumed.with(Topology.AutoOffsetReset))\",notResetString);\nif (cause == null) {\nthrow new StreamsException(format);\n}\n else {\nthrow new StreamsException(format,cause);\n}\n}\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 249,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 54,
+        "startLineNumber" : 978,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 978,
+        "endColumnNumber" : 62
+      },
+      "nodeContext" : "final Set<TopicPartition> seekToEnd=new HashSet<>();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 13,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "java.util.HashSet<org.apache.kafka.common.TopicPartition>"
+  }, {
+    "nodeContext" : "new HashSet<>()",
+    "nodeType" : "ClassInstanceCreation",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 979,
+      "startColumnNumber" : 45,
+      "endLineNumber" : 979,
+      "endColumnNumber" : 60
+    },
+    "astNodeNumber" : 4,
+    "astHeight" : 4,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 26,
+        "startLineNumber" : 979,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 979,
+        "endColumnNumber" : 60
+      },
+      "nodeContext" : "notReset=new HashSet<>()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 6,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 53,
+        "startLineNumber" : 979,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 979,
+        "endColumnNumber" : 61
+      },
+      "nodeContext" : "final Set<TopicPartition> notReset=new HashSet<>();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 13,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3283,
+        "startLineNumber" : 975,
+        "startColumnNumber" : 91,
+        "endLineNumber" : 1038,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final Set<String> loggedTopics=new HashSet<>();\n  final Set<TopicPartition> seekToBeginning=new HashSet<>();\n  final Set<TopicPartition> seekToEnd=new HashSet<>();\n  final Set<TopicPartition> notReset=new HashSet<>();\n  for (  final TopicPartition partition : partitions) {\n    final OffsetResetStrategy offsetResetStrategy=topologyMetadata.offsetResetStrategy(partition.topic());\n    if (offsetResetStrategy != null) {\nswitch (offsetResetStrategy) {\ncase EARLIEST:        addToResetList(partition,seekToBeginning,\"Setting topic '{}' to consume from {} offset\",\"earliest\",loggedTopics);\n      break;\ncase LATEST:    addToResetList(partition,seekToEnd,\"Setting topic '{}' to consume from {} offset\",\"latest\",loggedTopics);\n  break;\ncase NONE:if (\"earliest\".equals(originalReset)) {\n  addToResetList(partition,seekToBeginning,\"No custom setting defined for topic '{}' using original config '{}' for offset reset\",\"earliest\",loggedTopics);\n}\n else if (\"latest\".equals(originalReset)) {\n  addToResetList(partition,seekToEnd,\"No custom setting defined for topic '{}' using original config '{}' for offset reset\",\"latest\",loggedTopics);\n}\n else {\n  notReset.add(partition);\n}\nbreak;\ndefault:throw new IllegalStateException(\"Unable to locate topic \" + partition.topic() + \" in the topology\");\n}\n}\n}\nif (notReset.isEmpty()) {\nif (!seekToBeginning.isEmpty()) {\nmainConsumer.seekToBeginning(seekToBeginning);\n}\nif (!seekToEnd.isEmpty()) {\nmainConsumer.seekToEnd(seekToEnd);\n}\n}\n else {\nfinal String notResetString=notReset.stream().map(TopicPartition::topic).distinct().collect(Collectors.joining(\",\"));\nfinal String format=String.format(\"No valid committed offset found for input [%s] and no valid reset policy configured.\" + \" You need to set configuration parameter \\\"auto.offset.reset\\\" or specify a topic specific reset \" + \"policy via StreamsBuilder#stream(..., Consumed.with(Topology.AutoOffsetReset)) or \"+ \"StreamsBuilder#table(..., Consumed.with(Topology.AutoOffsetReset))\",notResetString);\nif (cause == null) {\nthrow new StreamsException(format);\n}\n else {\nthrow new StreamsException(format,cause);\n}\n}\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 232,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3370,
+        "startLineNumber" : 975,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1038,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "private void resetOffsets(final Set<TopicPartition> partitions,final Exception cause){\n  final Set<String> loggedTopics=new HashSet<>();\n  final Set<TopicPartition> seekToBeginning=new HashSet<>();\n  final Set<TopicPartition> seekToEnd=new HashSet<>();\n  final Set<TopicPartition> notReset=new HashSet<>();\n  for (  final TopicPartition partition : partitions) {\n    final OffsetResetStrategy offsetResetStrategy=topologyMetadata.offsetResetStrategy(partition.topic());\n    if (offsetResetStrategy != null) {\nswitch (offsetResetStrategy) {\ncase EARLIEST:        addToResetList(partition,seekToBeginning,\"Setting topic '{}' to consume from {} offset\",\"earliest\",loggedTopics);\n      break;\ncase LATEST:    addToResetList(partition,seekToEnd,\"Setting topic '{}' to consume from {} offset\",\"latest\",loggedTopics);\n  break;\ncase NONE:if (\"earliest\".equals(originalReset)) {\n  addToResetList(partition,seekToBeginning,\"No custom setting defined for topic '{}' using original config '{}' for offset reset\",\"earliest\",loggedTopics);\n}\n else if (\"latest\".equals(originalReset)) {\n  addToResetList(partition,seekToEnd,\"No custom setting defined for topic '{}' using original config '{}' for offset reset\",\"latest\",loggedTopics);\n}\n else {\n  notReset.add(partition);\n}\nbreak;\ndefault:throw new IllegalStateException(\"Unable to locate topic \" + partition.topic() + \" in the topology\");\n}\n}\n}\nif (notReset.isEmpty()) {\nif (!seekToBeginning.isEmpty()) {\nmainConsumer.seekToBeginning(seekToBeginning);\n}\nif (!seekToEnd.isEmpty()) {\nmainConsumer.seekToEnd(seekToEnd);\n}\n}\n else {\nfinal String notResetString=notReset.stream().map(TopicPartition::topic).distinct().collect(Collectors.joining(\",\"));\nfinal String format=String.format(\"No valid committed offset found for input [%s] and no valid reset policy configured.\" + \" You need to set configuration parameter \\\"auto.offset.reset\\\" or specify a topic specific reset \" + \"policy via StreamsBuilder#stream(..., Consumed.with(Topology.AutoOffsetReset)) or \"+ \"StreamsBuilder#table(..., Consumed.with(Topology.AutoOffsetReset))\",notResetString);\nif (cause == null) {\nthrow new StreamsException(format);\n}\n else {\nthrow new StreamsException(format,cause);\n}\n}\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 249,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 53,
+        "startLineNumber" : 979,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 979,
+        "endColumnNumber" : 61
+      },
+      "nodeContext" : "final Set<TopicPartition> notReset=new HashSet<>();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 13,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "java.util.HashSet<org.apache.kafka.common.TopicPartition>"
   } ],
   "positionList" : [ {
-    "charLength" : 31,
-    "startLineNumber" : 58,
-    "startColumnNumber" : 15,
-    "endLineNumber" : 58,
-    "endColumnNumber" : 46
+    "charLength" : 15,
+    "startLineNumber" : 976,
+    "startColumnNumber" : 41,
+    "endLineNumber" : 976,
+    "endColumnNumber" : 56
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 977,
+    "startColumnNumber" : 52,
+    "endLineNumber" : 977,
+    "endColumnNumber" : 67
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 978,
+    "startColumnNumber" : 46,
+    "endLineNumber" : 978,
+    "endColumnNumber" : 61
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 979,
+    "startColumnNumber" : 45,
+    "endLineNumber" : 979,
+    "endColumnNumber" : 60
   } ],
-  "layoutRelationDataList" : [ ]
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 0,
+    "layout" : 2
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 2,
+    "layout" : 2
+  } ]
 }

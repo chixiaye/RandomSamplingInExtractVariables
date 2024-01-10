@@ -1,100 +1,100 @@
 {
   "id" : 391,
-  "expression" : "!encodedNio.isDirect()",
+  "expression" : "this.monitoringClassFields[idx]",
   "projectName" : "apache@pulsar",
-  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
-  "filePath" : "/pulsar-common/src/main/java/org/apache/pulsar/common/compression/AirliftUtils.java",
+  "commitID" : "8da39f32e87bdd9be8ea73146ce17abe6fb5cc69",
+  "filePath" : "pulsar-broker/src/main/java/org/apache/pulsar/broker/resourcegroup/ResourceGroup.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "!encodedNio.isDirect()",
-    "nodeType" : "PrefixExpression",
+    "nodeContext" : "this.monitoringClassFields[idx]",
+    "nodeType" : "ArrayAccess",
     "nodePosition" : {
-      "charLength" : 22,
-      "startLineNumber" : 29,
-      "startColumnNumber" : 12,
-      "endLineNumber" : 29,
-      "endColumnNumber" : 34
+      "charLength" : 31,
+      "startLineNumber" : 349,
+      "startColumnNumber" : 20,
+      "endLineNumber" : 349,
+      "endColumnNumber" : 51
     },
-    "astNodeNumber" : 4,
+    "astNodeNumber" : 5,
     "astHeight" : 3,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
       "nodePosition" : {
-        "charLength" : 48,
-        "startLineNumber" : 29,
-        "startColumnNumber" : 12,
-        "endLineNumber" : 29,
-        "endColumnNumber" : 60
+        "charLength" : 43,
+        "startLineNumber" : 349,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 349,
+        "endColumnNumber" : 51
       },
-      "nodeContext" : "!encodedNio.isDirect() && !encodedNio.hasArray()",
-      "nodeType" : "InfixExpression",
-      "astNodeNumber" : 9,
+      "nodeContext" : "monEntity=this.monitoringClassFields[idx]",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 7,
       "astHeight" : 4
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 274,
-        "startLineNumber" : 29,
+        "charLength" : 44,
+        "startLineNumber" : 349,
         "startColumnNumber" : 8,
-        "endLineNumber" : 35,
-        "endColumnNumber" : 9
+        "endLineNumber" : 349,
+        "endColumnNumber" : 52
       },
-      "nodeContext" : "if (!encodedNio.isDirect() && !encodedNio.hasArray()) {\n  ByteBuffer copy=ByteBuffer.allocate(encodedNio.capacity());\n  copy.put(encodedNio);\n  copy.flip();\n  encodedNio=copy;\n}\n",
-      "nodeType" : "IfStatement",
-      "astNodeNumber" : 35,
-      "astHeight" : 7
+      "nodeContext" : "monEntity=this.monitoringClassFields[idx];\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 5
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 317,
-        "startLineNumber" : 28,
-        "startColumnNumber" : 68,
-        "endLineNumber" : 37,
+        "charLength" : 2340,
+        "startLineNumber" : 342,
+        "startColumnNumber" : 103,
+        "endLineNumber" : 395,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  if (!encodedNio.isDirect() && !encodedNio.hasArray()) {\n    ByteBuffer copy=ByteBuffer.allocate(encodedNio.capacity());\n    copy.put(encodedNio);\n    copy.flip();\n    encodedNio=copy;\n  }\n  return encodedNio;\n}\n",
+      "nodeContext" : "{\n  long bytesUsed, messagesUsed;\n  boolean sendReport;\n  int numSuppressions=0;\n  PerMonitoringClassFields monEntity;\n  final int idx=monClass.ordinal();\n  monEntity=this.monitoringClassFields[idx];\n  monEntity.localUsageStatsLock.lock();\n  try {\n    sendReport=this.rgs.quotaCalculator.needToReportLocalUsage(monEntity.usedLocallySinceLastReport.bytes,monEntity.lastReportedValues.bytes,monEntity.usedLocallySinceLastReport.messages,monEntity.lastReportedValues.messages,monEntity.lastResourceUsageFillTimeMSecsSinceEpoch);\n    bytesUsed=monEntity.usedLocallySinceLastReport.bytes;\n    messagesUsed=monEntity.usedLocallySinceLastReport.messages;\n    monEntity.usedLocallySinceLastReport.bytes=monEntity.usedLocallySinceLastReport.messages=0;\n    monEntity.totalUsedLocally.bytes+=bytesUsed;\n    monEntity.totalUsedLocally.messages+=messagesUsed;\n    monEntity.lastResourceUsageFillTimeMSecsSinceEpoch=System.currentTimeMillis();\n    if (sendReport) {\n      p.setBytesPerPeriod(bytesUsed);\n      p.setMessagesPerPeriod(messagesUsed);\n      monEntity.lastReportedValues.bytes=bytesUsed;\n      monEntity.lastReportedValues.messages=messagesUsed;\n      monEntity.numSuppressedUsageReports=0;\n    }\n else {\n      numSuppressions=monEntity.numSuppressedUsageReports++;\n    }\n  }\n  finally {\n    monEntity.localUsageStatsLock.unlock();\n  }\n  final String rgName=this.ruPublisher != null ? this.ruPublisher.getID() : this.resourceGroupName;\n  double sentCount=sendReport ? 1 : 0;\n  rgLocalUsageReportCount.labels(rgName,monClass.name()).inc(sentCount);\n  if (sendReport) {\n    log.debug(\"fillResourceUsage for RG={}: filled a {} update; bytes={}, messages={}\",rgName,monClass,bytesUsed,messagesUsed);\n  }\n else {\n    log.debug(\"fillResourceUsage for RG={}: report for {} suppressed (suppressions={} since last sent report)\",rgName,monClass,numSuppressions);\n  }\n  return sendReport;\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 38,
-      "astHeight" : 8
+      "astNodeNumber" : 244,
+      "astHeight" : 10
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 381,
-        "startLineNumber" : 28,
+        "charLength" : 2439,
+        "startLineNumber" : 342,
         "startColumnNumber" : 4,
-        "endLineNumber" : 37,
+        "endLineNumber" : 395,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "static ByteBuffer ensureAirliftSupported(ByteBuffer encodedNio){\n  if (!encodedNio.isDirect() && !encodedNio.hasArray()) {\n    ByteBuffer copy=ByteBuffer.allocate(encodedNio.capacity());\n    copy.put(encodedNio);\n    copy.flip();\n    encodedNio=copy;\n  }\n  return encodedNio;\n}\n",
+      "nodeContext" : "protected boolean setUsageInMonitoredEntity(ResourceGroupMonitoringClass monClass,NetworkUsage p){\n  long bytesUsed, messagesUsed;\n  boolean sendReport;\n  int numSuppressions=0;\n  PerMonitoringClassFields monEntity;\n  final int idx=monClass.ordinal();\n  monEntity=this.monitoringClassFields[idx];\n  monEntity.localUsageStatsLock.lock();\n  try {\n    sendReport=this.rgs.quotaCalculator.needToReportLocalUsage(monEntity.usedLocallySinceLastReport.bytes,monEntity.lastReportedValues.bytes,monEntity.usedLocallySinceLastReport.messages,monEntity.lastReportedValues.messages,monEntity.lastResourceUsageFillTimeMSecsSinceEpoch);\n    bytesUsed=monEntity.usedLocallySinceLastReport.bytes;\n    messagesUsed=monEntity.usedLocallySinceLastReport.messages;\n    monEntity.usedLocallySinceLastReport.bytes=monEntity.usedLocallySinceLastReport.messages=0;\n    monEntity.totalUsedLocally.bytes+=bytesUsed;\n    monEntity.totalUsedLocally.messages+=messagesUsed;\n    monEntity.lastResourceUsageFillTimeMSecsSinceEpoch=System.currentTimeMillis();\n    if (sendReport) {\n      p.setBytesPerPeriod(bytesUsed);\n      p.setMessagesPerPeriod(messagesUsed);\n      monEntity.lastReportedValues.bytes=bytesUsed;\n      monEntity.lastReportedValues.messages=messagesUsed;\n      monEntity.numSuppressedUsageReports=0;\n    }\n else {\n      numSuppressions=monEntity.numSuppressedUsageReports++;\n    }\n  }\n  finally {\n    monEntity.localUsageStatsLock.unlock();\n  }\n  final String rgName=this.ruPublisher != null ? this.ruPublisher.getID() : this.resourceGroupName;\n  double sentCount=sendReport ? 1 : 0;\n  rgLocalUsageReportCount.labels(rgName,monClass.name()).inc(sentCount);\n  if (sendReport) {\n    log.debug(\"fillResourceUsage for RG={}: filled a {} update; bytes={}, messages={}\",rgName,monClass,bytesUsed,messagesUsed);\n  }\n else {\n    log.debug(\"fillResourceUsage for RG={}: report for {} suppressed (suppressions={} since last sent report)\",rgName,monClass,numSuppressions);\n  }\n  return sendReport;\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 47,
-      "astHeight" : 9
+      "astNodeNumber" : 256,
+      "astHeight" : 11
     } ],
     "currentLineData" : {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 48,
-        "startLineNumber" : 29,
-        "startColumnNumber" : 12,
-        "endLineNumber" : 29,
-        "endColumnNumber" : 60
+        "charLength" : 44,
+        "startLineNumber" : 349,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 349,
+        "endColumnNumber" : 52
       },
-      "nodeContext" : "!encodedNio.isDirect() && !encodedNio.hasArray()",
-      "nodeType" : "InfixExpression",
-      "astNodeNumber" : 9,
-      "astHeight" : 4
+      "nodeContext" : "monEntity=this.monitoringClassFields[idx];\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 5
     },
     "tokenLength" : 2,
-    "type" : "boolean"
+    "type" : "org.apache.pulsar.broker.resourcegroup.ResourceGroup.PerMonitoringClassFields"
   } ],
   "positionList" : [ {
-    "charLength" : 22,
-    "startLineNumber" : 29,
-    "startColumnNumber" : 12,
-    "endLineNumber" : 29,
-    "endColumnNumber" : 34
+    "charLength" : 31,
+    "startLineNumber" : 349,
+    "startColumnNumber" : 20,
+    "endLineNumber" : 349,
+    "endColumnNumber" : 51
   } ],
   "layoutRelationDataList" : [ ]
 }

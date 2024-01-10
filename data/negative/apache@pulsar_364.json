@@ -1,247 +1,480 @@
 {
   "id" : 364,
-  "expression" : "policies2",
+  "expression" : "metadataAndPayload",
   "projectName" : "apache@pulsar",
-  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
-  "filePath" : "/pulsar-broker/src/test/java/org/apache/pulsar/broker/lookup/http/HttpTopicLookupv2Test.java",
-  "occurrences" : 2,
+  "commitID" : "4f23767fcdc96e02d25837350891c14a13705b45",
+  "filePath" : "pulsar-broker/src/main/java/org/apache/pulsar/broker/service/AbstractBaseDispatcher.java",
+  "occurrences" : 3,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "policies2",
+    "nodeContext" : "metadataAndPayload",
     "nodeType" : "SimpleName",
     "nodePosition" : {
-      "charLength" : 9,
-      "startLineNumber" : 186,
-      "startColumnNumber" : 8,
-      "endLineNumber" : 186,
-      "endColumnNumber" : 17
+      "charLength" : 18,
+      "startLineNumber" : 122,
+      "startColumnNumber" : 51,
+      "endLineNumber" : 122,
+      "endColumnNumber" : 69
     },
     "astNodeNumber" : 1,
     "astHeight" : 1,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,leftHandSide]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ConditionalExpression,thenExpression]",
       "nodePosition" : {
-        "charLength" : 30,
-        "startLineNumber" : 186,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 186,
-        "endColumnNumber" : 38
+        "charLength" : 77,
+        "startLineNumber" : 122,
+        "startColumnNumber" : 22,
+        "endLineNumber" : 122,
+        "endColumnNumber" : 99
       },
-      "nodeContext" : "policies2.replication_clusters",
-      "nodeType" : "QualifiedName",
+      "nodeContext" : "Commands.peekMessageMetadata(metadataAndPayload,subscription.toString(),-1)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 9,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
+      "nodePosition" : {
+        "charLength" : 153,
+        "startLineNumber" : 121,
+        "startColumnNumber" : 26,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 33
+      },
+      "nodeContext" : "msgMetadata == null ? Commands.peekMessageMetadata(metadataAndPayload,subscription.toString(),-1) : msgMetadata",
+      "nodeType" : "ConditionalExpression",
+      "astNodeNumber" : 14,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 167,
+        "startLineNumber" : 121,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 33
+      },
+      "nodeContext" : "msgMetadata=msgMetadata == null ? Commands.peekMessageMetadata(metadataAndPayload,subscription.toString(),-1) : msgMetadata",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 16,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 168,
+        "startLineNumber" : 121,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 34
+      },
+      "nodeContext" : "msgMetadata=msgMetadata == null ? Commands.peekMessageMetadata(metadataAndPayload,subscription.toString(),-1) : msgMetadata;\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 17,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 3453,
+        "startLineNumber" : 111,
+        "startColumnNumber" : 76,
+        "endLineNumber" : 179,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  Entry entry=entries.get(i);\n  if (entry == null) {\n    continue;\n  }\n  ByteBuf metadataAndPayload=entry.getDataBuffer();\n  int entryWrapperIndex=i + entryWrapperOffset;\n  MessageMetadata msgMetadata=entryWrapper.isPresent() && entryWrapper.get()[entryWrapperIndex] != null ? entryWrapper.get()[entryWrapperIndex].getMetadata() : null;\n  msgMetadata=msgMetadata == null ? Commands.peekMessageMetadata(metadataAndPayload,subscription.toString(),-1) : msgMetadata;\n  if (!isReplayRead && msgMetadata != null && msgMetadata.hasTxnidMostBits() && msgMetadata.hasTxnidLeastBits()) {\n    if (Markers.isTxnMarker(msgMetadata)) {\n      entries.set(i,null);\n      entry.release();\n      continue;\n    }\n else     if (((PersistentTopic)subscription.getTopic()).isTxnAborted(new TxnID(msgMetadata.getTxnidMostBits(),msgMetadata.getTxnidLeastBits()))) {\n      subscription.acknowledgeMessage(Collections.singletonList(entry.getPosition()),AckType.Individual,Collections.emptyMap());\n      entries.set(i,null);\n      entry.release();\n      continue;\n    }\n  }\n else   if (msgMetadata == null || Markers.isServerOnlyMarker(msgMetadata)) {\n    PositionImpl pos=(PositionImpl)entry.getPosition();\n    if (Markers.isReplicatedSubscriptionSnapshotMarker(msgMetadata)) {\n      processReplicatedSubscriptionSnapshot(pos,metadataAndPayload);\n    }\n    entries.set(i,null);\n    entry.release();\n    subscription.acknowledgeMessage(Collections.singletonList(pos),AckType.Individual,Collections.emptyMap());\n    continue;\n  }\n else   if (msgMetadata.hasDeliverAtTime() && trackDelayedDelivery(entry.getLedgerId(),entry.getEntryId(),msgMetadata)) {\n    entries.set(i,null);\n    entry.release();\n    continue;\n  }\n  int batchSize=msgMetadata.getNumMessagesInBatch();\n  totalMessages+=batchSize;\n  totalBytes+=metadataAndPayload.readableBytes();\n  totalChunkedMessages+=msgMetadata.hasChunkId() ? 1 : 0;\n  batchSizes.setBatchSize(i,batchSize);\n  long[] ackSet=null;\n  if (indexesAcks != null && cursor != null) {\n    ackSet=cursor.getDeletedBatchIndexesAsLongArray(PositionImpl.get(entry.getLedgerId(),entry.getEntryId()));\n    if (ackSet != null) {\n      indexesAcks.setIndexesAcks(i,Pair.of(batchSize,ackSet));\n    }\n else {\n      indexesAcks.setIndexesAcks(i,null);\n    }\n  }\n  BrokerInterceptor interceptor=subscription.interceptor();\n  if (null != interceptor) {\n    interceptor.beforeSendMessage(subscription,entry,ackSet,msgMetadata);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 342,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 3521,
+        "startLineNumber" : 111,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 179,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "for (int i=0, entriesSize=entries.size(); i < entriesSize; i++) {\n  Entry entry=entries.get(i);\n  if (entry == null) {\n    continue;\n  }\n  ByteBuf metadataAndPayload=entry.getDataBuffer();\n  int entryWrapperIndex=i + entryWrapperOffset;\n  MessageMetadata msgMetadata=entryWrapper.isPresent() && entryWrapper.get()[entryWrapperIndex] != null ? entryWrapper.get()[entryWrapperIndex].getMetadata() : null;\n  msgMetadata=msgMetadata == null ? Commands.peekMessageMetadata(metadataAndPayload,subscription.toString(),-1) : msgMetadata;\n  if (!isReplayRead && msgMetadata != null && msgMetadata.hasTxnidMostBits() && msgMetadata.hasTxnidLeastBits()) {\n    if (Markers.isTxnMarker(msgMetadata)) {\n      entries.set(i,null);\n      entry.release();\n      continue;\n    }\n else     if (((PersistentTopic)subscription.getTopic()).isTxnAborted(new TxnID(msgMetadata.getTxnidMostBits(),msgMetadata.getTxnidLeastBits()))) {\n      subscription.acknowledgeMessage(Collections.singletonList(entry.getPosition()),AckType.Individual,Collections.emptyMap());\n      entries.set(i,null);\n      entry.release();\n      continue;\n    }\n  }\n else   if (msgMetadata == null || Markers.isServerOnlyMarker(msgMetadata)) {\n    PositionImpl pos=(PositionImpl)entry.getPosition();\n    if (Markers.isReplicatedSubscriptionSnapshotMarker(msgMetadata)) {\n      processReplicatedSubscriptionSnapshot(pos,metadataAndPayload);\n    }\n    entries.set(i,null);\n    entry.release();\n    subscription.acknowledgeMessage(Collections.singletonList(pos),AckType.Individual,Collections.emptyMap());\n    continue;\n  }\n else   if (msgMetadata.hasDeliverAtTime() && trackDelayedDelivery(entry.getLedgerId(),entry.getEntryId(),msgMetadata)) {\n    entries.set(i,null);\n    entry.release();\n    continue;\n  }\n  int batchSize=msgMetadata.getNumMessagesInBatch();\n  totalMessages+=batchSize;\n  totalBytes+=metadataAndPayload.readableBytes();\n  totalChunkedMessages+=msgMetadata.hasChunkId() ? 1 : 0;\n  batchSizes.setBatchSize(i,batchSize);\n  long[] ackSet=null;\n  if (indexesAcks != null && cursor != null) {\n    ackSet=cursor.getDeletedBatchIndexesAsLongArray(PositionImpl.get(entry.getLedgerId(),entry.getEntryId()));\n    if (ackSet != null) {\n      indexesAcks.setIndexesAcks(i,Pair.of(batchSize,ackSet));\n    }\n else {\n      indexesAcks.setIndexesAcks(i,null);\n    }\n  }\n  BrokerInterceptor interceptor=subscription.interceptor();\n  if (null != interceptor) {\n    interceptor.beforeSendMessage(subscription,entry,ackSet,msgMetadata);\n  }\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 358,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3814,
+        "startLineNumber" : 107,
+        "startColumnNumber" : 92,
+        "endLineNumber" : 183,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  int totalMessages=0;\n  long totalBytes=0;\n  int totalChunkedMessages=0;\n  for (int i=0, entriesSize=entries.size(); i < entriesSize; i++) {\n    Entry entry=entries.get(i);\n    if (entry == null) {\n      continue;\n    }\n    ByteBuf metadataAndPayload=entry.getDataBuffer();\n    int entryWrapperIndex=i + entryWrapperOffset;\n    MessageMetadata msgMetadata=entryWrapper.isPresent() && entryWrapper.get()[entryWrapperIndex] != null ? entryWrapper.get()[entryWrapperIndex].getMetadata() : null;\n    msgMetadata=msgMetadata == null ? Commands.peekMessageMetadata(metadataAndPayload,subscription.toString(),-1) : msgMetadata;\n    if (!isReplayRead && msgMetadata != null && msgMetadata.hasTxnidMostBits() && msgMetadata.hasTxnidLeastBits()) {\n      if (Markers.isTxnMarker(msgMetadata)) {\n        entries.set(i,null);\n        entry.release();\n        continue;\n      }\n else       if (((PersistentTopic)subscription.getTopic()).isTxnAborted(new TxnID(msgMetadata.getTxnidMostBits(),msgMetadata.getTxnidLeastBits()))) {\n        subscription.acknowledgeMessage(Collections.singletonList(entry.getPosition()),AckType.Individual,Collections.emptyMap());\n        entries.set(i,null);\n        entry.release();\n        continue;\n      }\n    }\n else     if (msgMetadata == null || Markers.isServerOnlyMarker(msgMetadata)) {\n      PositionImpl pos=(PositionImpl)entry.getPosition();\n      if (Markers.isReplicatedSubscriptionSnapshotMarker(msgMetadata)) {\n        processReplicatedSubscriptionSnapshot(pos,metadataAndPayload);\n      }\n      entries.set(i,null);\n      entry.release();\n      subscription.acknowledgeMessage(Collections.singletonList(pos),AckType.Individual,Collections.emptyMap());\n      continue;\n    }\n else     if (msgMetadata.hasDeliverAtTime() && trackDelayedDelivery(entry.getLedgerId(),entry.getEntryId(),msgMetadata)) {\n      entries.set(i,null);\n      entry.release();\n      continue;\n    }\n    int batchSize=msgMetadata.getNumMessagesInBatch();\n    totalMessages+=batchSize;\n    totalBytes+=metadataAndPayload.readableBytes();\n    totalChunkedMessages+=msgMetadata.hasChunkId() ? 1 : 0;\n    batchSizes.setBatchSize(i,batchSize);\n    long[] ackSet=null;\n    if (indexesAcks != null && cursor != null) {\n      ackSet=cursor.getDeletedBatchIndexesAsLongArray(PositionImpl.get(entry.getLedgerId(),entry.getEntryId()));\n      if (ackSet != null) {\n        indexesAcks.setIndexesAcks(i,Pair.of(batchSize,ackSet));\n      }\n else {\n        indexesAcks.setIndexesAcks(i,null);\n      }\n    }\n    BrokerInterceptor interceptor=subscription.interceptor();\n    if (null != interceptor) {\n      interceptor.beforeSendMessage(subscription,entry,ackSet,msgMetadata);\n    }\n  }\n  sendMessageInfo.setTotalMessages(totalMessages);\n  sendMessageInfo.setTotalBytes(totalBytes);\n  sendMessageInfo.setTotalChunkedMessages(totalChunkedMessages);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 389,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4101,
+        "startLineNumber" : 105,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 183,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "public void filterEntriesForConsumer(Optional<EntryWrapper[]> entryWrapper,int entryWrapperOffset,List<Entry> entries,EntryBatchSizes batchSizes,SendMessageInfo sendMessageInfo,EntryBatchIndexesAcks indexesAcks,ManagedCursor cursor,boolean isReplayRead){\n  int totalMessages=0;\n  long totalBytes=0;\n  int totalChunkedMessages=0;\n  for (int i=0, entriesSize=entries.size(); i < entriesSize; i++) {\n    Entry entry=entries.get(i);\n    if (entry == null) {\n      continue;\n    }\n    ByteBuf metadataAndPayload=entry.getDataBuffer();\n    int entryWrapperIndex=i + entryWrapperOffset;\n    MessageMetadata msgMetadata=entryWrapper.isPresent() && entryWrapper.get()[entryWrapperIndex] != null ? entryWrapper.get()[entryWrapperIndex].getMetadata() : null;\n    msgMetadata=msgMetadata == null ? Commands.peekMessageMetadata(metadataAndPayload,subscription.toString(),-1) : msgMetadata;\n    if (!isReplayRead && msgMetadata != null && msgMetadata.hasTxnidMostBits() && msgMetadata.hasTxnidLeastBits()) {\n      if (Markers.isTxnMarker(msgMetadata)) {\n        entries.set(i,null);\n        entry.release();\n        continue;\n      }\n else       if (((PersistentTopic)subscription.getTopic()).isTxnAborted(new TxnID(msgMetadata.getTxnidMostBits(),msgMetadata.getTxnidLeastBits()))) {\n        subscription.acknowledgeMessage(Collections.singletonList(entry.getPosition()),AckType.Individual,Collections.emptyMap());\n        entries.set(i,null);\n        entry.release();\n        continue;\n      }\n    }\n else     if (msgMetadata == null || Markers.isServerOnlyMarker(msgMetadata)) {\n      PositionImpl pos=(PositionImpl)entry.getPosition();\n      if (Markers.isReplicatedSubscriptionSnapshotMarker(msgMetadata)) {\n        processReplicatedSubscriptionSnapshot(pos,metadataAndPayload);\n      }\n      entries.set(i,null);\n      entry.release();\n      subscription.acknowledgeMessage(Collections.singletonList(pos),AckType.Individual,Collections.emptyMap());\n      continue;\n    }\n else     if (msgMetadata.hasDeliverAtTime() && trackDelayedDelivery(entry.getLedgerId(),entry.getEntryId(),msgMetadata)) {\n      entries.set(i,null);\n      entry.release();\n      continue;\n    }\n    int batchSize=msgMetadata.getNumMessagesInBatch();\n    totalMessages+=batchSize;\n    totalBytes+=metadataAndPayload.readableBytes();\n    totalChunkedMessages+=msgMetadata.hasChunkId() ? 1 : 0;\n    batchSizes.setBatchSize(i,batchSize);\n    long[] ackSet=null;\n    if (indexesAcks != null && cursor != null) {\n      ackSet=cursor.getDeletedBatchIndexesAsLongArray(PositionImpl.get(entry.getLedgerId(),entry.getEntryId()));\n      if (ackSet != null) {\n        indexesAcks.setIndexesAcks(i,Pair.of(batchSize,ackSet));\n      }\n else {\n        indexesAcks.setIndexesAcks(i,null);\n      }\n    }\n    BrokerInterceptor interceptor=subscription.interceptor();\n    if (null != interceptor) {\n      interceptor.beforeSendMessage(subscription,entry,ackSet,msgMetadata);\n    }\n  }\n  sendMessageInfo.setTotalMessages(totalMessages);\n  sendMessageInfo.setTotalBytes(totalBytes);\n  sendMessageInfo.setTotalChunkedMessages(totalChunkedMessages);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 431,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ConditionalExpression,thenExpression]",
+      "nodePosition" : {
+        "charLength" : 77,
+        "startLineNumber" : 122,
+        "startColumnNumber" : 22,
+        "endLineNumber" : 122,
+        "endColumnNumber" : 99
+      },
+      "nodeContext" : "Commands.peekMessageMetadata(metadataAndPayload,subscription.toString(),-1)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 9,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.pulsar.broker.service.ByteBuf"
+  }, {
+    "nodeContext" : "metadataAndPayload",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 18,
+      "startLineNumber" : 143,
+      "startColumnNumber" : 63,
+      "endLineNumber" : 143,
+      "endColumnNumber" : 81
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 62,
+        "startLineNumber" : 143,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 143,
+        "endColumnNumber" : 82
+      },
+      "nodeContext" : "processReplicatedSubscriptionSnapshot(pos,metadataAndPayload)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 63,
+        "startLineNumber" : 143,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 143,
+        "endColumnNumber" : 83
+      },
+      "nodeContext" : "processReplicatedSubscriptionSnapshot(pos,metadataAndPayload);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 103,
+        "startLineNumber" : 142,
+        "startColumnNumber" : 81,
+        "endLineNumber" : 144,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "{\n  processReplicatedSubscriptionSnapshot(pos,metadataAndPayload);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 168,
+        "startLineNumber" : 142,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 144,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "if (Markers.isReplicatedSubscriptionSnapshotMarker(msgMetadata)) {\n  processReplicatedSubscriptionSnapshot(pos,metadataAndPayload);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 610,
+        "startLineNumber" : 138,
+        "startColumnNumber" : 87,
+        "endLineNumber" : 151,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  PositionImpl pos=(PositionImpl)entry.getPosition();\n  if (Markers.isReplicatedSubscriptionSnapshotMarker(msgMetadata)) {\n    processReplicatedSubscriptionSnapshot(pos,metadataAndPayload);\n  }\n  entries.set(i,null);\n  entry.release();\n  subscription.acknowledgeMessage(Collections.singletonList(pos),AckType.Individual,Collections.emptyMap());\n  continue;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 48,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 1009,
+        "startLineNumber" : 138,
+        "startColumnNumber" : 19,
+        "endLineNumber" : 157,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "if (msgMetadata == null || Markers.isServerOnlyMarker(msgMetadata)) {\n  PositionImpl pos=(PositionImpl)entry.getPosition();\n  if (Markers.isReplicatedSubscriptionSnapshotMarker(msgMetadata)) {\n    processReplicatedSubscriptionSnapshot(pos,metadataAndPayload);\n  }\n  entries.set(i,null);\n  entry.release();\n  subscription.acknowledgeMessage(Collections.singletonList(pos),AckType.Individual,Collections.emptyMap());\n  continue;\n}\n else if (msgMetadata.hasDeliverAtTime() && trackDelayedDelivery(entry.getLedgerId(),entry.getEntryId(),msgMetadata)) {\n  entries.set(i,null);\n  entry.release();\n  continue;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 83,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1814,
+        "startLineNumber" : 124,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 157,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "if (!isReplayRead && msgMetadata != null && msgMetadata.hasTxnidMostBits() && msgMetadata.hasTxnidLeastBits()) {\n  if (Markers.isTxnMarker(msgMetadata)) {\n    entries.set(i,null);\n    entry.release();\n    continue;\n  }\n else   if (((PersistentTopic)subscription.getTopic()).isTxnAborted(new TxnID(msgMetadata.getTxnidMostBits(),msgMetadata.getTxnidLeastBits()))) {\n    subscription.acknowledgeMessage(Collections.singletonList(entry.getPosition()),AckType.Individual,Collections.emptyMap());\n    entries.set(i,null);\n    entry.release();\n    continue;\n  }\n}\n else if (msgMetadata == null || Markers.isServerOnlyMarker(msgMetadata)) {\n  PositionImpl pos=(PositionImpl)entry.getPosition();\n  if (Markers.isReplicatedSubscriptionSnapshotMarker(msgMetadata)) {\n    processReplicatedSubscriptionSnapshot(pos,metadataAndPayload);\n  }\n  entries.set(i,null);\n  entry.release();\n  subscription.acknowledgeMessage(Collections.singletonList(pos),AckType.Individual,Collections.emptyMap());\n  continue;\n}\n else if (msgMetadata.hasDeliverAtTime() && trackDelayedDelivery(entry.getLedgerId(),entry.getEntryId(),msgMetadata)) {\n  entries.set(i,null);\n  entry.release();\n  continue;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 163,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 3453,
+        "startLineNumber" : 111,
+        "startColumnNumber" : 76,
+        "endLineNumber" : 179,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  Entry entry=entries.get(i);\n  if (entry == null) {\n    continue;\n  }\n  ByteBuf metadataAndPayload=entry.getDataBuffer();\n  int entryWrapperIndex=i + entryWrapperOffset;\n  MessageMetadata msgMetadata=entryWrapper.isPresent() && entryWrapper.get()[entryWrapperIndex] != null ? entryWrapper.get()[entryWrapperIndex].getMetadata() : null;\n  msgMetadata=msgMetadata == null ? Commands.peekMessageMetadata(metadataAndPayload,subscription.toString(),-1) : msgMetadata;\n  if (!isReplayRead && msgMetadata != null && msgMetadata.hasTxnidMostBits() && msgMetadata.hasTxnidLeastBits()) {\n    if (Markers.isTxnMarker(msgMetadata)) {\n      entries.set(i,null);\n      entry.release();\n      continue;\n    }\n else     if (((PersistentTopic)subscription.getTopic()).isTxnAborted(new TxnID(msgMetadata.getTxnidMostBits(),msgMetadata.getTxnidLeastBits()))) {\n      subscription.acknowledgeMessage(Collections.singletonList(entry.getPosition()),AckType.Individual,Collections.emptyMap());\n      entries.set(i,null);\n      entry.release();\n      continue;\n    }\n  }\n else   if (msgMetadata == null || Markers.isServerOnlyMarker(msgMetadata)) {\n    PositionImpl pos=(PositionImpl)entry.getPosition();\n    if (Markers.isReplicatedSubscriptionSnapshotMarker(msgMetadata)) {\n      processReplicatedSubscriptionSnapshot(pos,metadataAndPayload);\n    }\n    entries.set(i,null);\n    entry.release();\n    subscription.acknowledgeMessage(Collections.singletonList(pos),AckType.Individual,Collections.emptyMap());\n    continue;\n  }\n else   if (msgMetadata.hasDeliverAtTime() && trackDelayedDelivery(entry.getLedgerId(),entry.getEntryId(),msgMetadata)) {\n    entries.set(i,null);\n    entry.release();\n    continue;\n  }\n  int batchSize=msgMetadata.getNumMessagesInBatch();\n  totalMessages+=batchSize;\n  totalBytes+=metadataAndPayload.readableBytes();\n  totalChunkedMessages+=msgMetadata.hasChunkId() ? 1 : 0;\n  batchSizes.setBatchSize(i,batchSize);\n  long[] ackSet=null;\n  if (indexesAcks != null && cursor != null) {\n    ackSet=cursor.getDeletedBatchIndexesAsLongArray(PositionImpl.get(entry.getLedgerId(),entry.getEntryId()));\n    if (ackSet != null) {\n      indexesAcks.setIndexesAcks(i,Pair.of(batchSize,ackSet));\n    }\n else {\n      indexesAcks.setIndexesAcks(i,null);\n    }\n  }\n  BrokerInterceptor interceptor=subscription.interceptor();\n  if (null != interceptor) {\n    interceptor.beforeSendMessage(subscription,entry,ackSet,msgMetadata);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 342,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 3521,
+        "startLineNumber" : 111,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 179,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "for (int i=0, entriesSize=entries.size(); i < entriesSize; i++) {\n  Entry entry=entries.get(i);\n  if (entry == null) {\n    continue;\n  }\n  ByteBuf metadataAndPayload=entry.getDataBuffer();\n  int entryWrapperIndex=i + entryWrapperOffset;\n  MessageMetadata msgMetadata=entryWrapper.isPresent() && entryWrapper.get()[entryWrapperIndex] != null ? entryWrapper.get()[entryWrapperIndex].getMetadata() : null;\n  msgMetadata=msgMetadata == null ? Commands.peekMessageMetadata(metadataAndPayload,subscription.toString(),-1) : msgMetadata;\n  if (!isReplayRead && msgMetadata != null && msgMetadata.hasTxnidMostBits() && msgMetadata.hasTxnidLeastBits()) {\n    if (Markers.isTxnMarker(msgMetadata)) {\n      entries.set(i,null);\n      entry.release();\n      continue;\n    }\n else     if (((PersistentTopic)subscription.getTopic()).isTxnAborted(new TxnID(msgMetadata.getTxnidMostBits(),msgMetadata.getTxnidLeastBits()))) {\n      subscription.acknowledgeMessage(Collections.singletonList(entry.getPosition()),AckType.Individual,Collections.emptyMap());\n      entries.set(i,null);\n      entry.release();\n      continue;\n    }\n  }\n else   if (msgMetadata == null || Markers.isServerOnlyMarker(msgMetadata)) {\n    PositionImpl pos=(PositionImpl)entry.getPosition();\n    if (Markers.isReplicatedSubscriptionSnapshotMarker(msgMetadata)) {\n      processReplicatedSubscriptionSnapshot(pos,metadataAndPayload);\n    }\n    entries.set(i,null);\n    entry.release();\n    subscription.acknowledgeMessage(Collections.singletonList(pos),AckType.Individual,Collections.emptyMap());\n    continue;\n  }\n else   if (msgMetadata.hasDeliverAtTime() && trackDelayedDelivery(entry.getLedgerId(),entry.getEntryId(),msgMetadata)) {\n    entries.set(i,null);\n    entry.release();\n    continue;\n  }\n  int batchSize=msgMetadata.getNumMessagesInBatch();\n  totalMessages+=batchSize;\n  totalBytes+=metadataAndPayload.readableBytes();\n  totalChunkedMessages+=msgMetadata.hasChunkId() ? 1 : 0;\n  batchSizes.setBatchSize(i,batchSize);\n  long[] ackSet=null;\n  if (indexesAcks != null && cursor != null) {\n    ackSet=cursor.getDeletedBatchIndexesAsLongArray(PositionImpl.get(entry.getLedgerId(),entry.getEntryId()));\n    if (ackSet != null) {\n      indexesAcks.setIndexesAcks(i,Pair.of(batchSize,ackSet));\n    }\n else {\n      indexesAcks.setIndexesAcks(i,null);\n    }\n  }\n  BrokerInterceptor interceptor=subscription.interceptor();\n  if (null != interceptor) {\n    interceptor.beforeSendMessage(subscription,entry,ackSet,msgMetadata);\n  }\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 358,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3814,
+        "startLineNumber" : 107,
+        "startColumnNumber" : 92,
+        "endLineNumber" : 183,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  int totalMessages=0;\n  long totalBytes=0;\n  int totalChunkedMessages=0;\n  for (int i=0, entriesSize=entries.size(); i < entriesSize; i++) {\n    Entry entry=entries.get(i);\n    if (entry == null) {\n      continue;\n    }\n    ByteBuf metadataAndPayload=entry.getDataBuffer();\n    int entryWrapperIndex=i + entryWrapperOffset;\n    MessageMetadata msgMetadata=entryWrapper.isPresent() && entryWrapper.get()[entryWrapperIndex] != null ? entryWrapper.get()[entryWrapperIndex].getMetadata() : null;\n    msgMetadata=msgMetadata == null ? Commands.peekMessageMetadata(metadataAndPayload,subscription.toString(),-1) : msgMetadata;\n    if (!isReplayRead && msgMetadata != null && msgMetadata.hasTxnidMostBits() && msgMetadata.hasTxnidLeastBits()) {\n      if (Markers.isTxnMarker(msgMetadata)) {\n        entries.set(i,null);\n        entry.release();\n        continue;\n      }\n else       if (((PersistentTopic)subscription.getTopic()).isTxnAborted(new TxnID(msgMetadata.getTxnidMostBits(),msgMetadata.getTxnidLeastBits()))) {\n        subscription.acknowledgeMessage(Collections.singletonList(entry.getPosition()),AckType.Individual,Collections.emptyMap());\n        entries.set(i,null);\n        entry.release();\n        continue;\n      }\n    }\n else     if (msgMetadata == null || Markers.isServerOnlyMarker(msgMetadata)) {\n      PositionImpl pos=(PositionImpl)entry.getPosition();\n      if (Markers.isReplicatedSubscriptionSnapshotMarker(msgMetadata)) {\n        processReplicatedSubscriptionSnapshot(pos,metadataAndPayload);\n      }\n      entries.set(i,null);\n      entry.release();\n      subscription.acknowledgeMessage(Collections.singletonList(pos),AckType.Individual,Collections.emptyMap());\n      continue;\n    }\n else     if (msgMetadata.hasDeliverAtTime() && trackDelayedDelivery(entry.getLedgerId(),entry.getEntryId(),msgMetadata)) {\n      entries.set(i,null);\n      entry.release();\n      continue;\n    }\n    int batchSize=msgMetadata.getNumMessagesInBatch();\n    totalMessages+=batchSize;\n    totalBytes+=metadataAndPayload.readableBytes();\n    totalChunkedMessages+=msgMetadata.hasChunkId() ? 1 : 0;\n    batchSizes.setBatchSize(i,batchSize);\n    long[] ackSet=null;\n    if (indexesAcks != null && cursor != null) {\n      ackSet=cursor.getDeletedBatchIndexesAsLongArray(PositionImpl.get(entry.getLedgerId(),entry.getEntryId()));\n      if (ackSet != null) {\n        indexesAcks.setIndexesAcks(i,Pair.of(batchSize,ackSet));\n      }\n else {\n        indexesAcks.setIndexesAcks(i,null);\n      }\n    }\n    BrokerInterceptor interceptor=subscription.interceptor();\n    if (null != interceptor) {\n      interceptor.beforeSendMessage(subscription,entry,ackSet,msgMetadata);\n    }\n  }\n  sendMessageInfo.setTotalMessages(totalMessages);\n  sendMessageInfo.setTotalBytes(totalBytes);\n  sendMessageInfo.setTotalChunkedMessages(totalChunkedMessages);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 389,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4101,
+        "startLineNumber" : 105,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 183,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "public void filterEntriesForConsumer(Optional<EntryWrapper[]> entryWrapper,int entryWrapperOffset,List<Entry> entries,EntryBatchSizes batchSizes,SendMessageInfo sendMessageInfo,EntryBatchIndexesAcks indexesAcks,ManagedCursor cursor,boolean isReplayRead){\n  int totalMessages=0;\n  long totalBytes=0;\n  int totalChunkedMessages=0;\n  for (int i=0, entriesSize=entries.size(); i < entriesSize; i++) {\n    Entry entry=entries.get(i);\n    if (entry == null) {\n      continue;\n    }\n    ByteBuf metadataAndPayload=entry.getDataBuffer();\n    int entryWrapperIndex=i + entryWrapperOffset;\n    MessageMetadata msgMetadata=entryWrapper.isPresent() && entryWrapper.get()[entryWrapperIndex] != null ? entryWrapper.get()[entryWrapperIndex].getMetadata() : null;\n    msgMetadata=msgMetadata == null ? Commands.peekMessageMetadata(metadataAndPayload,subscription.toString(),-1) : msgMetadata;\n    if (!isReplayRead && msgMetadata != null && msgMetadata.hasTxnidMostBits() && msgMetadata.hasTxnidLeastBits()) {\n      if (Markers.isTxnMarker(msgMetadata)) {\n        entries.set(i,null);\n        entry.release();\n        continue;\n      }\n else       if (((PersistentTopic)subscription.getTopic()).isTxnAborted(new TxnID(msgMetadata.getTxnidMostBits(),msgMetadata.getTxnidLeastBits()))) {\n        subscription.acknowledgeMessage(Collections.singletonList(entry.getPosition()),AckType.Individual,Collections.emptyMap());\n        entries.set(i,null);\n        entry.release();\n        continue;\n      }\n    }\n else     if (msgMetadata == null || Markers.isServerOnlyMarker(msgMetadata)) {\n      PositionImpl pos=(PositionImpl)entry.getPosition();\n      if (Markers.isReplicatedSubscriptionSnapshotMarker(msgMetadata)) {\n        processReplicatedSubscriptionSnapshot(pos,metadataAndPayload);\n      }\n      entries.set(i,null);\n      entry.release();\n      subscription.acknowledgeMessage(Collections.singletonList(pos),AckType.Individual,Collections.emptyMap());\n      continue;\n    }\n else     if (msgMetadata.hasDeliverAtTime() && trackDelayedDelivery(entry.getLedgerId(),entry.getEntryId(),msgMetadata)) {\n      entries.set(i,null);\n      entry.release();\n      continue;\n    }\n    int batchSize=msgMetadata.getNumMessagesInBatch();\n    totalMessages+=batchSize;\n    totalBytes+=metadataAndPayload.readableBytes();\n    totalChunkedMessages+=msgMetadata.hasChunkId() ? 1 : 0;\n    batchSizes.setBatchSize(i,batchSize);\n    long[] ackSet=null;\n    if (indexesAcks != null && cursor != null) {\n      ackSet=cursor.getDeletedBatchIndexesAsLongArray(PositionImpl.get(entry.getLedgerId(),entry.getEntryId()));\n      if (ackSet != null) {\n        indexesAcks.setIndexesAcks(i,Pair.of(batchSize,ackSet));\n      }\n else {\n        indexesAcks.setIndexesAcks(i,null);\n      }\n    }\n    BrokerInterceptor interceptor=subscription.interceptor();\n    if (null != interceptor) {\n      interceptor.beforeSendMessage(subscription,entry,ackSet,msgMetadata);\n    }\n  }\n  sendMessageInfo.setTotalMessages(totalMessages);\n  sendMessageInfo.setTotalBytes(totalBytes);\n  sendMessageInfo.setTotalChunkedMessages(totalChunkedMessages);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 431,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 63,
+        "startLineNumber" : 143,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 143,
+        "endColumnNumber" : 83
+      },
+      "nodeContext" : "processReplicatedSubscriptionSnapshot(pos,metadataAndPayload);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.pulsar.broker.service.ByteBuf"
+  }, {
+    "nodeContext" : "metadataAndPayload",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 18,
+      "startLineNumber" : 161,
+      "startColumnNumber" : 26,
+      "endLineNumber" : 161,
+      "endColumnNumber" : 44
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
+      "nodePosition" : {
+        "charLength" : 34,
+        "startLineNumber" : 161,
+        "startColumnNumber" : 26,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 60
+      },
+      "nodeContext" : "metadataAndPayload.readableBytes()",
+      "nodeType" : "MethodInvocation",
       "astNodeNumber" : 3,
       "astHeight" : 2
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
       "nodePosition" : {
-        "charLength" : 72,
-        "startLineNumber" : 186,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 186,
-        "endColumnNumber" : 80
+        "charLength" : 48,
+        "startLineNumber" : 161,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 60
       },
-      "nodeContext" : "policies2.replication_clusters=Sets.newHashSet(\"invalid-localCluster\")",
+      "nodeContext" : "totalBytes+=metadataAndPayload.readableBytes()",
       "nodeType" : "Assignment",
-      "astNodeNumber" : 8,
+      "astNodeNumber" : 5,
       "astHeight" : 3
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 73,
-        "startLineNumber" : 186,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 186,
-        "endColumnNumber" : 81
+        "charLength" : 49,
+        "startLineNumber" : 161,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 61
       },
-      "nodeContext" : "policies2.replication_clusters=Sets.newHashSet(\"invalid-localCluster\");\n",
+      "nodeContext" : "totalBytes+=metadataAndPayload.readableBytes();\n",
       "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 9,
-      "astHeight" : 4
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
-      "nodePosition" : {
-        "charLength" : 2008,
-        "startLineNumber" : 176,
-        "startColumnNumber" : 78,
-        "endLineNumber" : 216,
-        "endColumnNumber" : 5
-      },
-      "nodeContext" : "{\n  final String property=\"my-prop\";\n  final String cluster=\"global\";\n  final String ns1=\"ns1\";\n  final String ns2=\"ns2\";\n  Policies policies1=new Policies();\n  doReturn(Optional.of(policies1)).when(policiesCache).get(AdminResource.path(POLICIES,property,cluster,ns1));\n  Policies policies2=new Policies();\n  policies2.replication_clusters=Sets.newHashSet(\"invalid-localCluster\");\n  doReturn(Optional.of(policies2)).when(policiesCache).get(AdminResource.path(POLICIES,property,cluster,ns2));\n  TopicLookup destLookup=spy(new TopicLookup());\n  doReturn(false).when(destLookup).isRequestHttps();\n  destLookup.setPulsar(pulsar);\n  doReturn(\"null\").when(destLookup).clientAppId();\n  Field uriField=PulsarWebResource.class.getDeclaredField(\"uri\");\n  uriField.setAccessible(true);\n  UriInfo uriInfo=mock(UriInfo.class);\n  uriField.set(destLookup,uriInfo);\n  doReturn(false).when(config).isAuthorizationEnabled();\n  AsyncResponse asyncResponse=mock(AsyncResponse.class);\n  destLookup.lookupTopicAsync(TopicDomain.persistent.value(),property,cluster,ns1,\"empty-cluster\",false,asyncResponse,null);\n  ArgumentCaptor<Throwable> arg=ArgumentCaptor.forClass(Throwable.class);\n  verify(asyncResponse).resume(arg.capture());\n  assertEquals(arg.getValue().getClass(),RestException.class);\n  AsyncResponse asyncResponse2=mock(AsyncResponse.class);\n  destLookup.lookupTopicAsync(TopicDomain.persistent.value(),property,cluster,ns2,\"invalid-localCluster\",false,asyncResponse2,null);\n  ArgumentCaptor<Throwable> arg2=ArgumentCaptor.forClass(Throwable.class);\n  verify(asyncResponse2).resume(arg2.capture());\n  assertEquals(arg2.getValue().getClass(),RestException.class);\n}\n",
-      "nodeType" : "Block",
-      "astNodeNumber" : 286,
-      "astHeight" : 7
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
-      "nodePosition" : {
-        "charLength" : 2092,
-        "startLineNumber" : 175,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 216,
-        "endColumnNumber" : 5
-      },
-      "nodeContext" : "@Test public void testValidateReplicationSettingsOnNamespace() throws Exception {\n  final String property=\"my-prop\";\n  final String cluster=\"global\";\n  final String ns1=\"ns1\";\n  final String ns2=\"ns2\";\n  Policies policies1=new Policies();\n  doReturn(Optional.of(policies1)).when(policiesCache).get(AdminResource.path(POLICIES,property,cluster,ns1));\n  Policies policies2=new Policies();\n  policies2.replication_clusters=Sets.newHashSet(\"invalid-localCluster\");\n  doReturn(Optional.of(policies2)).when(policiesCache).get(AdminResource.path(POLICIES,property,cluster,ns2));\n  TopicLookup destLookup=spy(new TopicLookup());\n  doReturn(false).when(destLookup).isRequestHttps();\n  destLookup.setPulsar(pulsar);\n  doReturn(\"null\").when(destLookup).clientAppId();\n  Field uriField=PulsarWebResource.class.getDeclaredField(\"uri\");\n  uriField.setAccessible(true);\n  UriInfo uriInfo=mock(UriInfo.class);\n  uriField.set(destLookup,uriInfo);\n  doReturn(false).when(config).isAuthorizationEnabled();\n  AsyncResponse asyncResponse=mock(AsyncResponse.class);\n  destLookup.lookupTopicAsync(TopicDomain.persistent.value(),property,cluster,ns1,\"empty-cluster\",false,asyncResponse,null);\n  ArgumentCaptor<Throwable> arg=ArgumentCaptor.forClass(Throwable.class);\n  verify(asyncResponse).resume(arg.capture());\n  assertEquals(arg.getValue().getClass(),RestException.class);\n  AsyncResponse asyncResponse2=mock(AsyncResponse.class);\n  destLookup.lookupTopicAsync(TopicDomain.persistent.value(),property,cluster,ns2,\"invalid-localCluster\",false,asyncResponse2,null);\n  ArgumentCaptor<Throwable> arg2=ArgumentCaptor.forClass(Throwable.class);\n  verify(asyncResponse2).resume(arg2.capture());\n  assertEquals(arg2.getValue().getClass(),RestException.class);\n}\n",
-      "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 294,
-      "astHeight" : 8
-    } ],
-    "currentLineData" : {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 73,
-        "startLineNumber" : 186,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 186,
-        "endColumnNumber" : 81
-      },
-      "nodeContext" : "policies2.replication_clusters=Sets.newHashSet(\"invalid-localCluster\");\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 9,
-      "astHeight" : 4
-    },
-    "tokenLength" : 1,
-    "type" : "org.apache.pulsar.common.policies.data.Policies"
-  }, {
-    "nodeContext" : "policies2",
-    "nodeType" : "SimpleName",
-    "nodePosition" : {
-      "charLength" : 9,
-      "startLineNumber" : 187,
-      "startColumnNumber" : 29,
-      "endLineNumber" : 187,
-      "endColumnNumber" : 38
-    },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
-    "parentDataList" : [ {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
-      "nodePosition" : {
-        "charLength" : 22,
-        "startLineNumber" : 187,
-        "startColumnNumber" : 17,
-        "endLineNumber" : 187,
-        "endColumnNumber" : 39
-      },
-      "nodeContext" : "Optional.of(policies2)",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 4,
-      "astHeight" : 2
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
-      "nodePosition" : {
-        "charLength" : 32,
-        "startLineNumber" : 187,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 187,
-        "endColumnNumber" : 40
-      },
-      "nodeContext" : "doReturn(Optional.of(policies2))",
-      "nodeType" : "MethodInvocation",
       "astNodeNumber" : 6,
-      "astHeight" : 3
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
-      "nodePosition" : {
-        "charLength" : 52,
-        "startLineNumber" : 187,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 187,
-        "endColumnNumber" : 60
-      },
-      "nodeContext" : "doReturn(Optional.of(policies2)).when(policiesCache)",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 9,
       "astHeight" : 4
     }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,body]",
       "nodePosition" : {
-        "charLength" : 127,
-        "startLineNumber" : 187,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 188,
-        "endColumnNumber" : 74
+        "charLength" : 3453,
+        "startLineNumber" : 111,
+        "startColumnNumber" : 76,
+        "endLineNumber" : 179,
+        "endColumnNumber" : 9
       },
-      "nodeContext" : "doReturn(Optional.of(policies2)).when(policiesCache).get(AdminResource.path(POLICIES,property,cluster,ns2))",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 18,
-      "astHeight" : 5
+      "nodeContext" : "{\n  Entry entry=entries.get(i);\n  if (entry == null) {\n    continue;\n  }\n  ByteBuf metadataAndPayload=entry.getDataBuffer();\n  int entryWrapperIndex=i + entryWrapperOffset;\n  MessageMetadata msgMetadata=entryWrapper.isPresent() && entryWrapper.get()[entryWrapperIndex] != null ? entryWrapper.get()[entryWrapperIndex].getMetadata() : null;\n  msgMetadata=msgMetadata == null ? Commands.peekMessageMetadata(metadataAndPayload,subscription.toString(),-1) : msgMetadata;\n  if (!isReplayRead && msgMetadata != null && msgMetadata.hasTxnidMostBits() && msgMetadata.hasTxnidLeastBits()) {\n    if (Markers.isTxnMarker(msgMetadata)) {\n      entries.set(i,null);\n      entry.release();\n      continue;\n    }\n else     if (((PersistentTopic)subscription.getTopic()).isTxnAborted(new TxnID(msgMetadata.getTxnidMostBits(),msgMetadata.getTxnidLeastBits()))) {\n      subscription.acknowledgeMessage(Collections.singletonList(entry.getPosition()),AckType.Individual,Collections.emptyMap());\n      entries.set(i,null);\n      entry.release();\n      continue;\n    }\n  }\n else   if (msgMetadata == null || Markers.isServerOnlyMarker(msgMetadata)) {\n    PositionImpl pos=(PositionImpl)entry.getPosition();\n    if (Markers.isReplicatedSubscriptionSnapshotMarker(msgMetadata)) {\n      processReplicatedSubscriptionSnapshot(pos,metadataAndPayload);\n    }\n    entries.set(i,null);\n    entry.release();\n    subscription.acknowledgeMessage(Collections.singletonList(pos),AckType.Individual,Collections.emptyMap());\n    continue;\n  }\n else   if (msgMetadata.hasDeliverAtTime() && trackDelayedDelivery(entry.getLedgerId(),entry.getEntryId(),msgMetadata)) {\n    entries.set(i,null);\n    entry.release();\n    continue;\n  }\n  int batchSize=msgMetadata.getNumMessagesInBatch();\n  totalMessages+=batchSize;\n  totalBytes+=metadataAndPayload.readableBytes();\n  totalChunkedMessages+=msgMetadata.hasChunkId() ? 1 : 0;\n  batchSizes.setBatchSize(i,batchSize);\n  long[] ackSet=null;\n  if (indexesAcks != null && cursor != null) {\n    ackSet=cursor.getDeletedBatchIndexesAsLongArray(PositionImpl.get(entry.getLedgerId(),entry.getEntryId()));\n    if (ackSet != null) {\n      indexesAcks.setIndexesAcks(i,Pair.of(batchSize,ackSet));\n    }\n else {\n      indexesAcks.setIndexesAcks(i,null);\n    }\n  }\n  BrokerInterceptor interceptor=subscription.interceptor();\n  if (null != interceptor) {\n    interceptor.beforeSendMessage(subscription,entry,ackSet,msgMetadata);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 342,
+      "astHeight" : 11
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 128,
-        "startLineNumber" : 187,
+        "charLength" : 3521,
+        "startLineNumber" : 111,
         "startColumnNumber" : 8,
-        "endLineNumber" : 188,
-        "endColumnNumber" : 75
+        "endLineNumber" : 179,
+        "endColumnNumber" : 9
       },
-      "nodeContext" : "doReturn(Optional.of(policies2)).when(policiesCache).get(AdminResource.path(POLICIES,property,cluster,ns2));\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 19,
-      "astHeight" : 6
+      "nodeContext" : "for (int i=0, entriesSize=entries.size(); i < entriesSize; i++) {\n  Entry entry=entries.get(i);\n  if (entry == null) {\n    continue;\n  }\n  ByteBuf metadataAndPayload=entry.getDataBuffer();\n  int entryWrapperIndex=i + entryWrapperOffset;\n  MessageMetadata msgMetadata=entryWrapper.isPresent() && entryWrapper.get()[entryWrapperIndex] != null ? entryWrapper.get()[entryWrapperIndex].getMetadata() : null;\n  msgMetadata=msgMetadata == null ? Commands.peekMessageMetadata(metadataAndPayload,subscription.toString(),-1) : msgMetadata;\n  if (!isReplayRead && msgMetadata != null && msgMetadata.hasTxnidMostBits() && msgMetadata.hasTxnidLeastBits()) {\n    if (Markers.isTxnMarker(msgMetadata)) {\n      entries.set(i,null);\n      entry.release();\n      continue;\n    }\n else     if (((PersistentTopic)subscription.getTopic()).isTxnAborted(new TxnID(msgMetadata.getTxnidMostBits(),msgMetadata.getTxnidLeastBits()))) {\n      subscription.acknowledgeMessage(Collections.singletonList(entry.getPosition()),AckType.Individual,Collections.emptyMap());\n      entries.set(i,null);\n      entry.release();\n      continue;\n    }\n  }\n else   if (msgMetadata == null || Markers.isServerOnlyMarker(msgMetadata)) {\n    PositionImpl pos=(PositionImpl)entry.getPosition();\n    if (Markers.isReplicatedSubscriptionSnapshotMarker(msgMetadata)) {\n      processReplicatedSubscriptionSnapshot(pos,metadataAndPayload);\n    }\n    entries.set(i,null);\n    entry.release();\n    subscription.acknowledgeMessage(Collections.singletonList(pos),AckType.Individual,Collections.emptyMap());\n    continue;\n  }\n else   if (msgMetadata.hasDeliverAtTime() && trackDelayedDelivery(entry.getLedgerId(),entry.getEntryId(),msgMetadata)) {\n    entries.set(i,null);\n    entry.release();\n    continue;\n  }\n  int batchSize=msgMetadata.getNumMessagesInBatch();\n  totalMessages+=batchSize;\n  totalBytes+=metadataAndPayload.readableBytes();\n  totalChunkedMessages+=msgMetadata.hasChunkId() ? 1 : 0;\n  batchSizes.setBatchSize(i,batchSize);\n  long[] ackSet=null;\n  if (indexesAcks != null && cursor != null) {\n    ackSet=cursor.getDeletedBatchIndexesAsLongArray(PositionImpl.get(entry.getLedgerId(),entry.getEntryId()));\n    if (ackSet != null) {\n      indexesAcks.setIndexesAcks(i,Pair.of(batchSize,ackSet));\n    }\n else {\n      indexesAcks.setIndexesAcks(i,null);\n    }\n  }\n  BrokerInterceptor interceptor=subscription.interceptor();\n  if (null != interceptor) {\n    interceptor.beforeSendMessage(subscription,entry,ackSet,msgMetadata);\n  }\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 358,
+      "astHeight" : 12
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 2008,
-        "startLineNumber" : 176,
-        "startColumnNumber" : 78,
-        "endLineNumber" : 216,
+        "charLength" : 3814,
+        "startLineNumber" : 107,
+        "startColumnNumber" : 92,
+        "endLineNumber" : 183,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  final String property=\"my-prop\";\n  final String cluster=\"global\";\n  final String ns1=\"ns1\";\n  final String ns2=\"ns2\";\n  Policies policies1=new Policies();\n  doReturn(Optional.of(policies1)).when(policiesCache).get(AdminResource.path(POLICIES,property,cluster,ns1));\n  Policies policies2=new Policies();\n  policies2.replication_clusters=Sets.newHashSet(\"invalid-localCluster\");\n  doReturn(Optional.of(policies2)).when(policiesCache).get(AdminResource.path(POLICIES,property,cluster,ns2));\n  TopicLookup destLookup=spy(new TopicLookup());\n  doReturn(false).when(destLookup).isRequestHttps();\n  destLookup.setPulsar(pulsar);\n  doReturn(\"null\").when(destLookup).clientAppId();\n  Field uriField=PulsarWebResource.class.getDeclaredField(\"uri\");\n  uriField.setAccessible(true);\n  UriInfo uriInfo=mock(UriInfo.class);\n  uriField.set(destLookup,uriInfo);\n  doReturn(false).when(config).isAuthorizationEnabled();\n  AsyncResponse asyncResponse=mock(AsyncResponse.class);\n  destLookup.lookupTopicAsync(TopicDomain.persistent.value(),property,cluster,ns1,\"empty-cluster\",false,asyncResponse,null);\n  ArgumentCaptor<Throwable> arg=ArgumentCaptor.forClass(Throwable.class);\n  verify(asyncResponse).resume(arg.capture());\n  assertEquals(arg.getValue().getClass(),RestException.class);\n  AsyncResponse asyncResponse2=mock(AsyncResponse.class);\n  destLookup.lookupTopicAsync(TopicDomain.persistent.value(),property,cluster,ns2,\"invalid-localCluster\",false,asyncResponse2,null);\n  ArgumentCaptor<Throwable> arg2=ArgumentCaptor.forClass(Throwable.class);\n  verify(asyncResponse2).resume(arg2.capture());\n  assertEquals(arg2.getValue().getClass(),RestException.class);\n}\n",
+      "nodeContext" : "{\n  int totalMessages=0;\n  long totalBytes=0;\n  int totalChunkedMessages=0;\n  for (int i=0, entriesSize=entries.size(); i < entriesSize; i++) {\n    Entry entry=entries.get(i);\n    if (entry == null) {\n      continue;\n    }\n    ByteBuf metadataAndPayload=entry.getDataBuffer();\n    int entryWrapperIndex=i + entryWrapperOffset;\n    MessageMetadata msgMetadata=entryWrapper.isPresent() && entryWrapper.get()[entryWrapperIndex] != null ? entryWrapper.get()[entryWrapperIndex].getMetadata() : null;\n    msgMetadata=msgMetadata == null ? Commands.peekMessageMetadata(metadataAndPayload,subscription.toString(),-1) : msgMetadata;\n    if (!isReplayRead && msgMetadata != null && msgMetadata.hasTxnidMostBits() && msgMetadata.hasTxnidLeastBits()) {\n      if (Markers.isTxnMarker(msgMetadata)) {\n        entries.set(i,null);\n        entry.release();\n        continue;\n      }\n else       if (((PersistentTopic)subscription.getTopic()).isTxnAborted(new TxnID(msgMetadata.getTxnidMostBits(),msgMetadata.getTxnidLeastBits()))) {\n        subscription.acknowledgeMessage(Collections.singletonList(entry.getPosition()),AckType.Individual,Collections.emptyMap());\n        entries.set(i,null);\n        entry.release();\n        continue;\n      }\n    }\n else     if (msgMetadata == null || Markers.isServerOnlyMarker(msgMetadata)) {\n      PositionImpl pos=(PositionImpl)entry.getPosition();\n      if (Markers.isReplicatedSubscriptionSnapshotMarker(msgMetadata)) {\n        processReplicatedSubscriptionSnapshot(pos,metadataAndPayload);\n      }\n      entries.set(i,null);\n      entry.release();\n      subscription.acknowledgeMessage(Collections.singletonList(pos),AckType.Individual,Collections.emptyMap());\n      continue;\n    }\n else     if (msgMetadata.hasDeliverAtTime() && trackDelayedDelivery(entry.getLedgerId(),entry.getEntryId(),msgMetadata)) {\n      entries.set(i,null);\n      entry.release();\n      continue;\n    }\n    int batchSize=msgMetadata.getNumMessagesInBatch();\n    totalMessages+=batchSize;\n    totalBytes+=metadataAndPayload.readableBytes();\n    totalChunkedMessages+=msgMetadata.hasChunkId() ? 1 : 0;\n    batchSizes.setBatchSize(i,batchSize);\n    long[] ackSet=null;\n    if (indexesAcks != null && cursor != null) {\n      ackSet=cursor.getDeletedBatchIndexesAsLongArray(PositionImpl.get(entry.getLedgerId(),entry.getEntryId()));\n      if (ackSet != null) {\n        indexesAcks.setIndexesAcks(i,Pair.of(batchSize,ackSet));\n      }\n else {\n        indexesAcks.setIndexesAcks(i,null);\n      }\n    }\n    BrokerInterceptor interceptor=subscription.interceptor();\n    if (null != interceptor) {\n      interceptor.beforeSendMessage(subscription,entry,ackSet,msgMetadata);\n    }\n  }\n  sendMessageInfo.setTotalMessages(totalMessages);\n  sendMessageInfo.setTotalBytes(totalBytes);\n  sendMessageInfo.setTotalChunkedMessages(totalChunkedMessages);\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 286,
-      "astHeight" : 7
+      "astNodeNumber" : 389,
+      "astHeight" : 13
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 2092,
-        "startLineNumber" : 175,
+        "charLength" : 4101,
+        "startLineNumber" : 105,
         "startColumnNumber" : 4,
-        "endLineNumber" : 216,
+        "endLineNumber" : 183,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "@Test public void testValidateReplicationSettingsOnNamespace() throws Exception {\n  final String property=\"my-prop\";\n  final String cluster=\"global\";\n  final String ns1=\"ns1\";\n  final String ns2=\"ns2\";\n  Policies policies1=new Policies();\n  doReturn(Optional.of(policies1)).when(policiesCache).get(AdminResource.path(POLICIES,property,cluster,ns1));\n  Policies policies2=new Policies();\n  policies2.replication_clusters=Sets.newHashSet(\"invalid-localCluster\");\n  doReturn(Optional.of(policies2)).when(policiesCache).get(AdminResource.path(POLICIES,property,cluster,ns2));\n  TopicLookup destLookup=spy(new TopicLookup());\n  doReturn(false).when(destLookup).isRequestHttps();\n  destLookup.setPulsar(pulsar);\n  doReturn(\"null\").when(destLookup).clientAppId();\n  Field uriField=PulsarWebResource.class.getDeclaredField(\"uri\");\n  uriField.setAccessible(true);\n  UriInfo uriInfo=mock(UriInfo.class);\n  uriField.set(destLookup,uriInfo);\n  doReturn(false).when(config).isAuthorizationEnabled();\n  AsyncResponse asyncResponse=mock(AsyncResponse.class);\n  destLookup.lookupTopicAsync(TopicDomain.persistent.value(),property,cluster,ns1,\"empty-cluster\",false,asyncResponse,null);\n  ArgumentCaptor<Throwable> arg=ArgumentCaptor.forClass(Throwable.class);\n  verify(asyncResponse).resume(arg.capture());\n  assertEquals(arg.getValue().getClass(),RestException.class);\n  AsyncResponse asyncResponse2=mock(AsyncResponse.class);\n  destLookup.lookupTopicAsync(TopicDomain.persistent.value(),property,cluster,ns2,\"invalid-localCluster\",false,asyncResponse2,null);\n  ArgumentCaptor<Throwable> arg2=ArgumentCaptor.forClass(Throwable.class);\n  verify(asyncResponse2).resume(arg2.capture());\n  assertEquals(arg2.getValue().getClass(),RestException.class);\n}\n",
+      "nodeContext" : "public void filterEntriesForConsumer(Optional<EntryWrapper[]> entryWrapper,int entryWrapperOffset,List<Entry> entries,EntryBatchSizes batchSizes,SendMessageInfo sendMessageInfo,EntryBatchIndexesAcks indexesAcks,ManagedCursor cursor,boolean isReplayRead){\n  int totalMessages=0;\n  long totalBytes=0;\n  int totalChunkedMessages=0;\n  for (int i=0, entriesSize=entries.size(); i < entriesSize; i++) {\n    Entry entry=entries.get(i);\n    if (entry == null) {\n      continue;\n    }\n    ByteBuf metadataAndPayload=entry.getDataBuffer();\n    int entryWrapperIndex=i + entryWrapperOffset;\n    MessageMetadata msgMetadata=entryWrapper.isPresent() && entryWrapper.get()[entryWrapperIndex] != null ? entryWrapper.get()[entryWrapperIndex].getMetadata() : null;\n    msgMetadata=msgMetadata == null ? Commands.peekMessageMetadata(metadataAndPayload,subscription.toString(),-1) : msgMetadata;\n    if (!isReplayRead && msgMetadata != null && msgMetadata.hasTxnidMostBits() && msgMetadata.hasTxnidLeastBits()) {\n      if (Markers.isTxnMarker(msgMetadata)) {\n        entries.set(i,null);\n        entry.release();\n        continue;\n      }\n else       if (((PersistentTopic)subscription.getTopic()).isTxnAborted(new TxnID(msgMetadata.getTxnidMostBits(),msgMetadata.getTxnidLeastBits()))) {\n        subscription.acknowledgeMessage(Collections.singletonList(entry.getPosition()),AckType.Individual,Collections.emptyMap());\n        entries.set(i,null);\n        entry.release();\n        continue;\n      }\n    }\n else     if (msgMetadata == null || Markers.isServerOnlyMarker(msgMetadata)) {\n      PositionImpl pos=(PositionImpl)entry.getPosition();\n      if (Markers.isReplicatedSubscriptionSnapshotMarker(msgMetadata)) {\n        processReplicatedSubscriptionSnapshot(pos,metadataAndPayload);\n      }\n      entries.set(i,null);\n      entry.release();\n      subscription.acknowledgeMessage(Collections.singletonList(pos),AckType.Individual,Collections.emptyMap());\n      continue;\n    }\n else     if (msgMetadata.hasDeliverAtTime() && trackDelayedDelivery(entry.getLedgerId(),entry.getEntryId(),msgMetadata)) {\n      entries.set(i,null);\n      entry.release();\n      continue;\n    }\n    int batchSize=msgMetadata.getNumMessagesInBatch();\n    totalMessages+=batchSize;\n    totalBytes+=metadataAndPayload.readableBytes();\n    totalChunkedMessages+=msgMetadata.hasChunkId() ? 1 : 0;\n    batchSizes.setBatchSize(i,batchSize);\n    long[] ackSet=null;\n    if (indexesAcks != null && cursor != null) {\n      ackSet=cursor.getDeletedBatchIndexesAsLongArray(PositionImpl.get(entry.getLedgerId(),entry.getEntryId()));\n      if (ackSet != null) {\n        indexesAcks.setIndexesAcks(i,Pair.of(batchSize,ackSet));\n      }\n else {\n        indexesAcks.setIndexesAcks(i,null);\n      }\n    }\n    BrokerInterceptor interceptor=subscription.interceptor();\n    if (null != interceptor) {\n      interceptor.beforeSendMessage(subscription,entry,ackSet,msgMetadata);\n    }\n  }\n  sendMessageInfo.setTotalMessages(totalMessages);\n  sendMessageInfo.setTotalBytes(totalBytes);\n  sendMessageInfo.setTotalChunkedMessages(totalChunkedMessages);\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 294,
-      "astHeight" : 8
+      "astNodeNumber" : 431,
+      "astHeight" : 14
     } ],
     "currentLineData" : {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 52,
-        "startLineNumber" : 187,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 187,
-        "endColumnNumber" : 60
+        "charLength" : 49,
+        "startLineNumber" : 161,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 61
       },
-      "nodeContext" : "doReturn(Optional.of(policies2)).when(policiesCache)",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 9,
+      "nodeContext" : "totalBytes+=metadataAndPayload.readableBytes();\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
       "astHeight" : 4
     },
     "tokenLength" : 1,
-    "type" : "org.apache.pulsar.common.policies.data.Policies"
+    "type" : "org.apache.pulsar.broker.service.ByteBuf"
   } ],
   "positionList" : [ {
-    "charLength" : 9,
-    "startLineNumber" : 186,
-    "startColumnNumber" : 8,
-    "endLineNumber" : 186,
-    "endColumnNumber" : 17
+    "charLength" : 18,
+    "startLineNumber" : 122,
+    "startColumnNumber" : 51,
+    "endLineNumber" : 122,
+    "endColumnNumber" : 69
   }, {
-    "charLength" : 9,
-    "startLineNumber" : 187,
-    "startColumnNumber" : 29,
-    "endLineNumber" : 187,
-    "endColumnNumber" : 38
+    "charLength" : 18,
+    "startLineNumber" : 143,
+    "startColumnNumber" : 63,
+    "endLineNumber" : 143,
+    "endColumnNumber" : 81
+  }, {
+    "charLength" : 18,
+    "startLineNumber" : 161,
+    "startColumnNumber" : 26,
+    "endLineNumber" : 161,
+    "endColumnNumber" : 44
   } ],
   "layoutRelationDataList" : [ {
     "firstKey" : 0,
     "secondKey" : 1,
-    "layout" : 3
+    "layout" : 4
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 4
   }, {
     "firstKey" : 1,
     "secondKey" : 0,
-    "layout" : 5
+    "layout" : 7
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 7
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 3
   } ]
 }

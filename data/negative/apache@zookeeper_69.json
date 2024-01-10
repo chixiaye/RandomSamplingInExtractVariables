@@ -1,100 +1,221 @@
 {
   "id" : 69,
-  "expression" : "new byte[1024]",
+  "expression" : "zk.tickTime * 2",
   "projectName" : "apache@zookeeper",
   "commitID" : "c6639c9842973a7954c8baa412d6825cb833d51f",
-  "filePath" : "/src/java/test/org/apache/zookeeper/test/DBSizeTest.java",
-  "occurrences" : 1,
+  "filePath" : "src/java/main/org/apache/zookeeper/server/NIOServerCnxn.java",
+  "occurrences" : 2,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "new byte[1024]",
-    "nodeType" : "ArrayCreation",
+    "nodeContext" : "zk.tickTime * 2",
+    "nodeType" : "InfixExpression",
     "nodePosition" : {
-      "charLength" : 14,
-      "startLineNumber" : 55,
-      "startColumnNumber" : 22,
-      "endLineNumber" : 55,
-      "endColumnNumber" : 36
+      "charLength" : 15,
+      "startLineNumber" : 504,
+      "startColumnNumber" : 29,
+      "endLineNumber" : 504,
+      "endColumnNumber" : 44
     },
     "astNodeNumber" : 5,
     "astHeight" : 3,
     "parentDataList" : [ {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
       "nodePosition" : {
-        "charLength" : 23,
-        "startLineNumber" : 55,
-        "startColumnNumber" : 13,
-        "endLineNumber" : 55,
-        "endColumnNumber" : 36
+        "charLength" : 32,
+        "startLineNumber" : 504,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 504,
+        "endColumnNumber" : 44
       },
-      "nodeContext" : "data[]=new byte[1024]",
-      "nodeType" : "VariableDeclarationFragment",
-      "astNodeNumber" : 8,
+      "nodeContext" : "sessionTimeout < zk.tickTime * 2",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 7,
       "astHeight" : 4
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 29,
-        "startLineNumber" : 55,
+        "charLength" : 95,
+        "startLineNumber" : 504,
         "startColumnNumber" : 8,
-        "endLineNumber" : 55,
-        "endColumnNumber" : 37
+        "endLineNumber" : 506,
+        "endColumnNumber" : 9
       },
-      "nodeContext" : "byte data[]=new byte[1024];\n",
-      "nodeType" : "VariableDeclarationStatement",
-      "astNodeNumber" : 10,
-      "astHeight" : 5
+      "nodeContext" : "if (sessionTimeout < zk.tickTime * 2) {\n  sessionTimeout=zk.tickTime * 2;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 17,
+      "astHeight" : 7
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 1253,
-        "startLineNumber" : 53,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 81,
+        "charLength" : 1714,
+        "startLineNumber" : 483,
+        "startColumnNumber" : 79,
+        "endLineNumber" : 522,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  String path=\"/SIZE\";\n  byte data[]=new byte[1024];\n  ZooKeeper zk=null;\n  try {\n    zk=createClient();\n    long startTime=System.currentTimeMillis();\n    zk.create(path,data,Ids.OPEN_ACL_UNSAFE,CreateMode.PERSISTENT);\n    long baseLatency=System.currentTimeMillis() - startTime;\n    for (int i=0; i < 16; i++) {\n      startTime=System.currentTimeMillis();\n      zk.create(path + '/' + i,data,Ids.OPEN_ACL_UNSAFE,CreateMode.PERSISTENT);\n      long latency=System.currentTimeMillis() - startTime;\n      System.out.println(\"Latency = \" + latency);\n      for (int j=0; j < 1024; j++) {\n        zk.create(path + '/' + i+ '/'+ j,data,Ids.OPEN_ACL_UNSAFE,CreateMode.EPHEMERAL,new AsyncCallback.StringCallback(){\n          public void processResult(          int rc,          String path,          Object ctx,          String name){\n          }\n        }\n,null);\n      }\n    }\n  }\n  finally {\n    if (zk != null)     zk.close();\n  }\n}\n",
+      "nodeContext" : "{\n  BinaryInputArchive bia=BinaryInputArchive.getArchive(new ByteBufferInputStream(incomingBuffer));\n  ConnectRequest connReq=new ConnectRequest();\n  connReq.deserialize(bia,\"connect\");\n  LOG.info(\"Connected to \" + sock.socket().getRemoteSocketAddress() + \" lastZxid \"+ connReq.getLastZxidSeen());\n  if (zk == null) {\n    throw new IOException(\"ZooKeeperServer not running\");\n  }\n  if (connReq.getLastZxidSeen() > zk.dataTree.lastProcessedZxid) {\n    String msg=\"Client has seen zxid 0x\" + Long.toHexString(connReq.getLastZxidSeen()) + \" our last zxid is 0x\"+ Long.toHexString(zk.dataTree.lastProcessedZxid);\n    LOG.error(msg);\n    throw new IOException(msg);\n  }\n  sessionTimeout=connReq.getTimeOut();\n  byte passwd[]=connReq.getPasswd();\n  if (sessionTimeout < zk.tickTime * 2) {\n    sessionTimeout=zk.tickTime * 2;\n  }\n  if (sessionTimeout > zk.tickTime * 20) {\n    sessionTimeout=zk.tickTime * 20;\n  }\n  disableRecv();\n  if (connReq.getSessionId() != 0) {\n    setSessionId(connReq.getSessionId());\n    zk.reopenSession(this,sessionId,passwd,sessionTimeout);\n    LOG.info(\"Renewing session 0x\" + Long.toHexString(sessionId));\n  }\n else {\n    zk.createSession(this,passwd,sessionTimeout);\n    LOG.info(\"Creating new session 0x\" + Long.toHexString(sessionId));\n  }\n  initialized=true;\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 174,
-      "astHeight" : 15
+      "astNodeNumber" : 199,
+      "astHeight" : 10
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 1359,
-        "startLineNumber" : 50,
+        "charLength" : 1789,
+        "startLineNumber" : 483,
         "startColumnNumber" : 4,
-        "endLineNumber" : 81,
+        "endLineNumber" : 522,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "@Test public void testDBScale() throws IOException, InterruptedException, KeeperException {\n  String path=\"/SIZE\";\n  byte data[]=new byte[1024];\n  ZooKeeper zk=null;\n  try {\n    zk=createClient();\n    long startTime=System.currentTimeMillis();\n    zk.create(path,data,Ids.OPEN_ACL_UNSAFE,CreateMode.PERSISTENT);\n    long baseLatency=System.currentTimeMillis() - startTime;\n    for (int i=0; i < 16; i++) {\n      startTime=System.currentTimeMillis();\n      zk.create(path + '/' + i,data,Ids.OPEN_ACL_UNSAFE,CreateMode.PERSISTENT);\n      long latency=System.currentTimeMillis() - startTime;\n      System.out.println(\"Latency = \" + latency);\n      for (int j=0; j < 1024; j++) {\n        zk.create(path + '/' + i+ '/'+ j,data,Ids.OPEN_ACL_UNSAFE,CreateMode.EPHEMERAL,new AsyncCallback.StringCallback(){\n          public void processResult(          int rc,          String path,          Object ctx,          String name){\n          }\n        }\n,null);\n      }\n    }\n  }\n  finally {\n    if (zk != null)     zk.close();\n  }\n}\n",
+      "nodeContext" : "private void readConnectRequest() throws IOException, InterruptedException {\n  BinaryInputArchive bia=BinaryInputArchive.getArchive(new ByteBufferInputStream(incomingBuffer));\n  ConnectRequest connReq=new ConnectRequest();\n  connReq.deserialize(bia,\"connect\");\n  LOG.info(\"Connected to \" + sock.socket().getRemoteSocketAddress() + \" lastZxid \"+ connReq.getLastZxidSeen());\n  if (zk == null) {\n    throw new IOException(\"ZooKeeperServer not running\");\n  }\n  if (connReq.getLastZxidSeen() > zk.dataTree.lastProcessedZxid) {\n    String msg=\"Client has seen zxid 0x\" + Long.toHexString(connReq.getLastZxidSeen()) + \" our last zxid is 0x\"+ Long.toHexString(zk.dataTree.lastProcessedZxid);\n    LOG.error(msg);\n    throw new IOException(msg);\n  }\n  sessionTimeout=connReq.getTimeOut();\n  byte passwd[]=connReq.getPasswd();\n  if (sessionTimeout < zk.tickTime * 2) {\n    sessionTimeout=zk.tickTime * 2;\n  }\n  if (sessionTimeout > zk.tickTime * 20) {\n    sessionTimeout=zk.tickTime * 20;\n  }\n  disableRecv();\n  if (connReq.getSessionId() != 0) {\n    setSessionId(connReq.getSessionId());\n    zk.reopenSession(this,sessionId,passwd,sessionTimeout);\n    LOG.info(\"Renewing session 0x\" + Long.toHexString(sessionId));\n  }\n else {\n    zk.createSession(this,passwd,sessionTimeout);\n    LOG.info(\"Creating new session 0x\" + Long.toHexString(sessionId));\n  }\n  initialized=true;\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 186,
-      "astHeight" : 16
+      "astNodeNumber" : 207,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 32,
+        "startLineNumber" : 504,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 504,
+        "endColumnNumber" : 44
+      },
+      "nodeContext" : "sessionTimeout < zk.tickTime * 2",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    },
+    "tokenLength" : 4,
+    "type" : "int"
+  }, {
+    "nodeContext" : "zk.tickTime * 2",
+    "nodeType" : "InfixExpression",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 505,
+      "startColumnNumber" : 29,
+      "endLineNumber" : 505,
+      "endColumnNumber" : 44
+    },
+    "astNodeNumber" : 5,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 32,
+        "startLineNumber" : 505,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 505,
+        "endColumnNumber" : 44
+      },
+      "nodeContext" : "sessionTimeout=zk.tickTime * 2",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 33,
+        "startLineNumber" : 505,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 505,
+        "endColumnNumber" : 45
+      },
+      "nodeContext" : "sessionTimeout=zk.tickTime * 2;\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 57,
+        "startLineNumber" : 504,
+        "startColumnNumber" : 46,
+        "endLineNumber" : 506,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  sessionTimeout=zk.tickTime * 2;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 9,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 95,
+        "startLineNumber" : 504,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 506,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (sessionTimeout < zk.tickTime * 2) {\n  sessionTimeout=zk.tickTime * 2;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 17,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 1714,
+        "startLineNumber" : 483,
+        "startColumnNumber" : 79,
+        "endLineNumber" : 522,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  BinaryInputArchive bia=BinaryInputArchive.getArchive(new ByteBufferInputStream(incomingBuffer));\n  ConnectRequest connReq=new ConnectRequest();\n  connReq.deserialize(bia,\"connect\");\n  LOG.info(\"Connected to \" + sock.socket().getRemoteSocketAddress() + \" lastZxid \"+ connReq.getLastZxidSeen());\n  if (zk == null) {\n    throw new IOException(\"ZooKeeperServer not running\");\n  }\n  if (connReq.getLastZxidSeen() > zk.dataTree.lastProcessedZxid) {\n    String msg=\"Client has seen zxid 0x\" + Long.toHexString(connReq.getLastZxidSeen()) + \" our last zxid is 0x\"+ Long.toHexString(zk.dataTree.lastProcessedZxid);\n    LOG.error(msg);\n    throw new IOException(msg);\n  }\n  sessionTimeout=connReq.getTimeOut();\n  byte passwd[]=connReq.getPasswd();\n  if (sessionTimeout < zk.tickTime * 2) {\n    sessionTimeout=zk.tickTime * 2;\n  }\n  if (sessionTimeout > zk.tickTime * 20) {\n    sessionTimeout=zk.tickTime * 20;\n  }\n  disableRecv();\n  if (connReq.getSessionId() != 0) {\n    setSessionId(connReq.getSessionId());\n    zk.reopenSession(this,sessionId,passwd,sessionTimeout);\n    LOG.info(\"Renewing session 0x\" + Long.toHexString(sessionId));\n  }\n else {\n    zk.createSession(this,passwd,sessionTimeout);\n    LOG.info(\"Creating new session 0x\" + Long.toHexString(sessionId));\n  }\n  initialized=true;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 199,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 1789,
+        "startLineNumber" : 483,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 522,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "private void readConnectRequest() throws IOException, InterruptedException {\n  BinaryInputArchive bia=BinaryInputArchive.getArchive(new ByteBufferInputStream(incomingBuffer));\n  ConnectRequest connReq=new ConnectRequest();\n  connReq.deserialize(bia,\"connect\");\n  LOG.info(\"Connected to \" + sock.socket().getRemoteSocketAddress() + \" lastZxid \"+ connReq.getLastZxidSeen());\n  if (zk == null) {\n    throw new IOException(\"ZooKeeperServer not running\");\n  }\n  if (connReq.getLastZxidSeen() > zk.dataTree.lastProcessedZxid) {\n    String msg=\"Client has seen zxid 0x\" + Long.toHexString(connReq.getLastZxidSeen()) + \" our last zxid is 0x\"+ Long.toHexString(zk.dataTree.lastProcessedZxid);\n    LOG.error(msg);\n    throw new IOException(msg);\n  }\n  sessionTimeout=connReq.getTimeOut();\n  byte passwd[]=connReq.getPasswd();\n  if (sessionTimeout < zk.tickTime * 2) {\n    sessionTimeout=zk.tickTime * 2;\n  }\n  if (sessionTimeout > zk.tickTime * 20) {\n    sessionTimeout=zk.tickTime * 20;\n  }\n  disableRecv();\n  if (connReq.getSessionId() != 0) {\n    setSessionId(connReq.getSessionId());\n    zk.reopenSession(this,sessionId,passwd,sessionTimeout);\n    LOG.info(\"Renewing session 0x\" + Long.toHexString(sessionId));\n  }\n else {\n    zk.createSession(this,passwd,sessionTimeout);\n    LOG.info(\"Creating new session 0x\" + Long.toHexString(sessionId));\n  }\n  initialized=true;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 207,
+      "astHeight" : 11
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 29,
-        "startLineNumber" : 55,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 55,
-        "endColumnNumber" : 37
+        "charLength" : 33,
+        "startLineNumber" : 505,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 505,
+        "endColumnNumber" : 45
       },
-      "nodeContext" : "byte data[]=new byte[1024];\n",
-      "nodeType" : "VariableDeclarationStatement",
-      "astNodeNumber" : 10,
+      "nodeContext" : "sessionTimeout=zk.tickTime * 2;\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
       "astHeight" : 5
     },
-    "tokenLength" : 1,
-    "type" : "byte[]"
+    "tokenLength" : 4,
+    "type" : "int"
   } ],
   "positionList" : [ {
-    "charLength" : 14,
-    "startLineNumber" : 55,
-    "startColumnNumber" : 22,
-    "endLineNumber" : 55,
-    "endColumnNumber" : 36
+    "charLength" : 15,
+    "startLineNumber" : 504,
+    "startColumnNumber" : 29,
+    "endLineNumber" : 504,
+    "endColumnNumber" : 44
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 505,
+    "startColumnNumber" : 29,
+    "endLineNumber" : 505,
+    "endColumnNumber" : 44
   } ],
-  "layoutRelationDataList" : [ ]
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 1
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 3
+  } ]
 }

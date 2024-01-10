@@ -1,100 +1,126 @@
 {
   "id" : 29,
-  "expression" : "new MainArguments()",
+  "expression" : "this",
   "projectName" : "apache@pulsar",
-  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
-  "filePath" : "/pulsar-testclient/src/main/java/org/apache/pulsar/testclient/LoadSimulationClient.java",
+  "commitID" : "b5d219add8857a51be0a88fac6f957d0144d949c",
+  "filePath" : "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/RackAwareTest.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "new MainArguments()",
-    "nodeType" : "ClassInstanceCreation",
+    "nodeContext" : "this",
+    "nodeType" : "ThisExpression",
     "nodePosition" : {
-      "charLength" : 19,
-      "startLineNumber" : 339,
-      "startColumnNumber" : 44,
-      "endLineNumber" : 339,
-      "endColumnNumber" : 63
+      "charLength" : 4,
+      "startLineNumber" : 128,
+      "startColumnNumber" : 25,
+      "endLineNumber" : 128,
+      "endColumnNumber" : 29
     },
-    "astNodeNumber" : 3,
-    "astHeight" : 3,
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
     "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 11,
+        "startLineNumber" : 128,
+        "startColumnNumber" : 25,
+        "endLineNumber" : 128,
+        "endColumnNumber" : 36
+      },
+      "nodeContext" : "this.pulsar",
+      "nodeType" : "FieldAccess",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 33,
+        "startLineNumber" : 128,
+        "startColumnNumber" : 25,
+        "endLineNumber" : 128,
+        "endColumnNumber" : 58
+      },
+      "nodeContext" : "this.pulsar.getBookKeeperClient()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
       "nodePosition" : {
-        "charLength" : 35,
-        "startLineNumber" : 339,
-        "startColumnNumber" : 28,
-        "endLineNumber" : 339,
-        "endColumnNumber" : 63
+        "charLength" : 39,
+        "startLineNumber" : 128,
+        "startColumnNumber" : 19,
+        "endLineNumber" : 128,
+        "endColumnNumber" : 58
       },
-      "nodeContext" : "mainArguments=new MainArguments()",
+      "nodeContext" : "bkc=this.pulsar.getBookKeeperClient()",
       "nodeType" : "VariableDeclarationFragment",
-      "astNodeNumber" : 5,
+      "astNodeNumber" : 7,
       "astHeight" : 4
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 56,
-        "startLineNumber" : 339,
+        "charLength" : 51,
+        "startLineNumber" : 128,
         "startColumnNumber" : 8,
-        "endLineNumber" : 339,
-        "endColumnNumber" : 64
+        "endLineNumber" : 128,
+        "endColumnNumber" : 59
       },
-      "nodeContext" : "final MainArguments mainArguments=new MainArguments();\n",
+      "nodeContext" : "BookKeeper bkc=this.pulsar.getBookKeeperClient();\n",
       "nodeType" : "VariableDeclarationStatement",
-      "astNodeNumber" : 9,
+      "astNodeNumber" : 10,
       "astHeight" : 5
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 503,
-        "startLineNumber" : 338,
-        "startColumnNumber" : 60,
-        "endLineNumber" : 351,
+        "charLength" : 2060,
+        "startLineNumber" : 99,
+        "startColumnNumber" : 49,
+        "endLineNumber" : 139,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  final MainArguments mainArguments=new MainArguments();\n  final JCommander jc=new JCommander(mainArguments);\n  jc.setProgramName(\"pulsar-perf simulation-client\");\n  try {\n    jc.parse(args);\n  }\n catch (  ParameterException e) {\n    System.out.println(e.getMessage());\n    jc.usage();\n    PerfClientUtils.exit(-1);\n  }\n  PerfClientUtils.printJVMInformation(log);\n  (new LoadSimulationClient(mainArguments)).run();\n}\n",
+      "nodeContext" : "{\n  final String group=\"default\";\n  for (int i=0; i < NUM_BOOKIES; i++) {\n    String bookie=bookies.get(i).getLocalAddress().toString();\n    int rackId=i == 0 ? 1 : 2;\n    BookieInfo bi=BookieInfo.builder().rack(\"rack-\" + rackId).hostname(\"bookie-\" + (i + 1)).build();\n    log.info(\"setting rack for bookie at {} -- {}\",bookie,bi);\n    admin.bookies().updateBookieRackInfo(bookie,group,bi);\n  }\n  Awaitility.await().untilAsserted(() -> {\n    byte[] data=bkEnsemble.getZkClient().getData(ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH,false,null);\n    TreeMap<String,Map<String,Map<String,String>>> rackInfoMap=new Gson().fromJson(new String(data),TreeMap.class);\n    assertTrue(rackInfoMap.get(group).size() == NUM_BOOKIES);\n    Set<String> racks=rackInfoMap.values().stream().map(Map::values).flatMap(bookieId -> bookieId.stream().map(rackInfo -> rackInfo.get(\"rack\"))).collect(Collectors.toSet());\n    assertTrue(racks.containsAll(Lists.newArrayList(\"rack-1\",\"rack-2\")));\n  }\n);\n  BookKeeper bkc=this.pulsar.getBookKeeperClient();\n  BookieId firstBookie=bookies.get(0).getBookieId();\n  for (int i=0; i < 100; i++) {\n    LedgerHandle lh=bkc.createLedger(2,2,DigestType.DUMMY,new byte[0]);\n    log.info(\"Ledger: {} -- Ensemble: {}\",i,lh.getLedgerMetadata().getEnsembleAt(0));\n    assertTrue(lh.getLedgerMetadata().getEnsembleAt(0).contains(firstBookie),\"first bookie in rack 0 not included in ensemble\");\n    lh.close();\n  }\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 70,
-      "astHeight" : 8
+      "astNodeNumber" : 280,
+      "astHeight" : 14
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 705,
-        "startLineNumber" : 332,
+        "charLength" : 2115,
+        "startLineNumber" : 98,
         "startColumnNumber" : 4,
-        "endLineNumber" : 351,
+        "endLineNumber" : 139,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "/** \n * Start a client with command line arguments.\n * @param args Command line arguments to pass in.\n */\npublic static void main(String[] args) throws Exception {\n  final MainArguments mainArguments=new MainArguments();\n  final JCommander jc=new JCommander(mainArguments);\n  jc.setProgramName(\"pulsar-perf simulation-client\");\n  try {\n    jc.parse(args);\n  }\n catch (  ParameterException e) {\n    System.out.println(e.getMessage());\n    jc.usage();\n    PerfClientUtils.exit(-1);\n  }\n  PerfClientUtils.printJVMInformation(log);\n  (new LoadSimulationClient(mainArguments)).run();\n}\n",
+      "nodeContext" : "@Test public void testPlacement() throws Exception {\n  final String group=\"default\";\n  for (int i=0; i < NUM_BOOKIES; i++) {\n    String bookie=bookies.get(i).getLocalAddress().toString();\n    int rackId=i == 0 ? 1 : 2;\n    BookieInfo bi=BookieInfo.builder().rack(\"rack-\" + rackId).hostname(\"bookie-\" + (i + 1)).build();\n    log.info(\"setting rack for bookie at {} -- {}\",bookie,bi);\n    admin.bookies().updateBookieRackInfo(bookie,group,bi);\n  }\n  Awaitility.await().untilAsserted(() -> {\n    byte[] data=bkEnsemble.getZkClient().getData(ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH,false,null);\n    TreeMap<String,Map<String,Map<String,String>>> rackInfoMap=new Gson().fromJson(new String(data),TreeMap.class);\n    assertTrue(rackInfoMap.get(group).size() == NUM_BOOKIES);\n    Set<String> racks=rackInfoMap.values().stream().map(Map::values).flatMap(bookieId -> bookieId.stream().map(rackInfo -> rackInfo.get(\"rack\"))).collect(Collectors.toSet());\n    assertTrue(racks.containsAll(Lists.newArrayList(\"rack-1\",\"rack-2\")));\n  }\n);\n  BookKeeper bkc=this.pulsar.getBookKeeperClient();\n  BookieId firstBookie=bookies.get(0).getBookieId();\n  for (int i=0; i < 100; i++) {\n    LedgerHandle lh=bkc.createLedger(2,2,DigestType.DUMMY,new byte[0]);\n    log.info(\"Ledger: {} -- Ensemble: {}\",i,lh.getLedgerMetadata().getEnsembleAt(0));\n    assertTrue(lh.getLedgerMetadata().getEnsembleAt(0).contains(firstBookie),\"first bookie in rack 0 not included in ensemble\");\n    lh.close();\n  }\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 84,
-      "astHeight" : 9
+      "astNodeNumber" : 288,
+      "astHeight" : 15
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 56,
-        "startLineNumber" : 339,
+        "charLength" : 51,
+        "startLineNumber" : 128,
         "startColumnNumber" : 8,
-        "endLineNumber" : 339,
-        "endColumnNumber" : 64
+        "endLineNumber" : 128,
+        "endColumnNumber" : 59
       },
-      "nodeContext" : "final MainArguments mainArguments=new MainArguments();\n",
+      "nodeContext" : "BookKeeper bkc=this.pulsar.getBookKeeperClient();\n",
       "nodeType" : "VariableDeclarationStatement",
-      "astNodeNumber" : 9,
+      "astNodeNumber" : 10,
       "astHeight" : 5
     },
     "tokenLength" : 1,
-    "type" : "org.apache.pulsar.testclient.LoadSimulationClient.MainArguments"
+    "type" : "org.apache.pulsar.broker.service.RackAwareTest"
   } ],
   "positionList" : [ {
-    "charLength" : 19,
-    "startLineNumber" : 339,
-    "startColumnNumber" : 44,
-    "endLineNumber" : 339,
-    "endColumnNumber" : 63
+    "charLength" : 4,
+    "startLineNumber" : 128,
+    "startColumnNumber" : 25,
+    "endLineNumber" : 128,
+    "endColumnNumber" : 29
   } ],
   "layoutRelationDataList" : [ ]
 }

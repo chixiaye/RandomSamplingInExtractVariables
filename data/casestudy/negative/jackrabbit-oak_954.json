@@ -1,0 +1,126 @@
+{
+  "id" : 954,
+  "expression" : "\"cost using filter \" + filter",
+  "projectName" : "jackrabbit-oak",
+  "commitID" : "93716466253f6a726c68e5bad26416940857a6c8",
+  "filePath" : "oak-core/src/main/java/org/apache/jackrabbit/oak/query/QueryImpl.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 1,
+  "isGetTypeMethod" : 1,
+  "expressionList" : [ {
+    "nodeContext" : "\"cost using filter \" + filter",
+    "nodeType" : "InfixExpression",
+    "nodePosition" : {
+      "charLength" : 29,
+      "startLineNumber" : 906,
+      "startColumnNumber" : 21,
+      "endLineNumber" : 906,
+      "endColumnNumber" : 50
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 39,
+        "startLineNumber" : 906,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 906,
+        "endColumnNumber" : 51
+      },
+      "nodeContext" : "logDebug(\"cost using filter \" + filter)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 40,
+        "startLineNumber" : 906,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 906,
+        "endColumnNumber" : 52
+      },
+      "nodeContext" : "logDebug(\"cost using filter \" + filter);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 64,
+        "startLineNumber" : 905,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 907,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  logDebug(\"cost using filter \" + filter);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 7,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 90,
+        "startLineNumber" : 905,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 907,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (LOG.isDebugEnabled()) {\n  logDebug(\"cost using filter \" + filter);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3863,
+        "startLineNumber" : 903,
+        "startColumnNumber" : 72,
+        "endLineNumber" : 992,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  QueryIndex bestIndex=null;\n  if (LOG.isDebugEnabled()) {\n    logDebug(\"cost using filter \" + filter);\n  }\n  double bestCost=Double.POSITIVE_INFINITY;\n  IndexPlan bestPlan=null;\n  for (  QueryIndex index : indexProvider.getQueryIndexes(rootState)) {\n    double cost;\n    IndexPlan indexPlan=null;\n    if (index instanceof AdvancedQueryIndex) {\n      AdvancedQueryIndex advIndex=(AdvancedQueryIndex)index;\n      List<OrderEntry> sortOrder=null;\n      if (orderings != null) {\n        sortOrder=new ArrayList<OrderEntry>();\n        for (        OrderingImpl o : orderings) {\n          DynamicOperandImpl op=o.getOperand();\n          if (!(op instanceof PropertyValueImpl)) {\n            break;\n          }\n          PropertyValueImpl p=(PropertyValueImpl)op;\n          SelectorImpl s=p.getSelectors().iterator().next();\n          if (!s.equals(filter.getSelector())) {\n            continue;\n          }\n          OrderEntry e=new OrderEntry(p.getPropertyName(),Type.UNDEFINED,o.isDescending() ? OrderEntry.Order.DESCENDING : OrderEntry.Order.ASCENDING);\n          sortOrder.add(e);\n        }\n        if (sortOrder.size() == 0) {\n          sortOrder=null;\n        }\n      }\n      long maxEntryCount=limit;\n      if (offset > 0) {\n        if (offset + limit < 0) {\n          maxEntryCount=Long.MAX_VALUE;\n        }\n else {\n          maxEntryCount=offset + limit;\n        }\n      }\n      List<IndexPlan> ipList=advIndex.getPlans(filter,sortOrder,rootState);\n      cost=Double.POSITIVE_INFINITY;\n      for (      IndexPlan p : ipList) {\n        long entryCount=Math.min(maxEntryCount,p.getEstimatedEntryCount());\n        double c=p.getCostPerExecution() + entryCount * p.getCostPerEntry();\n        if (c < cost) {\n          cost=c;\n          indexPlan=p;\n        }\n      }\n    }\n else {\n      cost=index.getCost(filter,rootState);\n    }\n    if (LOG.isDebugEnabled()) {\n      logDebug(\"cost for \" + index.getIndexName() + \" is \"+ cost);\n    }\n    if (cost < 0) {\n      LOG.error(\"cost below 0 for \" + index.getIndexName() + \" is \"+ cost);\n    }\n    if (cost < bestCost) {\n      bestCost=cost;\n      bestIndex=index;\n      bestPlan=indexPlan;\n    }\n  }\n  if (traversalEnabled) {\n    QueryIndex traversal=new TraversingIndex();\n    double cost=traversal.getCost(filter,rootState);\n    if (LOG.isDebugEnabled()) {\n      logDebug(\"cost for \" + traversal.getIndexName() + \" is \"+ cost);\n    }\n    if (cost < bestCost || bestCost == Double.POSITIVE_INFINITY) {\n      bestCost=cost;\n      bestPlan=null;\n      bestIndex=traversal;\n    }\n  }\n  return new SelectorExecutionPlan(filter.getSelector(),bestIndex,bestPlan,bestCost);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 407,
+      "astHeight" : 16
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4047,
+        "startLineNumber" : 901,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 992,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "private SelectorExecutionPlan getBestSelectorExecutionPlan(NodeState rootState,FilterImpl filter,QueryIndexProvider indexProvider,boolean traversalEnabled){\n  QueryIndex bestIndex=null;\n  if (LOG.isDebugEnabled()) {\n    logDebug(\"cost using filter \" + filter);\n  }\n  double bestCost=Double.POSITIVE_INFINITY;\n  IndexPlan bestPlan=null;\n  for (  QueryIndex index : indexProvider.getQueryIndexes(rootState)) {\n    double cost;\n    IndexPlan indexPlan=null;\n    if (index instanceof AdvancedQueryIndex) {\n      AdvancedQueryIndex advIndex=(AdvancedQueryIndex)index;\n      List<OrderEntry> sortOrder=null;\n      if (orderings != null) {\n        sortOrder=new ArrayList<OrderEntry>();\n        for (        OrderingImpl o : orderings) {\n          DynamicOperandImpl op=o.getOperand();\n          if (!(op instanceof PropertyValueImpl)) {\n            break;\n          }\n          PropertyValueImpl p=(PropertyValueImpl)op;\n          SelectorImpl s=p.getSelectors().iterator().next();\n          if (!s.equals(filter.getSelector())) {\n            continue;\n          }\n          OrderEntry e=new OrderEntry(p.getPropertyName(),Type.UNDEFINED,o.isDescending() ? OrderEntry.Order.DESCENDING : OrderEntry.Order.ASCENDING);\n          sortOrder.add(e);\n        }\n        if (sortOrder.size() == 0) {\n          sortOrder=null;\n        }\n      }\n      long maxEntryCount=limit;\n      if (offset > 0) {\n        if (offset + limit < 0) {\n          maxEntryCount=Long.MAX_VALUE;\n        }\n else {\n          maxEntryCount=offset + limit;\n        }\n      }\n      List<IndexPlan> ipList=advIndex.getPlans(filter,sortOrder,rootState);\n      cost=Double.POSITIVE_INFINITY;\n      for (      IndexPlan p : ipList) {\n        long entryCount=Math.min(maxEntryCount,p.getEstimatedEntryCount());\n        double c=p.getCostPerExecution() + entryCount * p.getCostPerEntry();\n        if (c < cost) {\n          cost=c;\n          indexPlan=p;\n        }\n      }\n    }\n else {\n      cost=index.getCost(filter,rootState);\n    }\n    if (LOG.isDebugEnabled()) {\n      logDebug(\"cost for \" + index.getIndexName() + \" is \"+ cost);\n    }\n    if (cost < 0) {\n      LOG.error(\"cost below 0 for \" + index.getIndexName() + \" is \"+ cost);\n    }\n    if (cost < bestCost) {\n      bestCost=cost;\n      bestIndex=index;\n      bestPlan=indexPlan;\n    }\n  }\n  if (traversalEnabled) {\n    QueryIndex traversal=new TraversingIndex();\n    double cost=traversal.getCost(filter,rootState);\n    if (LOG.isDebugEnabled()) {\n      logDebug(\"cost for \" + traversal.getIndexName() + \" is \"+ cost);\n    }\n    if (cost < bestCost || bestCost == Double.POSITIVE_INFINITY) {\n      bestCost=cost;\n      bestPlan=null;\n      bestIndex=traversal;\n    }\n  }\n  return new SelectorExecutionPlan(filter.getSelector(),bestIndex,bestPlan,bestCost);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 427,
+      "astHeight" : 17
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 40,
+        "startLineNumber" : 906,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 906,
+        "endColumnNumber" : 52
+      },
+      "nodeContext" : "logDebug(\"cost using filter \" + filter);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
+    },
+    "tokenLength" : 5,
+    "type" : "java.lang.String"
+  } ],
+  "positionList" : [ {
+    "charLength" : 29,
+    "startLineNumber" : 906,
+    "startColumnNumber" : 21,
+    "endLineNumber" : 906,
+    "endColumnNumber" : 50
+  } ],
+  "layoutRelationDataList" : [ ]
+}

@@ -1,100 +1,87 @@
 {
   "id" : 137,
-  "expression" : "fd.getDirectory()",
+  "expression" : "usingProgrammer || prefs.get(\"upload.protocol\") == null",
   "projectName" : "arduino@Arduino",
-  "commitID" : "cf1879f948e0c1fa9ddd91f7348fbdd07fd870cb",
-  "filePath" : "/app/src/processing/app/tools/Archiver.java",
+  "commitID" : "24b32422e24e3dbffbb25a16a6ab3d8d533a3b5d",
+  "filePath" : "arduino-core/src/cc/arduino/packages/uploaders/SerialUploader.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "fd.getDirectory()",
-    "nodeType" : "MethodInvocation",
+    "nodeContext" : "usingProgrammer || prefs.get(\"upload.protocol\") == null",
+    "nodeType" : "InfixExpression",
     "nodePosition" : {
-      "charLength" : 17,
-      "startLineNumber" : 120,
-      "startColumnNumber" : 23,
-      "endLineNumber" : 120,
-      "endColumnNumber" : 40
+      "charLength" : 55,
+      "startLineNumber" : 77,
+      "startColumnNumber" : 8,
+      "endLineNumber" : 77,
+      "endColumnNumber" : 63
     },
-    "astNodeNumber" : 3,
-    "astHeight" : 2,
+    "astNodeNumber" : 8,
+    "astHeight" : 4,
     "parentDataList" : [ {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
-      "nodePosition" : {
-        "charLength" : 29,
-        "startLineNumber" : 120,
-        "startColumnNumber" : 11,
-        "endLineNumber" : 120,
-        "endColumnNumber" : 40
-      },
-      "nodeContext" : "directory=fd.getDirectory()",
-      "nodeType" : "VariableDeclarationFragment",
-      "astNodeNumber" : 5,
-      "astHeight" : 3
-    }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 37,
-        "startLineNumber" : 120,
+        "charLength" : 126,
+        "startLineNumber" : 77,
         "startColumnNumber" : 4,
-        "endLineNumber" : 120,
-        "endColumnNumber" : 41
+        "endLineNumber" : 79,
+        "endColumnNumber" : 5
       },
-      "nodeContext" : "String directory=fd.getDirectory();\n",
-      "nodeType" : "VariableDeclarationStatement",
-      "astNodeNumber" : 8,
-      "astHeight" : 4
+      "nodeContext" : "if (usingProgrammer || prefs.get(\"upload.protocol\") == null) {\n  return uploadUsingProgrammer(buildPath,className);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 2318,
-        "startLineNumber" : 70,
-        "startColumnNumber" : 20,
-        "endLineNumber" : 147,
+        "charLength" : 5082,
+        "startLineNumber" : 59,
+        "startColumnNumber" : 169,
+        "endLineNumber" : 189,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "{\n  Sketch sketch=editor.getSketch();\n  boolean success=false;\n  try {\n    success=sketch.save();\n  }\n catch (  Exception e) {\n    e.printStackTrace();\n  }\n  if (!success) {\n    Base.showWarning(_(\"Couldn't archive sketch\"),_(\"Archiving the sketch has been canceled because\\nthe sketch couldn't save properly.\"),null);\n    return;\n  }\n  File location=sketch.getFolder();\n  String name=location.getName();\n  File parent=new File(location.getParent());\n  File newbie=null;\n  String namely=null;\n  int index=0;\n  do {\n    useDate=!name.startsWith(\"sketch_\");\n    if (useDate) {\n      String purty=dateFormat.format(new Date());\n      String stamp=purty + ((char)('a' + index));\n      namely=name + \"-\" + stamp;\n      newbie=new File(parent,namely + \".zip\");\n    }\n else {\n      String diggie=numberFormat.format(index + 1);\n      namely=name + \"-\" + diggie;\n      newbie=new File(parent,namely + \".zip\");\n    }\n    index++;\n  }\n while (newbie.exists());\n  FileDialog fd=new FileDialog(editor,_(\"Archive sketch as:\"),FileDialog.SAVE);\n  fd.setDirectory(parent.getAbsolutePath());\n  fd.setFile(newbie.getName());\n  fd.setVisible(true);\n  String directory=fd.getDirectory();\n  String filename=fd.getFile();\n  if (filename != null) {\n    newbie=new File(directory,filename);\n    try {\n      FileOutputStream zipOutputFile=new FileOutputStream(newbie);\n      ZipOutputStream zos=new ZipOutputStream(zipOutputFile);\n      buildZip(location,name,zos);\n      zos.flush();\n      zos.close();\n      editor.statusNotice(\"Created archive \" + newbie.getName() + \".\");\n    }\n catch (    IOException e) {\n      e.printStackTrace();\n    }\n  }\n else {\n    editor.statusNotice(_(\"Archive sketch canceled.\"));\n  }\n}\n",
+      "nodeContext" : "{\n  TargetPlatform targetPlatform=BaseNoGui.getTargetPlatform();\n  PreferencesMap prefs=PreferencesData.getMap();\n  PreferencesMap boardPreferences=BaseNoGui.getBoardPreferences();\n  if (boardPreferences != null) {\n    prefs.putAll(boardPreferences);\n  }\n  String tool=prefs.getOrExcept(\"upload.tool\");\n  if (tool.contains(\":\")) {\n    String[] split=tool.split(\":\",2);\n    targetPlatform=BaseNoGui.getCurrentTargetPlatformFromPackage(split[0]);\n    tool=split[1];\n  }\n  prefs.putAll(targetPlatform.getTool(tool));\n  if (usingProgrammer || prefs.get(\"upload.protocol\") == null) {\n    return uploadUsingProgrammer(buildPath,className);\n  }\n  if (noUploadPort) {\n    prefs.put(\"build.path\",buildPath);\n    prefs.put(\"build.project_name\",className);\n    if (verbose)     prefs.put(\"upload.verbose\",prefs.getOrExcept(\"upload.params.verbose\"));\n else     prefs.put(\"upload.verbose\",prefs.getOrExcept(\"upload.params.quiet\"));\n    boolean uploadResult;\n    try {\n      String pattern=prefs.getOrExcept(\"upload.pattern\");\n      String[] cmd=StringReplacer.formatAndSplit(pattern,prefs,true);\n      uploadResult=executeUploadCommand(cmd);\n    }\n catch (    Exception e) {\n      throw new RunnerException(e);\n    }\n    return uploadResult;\n  }\n  String t=prefs.get(\"upload.use_1200bps_touch\");\n  boolean doTouch=t != null && t.equals(\"true\");\n  t=prefs.get(\"upload.wait_for_upload_port\");\n  boolean waitForUploadPort=(t != null) && t.equals(\"true\");\n  if (doTouch) {\n    String uploadPort=prefs.getOrExcept(\"serial.port\");\n    try {\n      List<String> before=Serial.list();\n      if (before.contains(uploadPort)) {\n        if (verbose)         System.out.println(I18n.format(_(\"Forcing reset using 1200bps open/close on port {0}\"),uploadPort));\n        Serial.touchForCDCReset(uploadPort);\n      }\n      Thread.sleep(400);\n      if (waitForUploadPort) {\n        uploadPort=waitForUploadPort(uploadPort,before);\n      }\n    }\n catch (    SerialException e) {\n      throw new RunnerException(e);\n    }\ncatch (    InterruptedException e) {\n      throw new RunnerException(e.getMessage());\n    }\n    prefs.put(\"serial.port\",uploadPort);\n    if (uploadPort.startsWith(\"/dev/\"))     prefs.put(\"serial.port.file\",uploadPort.substring(5));\n else     prefs.put(\"serial.port.file\",uploadPort);\n  }\n  prefs.put(\"build.path\",buildPath);\n  prefs.put(\"build.project_name\",className);\n  if (verbose)   prefs.put(\"upload.verbose\",prefs.getOrExcept(\"upload.params.verbose\"));\n else   prefs.put(\"upload.verbose\",prefs.getOrExcept(\"upload.params.quiet\"));\n  boolean uploadResult;\n  try {\n    String pattern=prefs.getOrExcept(\"upload.pattern\");\n    String[] cmd=StringReplacer.formatAndSplit(pattern,prefs,true);\n    uploadResult=executeUploadCommand(cmd);\n  }\n catch (  RunnerException e) {\n    throw e;\n  }\ncatch (  Exception e) {\n    throw new RunnerException(e);\n  }\n  try {\n    if (uploadResult && doTouch) {\n      String uploadPort=PreferencesData.get(\"serial.port\");\n      if (waitForUploadPort) {\n        Thread.sleep(1000);\n        long started=System.currentTimeMillis();\n        while (System.currentTimeMillis() - started < 2000) {\n          List<String> portList=Serial.list();\n          if (portList.contains(uploadPort))           break;\n          Thread.sleep(250);\n        }\n      }\n    }\n  }\n catch (  InterruptedException ex) {\n  }\n  return uploadResult;\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 307,
+      "astNodeNumber" : 494,
       "astHeight" : 13
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 2336,
-        "startLineNumber" : 70,
+        "charLength" : 5249,
+        "startLineNumber" : 59,
         "startColumnNumber" : 2,
-        "endLineNumber" : 147,
+        "endLineNumber" : 189,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "public void run(){\n  Sketch sketch=editor.getSketch();\n  boolean success=false;\n  try {\n    success=sketch.save();\n  }\n catch (  Exception e) {\n    e.printStackTrace();\n  }\n  if (!success) {\n    Base.showWarning(_(\"Couldn't archive sketch\"),_(\"Archiving the sketch has been canceled because\\nthe sketch couldn't save properly.\"),null);\n    return;\n  }\n  File location=sketch.getFolder();\n  String name=location.getName();\n  File parent=new File(location.getParent());\n  File newbie=null;\n  String namely=null;\n  int index=0;\n  do {\n    useDate=!name.startsWith(\"sketch_\");\n    if (useDate) {\n      String purty=dateFormat.format(new Date());\n      String stamp=purty + ((char)('a' + index));\n      namely=name + \"-\" + stamp;\n      newbie=new File(parent,namely + \".zip\");\n    }\n else {\n      String diggie=numberFormat.format(index + 1);\n      namely=name + \"-\" + diggie;\n      newbie=new File(parent,namely + \".zip\");\n    }\n    index++;\n  }\n while (newbie.exists());\n  FileDialog fd=new FileDialog(editor,_(\"Archive sketch as:\"),FileDialog.SAVE);\n  fd.setDirectory(parent.getAbsolutePath());\n  fd.setFile(newbie.getName());\n  fd.setVisible(true);\n  String directory=fd.getDirectory();\n  String filename=fd.getFile();\n  if (filename != null) {\n    newbie=new File(directory,filename);\n    try {\n      FileOutputStream zipOutputFile=new FileOutputStream(newbie);\n      ZipOutputStream zos=new ZipOutputStream(zipOutputFile);\n      buildZip(location,name,zos);\n      zos.flush();\n      zos.close();\n      editor.statusNotice(\"Created archive \" + newbie.getName() + \".\");\n    }\n catch (    IOException e) {\n      e.printStackTrace();\n    }\n  }\n else {\n    editor.statusNotice(_(\"Archive sketch canceled.\"));\n  }\n}\n",
+      "nodeContext" : "public boolean uploadUsingPreferences(File sourcePath,String buildPath,String className,boolean usingProgrammer,List<String> warningsAccumulator) throws Exception {\n  TargetPlatform targetPlatform=BaseNoGui.getTargetPlatform();\n  PreferencesMap prefs=PreferencesData.getMap();\n  PreferencesMap boardPreferences=BaseNoGui.getBoardPreferences();\n  if (boardPreferences != null) {\n    prefs.putAll(boardPreferences);\n  }\n  String tool=prefs.getOrExcept(\"upload.tool\");\n  if (tool.contains(\":\")) {\n    String[] split=tool.split(\":\",2);\n    targetPlatform=BaseNoGui.getCurrentTargetPlatformFromPackage(split[0]);\n    tool=split[1];\n  }\n  prefs.putAll(targetPlatform.getTool(tool));\n  if (usingProgrammer || prefs.get(\"upload.protocol\") == null) {\n    return uploadUsingProgrammer(buildPath,className);\n  }\n  if (noUploadPort) {\n    prefs.put(\"build.path\",buildPath);\n    prefs.put(\"build.project_name\",className);\n    if (verbose)     prefs.put(\"upload.verbose\",prefs.getOrExcept(\"upload.params.verbose\"));\n else     prefs.put(\"upload.verbose\",prefs.getOrExcept(\"upload.params.quiet\"));\n    boolean uploadResult;\n    try {\n      String pattern=prefs.getOrExcept(\"upload.pattern\");\n      String[] cmd=StringReplacer.formatAndSplit(pattern,prefs,true);\n      uploadResult=executeUploadCommand(cmd);\n    }\n catch (    Exception e) {\n      throw new RunnerException(e);\n    }\n    return uploadResult;\n  }\n  String t=prefs.get(\"upload.use_1200bps_touch\");\n  boolean doTouch=t != null && t.equals(\"true\");\n  t=prefs.get(\"upload.wait_for_upload_port\");\n  boolean waitForUploadPort=(t != null) && t.equals(\"true\");\n  if (doTouch) {\n    String uploadPort=prefs.getOrExcept(\"serial.port\");\n    try {\n      List<String> before=Serial.list();\n      if (before.contains(uploadPort)) {\n        if (verbose)         System.out.println(I18n.format(_(\"Forcing reset using 1200bps open/close on port {0}\"),uploadPort));\n        Serial.touchForCDCReset(uploadPort);\n      }\n      Thread.sleep(400);\n      if (waitForUploadPort) {\n        uploadPort=waitForUploadPort(uploadPort,before);\n      }\n    }\n catch (    SerialException e) {\n      throw new RunnerException(e);\n    }\ncatch (    InterruptedException e) {\n      throw new RunnerException(e.getMessage());\n    }\n    prefs.put(\"serial.port\",uploadPort);\n    if (uploadPort.startsWith(\"/dev/\"))     prefs.put(\"serial.port.file\",uploadPort.substring(5));\n else     prefs.put(\"serial.port.file\",uploadPort);\n  }\n  prefs.put(\"build.path\",buildPath);\n  prefs.put(\"build.project_name\",className);\n  if (verbose)   prefs.put(\"upload.verbose\",prefs.getOrExcept(\"upload.params.verbose\"));\n else   prefs.put(\"upload.verbose\",prefs.getOrExcept(\"upload.params.quiet\"));\n  boolean uploadResult;\n  try {\n    String pattern=prefs.getOrExcept(\"upload.pattern\");\n    String[] cmd=StringReplacer.formatAndSplit(pattern,prefs,true);\n    uploadResult=executeUploadCommand(cmd);\n  }\n catch (  RunnerException e) {\n    throw e;\n  }\ncatch (  Exception e) {\n    throw new RunnerException(e);\n  }\n  try {\n    if (uploadResult && doTouch) {\n      String uploadPort=PreferencesData.get(\"serial.port\");\n      if (waitForUploadPort) {\n        Thread.sleep(1000);\n        long started=System.currentTimeMillis();\n        while (System.currentTimeMillis() - started < 2000) {\n          List<String> portList=Serial.list();\n          if (portList.contains(uploadPort))           break;\n          Thread.sleep(250);\n        }\n      }\n    }\n  }\n catch (  InterruptedException ex) {\n  }\n  return uploadResult;\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 311,
+      "astNodeNumber" : 522,
       "astHeight" : 14
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 37,
-        "startLineNumber" : 120,
+        "charLength" : 126,
+        "startLineNumber" : 77,
         "startColumnNumber" : 4,
-        "endLineNumber" : 120,
-        "endColumnNumber" : 41
+        "endLineNumber" : 79,
+        "endColumnNumber" : 5
       },
-      "nodeContext" : "String directory=fd.getDirectory();\n",
-      "nodeType" : "VariableDeclarationStatement",
-      "astNodeNumber" : 8,
-      "astHeight" : 4
+      "nodeContext" : "if (usingProgrammer || prefs.get(\"upload.protocol\") == null) {\n  return uploadUsingProgrammer(buildPath,className);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
     },
-    "tokenLength" : 2,
-    "type" : "java.lang.String"
+    "tokenLength" : 8,
+    "type" : "boolean"
   } ],
   "positionList" : [ {
-    "charLength" : 17,
-    "startLineNumber" : 120,
-    "startColumnNumber" : 23,
-    "endLineNumber" : 120,
-    "endColumnNumber" : 40
+    "charLength" : 55,
+    "startLineNumber" : 77,
+    "startColumnNumber" : 8,
+    "endLineNumber" : 77,
+    "endColumnNumber" : 63
   } ],
   "layoutRelationDataList" : [ ]
 }

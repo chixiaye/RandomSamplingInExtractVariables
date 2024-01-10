@@ -1,247 +1,126 @@
 {
   "id" : 360,
-  "expression" : "buf",
+  "expression" : "segmentsPerInterval.stream().anyMatch(segment -> segment.getShardSpec().getClass() != firstShardSpec.getClass())",
   "projectName" : "apache@druid",
-  "commitID" : "f6662b4893a9b8cc8a0ebb77e63daddde882148d",
-  "filePath" : "/extensions-core/druid-bloom-filter/src/main/java/org/apache/druid/query/aggregation/bloom/DoubleBloomFilterAggregator.java",
-  "occurrences" : 2,
+  "commitID" : "2df42143aec6c50e9ac31d89cd75749d10d37a3d",
+  "filePath" : "server/src/main/java/org/apache/druid/segment/realtime/appenderator/SegmentPublisherHelper.java",
+  "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "buf",
-    "nodeType" : "SimpleName",
+    "nodeContext" : "segmentsPerInterval.stream().anyMatch(segment -> segment.getShardSpec().getClass() != firstShardSpec.getClass())",
+    "nodeType" : "MethodInvocation",
     "nodePosition" : {
-      "charLength" : 3,
-      "startLineNumber" : 39,
-      "startColumnNumber" : 29,
-      "endLineNumber" : 39,
-      "endColumnNumber" : 32
+      "charLength" : 130,
+      "startLineNumber" : 64,
+      "startColumnNumber" : 34,
+      "endLineNumber" : 66,
+      "endColumnNumber" : 7
     },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
+    "astNodeNumber" : 17,
+    "astHeight" : 6,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
       "nodePosition" : {
-        "charLength" : 49,
-        "startLineNumber" : 39,
-        "startColumnNumber" : 6,
-        "endLineNumber" : 39,
-        "endColumnNumber" : 55
+        "charLength" : 144,
+        "startLineNumber" : 64,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 66,
+        "endColumnNumber" : 7
       },
-      "nodeContext" : "BloomKFilter.addDouble(buf,selector.getDouble())",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 7,
-      "astHeight" : 3
+      "nodeContext" : "anyMismatch=segmentsPerInterval.stream().anyMatch(segment -> segment.getShardSpec().getClass() != firstShardSpec.getClass())",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 19,
+      "astHeight" : 7
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 50,
-        "startLineNumber" : 39,
+        "charLength" : 159,
+        "startLineNumber" : 64,
         "startColumnNumber" : 6,
-        "endLineNumber" : 39,
-        "endColumnNumber" : 56
+        "endLineNumber" : 66,
+        "endColumnNumber" : 8
       },
-      "nodeContext" : "BloomKFilter.addDouble(buf,selector.getDouble());\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 8,
-      "astHeight" : 4
+      "nodeContext" : "final boolean anyMismatch=segmentsPerInterval.stream().anyMatch(segment -> segment.getShardSpec().getClass() != firstShardSpec.getClass());\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 22,
+      "astHeight" : 8
     }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.EnhancedForStatement,body]",
       "nodePosition" : {
-        "charLength" : 64,
-        "startLineNumber" : 38,
-        "startColumnNumber" : 65,
-        "endLineNumber" : 40,
+        "charLength" : 2448,
+        "startLineNumber" : 60,
+        "startColumnNumber" : 83,
+        "endLineNumber" : 110,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  BloomKFilter.addDouble(buf,selector.getDouble());\n}\n",
+      "nodeContext" : "{\n  final Interval interval=entry.getKey();\n  final List<DataSegment> segmentsPerInterval=entry.getValue();\n  final ShardSpec firstShardSpec=segmentsPerInterval.get(0).getShardSpec();\n  final boolean anyMismatch=segmentsPerInterval.stream().anyMatch(segment -> segment.getShardSpec().getClass() != firstShardSpec.getClass());\n  if (anyMismatch) {\n    throw new ISE(\"Mismatched shardSpecs in interval[%s] for segments[%s]\",interval,segmentsPerInterval);\n  }\n  final Function<DataSegment,DataSegment> annotateFn;\n  if (firstShardSpec instanceof OverwriteShardSpec) {\n    annotateFn=annotateAtomicUpdateGroupFn(segmentsPerInterval.size());\n  }\n else   if (firstShardSpec instanceof BuildingShardSpec) {\n    int expectedCorePartitionSetSize=segmentsPerInterval.size();\n    int actualCorePartitionSetSize=Math.toIntExact(segmentsPerInterval.stream().filter(segment -> segment.getShardSpec().getPartitionNum() < expectedCorePartitionSetSize).count());\n    if (expectedCorePartitionSetSize != actualCorePartitionSetSize) {\n      LOG.errorSegments(segmentsPerInterval,\"Cannot publish segments due to incomplete time chunk\");\n      throw new ISE(\"Cannot publish segments due to incomplete time chunk for interval[%s]. \" + \"Expected [%s] segments in the core partition, but only [%] segments are found. \" + \"See task logs for more details about these segments.\",interval,expectedCorePartitionSetSize,actualCorePartitionSetSize);\n    }\n    annotateFn=annotateCorePartitionSetSizeFn(expectedCorePartitionSetSize);\n  }\n else   if (firstShardSpec instanceof BucketNumberedShardSpec) {\n    throw new ISE(\"Cannot publish segments with shardSpec[%s]\",firstShardSpec);\n  }\n else {\n    annotateFn=null;\n  }\n  if (annotateFn != null) {\n    intervalToSegments.put(interval,segmentsPerInterval.stream().map(annotateFn).collect(Collectors.toList()));\n  }\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 9,
-      "astHeight" : 5
+      "astNodeNumber" : 194,
+      "astHeight" : 14
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 184,
-        "startLineNumber" : 38,
+        "charLength" : 2527,
+        "startLineNumber" : 60,
         "startColumnNumber" : 4,
-        "endLineNumber" : 42,
+        "endLineNumber" : 110,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "if (NullHandling.replaceWithDefault() || !selector.isNull()) {\n  BloomKFilter.addDouble(buf,selector.getDouble());\n}\n else {\n  BloomKFilter.addBytes(buf,null,0,0);\n}\n",
-      "nodeType" : "IfStatement",
-      "astNodeNumber" : 27,
-      "astHeight" : 6
+      "nodeContext" : "for (Entry<Interval,List<DataSegment>> entry : intervalToSegments.entrySet()) {\n  final Interval interval=entry.getKey();\n  final List<DataSegment> segmentsPerInterval=entry.getValue();\n  final ShardSpec firstShardSpec=segmentsPerInterval.get(0).getShardSpec();\n  final boolean anyMismatch=segmentsPerInterval.stream().anyMatch(segment -> segment.getShardSpec().getClass() != firstShardSpec.getClass());\n  if (anyMismatch) {\n    throw new ISE(\"Mismatched shardSpecs in interval[%s] for segments[%s]\",interval,segmentsPerInterval);\n  }\n  final Function<DataSegment,DataSegment> annotateFn;\n  if (firstShardSpec instanceof OverwriteShardSpec) {\n    annotateFn=annotateAtomicUpdateGroupFn(segmentsPerInterval.size());\n  }\n else   if (firstShardSpec instanceof BuildingShardSpec) {\n    int expectedCorePartitionSetSize=segmentsPerInterval.size();\n    int actualCorePartitionSetSize=Math.toIntExact(segmentsPerInterval.stream().filter(segment -> segment.getShardSpec().getPartitionNum() < expectedCorePartitionSetSize).count());\n    if (expectedCorePartitionSetSize != actualCorePartitionSetSize) {\n      LOG.errorSegments(segmentsPerInterval,\"Cannot publish segments due to incomplete time chunk\");\n      throw new ISE(\"Cannot publish segments due to incomplete time chunk for interval[%s]. \" + \"Expected [%s] segments in the core partition, but only [%] segments are found. \" + \"See task logs for more details about these segments.\",interval,expectedCorePartitionSetSize,actualCorePartitionSetSize);\n    }\n    annotateFn=annotateCorePartitionSetSizeFn(expectedCorePartitionSetSize);\n  }\n else   if (firstShardSpec instanceof BucketNumberedShardSpec) {\n    throw new ISE(\"Cannot publish segments with shardSpec[%s]\",firstShardSpec);\n  }\n else {\n    annotateFn=null;\n  }\n  if (annotateFn != null) {\n    intervalToSegments.put(interval,segmentsPerInterval.stream().map(annotateFn).collect(Collectors.toList()));\n  }\n}\n",
+      "nodeType" : "EnhancedForStatement",
+      "astNodeNumber" : 210,
+      "astHeight" : 15
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 194,
-        "startLineNumber" : 37,
+        "charLength" : 2868,
+        "startLineNumber" : 54,
         "startColumnNumber" : 2,
-        "endLineNumber" : 43,
+        "endLineNumber" : 113,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "{\n  if (NullHandling.replaceWithDefault() || !selector.isNull()) {\n    BloomKFilter.addDouble(buf,selector.getDouble());\n  }\n else {\n    BloomKFilter.addBytes(buf,null,0,0);\n  }\n}\n",
+      "nodeContext" : "{\n  final Map<Interval,List<DataSegment>> intervalToSegments=new HashMap<>();\n  segments.forEach(segment -> intervalToSegments.computeIfAbsent(segment.getInterval(),k -> new ArrayList<>()).add(segment));\n  for (  Entry<Interval,List<DataSegment>> entry : intervalToSegments.entrySet()) {\n    final Interval interval=entry.getKey();\n    final List<DataSegment> segmentsPerInterval=entry.getValue();\n    final ShardSpec firstShardSpec=segmentsPerInterval.get(0).getShardSpec();\n    final boolean anyMismatch=segmentsPerInterval.stream().anyMatch(segment -> segment.getShardSpec().getClass() != firstShardSpec.getClass());\n    if (anyMismatch) {\n      throw new ISE(\"Mismatched shardSpecs in interval[%s] for segments[%s]\",interval,segmentsPerInterval);\n    }\n    final Function<DataSegment,DataSegment> annotateFn;\n    if (firstShardSpec instanceof OverwriteShardSpec) {\n      annotateFn=annotateAtomicUpdateGroupFn(segmentsPerInterval.size());\n    }\n else     if (firstShardSpec instanceof BuildingShardSpec) {\n      int expectedCorePartitionSetSize=segmentsPerInterval.size();\n      int actualCorePartitionSetSize=Math.toIntExact(segmentsPerInterval.stream().filter(segment -> segment.getShardSpec().getPartitionNum() < expectedCorePartitionSetSize).count());\n      if (expectedCorePartitionSetSize != actualCorePartitionSetSize) {\n        LOG.errorSegments(segmentsPerInterval,\"Cannot publish segments due to incomplete time chunk\");\n        throw new ISE(\"Cannot publish segments due to incomplete time chunk for interval[%s]. \" + \"Expected [%s] segments in the core partition, but only [%] segments are found. \" + \"See task logs for more details about these segments.\",interval,expectedCorePartitionSetSize,actualCorePartitionSetSize);\n      }\n      annotateFn=annotateCorePartitionSetSizeFn(expectedCorePartitionSetSize);\n    }\n else     if (firstShardSpec instanceof BucketNumberedShardSpec) {\n      throw new ISE(\"Cannot publish segments with shardSpec[%s]\",firstShardSpec);\n    }\n else {\n      annotateFn=null;\n    }\n    if (annotateFn != null) {\n      intervalToSegments.put(interval,segmentsPerInterval.stream().map(annotateFn).collect(Collectors.toList()));\n    }\n  }\n  return intervalToSegments.values().stream().flatMap(Collection::stream).collect(Collectors.toSet());\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 28,
-      "astHeight" : 7
+      "astNodeNumber" : 268,
+      "astHeight" : 16
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 246,
-        "startLineNumber" : 35,
+        "charLength" : 3415,
+        "startLineNumber" : 45,
         "startColumnNumber" : 2,
-        "endLineNumber" : 43,
+        "endLineNumber" : 113,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "@Override public void bufferAdd(ByteBuffer buf){\n  if (NullHandling.replaceWithDefault() || !selector.isNull()) {\n    BloomKFilter.addDouble(buf,selector.getDouble());\n  }\n else {\n    BloomKFilter.addBytes(buf,null,0,0);\n  }\n}\n",
+      "nodeContext" : "/** \n * This method fills missing information in the shard spec if necessary when publishing segments. - When time chunk lock is used, the non-appending task should set the proper size of the core partitions for dynamically-partitioned segments. See  {@link #annotateCorePartitionSetSizeFn}. - When segment lock is used, the overwriting task should set the proper size of the atomic update group. See  {@link #annotateAtomicUpdateGroupFn}.\n */\nstatic Set<DataSegment> annotateShardSpec(Set<DataSegment> segments){\n  final Map<Interval,List<DataSegment>> intervalToSegments=new HashMap<>();\n  segments.forEach(segment -> intervalToSegments.computeIfAbsent(segment.getInterval(),k -> new ArrayList<>()).add(segment));\n  for (  Entry<Interval,List<DataSegment>> entry : intervalToSegments.entrySet()) {\n    final Interval interval=entry.getKey();\n    final List<DataSegment> segmentsPerInterval=entry.getValue();\n    final ShardSpec firstShardSpec=segmentsPerInterval.get(0).getShardSpec();\n    final boolean anyMismatch=segmentsPerInterval.stream().anyMatch(segment -> segment.getShardSpec().getClass() != firstShardSpec.getClass());\n    if (anyMismatch) {\n      throw new ISE(\"Mismatched shardSpecs in interval[%s] for segments[%s]\",interval,segmentsPerInterval);\n    }\n    final Function<DataSegment,DataSegment> annotateFn;\n    if (firstShardSpec instanceof OverwriteShardSpec) {\n      annotateFn=annotateAtomicUpdateGroupFn(segmentsPerInterval.size());\n    }\n else     if (firstShardSpec instanceof BuildingShardSpec) {\n      int expectedCorePartitionSetSize=segmentsPerInterval.size();\n      int actualCorePartitionSetSize=Math.toIntExact(segmentsPerInterval.stream().filter(segment -> segment.getShardSpec().getPartitionNum() < expectedCorePartitionSetSize).count());\n      if (expectedCorePartitionSetSize != actualCorePartitionSetSize) {\n        LOG.errorSegments(segmentsPerInterval,\"Cannot publish segments due to incomplete time chunk\");\n        throw new ISE(\"Cannot publish segments due to incomplete time chunk for interval[%s]. \" + \"Expected [%s] segments in the core partition, but only [%] segments are found. \" + \"See task logs for more details about these segments.\",interval,expectedCorePartitionSetSize,actualCorePartitionSetSize);\n      }\n      annotateFn=annotateCorePartitionSetSizeFn(expectedCorePartitionSetSize);\n    }\n else     if (firstShardSpec instanceof BucketNumberedShardSpec) {\n      throw new ISE(\"Cannot publish segments with shardSpec[%s]\",firstShardSpec);\n    }\n else {\n      annotateFn=null;\n    }\n    if (annotateFn != null) {\n      intervalToSegments.put(interval,segmentsPerInterval.stream().map(annotateFn).collect(Collectors.toList()));\n    }\n  }\n  return intervalToSegments.values().stream().flatMap(Collection::stream).collect(Collectors.toSet());\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 38,
-      "astHeight" : 8
+      "astNodeNumber" : 284,
+      "astHeight" : 17
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 50,
-        "startLineNumber" : 39,
+        "charLength" : 159,
+        "startLineNumber" : 64,
         "startColumnNumber" : 6,
-        "endLineNumber" : 39,
-        "endColumnNumber" : 56
+        "endLineNumber" : 66,
+        "endColumnNumber" : 8
       },
-      "nodeContext" : "BloomKFilter.addDouble(buf,selector.getDouble());\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 8,
-      "astHeight" : 4
-    },
-    "tokenLength" : 1,
-    "type" : "java.nio.ByteBuffer"
-  }, {
-    "nodeContext" : "buf",
-    "nodeType" : "SimpleName",
-    "nodePosition" : {
-      "charLength" : 3,
-      "startLineNumber" : 41,
-      "startColumnNumber" : 28,
-      "endLineNumber" : 41,
-      "endColumnNumber" : 31
-    },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
-    "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
-      "nodePosition" : {
-        "charLength" : 38,
-        "startLineNumber" : 41,
-        "startColumnNumber" : 6,
-        "endLineNumber" : 41,
-        "endColumnNumber" : 44
-      },
-      "nodeContext" : "BloomKFilter.addBytes(buf,null,0,0)",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 7,
-      "astHeight" : 2
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 39,
-        "startLineNumber" : 41,
-        "startColumnNumber" : 6,
-        "endLineNumber" : 41,
-        "endColumnNumber" : 45
-      },
-      "nodeContext" : "BloomKFilter.addBytes(buf,null,0,0);\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 8,
-      "astHeight" : 3
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
-      "nodePosition" : {
-        "charLength" : 53,
-        "startLineNumber" : 40,
-        "startColumnNumber" : 11,
-        "endLineNumber" : 42,
-        "endColumnNumber" : 5
-      },
-      "nodeContext" : "{\n  BloomKFilter.addBytes(buf,null,0,0);\n}\n",
-      "nodeType" : "Block",
-      "astNodeNumber" : 9,
-      "astHeight" : 4
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 184,
-        "startLineNumber" : 38,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 42,
-        "endColumnNumber" : 5
-      },
-      "nodeContext" : "if (NullHandling.replaceWithDefault() || !selector.isNull()) {\n  BloomKFilter.addDouble(buf,selector.getDouble());\n}\n else {\n  BloomKFilter.addBytes(buf,null,0,0);\n}\n",
-      "nodeType" : "IfStatement",
-      "astNodeNumber" : 27,
-      "astHeight" : 6
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
-      "nodePosition" : {
-        "charLength" : 194,
-        "startLineNumber" : 37,
-        "startColumnNumber" : 2,
-        "endLineNumber" : 43,
-        "endColumnNumber" : 3
-      },
-      "nodeContext" : "{\n  if (NullHandling.replaceWithDefault() || !selector.isNull()) {\n    BloomKFilter.addDouble(buf,selector.getDouble());\n  }\n else {\n    BloomKFilter.addBytes(buf,null,0,0);\n  }\n}\n",
-      "nodeType" : "Block",
-      "astNodeNumber" : 28,
-      "astHeight" : 7
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
-      "nodePosition" : {
-        "charLength" : 246,
-        "startLineNumber" : 35,
-        "startColumnNumber" : 2,
-        "endLineNumber" : 43,
-        "endColumnNumber" : 3
-      },
-      "nodeContext" : "@Override public void bufferAdd(ByteBuffer buf){\n  if (NullHandling.replaceWithDefault() || !selector.isNull()) {\n    BloomKFilter.addDouble(buf,selector.getDouble());\n  }\n else {\n    BloomKFilter.addBytes(buf,null,0,0);\n  }\n}\n",
-      "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 38,
+      "nodeContext" : "final boolean anyMismatch=segmentsPerInterval.stream().anyMatch(segment -> segment.getShardSpec().getClass() != firstShardSpec.getClass());\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 22,
       "astHeight" : 8
-    } ],
-    "currentLineData" : {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 39,
-        "startLineNumber" : 41,
-        "startColumnNumber" : 6,
-        "endLineNumber" : 41,
-        "endColumnNumber" : 45
-      },
-      "nodeContext" : "BloomKFilter.addBytes(buf,null,0,0);\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 8,
-      "astHeight" : 3
     },
-    "tokenLength" : 1,
-    "type" : "java.nio.ByteBuffer"
+    "tokenLength" : 11,
+    "type" : "boolean"
   } ],
   "positionList" : [ {
-    "charLength" : 3,
-    "startLineNumber" : 39,
-    "startColumnNumber" : 29,
-    "endLineNumber" : 39,
-    "endColumnNumber" : 32
-  }, {
-    "charLength" : 3,
-    "startLineNumber" : 41,
-    "startColumnNumber" : 28,
-    "endLineNumber" : 41,
-    "endColumnNumber" : 31
+    "charLength" : 130,
+    "startLineNumber" : 64,
+    "startColumnNumber" : 34,
+    "endLineNumber" : 66,
+    "endColumnNumber" : 7
   } ],
-  "layoutRelationDataList" : [ {
-    "firstKey" : 0,
-    "secondKey" : 1,
-    "layout" : 3
-  }, {
-    "firstKey" : 1,
-    "secondKey" : 0,
-    "layout" : 3
-  } ]
+  "layoutRelationDataList" : [ ]
 }

@@ -1,221 +1,100 @@
 {
   "id" : 296,
-  "expression" : "readWriteLock",
+  "expression" : "keyValue2.getKey().getField(\"id\")",
   "projectName" : "apache@pulsar",
-  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
-  "filePath" : "/pulsar-client/src/main/java/org/apache/pulsar/client/impl/UnAckedMessageTracker.java",
-  "occurrences" : 2,
+  "commitID" : "d488ed2ad35efe3be9791a82c5b7c0ae125dea23",
+  "filePath" : "pulsar-broker/src/test/java/org/apache/pulsar/schema/SchemaTest.java",
+  "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "readWriteLock",
-    "nodeType" : "SimpleName",
+    "nodeContext" : "keyValue2.getKey().getField(\"id\")",
+    "nodeType" : "MethodInvocation",
     "nodePosition" : {
-      "charLength" : 13,
-      "startLineNumber" : 111,
-      "startColumnNumber" : 24,
-      "endLineNumber" : 111,
-      "endColumnNumber" : 37
+      "charLength" : 33,
+      "startLineNumber" : 596,
+      "startColumnNumber" : 53,
+      "endLineNumber" : 596,
+      "endColumnNumber" : 86
     },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
+    "astNodeNumber" : 6,
+    "astHeight" : 3,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
-      "nodePosition" : {
-        "charLength" : 24,
-        "startLineNumber" : 111,
-        "startColumnNumber" : 24,
-        "endLineNumber" : 111,
-        "endColumnNumber" : 48
-      },
-      "nodeContext" : "readWriteLock.readLock()",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 3,
-      "astHeight" : 2
-    }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
       "nodePosition" : {
-        "charLength" : 40,
-        "startLineNumber" : 111,
+        "charLength" : 79,
+        "startLineNumber" : 596,
         "startColumnNumber" : 8,
-        "endLineNumber" : 111,
-        "endColumnNumber" : 48
+        "endLineNumber" : 596,
+        "endColumnNumber" : 87
       },
-      "nodeContext" : "this.readLock=readWriteLock.readLock()",
-      "nodeType" : "Assignment",
-      "astNodeNumber" : 7,
-      "astHeight" : 3
+      "nodeContext" : "assertEquals(message.getValue().getKey().id,keyValue2.getKey().getField(\"id\"))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 41,
-        "startLineNumber" : 111,
+        "charLength" : 80,
+        "startLineNumber" : 596,
         "startColumnNumber" : 8,
-        "endLineNumber" : 111,
-        "endColumnNumber" : 49
+        "endLineNumber" : 596,
+        "endColumnNumber" : 88
       },
-      "nodeContext" : "this.readLock=readWriteLock.readLock();\n",
+      "nodeContext" : "assertEquals(message.getValue().getKey().id,keyValue2.getKey().getField(\"id\"));\n",
       "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 8,
-      "astHeight" : 4
+      "astNodeNumber" : 16,
+      "astHeight" : 6
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 2227,
-        "startLineNumber" : 106,
-        "startColumnNumber" : 134,
-        "endLineNumber" : 151,
+        "charLength" : 3234,
+        "startLineNumber" : 555,
+        "startColumnNumber" : 107,
+        "endLineNumber" : 618,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  Preconditions.checkArgument(tickDurationInMs > 0 && ackTimeoutMillis >= tickDurationInMs);\n  this.ackTimeoutMillis=ackTimeoutMillis;\n  this.tickDurationInMs=tickDurationInMs;\n  ReentrantReadWriteLock readWriteLock=new ReentrantReadWriteLock();\n  this.readLock=readWriteLock.readLock();\n  this.writeLock=readWriteLock.writeLock();\n  this.messageIdPartitionMap=new ConcurrentHashMap<>();\n  this.timePartitions=new ArrayDeque<>();\n  int blankPartitions=(int)Math.ceil((double)this.ackTimeoutMillis / this.tickDurationInMs);\n  for (int i=0; i < blankPartitions + 1; i++) {\n    timePartitions.add(new ConcurrentOpenHashSet<>(16,1));\n  }\n  timeout=client.timer().newTimeout(new TimerTask(){\n    @Override public void run(    Timeout t) throws Exception {\n      Set<MessageId> messageIds=TL_MESSAGE_IDS_SET.get();\n      messageIds.clear();\n      writeLock.lock();\n      try {\n        ConcurrentOpenHashSet<MessageId> headPartition=timePartitions.removeFirst();\n        if (!headPartition.isEmpty()) {\n          log.warn(\"[{}] {} messages have timed-out\",consumerBase,headPartition.size());\n          headPartition.forEach(messageId -> {\n            addChunkedMessageIdsAndRemoveFromSequnceMap(messageId,messageIds,consumerBase);\n            messageIds.add(messageId);\n            messageIdPartitionMap.remove(messageId);\n          }\n);\n        }\n        headPartition.clear();\n        timePartitions.addLast(headPartition);\n      }\n  finally {\n        writeLock.unlock();\n        if (messageIds.size() > 0) {\n          consumerBase.onAckTimeoutSend(messageIds);\n          consumerBase.redeliverUnacknowledgedMessages(messageIds);\n        }\n        timeout=client.timer().newTimeout(this,tickDurationInMs,TimeUnit.MILLISECONDS);\n      }\n    }\n  }\n,this.tickDurationInMs,TimeUnit.MILLISECONDS);\n}\n",
+      "nodeContext" : "{\n  final String tenant=PUBLIC_TENANT;\n  final String namespace=\"test-namespace-\" + randomName(16);\n  final String topicName=\"test-kv-schema-\" + randomName(16);\n  final String topic=TopicName.get(TopicDomain.persistent.value(),tenant,namespace,topicName).toString();\n  admin.namespaces().createNamespace(tenant + \"/\" + namespace,Sets.newHashSet(CLUSTER_NAME));\n  admin.topics().createPartitionedTopic(topic,2);\n  Producer<KeyValue<Schemas.PersonOne,Schemas.PersonTwo>> producer=pulsarClient.newProducer(Schema.KeyValue(Schema.AVRO(Schemas.PersonOne.class),Schema.AVRO(Schemas.PersonTwo.class),keyValueEncodingType)).topic(topic).create();\n  Consumer<KeyValue<Schemas.PersonOne,Schemas.PersonTwo>> consumer=pulsarClient.newConsumer(Schema.KeyValue(Schema.AVRO(Schemas.PersonOne.class),Schema.AVRO(Schemas.PersonTwo.class),keyValueEncodingType)).subscriptionName(\"test-sub\").topic(topic).subscribe();\n  Consumer<GenericRecord> consumer2=pulsarClient.newConsumer(Schema.AUTO_CONSUME()).subscriptionName(\"test-sub2\").topic(topic).subscribe();\n  Schemas.PersonOne key=new Schemas.PersonOne(8787);\n  Schemas.PersonTwo value=new Schemas.PersonTwo(323,\"foo\");\n  producer.send(new KeyValue<>(key,value));\n  Message<KeyValue<Schemas.PersonOne,Schemas.PersonTwo>> message=consumer.receive();\n  Message<GenericRecord> message2=consumer2.receive();\n  log.info(\"message: {}\",message.getValue(),message.getValue().getClass());\n  log.info(\"message2: {}\",message2.getValue().getNativeObject(),message2.getValue().getNativeObject().getClass());\n  KeyValue<GenericRecord,GenericRecord> keyValue2=(KeyValue<GenericRecord,GenericRecord>)message2.getValue().getNativeObject();\n  assertEquals(message.getValue().getKey().id,keyValue2.getKey().getField(\"id\"));\n  assertEquals(message.getValue().getValue().id,keyValue2.getValue().getField(\"id\"));\n  assertEquals(message.getValue().getValue().name,keyValue2.getValue().getField(\"name\"));\n  Schema<?> schema=message.getReaderSchema().get();\n  Schema<?> schemaFromGenericRecord=message.getReaderSchema().get();\n  KeyValueSchema keyValueSchema=(KeyValueSchema)schema;\n  KeyValueSchema keyValueSchemaFromGenericRecord=(KeyValueSchema)schemaFromGenericRecord;\n  assertEquals(keyValueSchema.getSchemaInfo(),keyValueSchemaFromGenericRecord.getSchemaInfo());\n  if (keyValueEncodingType == KeyValueEncodingType.SEPARATED) {\n    assertNotNull(message.getKeyBytes());\n    assertNotNull(message2.getKeyBytes());\n  }\n else {\n    assertNull(message.getKey());\n    assertNull(message2.getKey());\n  }\n  producer.close();\n  consumer.close();\n  consumer2.close();\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 254,
-      "astHeight" : 19
+      "astNodeNumber" : 450,
+      "astHeight" : 13
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 2357,
-        "startLineNumber" : 106,
+        "charLength" : 3337,
+        "startLineNumber" : 555,
         "startColumnNumber" : 4,
-        "endLineNumber" : 151,
+        "endLineNumber" : 618,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "public UnAckedMessageTracker(PulsarClientImpl client,ConsumerBase<?> consumerBase,long ackTimeoutMillis,long tickDurationInMs){\n  Preconditions.checkArgument(tickDurationInMs > 0 && ackTimeoutMillis >= tickDurationInMs);\n  this.ackTimeoutMillis=ackTimeoutMillis;\n  this.tickDurationInMs=tickDurationInMs;\n  ReentrantReadWriteLock readWriteLock=new ReentrantReadWriteLock();\n  this.readLock=readWriteLock.readLock();\n  this.writeLock=readWriteLock.writeLock();\n  this.messageIdPartitionMap=new ConcurrentHashMap<>();\n  this.timePartitions=new ArrayDeque<>();\n  int blankPartitions=(int)Math.ceil((double)this.ackTimeoutMillis / this.tickDurationInMs);\n  for (int i=0; i < blankPartitions + 1; i++) {\n    timePartitions.add(new ConcurrentOpenHashSet<>(16,1));\n  }\n  timeout=client.timer().newTimeout(new TimerTask(){\n    @Override public void run(    Timeout t) throws Exception {\n      Set<MessageId> messageIds=TL_MESSAGE_IDS_SET.get();\n      messageIds.clear();\n      writeLock.lock();\n      try {\n        ConcurrentOpenHashSet<MessageId> headPartition=timePartitions.removeFirst();\n        if (!headPartition.isEmpty()) {\n          log.warn(\"[{}] {} messages have timed-out\",consumerBase,headPartition.size());\n          headPartition.forEach(messageId -> {\n            addChunkedMessageIdsAndRemoveFromSequnceMap(messageId,messageIds,consumerBase);\n            messageIds.add(messageId);\n            messageIdPartitionMap.remove(messageId);\n          }\n);\n        }\n        headPartition.clear();\n        timePartitions.addLast(headPartition);\n      }\n  finally {\n        writeLock.unlock();\n        if (messageIds.size() > 0) {\n          consumerBase.onAckTimeoutSend(messageIds);\n          consumerBase.redeliverUnacknowledgedMessages(messageIds);\n        }\n        timeout=client.timer().newTimeout(this,tickDurationInMs,TimeUnit.MILLISECONDS);\n      }\n    }\n  }\n,this.tickDurationInMs,TimeUnit.MILLISECONDS);\n}\n",
+      "nodeContext" : "private void testKeyValueSchemaWithStructs(KeyValueEncodingType keyValueEncodingType) throws Exception {\n  final String tenant=PUBLIC_TENANT;\n  final String namespace=\"test-namespace-\" + randomName(16);\n  final String topicName=\"test-kv-schema-\" + randomName(16);\n  final String topic=TopicName.get(TopicDomain.persistent.value(),tenant,namespace,topicName).toString();\n  admin.namespaces().createNamespace(tenant + \"/\" + namespace,Sets.newHashSet(CLUSTER_NAME));\n  admin.topics().createPartitionedTopic(topic,2);\n  Producer<KeyValue<Schemas.PersonOne,Schemas.PersonTwo>> producer=pulsarClient.newProducer(Schema.KeyValue(Schema.AVRO(Schemas.PersonOne.class),Schema.AVRO(Schemas.PersonTwo.class),keyValueEncodingType)).topic(topic).create();\n  Consumer<KeyValue<Schemas.PersonOne,Schemas.PersonTwo>> consumer=pulsarClient.newConsumer(Schema.KeyValue(Schema.AVRO(Schemas.PersonOne.class),Schema.AVRO(Schemas.PersonTwo.class),keyValueEncodingType)).subscriptionName(\"test-sub\").topic(topic).subscribe();\n  Consumer<GenericRecord> consumer2=pulsarClient.newConsumer(Schema.AUTO_CONSUME()).subscriptionName(\"test-sub2\").topic(topic).subscribe();\n  Schemas.PersonOne key=new Schemas.PersonOne(8787);\n  Schemas.PersonTwo value=new Schemas.PersonTwo(323,\"foo\");\n  producer.send(new KeyValue<>(key,value));\n  Message<KeyValue<Schemas.PersonOne,Schemas.PersonTwo>> message=consumer.receive();\n  Message<GenericRecord> message2=consumer2.receive();\n  log.info(\"message: {}\",message.getValue(),message.getValue().getClass());\n  log.info(\"message2: {}\",message2.getValue().getNativeObject(),message2.getValue().getNativeObject().getClass());\n  KeyValue<GenericRecord,GenericRecord> keyValue2=(KeyValue<GenericRecord,GenericRecord>)message2.getValue().getNativeObject();\n  assertEquals(message.getValue().getKey().id,keyValue2.getKey().getField(\"id\"));\n  assertEquals(message.getValue().getValue().id,keyValue2.getValue().getField(\"id\"));\n  assertEquals(message.getValue().getValue().name,keyValue2.getValue().getField(\"name\"));\n  Schema<?> schema=message.getReaderSchema().get();\n  Schema<?> schemaFromGenericRecord=message.getReaderSchema().get();\n  KeyValueSchema keyValueSchema=(KeyValueSchema)schema;\n  KeyValueSchema keyValueSchemaFromGenericRecord=(KeyValueSchema)schemaFromGenericRecord;\n  assertEquals(keyValueSchema.getSchemaInfo(),keyValueSchemaFromGenericRecord.getSchemaInfo());\n  if (keyValueEncodingType == KeyValueEncodingType.SEPARATED) {\n    assertNotNull(message.getKeyBytes());\n    assertNotNull(message2.getKeyBytes());\n  }\n else {\n    assertNull(message.getKey());\n    assertNull(message2.getKey());\n  }\n  producer.close();\n  consumer.close();\n  consumer2.close();\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 273,
-      "astHeight" : 20
+      "astNodeNumber" : 460,
+      "astHeight" : 14
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 41,
-        "startLineNumber" : 111,
+        "charLength" : 80,
+        "startLineNumber" : 596,
         "startColumnNumber" : 8,
-        "endLineNumber" : 111,
-        "endColumnNumber" : 49
+        "endLineNumber" : 596,
+        "endColumnNumber" : 88
       },
-      "nodeContext" : "this.readLock=readWriteLock.readLock();\n",
+      "nodeContext" : "assertEquals(message.getValue().getKey().id,keyValue2.getKey().getField(\"id\"));\n",
       "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 8,
-      "astHeight" : 4
+      "astNodeNumber" : 16,
+      "astHeight" : 6
     },
-    "tokenLength" : 1,
-    "type" : "java.util.concurrent.locks.ReentrantReadWriteLock"
-  }, {
-    "nodeContext" : "readWriteLock",
-    "nodeType" : "SimpleName",
-    "nodePosition" : {
-      "charLength" : 13,
-      "startLineNumber" : 112,
-      "startColumnNumber" : 25,
-      "endLineNumber" : 112,
-      "endColumnNumber" : 38
-    },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
-    "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
-      "nodePosition" : {
-        "charLength" : 25,
-        "startLineNumber" : 112,
-        "startColumnNumber" : 25,
-        "endLineNumber" : 112,
-        "endColumnNumber" : 50
-      },
-      "nodeContext" : "readWriteLock.writeLock()",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 3,
-      "astHeight" : 2
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
-      "nodePosition" : {
-        "charLength" : 42,
-        "startLineNumber" : 112,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 112,
-        "endColumnNumber" : 50
-      },
-      "nodeContext" : "this.writeLock=readWriteLock.writeLock()",
-      "nodeType" : "Assignment",
-      "astNodeNumber" : 7,
-      "astHeight" : 3
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 43,
-        "startLineNumber" : 112,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 112,
-        "endColumnNumber" : 51
-      },
-      "nodeContext" : "this.writeLock=readWriteLock.writeLock();\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 8,
-      "astHeight" : 4
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
-      "nodePosition" : {
-        "charLength" : 2227,
-        "startLineNumber" : 106,
-        "startColumnNumber" : 134,
-        "endLineNumber" : 151,
-        "endColumnNumber" : 5
-      },
-      "nodeContext" : "{\n  Preconditions.checkArgument(tickDurationInMs > 0 && ackTimeoutMillis >= tickDurationInMs);\n  this.ackTimeoutMillis=ackTimeoutMillis;\n  this.tickDurationInMs=tickDurationInMs;\n  ReentrantReadWriteLock readWriteLock=new ReentrantReadWriteLock();\n  this.readLock=readWriteLock.readLock();\n  this.writeLock=readWriteLock.writeLock();\n  this.messageIdPartitionMap=new ConcurrentHashMap<>();\n  this.timePartitions=new ArrayDeque<>();\n  int blankPartitions=(int)Math.ceil((double)this.ackTimeoutMillis / this.tickDurationInMs);\n  for (int i=0; i < blankPartitions + 1; i++) {\n    timePartitions.add(new ConcurrentOpenHashSet<>(16,1));\n  }\n  timeout=client.timer().newTimeout(new TimerTask(){\n    @Override public void run(    Timeout t) throws Exception {\n      Set<MessageId> messageIds=TL_MESSAGE_IDS_SET.get();\n      messageIds.clear();\n      writeLock.lock();\n      try {\n        ConcurrentOpenHashSet<MessageId> headPartition=timePartitions.removeFirst();\n        if (!headPartition.isEmpty()) {\n          log.warn(\"[{}] {} messages have timed-out\",consumerBase,headPartition.size());\n          headPartition.forEach(messageId -> {\n            addChunkedMessageIdsAndRemoveFromSequnceMap(messageId,messageIds,consumerBase);\n            messageIds.add(messageId);\n            messageIdPartitionMap.remove(messageId);\n          }\n);\n        }\n        headPartition.clear();\n        timePartitions.addLast(headPartition);\n      }\n  finally {\n        writeLock.unlock();\n        if (messageIds.size() > 0) {\n          consumerBase.onAckTimeoutSend(messageIds);\n          consumerBase.redeliverUnacknowledgedMessages(messageIds);\n        }\n        timeout=client.timer().newTimeout(this,tickDurationInMs,TimeUnit.MILLISECONDS);\n      }\n    }\n  }\n,this.tickDurationInMs,TimeUnit.MILLISECONDS);\n}\n",
-      "nodeType" : "Block",
-      "astNodeNumber" : 254,
-      "astHeight" : 19
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
-      "nodePosition" : {
-        "charLength" : 2357,
-        "startLineNumber" : 106,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 151,
-        "endColumnNumber" : 5
-      },
-      "nodeContext" : "public UnAckedMessageTracker(PulsarClientImpl client,ConsumerBase<?> consumerBase,long ackTimeoutMillis,long tickDurationInMs){\n  Preconditions.checkArgument(tickDurationInMs > 0 && ackTimeoutMillis >= tickDurationInMs);\n  this.ackTimeoutMillis=ackTimeoutMillis;\n  this.tickDurationInMs=tickDurationInMs;\n  ReentrantReadWriteLock readWriteLock=new ReentrantReadWriteLock();\n  this.readLock=readWriteLock.readLock();\n  this.writeLock=readWriteLock.writeLock();\n  this.messageIdPartitionMap=new ConcurrentHashMap<>();\n  this.timePartitions=new ArrayDeque<>();\n  int blankPartitions=(int)Math.ceil((double)this.ackTimeoutMillis / this.tickDurationInMs);\n  for (int i=0; i < blankPartitions + 1; i++) {\n    timePartitions.add(new ConcurrentOpenHashSet<>(16,1));\n  }\n  timeout=client.timer().newTimeout(new TimerTask(){\n    @Override public void run(    Timeout t) throws Exception {\n      Set<MessageId> messageIds=TL_MESSAGE_IDS_SET.get();\n      messageIds.clear();\n      writeLock.lock();\n      try {\n        ConcurrentOpenHashSet<MessageId> headPartition=timePartitions.removeFirst();\n        if (!headPartition.isEmpty()) {\n          log.warn(\"[{}] {} messages have timed-out\",consumerBase,headPartition.size());\n          headPartition.forEach(messageId -> {\n            addChunkedMessageIdsAndRemoveFromSequnceMap(messageId,messageIds,consumerBase);\n            messageIds.add(messageId);\n            messageIdPartitionMap.remove(messageId);\n          }\n);\n        }\n        headPartition.clear();\n        timePartitions.addLast(headPartition);\n      }\n  finally {\n        writeLock.unlock();\n        if (messageIds.size() > 0) {\n          consumerBase.onAckTimeoutSend(messageIds);\n          consumerBase.redeliverUnacknowledgedMessages(messageIds);\n        }\n        timeout=client.timer().newTimeout(this,tickDurationInMs,TimeUnit.MILLISECONDS);\n      }\n    }\n  }\n,this.tickDurationInMs,TimeUnit.MILLISECONDS);\n}\n",
-      "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 273,
-      "astHeight" : 20
-    } ],
-    "currentLineData" : {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 43,
-        "startLineNumber" : 112,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 112,
-        "endColumnNumber" : 51
-      },
-      "nodeContext" : "this.writeLock=readWriteLock.writeLock();\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 8,
-      "astHeight" : 4
-    },
-    "tokenLength" : 1,
-    "type" : "java.util.concurrent.locks.ReentrantReadWriteLock"
+    "tokenLength" : 4,
+    "type" : "java.lang.Object"
   } ],
   "positionList" : [ {
-    "charLength" : 13,
-    "startLineNumber" : 111,
-    "startColumnNumber" : 24,
-    "endLineNumber" : 111,
-    "endColumnNumber" : 37
-  }, {
-    "charLength" : 13,
-    "startLineNumber" : 112,
-    "startColumnNumber" : 25,
-    "endLineNumber" : 112,
-    "endColumnNumber" : 38
+    "charLength" : 33,
+    "startLineNumber" : 596,
+    "startColumnNumber" : 53,
+    "endLineNumber" : 596,
+    "endColumnNumber" : 86
   } ],
-  "layoutRelationDataList" : [ {
-    "firstKey" : 0,
-    "secondKey" : 1,
-    "layout" : 3
-  }, {
-    "firstKey" : 1,
-    "secondKey" : 0,
-    "layout" : 3
-  } ]
+  "layoutRelationDataList" : [ ]
 }

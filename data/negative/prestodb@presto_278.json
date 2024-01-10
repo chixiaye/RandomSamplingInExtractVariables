@@ -1,113 +1,221 @@
 {
   "id" : 278,
-  "expression" : "positionCount * 2",
+  "expression" : "transactionManager.getAllTransactionInfos()",
   "projectName" : "prestodb@presto",
-  "commitID" : "eff77883d0d24dc6022ecde252612d1430c9fbac",
-  "filePath" : "/presto-common/src/main/java/com/facebook/presto/common/block/Int128ArrayBlockEncoding.java",
-  "occurrences" : 1,
+  "commitID" : "8ac456f6b0e51fa118e5c711b29536716dd54fb0",
+  "filePath" : "presto-main/src/test/java/com/facebook/presto/execution/TestCommitTask.java",
+  "occurrences" : 2,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "positionCount * 2",
-    "nodeType" : "InfixExpression",
+    "nodeContext" : "transactionManager.getAllTransactionInfos()",
+    "nodeType" : "MethodInvocation",
     "nodePosition" : {
-      "charLength" : 17,
-      "startLineNumber" : 58,
-      "startColumnNumber" : 33,
-      "endLineNumber" : 58,
-      "endColumnNumber" : 50
+      "charLength" : 43,
+      "startLineNumber" : 67,
+      "startColumnNumber" : 21,
+      "endLineNumber" : 67,
+      "endColumnNumber" : 64
     },
     "astNodeNumber" : 3,
     "astHeight" : 2,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
       "nodePosition" : {
-        "charLength" : 27,
-        "startLineNumber" : 58,
-        "startColumnNumber" : 24,
-        "endLineNumber" : 58,
-        "endColumnNumber" : 51
+        "charLength" : 50,
+        "startLineNumber" : 67,
+        "startColumnNumber" : 21,
+        "endLineNumber" : 67,
+        "endColumnNumber" : 71
       },
-      "nodeContext" : "new long[positionCount * 2]",
-      "nodeType" : "ArrayCreation",
-      "astNodeNumber" : 7,
+      "nodeContext" : "transactionManager.getAllTransactionInfos().size()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 5,
       "astHeight" : 3
     }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
       "nodePosition" : {
-        "charLength" : 36,
-        "startLineNumber" : 58,
-        "startColumnNumber" : 15,
-        "endLineNumber" : 58,
-        "endColumnNumber" : 51
+        "charLength" : 67,
+        "startLineNumber" : 67,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 67,
+        "endColumnNumber" : 75
       },
-      "nodeContext" : "values=new long[positionCount * 2]",
-      "nodeType" : "VariableDeclarationFragment",
-      "astNodeNumber" : 9,
+      "nodeContext" : "assertEquals(transactionManager.getAllTransactionInfos().size(),1)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 8,
       "astHeight" : 4
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 44,
-        "startLineNumber" : 58,
+        "charLength" : 68,
+        "startLineNumber" : 67,
         "startColumnNumber" : 8,
-        "endLineNumber" : 58,
-        "endColumnNumber" : 52
+        "endLineNumber" : 67,
+        "endColumnNumber" : 76
       },
-      "nodeContext" : "long[] values=new long[positionCount * 2];\n",
-      "nodeType" : "VariableDeclarationStatement",
-      "astNodeNumber" : 13,
+      "nodeContext" : "assertEquals(transactionManager.getAllTransactionInfos().size(),1);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 9,
       "astHeight" : 5
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 780,
-        "startLineNumber" : 53,
+        "charLength" : 984,
+        "startLineNumber" : 59,
         "startColumnNumber" : 4,
-        "endLineNumber" : 73,
+        "endLineNumber" : 75,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  int positionCount=sliceInput.readInt();\n  boolean[] valueIsNull=decodeNullBits(sliceInput,positionCount).orElse(null);\n  long[] values=new long[positionCount * 2];\n  if (valueIsNull == null) {\n    sliceInput.readBytes(Slices.wrappedLongArray(values));\n  }\n else {\n    for (int position=0, index=0; index < values.length; position++, index+=2) {\n      if (!valueIsNull[position]) {\n        values[index]=sliceInput.readLong();\n        values[index + 1]=sliceInput.readLong();\n      }\n    }\n  }\n  return new Int128ArrayBlock(0,positionCount,valueIsNull,values);\n}\n",
+      "nodeContext" : "{\n  TransactionManager transactionManager=createTestTransactionManager();\n  Session session=sessionBuilder().setTransactionId(transactionManager.beginTransaction(false)).build();\n  QueryStateMachine stateMachine=createQueryStateMachine(\"COMMIT\",session,true,transactionManager,executor,metadata);\n  assertTrue(stateMachine.getSession().getTransactionId().isPresent());\n  assertEquals(transactionManager.getAllTransactionInfos().size(),1);\n  CommitTask commitTask=new CommitTask();\n  getFutureValue(commitTask.execute(new Commit(),transactionManager,metadata,new AllowAllAccessControl(),stateMachine,emptyList()));\n  assertTrue(stateMachine.getQueryInfo(Optional.empty()).isClearTransactionId());\n  assertFalse(stateMachine.getQueryInfo(Optional.empty()).getStartedTransactionId().isPresent());\n  assertTrue(transactionManager.getAllTransactionInfos().isEmpty());\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 100,
-      "astHeight" : 12
+      "astNodeNumber" : 112,
+      "astHeight" : 8
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 883,
-        "startLineNumber" : 51,
+        "charLength" : 1023,
+        "startLineNumber" : 57,
         "startColumnNumber" : 4,
-        "endLineNumber" : 73,
+        "endLineNumber" : 75,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "@Override public Block readBlock(BlockEncodingSerde blockEncodingSerde,SliceInput sliceInput){\n  int positionCount=sliceInput.readInt();\n  boolean[] valueIsNull=decodeNullBits(sliceInput,positionCount).orElse(null);\n  long[] values=new long[positionCount * 2];\n  if (valueIsNull == null) {\n    sliceInput.readBytes(Slices.wrappedLongArray(values));\n  }\n else {\n    for (int position=0, index=0; index < values.length; position++, index+=2) {\n      if (!valueIsNull[position]) {\n        values[index]=sliceInput.readLong();\n        values[index + 1]=sliceInput.readLong();\n      }\n    }\n  }\n  return new Int128ArrayBlock(0,positionCount,valueIsNull,values);\n}\n",
+      "nodeContext" : "@Test public void testCommit(){\n  TransactionManager transactionManager=createTestTransactionManager();\n  Session session=sessionBuilder().setTransactionId(transactionManager.beginTransaction(false)).build();\n  QueryStateMachine stateMachine=createQueryStateMachine(\"COMMIT\",session,true,transactionManager,executor,metadata);\n  assertTrue(stateMachine.getSession().getTransactionId().isPresent());\n  assertEquals(transactionManager.getAllTransactionInfos().size(),1);\n  CommitTask commitTask=new CommitTask();\n  getFutureValue(commitTask.execute(new Commit(),transactionManager,metadata,new AllowAllAccessControl(),stateMachine,emptyList()));\n  assertTrue(stateMachine.getQueryInfo(Optional.empty()).isClearTransactionId());\n  assertFalse(stateMachine.getQueryInfo(Optional.empty()).getStartedTransactionId().isPresent());\n  assertTrue(transactionManager.getAllTransactionInfos().isEmpty());\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 115,
-      "astHeight" : 13
+      "astNodeNumber" : 118,
+      "astHeight" : 9
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 44,
-        "startLineNumber" : 58,
+        "charLength" : 68,
+        "startLineNumber" : 67,
         "startColumnNumber" : 8,
-        "endLineNumber" : 58,
-        "endColumnNumber" : 52
+        "endLineNumber" : 67,
+        "endColumnNumber" : 76
       },
-      "nodeContext" : "long[] values=new long[positionCount * 2];\n",
-      "nodeType" : "VariableDeclarationStatement",
-      "astNodeNumber" : 13,
+      "nodeContext" : "assertEquals(transactionManager.getAllTransactionInfos().size(),1);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 9,
       "astHeight" : 5
     },
-    "tokenLength" : 3,
-    "type" : "int"
+    "tokenLength" : 2,
+    "type" : "java.util.List<com.facebook.presto.transaction.TransactionInfo>"
+  }, {
+    "nodeContext" : "transactionManager.getAllTransactionInfos()",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 43,
+      "startLineNumber" : 74,
+      "startColumnNumber" : 19,
+      "endLineNumber" : 74,
+      "endColumnNumber" : 62
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 53,
+        "startLineNumber" : 74,
+        "startColumnNumber" : 19,
+        "endLineNumber" : 74,
+        "endColumnNumber" : 72
+      },
+      "nodeContext" : "transactionManager.getAllTransactionInfos().isEmpty()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 65,
+        "startLineNumber" : 74,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 74,
+        "endColumnNumber" : 73
+      },
+      "nodeContext" : "assertTrue(transactionManager.getAllTransactionInfos().isEmpty())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 66,
+        "startLineNumber" : 74,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 74,
+        "endColumnNumber" : 74
+      },
+      "nodeContext" : "assertTrue(transactionManager.getAllTransactionInfos().isEmpty());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 984,
+        "startLineNumber" : 59,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 75,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  TransactionManager transactionManager=createTestTransactionManager();\n  Session session=sessionBuilder().setTransactionId(transactionManager.beginTransaction(false)).build();\n  QueryStateMachine stateMachine=createQueryStateMachine(\"COMMIT\",session,true,transactionManager,executor,metadata);\n  assertTrue(stateMachine.getSession().getTransactionId().isPresent());\n  assertEquals(transactionManager.getAllTransactionInfos().size(),1);\n  CommitTask commitTask=new CommitTask();\n  getFutureValue(commitTask.execute(new Commit(),transactionManager,metadata,new AllowAllAccessControl(),stateMachine,emptyList()));\n  assertTrue(stateMachine.getQueryInfo(Optional.empty()).isClearTransactionId());\n  assertFalse(stateMachine.getQueryInfo(Optional.empty()).getStartedTransactionId().isPresent());\n  assertTrue(transactionManager.getAllTransactionInfos().isEmpty());\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 112,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 1023,
+        "startLineNumber" : 57,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 75,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test public void testCommit(){\n  TransactionManager transactionManager=createTestTransactionManager();\n  Session session=sessionBuilder().setTransactionId(transactionManager.beginTransaction(false)).build();\n  QueryStateMachine stateMachine=createQueryStateMachine(\"COMMIT\",session,true,transactionManager,executor,metadata);\n  assertTrue(stateMachine.getSession().getTransactionId().isPresent());\n  assertEquals(transactionManager.getAllTransactionInfos().size(),1);\n  CommitTask commitTask=new CommitTask();\n  getFutureValue(commitTask.execute(new Commit(),transactionManager,metadata,new AllowAllAccessControl(),stateMachine,emptyList()));\n  assertTrue(stateMachine.getQueryInfo(Optional.empty()).isClearTransactionId());\n  assertFalse(stateMachine.getQueryInfo(Optional.empty()).getStartedTransactionId().isPresent());\n  assertTrue(transactionManager.getAllTransactionInfos().isEmpty());\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 118,
+      "astHeight" : 9
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 66,
+        "startLineNumber" : 74,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 74,
+        "endColumnNumber" : 74
+      },
+      "nodeContext" : "assertTrue(transactionManager.getAllTransactionInfos().isEmpty());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 5
+    },
+    "tokenLength" : 2,
+    "type" : "java.util.List<com.facebook.presto.transaction.TransactionInfo>"
   } ],
   "positionList" : [ {
-    "charLength" : 17,
-    "startLineNumber" : 58,
-    "startColumnNumber" : 33,
-    "endLineNumber" : 58,
-    "endColumnNumber" : 50
+    "charLength" : 43,
+    "startLineNumber" : 67,
+    "startColumnNumber" : 21,
+    "endLineNumber" : 67,
+    "endColumnNumber" : 64
+  }, {
+    "charLength" : 43,
+    "startLineNumber" : 74,
+    "startColumnNumber" : 19,
+    "endLineNumber" : 74,
+    "endColumnNumber" : 62
   } ],
-  "layoutRelationDataList" : [ ]
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 3
+  } ]
 }

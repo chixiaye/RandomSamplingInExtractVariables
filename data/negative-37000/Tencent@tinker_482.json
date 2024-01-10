@@ -1,0 +1,100 @@
+{
+  "id" : 482,
+  "expression" : "(int)diffIn.readLong()",
+  "projectName" : "Tencent@tinker",
+  "commitID" : "df9e1d29420d53a650ab73569d828a22e3cfe728",
+  "filePath" : "/third-party/bsdiff-util/src/main/java/com/tencent/tinker/bsdiff/BSPatch.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "(int)diffIn.readLong()",
+    "nodeType" : "CastExpression",
+    "nodePosition" : {
+      "charLength" : 23,
+      "startLineNumber" : 123,
+      "startColumnNumber" : 22,
+      "endLineNumber" : 123,
+      "endColumnNumber" : 45
+    },
+    "astNodeNumber" : 5,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 33,
+        "startLineNumber" : 123,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 45
+      },
+      "nodeContext" : "newsize=(int)diffIn.readLong()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 38,
+        "startLineNumber" : 123,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 46
+      },
+      "nodeContext" : "int newsize=(int)diffIn.readLong();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3903,
+        "startLineNumber" : 101,
+        "startColumnNumber" : 152,
+        "endLineNumber" : 209,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (oldFile == null || oldsize <= 0) {\n    return RETURN_OLD_FILE_ERR;\n  }\n  if (newFile == null) {\n    return RETURN_NEW_FILE_ERR;\n  }\n  if (diffBuf == null || diffSize <= 0) {\n    return RETURN_DIFF_FILE_ERR;\n  }\n  DataInputStream diffIn=new DataInputStream(new ByteArrayInputStream(diffBuf,0,diffSize));\n  diffIn.skip(8);\n  long ctrlBlockLen=diffIn.readLong();\n  long diffBlockLen=diffIn.readLong();\n  int newsize=(int)diffIn.readLong();\n  diffIn.close();\n  InputStream in=new ByteArrayInputStream(diffBuf,0,diffSize);\n  in.skip(BSUtil.HEADER_SIZE);\n  DataInputStream ctrlBlockIn=new DataInputStream(new GZIPInputStream(in));\n  in=new ByteArrayInputStream(diffBuf,0,diffSize);\n  in.skip(ctrlBlockLen + BSUtil.HEADER_SIZE);\n  InputStream diffBlockIn=new GZIPInputStream(in);\n  in=new ByteArrayInputStream(diffBuf,0,diffSize);\n  in.skip(diffBlockLen + ctrlBlockLen + BSUtil.HEADER_SIZE);\n  InputStream extraBlockIn=new GZIPInputStream(in);\n  OutputStream outStream=new FileOutputStream(newFile);\n  try {\n    int oldpos=0;\n    int newpos=0;\n    int[] ctrl=new int[3];\n    while (newpos < newsize) {\n      for (int i=0; i <= 2; i++) {\n        ctrl[i]=ctrlBlockIn.readInt();\n      }\n      if (newpos + ctrl[0] > newsize) {\n        outStream.close();\n        return RETURN_DIFF_FILE_ERR;\n      }\n      byte[] buffer=new byte[ctrl[0]];\n      if (!BSUtil.readFromStream(diffBlockIn,buffer,0,ctrl[0])) {\n        outStream.close();\n        return RETURN_DIFF_FILE_ERR;\n      }\n      byte[] oldBuffer=new byte[ctrl[0]];\n      if (oldFile.read(oldBuffer,0,ctrl[0]) < ctrl[0]) {\n        outStream.close();\n        return RETURN_DIFF_FILE_ERR;\n      }\n      for (int i=0; i < ctrl[0]; i++) {\n        if ((oldpos + i >= 0) && (oldpos + i < oldsize)) {\n          buffer[i]+=oldBuffer[i];\n        }\n      }\n      outStream.write(buffer);\n      newpos+=ctrl[0];\n      oldpos+=ctrl[0];\n      if (newpos + ctrl[1] > newsize) {\n        outStream.close();\n        return RETURN_DIFF_FILE_ERR;\n      }\n      buffer=new byte[ctrl[1]];\n      if (!BSUtil.readFromStream(extraBlockIn,buffer,0,ctrl[1])) {\n        outStream.close();\n        return RETURN_DIFF_FILE_ERR;\n      }\n      outStream.write(buffer);\n      outStream.flush();\n      newpos+=ctrl[1];\n      oldpos+=ctrl[2];\n      oldFile.seek(oldpos);\n    }\n    ctrlBlockIn.close();\n    diffBlockIn.close();\n    extraBlockIn.close();\n  }\n  finally {\n    oldFile.close();\n    outStream.close();\n  }\n  return RETURN_SUCCESS;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 443,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4242,
+        "startLineNumber" : 96,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 209,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * BSPatch using less memory size. Memory size = diffFile size + max block size extLen   the length of the apk external info. set 0 if has no external info.\n */\npublic static int patchLessMemory(RandomAccessFile oldFile,int oldsize,byte[] diffBuf,int diffSize,File newFile,int extLen) throws IOException {\n  if (oldFile == null || oldsize <= 0) {\n    return RETURN_OLD_FILE_ERR;\n  }\n  if (newFile == null) {\n    return RETURN_NEW_FILE_ERR;\n  }\n  if (diffBuf == null || diffSize <= 0) {\n    return RETURN_DIFF_FILE_ERR;\n  }\n  DataInputStream diffIn=new DataInputStream(new ByteArrayInputStream(diffBuf,0,diffSize));\n  diffIn.skip(8);\n  long ctrlBlockLen=diffIn.readLong();\n  long diffBlockLen=diffIn.readLong();\n  int newsize=(int)diffIn.readLong();\n  diffIn.close();\n  InputStream in=new ByteArrayInputStream(diffBuf,0,diffSize);\n  in.skip(BSUtil.HEADER_SIZE);\n  DataInputStream ctrlBlockIn=new DataInputStream(new GZIPInputStream(in));\n  in=new ByteArrayInputStream(diffBuf,0,diffSize);\n  in.skip(ctrlBlockLen + BSUtil.HEADER_SIZE);\n  InputStream diffBlockIn=new GZIPInputStream(in);\n  in=new ByteArrayInputStream(diffBuf,0,diffSize);\n  in.skip(diffBlockLen + ctrlBlockLen + BSUtil.HEADER_SIZE);\n  InputStream extraBlockIn=new GZIPInputStream(in);\n  OutputStream outStream=new FileOutputStream(newFile);\n  try {\n    int oldpos=0;\n    int newpos=0;\n    int[] ctrl=new int[3];\n    while (newpos < newsize) {\n      for (int i=0; i <= 2; i++) {\n        ctrl[i]=ctrlBlockIn.readInt();\n      }\n      if (newpos + ctrl[0] > newsize) {\n        outStream.close();\n        return RETURN_DIFF_FILE_ERR;\n      }\n      byte[] buffer=new byte[ctrl[0]];\n      if (!BSUtil.readFromStream(diffBlockIn,buffer,0,ctrl[0])) {\n        outStream.close();\n        return RETURN_DIFF_FILE_ERR;\n      }\n      byte[] oldBuffer=new byte[ctrl[0]];\n      if (oldFile.read(oldBuffer,0,ctrl[0]) < ctrl[0]) {\n        outStream.close();\n        return RETURN_DIFF_FILE_ERR;\n      }\n      for (int i=0; i < ctrl[0]; i++) {\n        if ((oldpos + i >= 0) && (oldpos + i < oldsize)) {\n          buffer[i]+=oldBuffer[i];\n        }\n      }\n      outStream.write(buffer);\n      newpos+=ctrl[0];\n      oldpos+=ctrl[0];\n      if (newpos + ctrl[1] > newsize) {\n        outStream.close();\n        return RETURN_DIFF_FILE_ERR;\n      }\n      buffer=new byte[ctrl[1]];\n      if (!BSUtil.readFromStream(extraBlockIn,buffer,0,ctrl[1])) {\n        outStream.close();\n        return RETURN_DIFF_FILE_ERR;\n      }\n      outStream.write(buffer);\n      outStream.flush();\n      newpos+=ctrl[1];\n      oldpos+=ctrl[2];\n      oldFile.seek(oldpos);\n    }\n    ctrlBlockIn.close();\n    diffBlockIn.close();\n    extraBlockIn.close();\n  }\n  finally {\n    oldFile.close();\n    outStream.close();\n  }\n  return RETURN_SUCCESS;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 473,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 38,
+        "startLineNumber" : 123,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 46
+      },
+      "nodeContext" : "int newsize=(int)diffIn.readLong();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    },
+    "tokenLength" : 2,
+    "type" : "int"
+  } ],
+  "positionList" : [ {
+    "charLength" : 23,
+    "startLineNumber" : 123,
+    "startColumnNumber" : 22,
+    "endLineNumber" : 123,
+    "endColumnNumber" : 45
+  } ],
+  "layoutRelationDataList" : [ ]
+}

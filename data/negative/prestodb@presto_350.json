@@ -1,100 +1,113 @@
 {
   "id" : 350,
-  "expression" : "1",
+  "expression" : "columnWriters.stream().mapToLong(ColumnWriter::getRetainedBytes)",
   "projectName" : "prestodb@presto",
-  "commitID" : "eff77883d0d24dc6022ecde252612d1430c9fbac",
-  "filePath" : "/presto-main/src/test/java/com/facebook/presto/execution/TestCommitTask.java",
+  "commitID" : "e01d5ca5e22de01ebfd098543b45dc813802aef1",
+  "filePath" : "presto-orc/src/main/java/com/facebook/presto/orc/OrcWriter.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "1",
-    "nodeType" : "NumberLiteral",
+    "nodeContext" : "columnWriters.stream().mapToLong(ColumnWriter::getRetainedBytes)",
+    "nodeType" : "MethodInvocation",
     "nodePosition" : {
-      "charLength" : 1,
-      "startLineNumber" : 67,
-      "startColumnNumber" : 73,
-      "endLineNumber" : 67,
-      "endColumnNumber" : 74
+      "charLength" : 64,
+      "startLineNumber" : 447,
+      "startColumnNumber" : 37,
+      "endLineNumber" : 447,
+      "endColumnNumber" : 101
     },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
+    "astNodeNumber" : 8,
+    "astHeight" : 3,
     "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
+      "nodePosition" : {
+        "charLength" : 70,
+        "startLineNumber" : 447,
+        "startColumnNumber" : 37,
+        "endLineNumber" : 447,
+        "endColumnNumber" : 107
+      },
+      "nodeContext" : "columnWriters.stream().mapToLong(ColumnWriter::getRetainedBytes).sum()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
       "nodePosition" : {
-        "charLength" : 67,
-        "startLineNumber" : 67,
+        "charLength" : 99,
+        "startLineNumber" : 447,
         "startColumnNumber" : 8,
-        "endLineNumber" : 67,
-        "endColumnNumber" : 75
+        "endLineNumber" : 447,
+        "endColumnNumber" : 107
       },
-      "nodeContext" : "assertEquals(transactionManager.getAllTransactionInfos().size(),1)",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 8,
-      "astHeight" : 4
+      "nodeContext" : "columnWritersRetainedBytes=columnWriters.stream().mapToLong(ColumnWriter::getRetainedBytes).sum()",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 12,
+      "astHeight" : 5
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 68,
-        "startLineNumber" : 67,
+        "charLength" : 100,
+        "startLineNumber" : 447,
         "startColumnNumber" : 8,
-        "endLineNumber" : 67,
-        "endColumnNumber" : 76
+        "endLineNumber" : 447,
+        "endColumnNumber" : 108
       },
-      "nodeContext" : "assertEquals(transactionManager.getAllTransactionInfos().size(),1);\n",
+      "nodeContext" : "columnWritersRetainedBytes=columnWriters.stream().mapToLong(ColumnWriter::getRetainedBytes).sum();\n",
       "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 9,
-      "astHeight" : 5
+      "astNodeNumber" : 13,
+      "astHeight" : 6
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 984,
-        "startLineNumber" : 59,
+        "charLength" : 1513,
+        "startLineNumber" : 414,
         "startColumnNumber" : 4,
-        "endLineNumber" : 75,
+        "endLineNumber" : 448,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  TransactionManager transactionManager=createTestTransactionManager();\n  Session session=sessionBuilder().setTransactionId(transactionManager.beginTransaction(false)).build();\n  QueryStateMachine stateMachine=createQueryStateMachine(\"COMMIT\",session,true,transactionManager,executor,metadata);\n  assertTrue(stateMachine.getSession().getTransactionId().isPresent());\n  assertEquals(transactionManager.getAllTransactionInfos().size(),1);\n  CommitTask commitTask=new CommitTask();\n  getFutureValue(commitTask.execute(new Commit(),transactionManager,metadata,new AllowAllAccessControl(),stateMachine,emptyList()));\n  assertTrue(stateMachine.getQueryInfo(Optional.empty()).isClearTransactionId());\n  assertFalse(stateMachine.getQueryInfo(Optional.empty()).getStartedTransactionId().isPresent());\n  assertTrue(transactionManager.getAllTransactionInfos().isEmpty());\n}\n",
+      "nodeContext" : "{\n  if (rowGroupRowCount == 0) {\n    columnWriters.forEach(ColumnWriter::beginRowGroup);\n  }\n  bufferedBytes=0;\n  for (int channel=0; channel < chunk.getChannelCount(); channel++) {\n    ColumnWriter writer=columnWriters.get(channel);\n    stripeRawSize+=writer.writeBlock(chunk.getBlock(channel));\n    bufferedBytes+=writer.getBufferedBytes();\n  }\n  rowGroupRowCount+=chunk.getPositionCount();\n  checkState(rowGroupRowCount <= rowGroupMaxRowCount);\n  stripeRowCount+=chunk.getPositionCount();\n  if (rowGroupRowCount == rowGroupMaxRowCount) {\n    finishRowGroup();\n  }\n  dictionaryCompressionOptimizer.optimize(bufferedBytes,stripeRowCount);\n  bufferedBytes=toIntExact(columnWriters.stream().mapToLong(ColumnWriter::getBufferedBytes).sum());\n  boolean dictionaryIsFull=dictionaryCompressionOptimizer.isFull(bufferedBytes);\n  Optional<FlushReason> flushReason=flushPolicy.shouldFlushStripe(stripeRowCount,bufferedBytes,dictionaryIsFull);\n  if (flushReason.isPresent()) {\n    flushStripe(flushReason.get());\n  }\n  columnWritersRetainedBytes=columnWriters.stream().mapToLong(ColumnWriter::getRetainedBytes).sum();\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 112,
+      "astNodeNumber" : 149,
       "astHeight" : 8
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 1023,
-        "startLineNumber" : 57,
+        "charLength" : 1584,
+        "startLineNumber" : 412,
         "startColumnNumber" : 4,
-        "endLineNumber" : 75,
+        "endLineNumber" : 448,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "@Test public void testCommit(){\n  TransactionManager transactionManager=createTestTransactionManager();\n  Session session=sessionBuilder().setTransactionId(transactionManager.beginTransaction(false)).build();\n  QueryStateMachine stateMachine=createQueryStateMachine(\"COMMIT\",session,true,transactionManager,executor,metadata);\n  assertTrue(stateMachine.getSession().getTransactionId().isPresent());\n  assertEquals(transactionManager.getAllTransactionInfos().size(),1);\n  CommitTask commitTask=new CommitTask();\n  getFutureValue(commitTask.execute(new Commit(),transactionManager,metadata,new AllowAllAccessControl(),stateMachine,emptyList()));\n  assertTrue(stateMachine.getQueryInfo(Optional.empty()).isClearTransactionId());\n  assertFalse(stateMachine.getQueryInfo(Optional.empty()).getStartedTransactionId().isPresent());\n  assertTrue(transactionManager.getAllTransactionInfos().isEmpty());\n}\n",
+      "nodeContext" : "private void writeChunk(Page chunk) throws IOException {\n  if (rowGroupRowCount == 0) {\n    columnWriters.forEach(ColumnWriter::beginRowGroup);\n  }\n  bufferedBytes=0;\n  for (int channel=0; channel < chunk.getChannelCount(); channel++) {\n    ColumnWriter writer=columnWriters.get(channel);\n    stripeRawSize+=writer.writeBlock(chunk.getBlock(channel));\n    bufferedBytes+=writer.getBufferedBytes();\n  }\n  rowGroupRowCount+=chunk.getPositionCount();\n  checkState(rowGroupRowCount <= rowGroupMaxRowCount);\n  stripeRowCount+=chunk.getPositionCount();\n  if (rowGroupRowCount == rowGroupMaxRowCount) {\n    finishRowGroup();\n  }\n  dictionaryCompressionOptimizer.optimize(bufferedBytes,stripeRowCount);\n  bufferedBytes=toIntExact(columnWriters.stream().mapToLong(ColumnWriter::getBufferedBytes).sum());\n  boolean dictionaryIsFull=dictionaryCompressionOptimizer.isFull(bufferedBytes);\n  Optional<FlushReason> flushReason=flushPolicy.shouldFlushStripe(stripeRowCount,bufferedBytes,dictionaryIsFull);\n  if (flushReason.isPresent()) {\n    flushStripe(flushReason.get());\n  }\n  columnWritersRetainedBytes=columnWriters.stream().mapToLong(ColumnWriter::getRetainedBytes).sum();\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 118,
+      "astNodeNumber" : 159,
       "astHeight" : 9
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 68,
-        "startLineNumber" : 67,
+        "charLength" : 100,
+        "startLineNumber" : 447,
         "startColumnNumber" : 8,
-        "endLineNumber" : 67,
-        "endColumnNumber" : 76
+        "endLineNumber" : 447,
+        "endColumnNumber" : 108
       },
-      "nodeContext" : "assertEquals(transactionManager.getAllTransactionInfos().size(),1);\n",
+      "nodeContext" : "columnWritersRetainedBytes=columnWriters.stream().mapToLong(ColumnWriter::getRetainedBytes).sum();\n",
       "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 9,
-      "astHeight" : 5
+      "astNodeNumber" : 13,
+      "astHeight" : 6
     },
-    "tokenLength" : 1,
-    "type" : "int"
+    "tokenLength" : 5,
+    "type" : "java.util.stream.LongStream"
   } ],
   "positionList" : [ {
-    "charLength" : 1,
-    "startLineNumber" : 67,
-    "startColumnNumber" : 73,
-    "endLineNumber" : 67,
-    "endColumnNumber" : 74
+    "charLength" : 64,
+    "startLineNumber" : 447,
+    "startColumnNumber" : 37,
+    "endLineNumber" : 447,
+    "endColumnNumber" : 101
   } ],
   "layoutRelationDataList" : [ ]
 }

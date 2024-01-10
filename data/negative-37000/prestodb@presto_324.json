@@ -1,0 +1,100 @@
+{
+  "id" : 324,
+  "expression" : "new CacheConfig().setCacheType(ALLUXIO).setCachingEnabled(true).setBaseDirectory(this.cacheDirectory)",
+  "projectName" : "prestodb@presto",
+  "commitID" : "eff77883d0d24dc6022ecde252612d1430c9fbac",
+  "filePath" : "/presto-cache/src/test/java/com/facebook/presto/cache/alluxio/TestAlluxioCachingFileSystem.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "new CacheConfig().setCacheType(ALLUXIO).setCachingEnabled(true).setBaseDirectory(this.cacheDirectory)",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 152,
+      "startLineNumber" : 234,
+      "startColumnNumber" : 34,
+      "endLineNumber" : 237,
+      "endColumnNumber" : 54
+    },
+    "astNodeNumber" : 14,
+    "astHeight" : 6,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 166,
+        "startLineNumber" : 234,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 237,
+        "endColumnNumber" : 54
+      },
+      "nodeContext" : "cacheConfig=new CacheConfig().setCacheType(ALLUXIO).setCachingEnabled(true).setBaseDirectory(this.cacheDirectory)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 16,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 179,
+        "startLineNumber" : 234,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 237,
+        "endColumnNumber" : 55
+      },
+      "nodeContext" : "CacheConfig cacheConfig=new CacheConfig().setCacheType(ALLUXIO).setCachingEnabled(true).setBaseDirectory(this.cacheDirectory);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 19,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4671,
+        "startLineNumber" : 231,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 308,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  File cacheDirectory=new File(this.cacheDirectory.getPath());\n  cacheDirectory.setWritable(false);\n  CacheConfig cacheConfig=new CacheConfig().setCacheType(ALLUXIO).setCachingEnabled(true).setBaseDirectory(this.cacheDirectory);\n  AlluxioCacheConfig alluxioCacheConfig=new AlluxioCacheConfig();\n  Configuration configuration=getHdfsConfiguration(cacheConfig,alluxioCacheConfig);\n  configuration.set(\"alluxio.user.client.cache.async.restore.enabled\",String.valueOf(true));\n  try {\n    AlluxioCachingFileSystem fileSystem=cachingFileSystem(configuration);\n    long state=MetricsSystem.counter(MetricKey.CLIENT_CACHE_STATE.getName()).getCount();\n    assertTrue(state == CacheManager.State.READ_ONLY.getValue() || state == CacheManager.State.NOT_IN_USE.getValue());\n    byte[] buffer=new byte[PAGE_SIZE * 2];\n    int pageOffset=PAGE_SIZE;\n    resetBaseline();\n    assertEquals(readFully(fileSystem,pageOffset + 10,buffer,0,100),100);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_READ_CACHE,0);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_REQUESTED_EXTERNAL,100);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_READ_EXTERNAL,PAGE_SIZE);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_EVICTED,0);\n    validateBuffer(data,pageOffset + 10,buffer,0,100);\n    resetBaseline();\n    assertEquals(readFully(fileSystem,pageOffset + 20,buffer,0,90),90);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_READ_CACHE,0);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_REQUESTED_EXTERNAL,90);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_READ_EXTERNAL,PAGE_SIZE);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_EVICTED,0);\n    validateBuffer(data,pageOffset + 20,buffer,0,90);\n    resetBaseline();\n    assertEquals(readFully(fileSystem,pageOffset + PAGE_SIZE - 10,buffer,0,100),100);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_READ_CACHE,0);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_REQUESTED_EXTERNAL,100);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_READ_EXTERNAL,2 * PAGE_SIZE);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_EVICTED,0);\n    validateBuffer(data,pageOffset + PAGE_SIZE - 10,buffer,0,100);\n    resetBaseline();\n    assertEquals(readFully(fileSystem,pageOffset - 10,buffer,10,50),50);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_READ_CACHE,0);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_REQUESTED_EXTERNAL,50);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_READ_EXTERNAL,2 * PAGE_SIZE);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_EVICTED,0);\n    validateBuffer(data,pageOffset - 10,buffer,10,50);\n    resetBaseline();\n    assertEquals(readFully(fileSystem,pageOffset + PAGE_SIZE * 3,buffer,40,50),50);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_READ_CACHE,0);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_REQUESTED_EXTERNAL,50);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_READ_EXTERNAL,PAGE_SIZE);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_EVICTED,0);\n    validateBuffer(data,pageOffset + PAGE_SIZE * 3,buffer,40,50);\n    resetBaseline();\n    assertEquals(readFully(fileSystem,pageOffset + PAGE_SIZE * 2 - 10,buffer,400,PAGE_SIZE + 20),PAGE_SIZE + 20);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_READ_CACHE,0);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_REQUESTED_EXTERNAL,PAGE_SIZE + 20);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_READ_EXTERNAL,3 * PAGE_SIZE);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_EVICTED,0);\n    validateBuffer(data,pageOffset + PAGE_SIZE * 2 - 10,buffer,400,PAGE_SIZE + 20);\n    state=MetricsSystem.counter(MetricKey.CLIENT_CACHE_STATE.getName()).getCount();\n    assertTrue(state == CacheManager.State.READ_ONLY.getValue() || state == CacheManager.State.NOT_IN_USE.getValue());\n  }\n  finally {\n    cacheDirectory.setWritable(true);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 523,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4783,
+        "startLineNumber" : 228,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 308,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test(timeOut=30_000) public void testBasicReadWithAsyncRestoreFailure() throws Exception {\n  File cacheDirectory=new File(this.cacheDirectory.getPath());\n  cacheDirectory.setWritable(false);\n  CacheConfig cacheConfig=new CacheConfig().setCacheType(ALLUXIO).setCachingEnabled(true).setBaseDirectory(this.cacheDirectory);\n  AlluxioCacheConfig alluxioCacheConfig=new AlluxioCacheConfig();\n  Configuration configuration=getHdfsConfiguration(cacheConfig,alluxioCacheConfig);\n  configuration.set(\"alluxio.user.client.cache.async.restore.enabled\",String.valueOf(true));\n  try {\n    AlluxioCachingFileSystem fileSystem=cachingFileSystem(configuration);\n    long state=MetricsSystem.counter(MetricKey.CLIENT_CACHE_STATE.getName()).getCount();\n    assertTrue(state == CacheManager.State.READ_ONLY.getValue() || state == CacheManager.State.NOT_IN_USE.getValue());\n    byte[] buffer=new byte[PAGE_SIZE * 2];\n    int pageOffset=PAGE_SIZE;\n    resetBaseline();\n    assertEquals(readFully(fileSystem,pageOffset + 10,buffer,0,100),100);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_READ_CACHE,0);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_REQUESTED_EXTERNAL,100);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_READ_EXTERNAL,PAGE_SIZE);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_EVICTED,0);\n    validateBuffer(data,pageOffset + 10,buffer,0,100);\n    resetBaseline();\n    assertEquals(readFully(fileSystem,pageOffset + 20,buffer,0,90),90);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_READ_CACHE,0);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_REQUESTED_EXTERNAL,90);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_READ_EXTERNAL,PAGE_SIZE);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_EVICTED,0);\n    validateBuffer(data,pageOffset + 20,buffer,0,90);\n    resetBaseline();\n    assertEquals(readFully(fileSystem,pageOffset + PAGE_SIZE - 10,buffer,0,100),100);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_READ_CACHE,0);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_REQUESTED_EXTERNAL,100);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_READ_EXTERNAL,2 * PAGE_SIZE);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_EVICTED,0);\n    validateBuffer(data,pageOffset + PAGE_SIZE - 10,buffer,0,100);\n    resetBaseline();\n    assertEquals(readFully(fileSystem,pageOffset - 10,buffer,10,50),50);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_READ_CACHE,0);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_REQUESTED_EXTERNAL,50);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_READ_EXTERNAL,2 * PAGE_SIZE);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_EVICTED,0);\n    validateBuffer(data,pageOffset - 10,buffer,10,50);\n    resetBaseline();\n    assertEquals(readFully(fileSystem,pageOffset + PAGE_SIZE * 3,buffer,40,50),50);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_READ_CACHE,0);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_REQUESTED_EXTERNAL,50);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_READ_EXTERNAL,PAGE_SIZE);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_EVICTED,0);\n    validateBuffer(data,pageOffset + PAGE_SIZE * 3,buffer,40,50);\n    resetBaseline();\n    assertEquals(readFully(fileSystem,pageOffset + PAGE_SIZE * 2 - 10,buffer,400,PAGE_SIZE + 20),PAGE_SIZE + 20);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_READ_CACHE,0);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_REQUESTED_EXTERNAL,PAGE_SIZE + 20);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_READ_EXTERNAL,3 * PAGE_SIZE);\n    checkMetrics(MetricKey.CLIENT_CACHE_BYTES_EVICTED,0);\n    validateBuffer(data,pageOffset + PAGE_SIZE * 2 - 10,buffer,400,PAGE_SIZE + 20);\n    state=MetricsSystem.counter(MetricKey.CLIENT_CACHE_STATE.getName()).getCount();\n    assertTrue(state == CacheManager.State.READ_ONLY.getValue() || state == CacheManager.State.NOT_IN_USE.getValue());\n  }\n  finally {\n    cacheDirectory.setWritable(true);\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 534,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 179,
+        "startLineNumber" : 234,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 237,
+        "endColumnNumber" : 55
+      },
+      "nodeContext" : "CacheConfig cacheConfig=new CacheConfig().setCacheType(ALLUXIO).setCachingEnabled(true).setBaseDirectory(this.cacheDirectory);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 19,
+      "astHeight" : 8
+    },
+    "tokenLength" : 7,
+    "type" : "com.facebook.presto.cache.CacheConfig"
+  } ],
+  "positionList" : [ {
+    "charLength" : 152,
+    "startLineNumber" : 234,
+    "startColumnNumber" : 34,
+    "endLineNumber" : 237,
+    "endColumnNumber" : 54
+  } ],
+  "layoutRelationDataList" : [ ]
+}

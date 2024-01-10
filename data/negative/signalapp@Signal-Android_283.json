@@ -1,113 +1,100 @@
 {
   "id" : 283,
-  "expression" : "backupPassword == null",
+  "expression" : "senderKeyTargets.size() > 0",
   "projectName" : "signalapp@Signal-Android",
-  "commitID" : "7e91132e7ed62a58b5f347de252ab1eda3f43b90",
-  "filePath" : "/app/src/main/java/org/thoughtcrime/securesms/jobs/LocalBackupJobApi29.java",
+  "commitID" : "2068fa80416a11892d4665e3656be70df4512340",
+  "filePath" : "app/src/main/java/org/thoughtcrime/securesms/messages/GroupSendUtil.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "backupPassword == null",
+    "nodeContext" : "senderKeyTargets.size() > 0",
     "nodeType" : "InfixExpression",
     "nodePosition" : {
-      "charLength" : 22,
-      "startLineNumber" : 103,
-      "startColumnNumber" : 10,
-      "endLineNumber" : 103,
-      "endColumnNumber" : 32
+      "charLength" : 27,
+      "startLineNumber" : 189,
+      "startColumnNumber" : 8,
+      "endLineNumber" : 189,
+      "endColumnNumber" : 35
     },
-    "astNodeNumber" : 3,
-    "astHeight" : 2,
+    "astNodeNumber" : 5,
+    "astHeight" : 3,
     "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 46,
+        "startLineNumber" : 189,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 189,
+        "endColumnNumber" : 54
+      },
+      "nodeContext" : "senderKeyTargets.size() > 0 && groupId != null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 95,
-        "startLineNumber" : 103,
-        "startColumnNumber" : 6,
-        "endLineNumber" : 105,
-        "endColumnNumber" : 7
+        "charLength" : 2098,
+        "startLineNumber" : 189,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 222,
+        "endColumnNumber" : 5
       },
-      "nodeContext" : "if (backupPassword == null) {\n  throw new IOException(\"Backup password is null\");\n}\n",
+      "nodeContext" : "if (senderKeyTargets.size() > 0 && groupId != null) {\n  DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n  long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n  long keyAge=System.currentTimeMillis() - keyCreateTime;\n  if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n    Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n    SenderKeyUtil.rotateOurKey(context,distributionId);\n  }\n  try {\n    List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n    List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n    if (sendOperation.shouldIncludeInMessageLog()) {\n      DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n    }\n  }\n catch (  InvalidUnidentifiedAccessHeaderException e) {\n    Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\ncatch (  NoSessionException e) {\n    Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\ncatch (  InvalidKeyException e) {\n    Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n    legacyTargets.addAll(senderKeyTargets);\n  }\n}\n",
       "nodeType" : "IfStatement",
-      "astNodeNumber" : 10,
-      "astHeight" : 6
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
-      "nodePosition" : {
-        "charLength" : 2567,
-        "startLineNumber" : 77,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 138,
-        "endColumnNumber" : 5
-      },
-      "nodeContext" : "{\n  notification.setIndeterminateProgress();\n  String backupPassword=BackupPassphrase.get(context);\n  DocumentFile backupDirectory=DocumentFile.fromTreeUri(context,backupDirectoryUri);\n  String timestamp=new SimpleDateFormat(\"yyyy-MM-dd-HH-mm-ss\",Locale.US).format(new Date());\n  String fileName=String.format(\"signal-%s.backup\",timestamp);\n  if (backupDirectory == null || !backupDirectory.canWrite()) {\n    BackupFileIOError.ACCESS_ERROR.postNotification(context);\n    throw new IOException(\"Cannot write to backup directory location.\");\n  }\n  deleteOldTemporaryBackups(backupDirectory);\n  if (backupDirectory.findFile(fileName) != null) {\n    throw new IOException(\"Backup file already exists!\");\n  }\n  String temporaryName=String.format(Locale.US,\"%s%s%s\",TEMP_BACKUP_FILE_PREFIX,UUID.randomUUID(),TEMP_BACKUP_FILE_SUFFIX);\n  DocumentFile temporaryFile=backupDirectory.createFile(\"application/octet-stream\",temporaryName);\n  if (temporaryFile == null) {\n    throw new IOException(\"Failed to create temporary backup file.\");\n  }\n  if (backupPassword == null) {\n    throw new IOException(\"Backup password is null\");\n  }\n  try {\n    FullBackupExporter.export(context,AttachmentSecretProvider.getInstance(context).getOrCreateAttachmentSecret(),DatabaseFactory.getBackupDatabase(context),temporaryFile,backupPassword,this::isCanceled);\n    if (!temporaryFile.renameTo(fileName)) {\n      Log.w(TAG,\"Failed to rename temp file\");\n      throw new IOException(\"Renaming temporary backup file failed!\");\n    }\n  }\n catch (  FullBackupExporter.BackupCanceledException e) {\n    Log.w(TAG,\"Backup cancelled\");\n    throw e;\n  }\ncatch (  IOException e) {\n    Log.w(TAG,\"Error during backup!\",e);\n    BackupFileIOError.postNotificationForException(context,e,getRunAttempt());\n    throw e;\n  }\n finally {\n    DocumentFile fileToCleanUp=backupDirectory.findFile(temporaryName);\n    if (fileToCleanUp != null) {\n      if (fileToCleanUp.delete()) {\n        Log.w(TAG,\"Backup failed. Deleted temp file\");\n      }\n else {\n        Log.w(TAG,\"Backup failed. Failed to delete temp file \" + temporaryName);\n      }\n    }\n  }\n  BackupUtil.deleteOldBackups();\n}\n",
-      "nodeType" : "Block",
-      "astNodeNumber" : 255,
-      "astHeight" : 11
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 3064,
-        "startLineNumber" : 73,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 138,
-        "endColumnNumber" : 5
-      },
-      "nodeContext" : "try (NotificationController notification=GenericForegroundService.startForegroundTask(context,context.getString(R.string.LocalBackupJob_creating_backup),NotificationChannels.BACKUPS,R.drawable.ic_signal_backup)){\n  notification.setIndeterminateProgress();\n  String backupPassword=BackupPassphrase.get(context);\n  DocumentFile backupDirectory=DocumentFile.fromTreeUri(context,backupDirectoryUri);\n  String timestamp=new SimpleDateFormat(\"yyyy-MM-dd-HH-mm-ss\",Locale.US).format(new Date());\n  String fileName=String.format(\"signal-%s.backup\",timestamp);\n  if (backupDirectory == null || !backupDirectory.canWrite()) {\n    BackupFileIOError.ACCESS_ERROR.postNotification(context);\n    throw new IOException(\"Cannot write to backup directory location.\");\n  }\n  deleteOldTemporaryBackups(backupDirectory);\n  if (backupDirectory.findFile(fileName) != null) {\n    throw new IOException(\"Backup file already exists!\");\n  }\n  String temporaryName=String.format(Locale.US,\"%s%s%s\",TEMP_BACKUP_FILE_PREFIX,UUID.randomUUID(),TEMP_BACKUP_FILE_SUFFIX);\n  DocumentFile temporaryFile=backupDirectory.createFile(\"application/octet-stream\",temporaryName);\n  if (temporaryFile == null) {\n    throw new IOException(\"Failed to create temporary backup file.\");\n  }\n  if (backupPassword == null) {\n    throw new IOException(\"Backup password is null\");\n  }\n  try {\n    FullBackupExporter.export(context,AttachmentSecretProvider.getInstance(context).getOrCreateAttachmentSecret(),DatabaseFactory.getBackupDatabase(context),temporaryFile,backupPassword,this::isCanceled);\n    if (!temporaryFile.renameTo(fileName)) {\n      Log.w(TAG,\"Failed to rename temp file\");\n      throw new IOException(\"Renaming temporary backup file failed!\");\n    }\n  }\n catch (  FullBackupExporter.BackupCanceledException e) {\n    Log.w(TAG,\"Backup cancelled\");\n    throw e;\n  }\ncatch (  IOException e) {\n    Log.w(TAG,\"Error during backup!\",e);\n    BackupFileIOError.postNotificationForException(context,e,getRunAttempt());\n    throw e;\n  }\n finally {\n    DocumentFile fileToCleanUp=backupDirectory.findFile(temporaryName);\n    if (fileToCleanUp != null) {\n      if (fileToCleanUp.delete()) {\n        Log.w(TAG,\"Backup failed. Deleted temp file\");\n      }\n else {\n        Log.w(TAG,\"Backup failed. Failed to delete temp file \" + temporaryName);\n      }\n    }\n  }\n  BackupUtil.deleteOldBackups();\n}\n ",
-      "nodeType" : "TryStatement",
-      "astNodeNumber" : 281,
+      "astNodeNumber" : 257,
       "astHeight" : 12
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 3519,
-        "startLineNumber" : 59,
-        "startColumnNumber" : 41,
-        "endLineNumber" : 139,
+        "charLength" : 6859,
+        "startLineNumber" : 139,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 266,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "{\n  Log.i(TAG,\"Executing backup job...\");\n  BackupFileIOError.clearNotification(context);\n  if (!BackupUtil.isUserSelectionRequired(context)) {\n    throw new IOException(\"Wrong backup job!\");\n  }\n  Uri backupDirectoryUri=SignalStore.settings().getSignalBackupDirectory();\n  if (backupDirectoryUri == null || backupDirectoryUri.getPath() == null) {\n    throw new IOException(\"Backup Directory has not been selected!\");\n  }\n  try (NotificationController notification=GenericForegroundService.startForegroundTask(context,context.getString(R.string.LocalBackupJob_creating_backup),NotificationChannels.BACKUPS,R.drawable.ic_signal_backup)){\n    notification.setIndeterminateProgress();\n    String backupPassword=BackupPassphrase.get(context);\n    DocumentFile backupDirectory=DocumentFile.fromTreeUri(context,backupDirectoryUri);\n    String timestamp=new SimpleDateFormat(\"yyyy-MM-dd-HH-mm-ss\",Locale.US).format(new Date());\n    String fileName=String.format(\"signal-%s.backup\",timestamp);\n    if (backupDirectory == null || !backupDirectory.canWrite()) {\n      BackupFileIOError.ACCESS_ERROR.postNotification(context);\n      throw new IOException(\"Cannot write to backup directory location.\");\n    }\n    deleteOldTemporaryBackups(backupDirectory);\n    if (backupDirectory.findFile(fileName) != null) {\n      throw new IOException(\"Backup file already exists!\");\n    }\n    String temporaryName=String.format(Locale.US,\"%s%s%s\",TEMP_BACKUP_FILE_PREFIX,UUID.randomUUID(),TEMP_BACKUP_FILE_SUFFIX);\n    DocumentFile temporaryFile=backupDirectory.createFile(\"application/octet-stream\",temporaryName);\n    if (temporaryFile == null) {\n      throw new IOException(\"Failed to create temporary backup file.\");\n    }\n    if (backupPassword == null) {\n      throw new IOException(\"Backup password is null\");\n    }\n    try {\n      FullBackupExporter.export(context,AttachmentSecretProvider.getInstance(context).getOrCreateAttachmentSecret(),DatabaseFactory.getBackupDatabase(context),temporaryFile,backupPassword,this::isCanceled);\n      if (!temporaryFile.renameTo(fileName)) {\n        Log.w(TAG,\"Failed to rename temp file\");\n        throw new IOException(\"Renaming temporary backup file failed!\");\n      }\n    }\n catch (    FullBackupExporter.BackupCanceledException e) {\n      Log.w(TAG,\"Backup cancelled\");\n      throw e;\n    }\ncatch (    IOException e) {\n      Log.w(TAG,\"Error during backup!\",e);\n      BackupFileIOError.postNotificationForException(context,e,getRunAttempt());\n      throw e;\n    }\n finally {\n      DocumentFile fileToCleanUp=backupDirectory.findFile(temporaryName);\n      if (fileToCleanUp != null) {\n        if (fileToCleanUp.delete()) {\n          Log.w(TAG,\"Backup failed. Deleted temp file\");\n        }\n else {\n          Log.w(TAG,\"Backup failed. Failed to delete temp file \" + temporaryName);\n        }\n      }\n    }\n    BackupUtil.deleteOldBackups();\n  }\n }\n",
+      "nodeContext" : "{\n  RecipientData recipients=new RecipientData(context,allTargets);\n  Optional<GroupRecord> groupRecord=groupId != null ? DatabaseFactory.getGroupDatabase(context).getGroup(groupId) : Optional.absent();\n  List<Recipient> senderKeyTargets=new LinkedList<>();\n  List<Recipient> legacyTargets=new LinkedList<>();\n  for (  Recipient recipient : allTargets) {\n    Optional<UnidentifiedAccessPair> access=recipients.getAccessPair(recipient.getId());\n    boolean validMembership=groupRecord.isPresent() && groupRecord.get().getMembers().contains(recipient.getId());\n    if (recipient.getSenderKeyCapability() == Recipient.Capability.SUPPORTED && recipient.hasUuid() && access.isPresent() && access.get().getTargetUnidentifiedAccess().isPresent() && validMembership) {\n      senderKeyTargets.add(recipient);\n    }\n else {\n      legacyTargets.add(recipient);\n    }\n  }\n  if (FeatureFlags.senderKey()) {\n    if (groupId == null) {\n      Log.i(TAG,\"Recipients not in a group. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (Recipient.self().getSenderKeyCapability() != Recipient.Capability.SUPPORTED) {\n      Log.i(TAG,\"All of our devices do not support sender key. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (SignalStore.internalValues().removeSenderKeyMinimum()) {\n      Log.i(TAG,\"Sender key minimum removed. Using for \" + senderKeyTargets.size() + \" recipients.\");\n    }\n else     if (senderKeyTargets.size() < 2) {\n      Log.i(TAG,\"Too few sender-key-capable users (\" + senderKeyTargets.size() + \"). Doing all legacy sends.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else {\n      Log.i(TAG,\"Can use sender key for \" + senderKeyTargets.size() + \"/\"+ allTargets.size()+ \" recipients.\");\n    }\n  }\n else {\n    Log.i(TAG,\"Feature flag disabled. Using legacy.\");\n    legacyTargets.addAll(senderKeyTargets);\n    senderKeyTargets.clear();\n  }\n  List<SendMessageResult> allResults=new ArrayList<>(allTargets.size());\n  SignalServiceMessageSender messageSender=ApplicationDependencies.getSignalServiceMessageSender();\n  if (senderKeyTargets.size() > 0 && groupId != null) {\n    DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n    long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n    long keyAge=System.currentTimeMillis() - keyCreateTime;\n    if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n      Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n      SenderKeyUtil.rotateOurKey(context,distributionId);\n    }\n    try {\n      List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n      List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n      List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n      allResults.addAll(results);\n      int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n      Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n      if (sendOperation.shouldIncludeInMessageLog()) {\n        DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n      }\n    }\n catch (    InvalidUnidentifiedAccessHeaderException e) {\n      Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    NoSessionException e) {\n      Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    InvalidKeyException e) {\n      Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\n  }\n  if (cancelationSignal != null && cancelationSignal.isCanceled()) {\n    throw new CancelationException();\n  }\n  boolean onlyTargetIsSelfWithLinkedDevice=legacyTargets.isEmpty() && senderKeyTargets.isEmpty() && TextSecurePreferences.isMultiDevice(context);\n  if (legacyTargets.size() > 0 || onlyTargetIsSelfWithLinkedDevice) {\n    if (legacyTargets.size() > 0) {\n      Log.i(TAG,\"Need to do \" + legacyTargets.size() + \" legacy sends.\");\n    }\n else {\n      Log.i(TAG,\"Need to do a legacy send to send a sync message for a group of only ourselves.\");\n    }\n    List<SignalServiceAddress> targets=legacyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<Optional<UnidentifiedAccessPair>> access=legacyTargets.stream().map(r -> recipients.getAccessPair(r.getId())).collect(Collectors.toList());\n    boolean recipientUpdate=isRecipientUpdate || allResults.size() > 0;\n    final MessageSendLogDatabase messageLogDatabase=DatabaseFactory.getMessageLogDatabase(context);\n    final AtomicLong entryId=new AtomicLong(-1);\n    final boolean includeInMessageLog=sendOperation.shouldIncludeInMessageLog();\n    List<SendMessageResult> results=sendOperation.sendLegacy(messageSender,targets,access,recipientUpdate,result -> {\n      if (!includeInMessageLog) {\n        return;\n      }\nsynchronized (entryId) {\n        if (entryId.get() == -1) {\n          entryId.set(messageLogDatabase.insertIfPossible(recipients.requireRecipientId(result.getAddress()),sendOperation.getSentTimestamp(),result,sendOperation.getContentHint(),sendOperation.getRelatedMessageId()));\n        }\n else {\n          messageLogDatabase.addRecipientToExistingEntryIfPossible(entryId.get(),recipients.requireRecipientId(result.getAddress()),result);\n        }\n      }\n    }\n,cancelationSignal);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using 1:1 to \" + successCount + \"/\"+ targets.size()+ \" legacy targets.\");\n  }\n  return allResults;\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 331,
-      "astHeight" : 13
+      "astNodeNumber" : 815,
+      "astHeight" : 18
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 3570,
-        "startLineNumber" : 58,
+        "charLength" : 7926,
+        "startLineNumber" : 124,
         "startColumnNumber" : 2,
-        "endLineNumber" : 139,
+        "endLineNumber" : 266,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "@Override public void onRun() throws IOException {\n  Log.i(TAG,\"Executing backup job...\");\n  BackupFileIOError.clearNotification(context);\n  if (!BackupUtil.isUserSelectionRequired(context)) {\n    throw new IOException(\"Wrong backup job!\");\n  }\n  Uri backupDirectoryUri=SignalStore.settings().getSignalBackupDirectory();\n  if (backupDirectoryUri == null || backupDirectoryUri.getPath() == null) {\n    throw new IOException(\"Backup Directory has not been selected!\");\n  }\n  try (NotificationController notification=GenericForegroundService.startForegroundTask(context,context.getString(R.string.LocalBackupJob_creating_backup),NotificationChannels.BACKUPS,R.drawable.ic_signal_backup)){\n    notification.setIndeterminateProgress();\n    String backupPassword=BackupPassphrase.get(context);\n    DocumentFile backupDirectory=DocumentFile.fromTreeUri(context,backupDirectoryUri);\n    String timestamp=new SimpleDateFormat(\"yyyy-MM-dd-HH-mm-ss\",Locale.US).format(new Date());\n    String fileName=String.format(\"signal-%s.backup\",timestamp);\n    if (backupDirectory == null || !backupDirectory.canWrite()) {\n      BackupFileIOError.ACCESS_ERROR.postNotification(context);\n      throw new IOException(\"Cannot write to backup directory location.\");\n    }\n    deleteOldTemporaryBackups(backupDirectory);\n    if (backupDirectory.findFile(fileName) != null) {\n      throw new IOException(\"Backup file already exists!\");\n    }\n    String temporaryName=String.format(Locale.US,\"%s%s%s\",TEMP_BACKUP_FILE_PREFIX,UUID.randomUUID(),TEMP_BACKUP_FILE_SUFFIX);\n    DocumentFile temporaryFile=backupDirectory.createFile(\"application/octet-stream\",temporaryName);\n    if (temporaryFile == null) {\n      throw new IOException(\"Failed to create temporary backup file.\");\n    }\n    if (backupPassword == null) {\n      throw new IOException(\"Backup password is null\");\n    }\n    try {\n      FullBackupExporter.export(context,AttachmentSecretProvider.getInstance(context).getOrCreateAttachmentSecret(),DatabaseFactory.getBackupDatabase(context),temporaryFile,backupPassword,this::isCanceled);\n      if (!temporaryFile.renameTo(fileName)) {\n        Log.w(TAG,\"Failed to rename temp file\");\n        throw new IOException(\"Renaming temporary backup file failed!\");\n      }\n    }\n catch (    FullBackupExporter.BackupCanceledException e) {\n      Log.w(TAG,\"Backup cancelled\");\n      throw e;\n    }\ncatch (    IOException e) {\n      Log.w(TAG,\"Error during backup!\",e);\n      BackupFileIOError.postNotificationForException(context,e,getRunAttempt());\n      throw e;\n    }\n finally {\n      DocumentFile fileToCleanUp=backupDirectory.findFile(temporaryName);\n      if (fileToCleanUp != null) {\n        if (fileToCleanUp.delete()) {\n          Log.w(TAG,\"Backup failed. Deleted temp file\");\n        }\n else {\n          Log.w(TAG,\"Backup failed. Failed to delete temp file \" + temporaryName);\n        }\n      }\n    }\n    BackupUtil.deleteOldBackups();\n  }\n }\n",
+      "nodeContext" : "/** \n * Handles all of the logic of sending to a group. Will do sender key sends and legacy 1:1 sends as-needed, and give you back a list of {@link SendMessageResult}s just like we're used to.\n * @param groupId The groupId of the group you're sending to, or null if you're sending to a collection of recipients not joined by a group.\n * @param isRecipientUpdate True if you've already sent this message to some recipients in the past, otherwise false.\n */\n@WorkerThread private static List<SendMessageResult> sendMessage(@NonNull Context context,@Nullable GroupId.V2 groupId,@NonNull List<Recipient> allTargets,boolean isRecipientUpdate,@NonNull SendOperation sendOperation,@Nullable CancelationSignal cancelationSignal) throws IOException, UntrustedIdentityException {\n  RecipientData recipients=new RecipientData(context,allTargets);\n  Optional<GroupRecord> groupRecord=groupId != null ? DatabaseFactory.getGroupDatabase(context).getGroup(groupId) : Optional.absent();\n  List<Recipient> senderKeyTargets=new LinkedList<>();\n  List<Recipient> legacyTargets=new LinkedList<>();\n  for (  Recipient recipient : allTargets) {\n    Optional<UnidentifiedAccessPair> access=recipients.getAccessPair(recipient.getId());\n    boolean validMembership=groupRecord.isPresent() && groupRecord.get().getMembers().contains(recipient.getId());\n    if (recipient.getSenderKeyCapability() == Recipient.Capability.SUPPORTED && recipient.hasUuid() && access.isPresent() && access.get().getTargetUnidentifiedAccess().isPresent() && validMembership) {\n      senderKeyTargets.add(recipient);\n    }\n else {\n      legacyTargets.add(recipient);\n    }\n  }\n  if (FeatureFlags.senderKey()) {\n    if (groupId == null) {\n      Log.i(TAG,\"Recipients not in a group. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (Recipient.self().getSenderKeyCapability() != Recipient.Capability.SUPPORTED) {\n      Log.i(TAG,\"All of our devices do not support sender key. Using legacy.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else     if (SignalStore.internalValues().removeSenderKeyMinimum()) {\n      Log.i(TAG,\"Sender key minimum removed. Using for \" + senderKeyTargets.size() + \" recipients.\");\n    }\n else     if (senderKeyTargets.size() < 2) {\n      Log.i(TAG,\"Too few sender-key-capable users (\" + senderKeyTargets.size() + \"). Doing all legacy sends.\");\n      legacyTargets.addAll(senderKeyTargets);\n      senderKeyTargets.clear();\n    }\n else {\n      Log.i(TAG,\"Can use sender key for \" + senderKeyTargets.size() + \"/\"+ allTargets.size()+ \" recipients.\");\n    }\n  }\n else {\n    Log.i(TAG,\"Feature flag disabled. Using legacy.\");\n    legacyTargets.addAll(senderKeyTargets);\n    senderKeyTargets.clear();\n  }\n  List<SendMessageResult> allResults=new ArrayList<>(allTargets.size());\n  SignalServiceMessageSender messageSender=ApplicationDependencies.getSignalServiceMessageSender();\n  if (senderKeyTargets.size() > 0 && groupId != null) {\n    DistributionId distributionId=DatabaseFactory.getGroupDatabase(context).getOrCreateDistributionId(groupId);\n    long keyCreateTime=SenderKeyUtil.getCreateTimeForOurKey(context,distributionId);\n    long keyAge=System.currentTimeMillis() - keyCreateTime;\n    if (keyCreateTime != -1 && keyAge > MAX_KEY_AGE) {\n      Log.w(TAG,\"Key is \" + (keyAge) + \" ms old (~\"+ TimeUnit.MILLISECONDS.toDays(keyAge)+ \" days). Rotating.\");\n      SenderKeyUtil.rotateOurKey(context,distributionId);\n    }\n    try {\n      List<SignalServiceAddress> targets=senderKeyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n      List<UnidentifiedAccess> access=senderKeyTargets.stream().map(r -> recipients.requireAccess(r.getId())).collect(Collectors.toList());\n      List<SendMessageResult> results=sendOperation.sendWithSenderKey(messageSender,distributionId,targets,access,isRecipientUpdate);\n      allResults.addAll(results);\n      int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n      Log.d(TAG,\"Successfully sent using sender key to \" + successCount + \"/\"+ targets.size()+ \" sender key targets.\");\n      if (sendOperation.shouldIncludeInMessageLog()) {\n        DatabaseFactory.getMessageLogDatabase(context).insertIfPossible(sendOperation.getSentTimestamp(),senderKeyTargets,results,sendOperation.getContentHint(),sendOperation.getRelatedMessageId());\n      }\n    }\n catch (    InvalidUnidentifiedAccessHeaderException e) {\n      Log.w(TAG,\"Someone had a bad UD header. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    NoSessionException e) {\n      Log.w(TAG,\"No session. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\ncatch (    InvalidKeyException e) {\n      Log.w(TAG,\"Invalid Key. Falling back to legacy sends.\",e);\n      legacyTargets.addAll(senderKeyTargets);\n    }\n  }\n  if (cancelationSignal != null && cancelationSignal.isCanceled()) {\n    throw new CancelationException();\n  }\n  boolean onlyTargetIsSelfWithLinkedDevice=legacyTargets.isEmpty() && senderKeyTargets.isEmpty() && TextSecurePreferences.isMultiDevice(context);\n  if (legacyTargets.size() > 0 || onlyTargetIsSelfWithLinkedDevice) {\n    if (legacyTargets.size() > 0) {\n      Log.i(TAG,\"Need to do \" + legacyTargets.size() + \" legacy sends.\");\n    }\n else {\n      Log.i(TAG,\"Need to do a legacy send to send a sync message for a group of only ourselves.\");\n    }\n    List<SignalServiceAddress> targets=legacyTargets.stream().map(r -> recipients.getAddress(r.getId())).collect(Collectors.toList());\n    List<Optional<UnidentifiedAccessPair>> access=legacyTargets.stream().map(r -> recipients.getAccessPair(r.getId())).collect(Collectors.toList());\n    boolean recipientUpdate=isRecipientUpdate || allResults.size() > 0;\n    final MessageSendLogDatabase messageLogDatabase=DatabaseFactory.getMessageLogDatabase(context);\n    final AtomicLong entryId=new AtomicLong(-1);\n    final boolean includeInMessageLog=sendOperation.shouldIncludeInMessageLog();\n    List<SendMessageResult> results=sendOperation.sendLegacy(messageSender,targets,access,recipientUpdate,result -> {\n      if (!includeInMessageLog) {\n        return;\n      }\nsynchronized (entryId) {\n        if (entryId.get() == -1) {\n          entryId.set(messageLogDatabase.insertIfPossible(recipients.requireRecipientId(result.getAddress()),sendOperation.getSentTimestamp(),result,sendOperation.getContentHint(),sendOperation.getRelatedMessageId()));\n        }\n else {\n          messageLogDatabase.addRecipientToExistingEntryIfPossible(entryId.get(),recipients.requireRecipientId(result.getAddress()),result);\n        }\n      }\n    }\n,cancelationSignal);\n    allResults.addAll(results);\n    int successCount=(int)results.stream().filter(SendMessageResult::isSuccess).count();\n    Log.d(TAG,\"Successfully sent using 1:1 to \" + successCount + \"/\"+ targets.size()+ \" legacy targets.\");\n  }\n  return allResults;\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 339,
-      "astHeight" : 14
+      "astNodeNumber" : 869,
+      "astHeight" : 19
     } ],
     "currentLineData" : {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
       "nodePosition" : {
-        "charLength" : 95,
-        "startLineNumber" : 103,
-        "startColumnNumber" : 6,
-        "endLineNumber" : 105,
-        "endColumnNumber" : 7
+        "charLength" : 46,
+        "startLineNumber" : 189,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 189,
+        "endColumnNumber" : 54
       },
-      "nodeContext" : "if (backupPassword == null) {\n  throw new IOException(\"Backup password is null\");\n}\n",
-      "nodeType" : "IfStatement",
-      "astNodeNumber" : 10,
-      "astHeight" : 6
+      "nodeContext" : "senderKeyTargets.size() > 0 && groupId != null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
     },
-    "tokenLength" : 3,
+    "tokenLength" : 4,
     "type" : "boolean"
   } ],
   "positionList" : [ {
-    "charLength" : 22,
-    "startLineNumber" : 103,
-    "startColumnNumber" : 10,
-    "endLineNumber" : 103,
-    "endColumnNumber" : 32
+    "charLength" : 27,
+    "startLineNumber" : 189,
+    "startColumnNumber" : 8,
+    "endLineNumber" : 189,
+    "endColumnNumber" : 35
   } ],
   "layoutRelationDataList" : [ ]
 }

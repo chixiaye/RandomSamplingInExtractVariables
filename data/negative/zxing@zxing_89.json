@@ -1,100 +1,2053 @@
 {
   "id" : 89,
-  "expression" : "codewords[0] & 0x0F",
+  "expression" : "null",
   "projectName" : "zxing@zxing",
-  "commitID" : "1b0aed9c091717337b865955f58290450a3a9e3a",
-  "filePath" : "/core/src/com/google/zxing/maxicode/decoder/Decoder.java",
-  "occurrences" : 1,
+  "commitID" : "3f26da0f8067798ba7e7a3a86c56235e8604760a",
+  "filePath" : "android/src/com/google/zxing/client/android/history/HistoryManager.java",
+  "occurrences" : 12,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "codewords[0] & 0x0F",
-    "nodeType" : "InfixExpression",
+    "nodeContext" : "null",
+    "nodeType" : "NullLiteral",
     "nodePosition" : {
-      "charLength" : 19,
-      "startLineNumber" : 58,
-      "startColumnNumber" : 15,
-      "endLineNumber" : 58,
-      "endColumnNumber" : 34
+      "charLength" : 4,
+      "startLineNumber" : 86,
+      "startColumnNumber" : 24,
+      "endLineNumber" : 86,
+      "endColumnNumber" : 28
     },
-    "astNodeNumber" : 5,
-    "astHeight" : 3,
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
     "parentDataList" : [ {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
       "nodePosition" : {
-        "charLength" : 26,
-        "startLineNumber" : 58,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 58,
-        "endColumnNumber" : 34
+        "charLength" : 9,
+        "startLineNumber" : 86,
+        "startColumnNumber" : 19,
+        "endLineNumber" : 86,
+        "endColumnNumber" : 28
       },
-      "nodeContext" : "mode=codewords[0] & 0x0F",
+      "nodeContext" : "db=null",
       "nodeType" : "VariableDeclarationFragment",
-      "astNodeNumber" : 7,
-      "astHeight" : 4
+      "astNodeNumber" : 3,
+      "astHeight" : 2
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 31,
-        "startLineNumber" : 58,
+        "charLength" : 25,
+        "startLineNumber" : 86,
         "startColumnNumber" : 4,
-        "endLineNumber" : 58,
-        "endColumnNumber" : 35
+        "endLineNumber" : 86,
+        "endColumnNumber" : 29
       },
-      "nodeContext" : "int mode=codewords[0] & 0x0F;\n",
+      "nodeContext" : "SQLiteDatabase db=null;\n",
       "nodeType" : "VariableDeclarationStatement",
-      "astNodeNumber" : 9,
-      "astHeight" : 5
+      "astNodeNumber" : 6,
+      "astHeight" : 3
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 855,
-        "startLineNumber" : 53,
-        "startColumnNumber" : 101,
-        "endLineNumber" : 81,
+        "charLength" : 1899,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 135,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "{\n  BitMatrixParser parser=new BitMatrixParser(bits);\n  byte[] codewords=parser.readCodewords();\n  correctErrors(codewords,0,10,10,ALL);\n  int mode=codewords[0] & 0x0F;\n  byte[] datawords;\nswitch (mode) {\ncase 2:case 3:case 4:    correctErrors(codewords,20,84,40,EVEN);\n  correctErrors(codewords,20,84,40,ODD);\ndatawords=new byte[94];\nbreak;\ncase 5:correctErrors(codewords,20,68,56,EVEN);\ncorrectErrors(codewords,20,68,56,ODD);\ndatawords=new byte[78];\nbreak;\ndefault:throw FormatException.getFormatInstance();\n}\nSystem.arraycopy(codewords,0,datawords,0,10);\nSystem.arraycopy(codewords,20,datawords,10,datawords.length - 10);\nreturn DecodedBitStreamParser.decode(datawords,mode);\n}\n",
+      "nodeContext" : "{\n  SQLiteOpenHelper helper=new DBHelper(activity);\n  List<Result> items=new ArrayList<Result>();\n  List<String> dialogItems=new ArrayList<String>();\n  SQLiteDatabase db=null;\n  Cursor cursor=null;\n  try {\n    db=helper.getReadableDatabase();\n    cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n    while (cursor.moveToNext()) {\n      String text=cursor.getString(0);\n      String format=cursor.getString(2);\n      long timestamp=cursor.getLong(3);\n      Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n      items.add(result);\n      StringBuilder displayResult=new StringBuilder();\n      String display=cursor.getString(1);\n      if (display == null || display.length() == 0) {\n        display=result.getText();\n      }\n      displayResult.append(display);\n      String details=cursor.getString(4);\n      if (details != null && details.length() > 0) {\n        displayResult.append(\" : \").append(details);\n      }\n      dialogItems.add(displayResult.toString());\n    }\n  }\n catch (  SQLiteException sqle) {\n    Log.w(TAG,\"Error while opening database\",sqle);\n  }\n finally {\n    if (cursor != null) {\n      cursor.close();\n    }\n    if (db != null) {\n      db.close();\n    }\n  }\n  Resources res=activity.getResources();\n  dialogItems.add(res.getString(R.string.history_send));\n  dialogItems.add(res.getString(R.string.history_clear_text));\n  DialogInterface.OnClickListener clickListener=new HistoryClickListener(this,activity,items);\n  AlertDialog.Builder builder=new AlertDialog.Builder(activity);\n  builder.setTitle(R.string.history_title);\n  builder.setItems(dialogItems.toArray(new String[dialogItems.size()]),clickListener);\n  return builder.create();\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 135,
-      "astHeight" : 7
+      "astNodeNumber" : 322,
+      "astHeight" : 11
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 1000,
-        "startLineNumber" : 52,
+        "charLength" : 1931,
+        "startLineNumber" : 79,
         "startColumnNumber" : 2,
-        "endLineNumber" : 81,
+        "endLineNumber" : 135,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "public DecoderResult decode(BitMatrix bits,Map<DecodeHintType,?> hints) throws FormatException, ChecksumException {\n  BitMatrixParser parser=new BitMatrixParser(bits);\n  byte[] codewords=parser.readCodewords();\n  correctErrors(codewords,0,10,10,ALL);\n  int mode=codewords[0] & 0x0F;\n  byte[] datawords;\nswitch (mode) {\ncase 2:case 3:case 4:    correctErrors(codewords,20,84,40,EVEN);\n  correctErrors(codewords,20,84,40,ODD);\ndatawords=new byte[94];\nbreak;\ncase 5:correctErrors(codewords,20,68,56,EVEN);\ncorrectErrors(codewords,20,68,56,ODD);\ndatawords=new byte[78];\nbreak;\ndefault:throw FormatException.getFormatInstance();\n}\nSystem.arraycopy(codewords,0,datawords,0,10);\nSystem.arraycopy(codewords,20,datawords,10,datawords.length - 10);\nreturn DecodedBitStreamParser.decode(datawords,mode);\n}\n",
+      "nodeContext" : "public AlertDialog buildAlert(){\n  SQLiteOpenHelper helper=new DBHelper(activity);\n  List<Result> items=new ArrayList<Result>();\n  List<String> dialogItems=new ArrayList<String>();\n  SQLiteDatabase db=null;\n  Cursor cursor=null;\n  try {\n    db=helper.getReadableDatabase();\n    cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n    while (cursor.moveToNext()) {\n      String text=cursor.getString(0);\n      String format=cursor.getString(2);\n      long timestamp=cursor.getLong(3);\n      Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n      items.add(result);\n      StringBuilder displayResult=new StringBuilder();\n      String display=cursor.getString(1);\n      if (display == null || display.length() == 0) {\n        display=result.getText();\n      }\n      displayResult.append(display);\n      String details=cursor.getString(4);\n      if (details != null && details.length() > 0) {\n        displayResult.append(\" : \").append(details);\n      }\n      dialogItems.add(displayResult.toString());\n    }\n  }\n catch (  SQLiteException sqle) {\n    Log.w(TAG,\"Error while opening database\",sqle);\n  }\n finally {\n    if (cursor != null) {\n      cursor.close();\n    }\n    if (db != null) {\n      db.close();\n    }\n  }\n  Resources res=activity.getResources();\n  dialogItems.add(res.getString(R.string.history_send));\n  dialogItems.add(res.getString(R.string.history_clear_text));\n  DialogInterface.OnClickListener clickListener=new HistoryClickListener(this,activity,items);\n  AlertDialog.Builder builder=new AlertDialog.Builder(activity);\n  builder.setTitle(R.string.history_title);\n  builder.setItems(dialogItems.toArray(new String[dialogItems.size()]),clickListener);\n  return builder.create();\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 156,
-      "astHeight" : 8
+      "astNodeNumber" : 327,
+      "astHeight" : 12
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 31,
-        "startLineNumber" : 58,
+        "charLength" : 25,
+        "startLineNumber" : 86,
         "startColumnNumber" : 4,
-        "endLineNumber" : 58,
-        "endColumnNumber" : 35
+        "endLineNumber" : 86,
+        "endColumnNumber" : 29
       },
-      "nodeContext" : "int mode=codewords[0] & 0x0F;\n",
+      "nodeContext" : "SQLiteDatabase db=null;\n",
       "nodeType" : "VariableDeclarationStatement",
-      "astNodeNumber" : 9,
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "null"
+  }, {
+    "nodeContext" : "null",
+    "nodeType" : "NullLiteral",
+    "nodePosition" : {
+      "charLength" : 4,
+      "startLineNumber" : 87,
+      "startColumnNumber" : 20,
+      "endLineNumber" : 87,
+      "endColumnNumber" : 24
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 13,
+        "startLineNumber" : 87,
+        "startColumnNumber" : 11,
+        "endLineNumber" : 87,
+        "endColumnNumber" : 24
+      },
+      "nodeContext" : "cursor=null",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 21,
+        "startLineNumber" : 87,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 87,
+        "endColumnNumber" : 25
+      },
+      "nodeContext" : "Cursor cursor=null;\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 1899,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 135,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  SQLiteOpenHelper helper=new DBHelper(activity);\n  List<Result> items=new ArrayList<Result>();\n  List<String> dialogItems=new ArrayList<String>();\n  SQLiteDatabase db=null;\n  Cursor cursor=null;\n  try {\n    db=helper.getReadableDatabase();\n    cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n    while (cursor.moveToNext()) {\n      String text=cursor.getString(0);\n      String format=cursor.getString(2);\n      long timestamp=cursor.getLong(3);\n      Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n      items.add(result);\n      StringBuilder displayResult=new StringBuilder();\n      String display=cursor.getString(1);\n      if (display == null || display.length() == 0) {\n        display=result.getText();\n      }\n      displayResult.append(display);\n      String details=cursor.getString(4);\n      if (details != null && details.length() > 0) {\n        displayResult.append(\" : \").append(details);\n      }\n      dialogItems.add(displayResult.toString());\n    }\n  }\n catch (  SQLiteException sqle) {\n    Log.w(TAG,\"Error while opening database\",sqle);\n  }\n finally {\n    if (cursor != null) {\n      cursor.close();\n    }\n    if (db != null) {\n      db.close();\n    }\n  }\n  Resources res=activity.getResources();\n  dialogItems.add(res.getString(R.string.history_send));\n  dialogItems.add(res.getString(R.string.history_clear_text));\n  DialogInterface.OnClickListener clickListener=new HistoryClickListener(this,activity,items);\n  AlertDialog.Builder builder=new AlertDialog.Builder(activity);\n  builder.setTitle(R.string.history_title);\n  builder.setItems(dialogItems.toArray(new String[dialogItems.size()]),clickListener);\n  return builder.create();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 322,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 1931,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 135,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "public AlertDialog buildAlert(){\n  SQLiteOpenHelper helper=new DBHelper(activity);\n  List<Result> items=new ArrayList<Result>();\n  List<String> dialogItems=new ArrayList<String>();\n  SQLiteDatabase db=null;\n  Cursor cursor=null;\n  try {\n    db=helper.getReadableDatabase();\n    cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n    while (cursor.moveToNext()) {\n      String text=cursor.getString(0);\n      String format=cursor.getString(2);\n      long timestamp=cursor.getLong(3);\n      Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n      items.add(result);\n      StringBuilder displayResult=new StringBuilder();\n      String display=cursor.getString(1);\n      if (display == null || display.length() == 0) {\n        display=result.getText();\n      }\n      displayResult.append(display);\n      String details=cursor.getString(4);\n      if (details != null && details.length() > 0) {\n        displayResult.append(\" : \").append(details);\n      }\n      dialogItems.add(displayResult.toString());\n    }\n  }\n catch (  SQLiteException sqle) {\n    Log.w(TAG,\"Error while opening database\",sqle);\n  }\n finally {\n    if (cursor != null) {\n      cursor.close();\n    }\n    if (db != null) {\n      db.close();\n    }\n  }\n  Resources res=activity.getResources();\n  dialogItems.add(res.getString(R.string.history_send));\n  dialogItems.add(res.getString(R.string.history_clear_text));\n  DialogInterface.OnClickListener clickListener=new HistoryClickListener(this,activity,items);\n  AlertDialog.Builder builder=new AlertDialog.Builder(activity);\n  builder.setTitle(R.string.history_title);\n  builder.setItems(dialogItems.toArray(new String[dialogItems.size()]),clickListener);\n  return builder.create();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 327,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 21,
+        "startLineNumber" : 87,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 87,
+        "endColumnNumber" : 25
+      },
+      "nodeContext" : "Cursor cursor=null;\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "null"
+  }, {
+    "nodeContext" : "null",
+    "nodeType" : "NullLiteral",
+    "nodePosition" : {
+      "charLength" : 4,
+      "startLineNumber" : 92,
+      "startColumnNumber" : 54,
+      "endLineNumber" : 92,
+      "endColumnNumber" : 58
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
+      "nodePosition" : {
+        "charLength" : 96,
+        "startLineNumber" : 92,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 92,
+        "endColumnNumber" : 111
+      },
+      "nodeContext" : "db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\")",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 16,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 105,
+        "startLineNumber" : 92,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 92,
+        "endColumnNumber" : 111
+      },
+      "nodeContext" : "cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\")",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 18,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 106,
+        "startLineNumber" : 92,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 92,
+        "endColumnNumber" : 112
+      },
+      "nodeContext" : "cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 19,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 939,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  db=helper.getReadableDatabase();\n  cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n  while (cursor.moveToNext()) {\n    String text=cursor.getString(0);\n    String format=cursor.getString(2);\n    long timestamp=cursor.getLong(3);\n    Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n    items.add(result);\n    StringBuilder displayResult=new StringBuilder();\n    String display=cursor.getString(1);\n    if (display == null || display.length() == 0) {\n      display=result.getText();\n    }\n    displayResult.append(display);\n    String details=cursor.getString(4);\n    if (details != null && details.length() > 0) {\n      displayResult.append(\" : \").append(details);\n    }\n    dialogItems.add(displayResult.toString());\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 152,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1164,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 125,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "try {\n  db=helper.getReadableDatabase();\n  cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n  while (cursor.moveToNext()) {\n    String text=cursor.getString(0);\n    String format=cursor.getString(2);\n    long timestamp=cursor.getLong(3);\n    Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n    items.add(result);\n    StringBuilder displayResult=new StringBuilder();\n    String display=cursor.getString(1);\n    if (display == null || display.length() == 0) {\n      display=result.getText();\n    }\n    displayResult.append(display);\n    String details=cursor.getString(4);\n    if (details != null && details.length() > 0) {\n      displayResult.append(\" : \").append(details);\n    }\n    dialogItems.add(displayResult.toString());\n  }\n}\n catch (SQLiteException sqle) {\n  Log.w(TAG,\"Error while opening database\",sqle);\n}\n finally {\n  if (cursor != null) {\n    cursor.close();\n  }\n  if (db != null) {\n    db.close();\n  }\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 185,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 1899,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 135,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  SQLiteOpenHelper helper=new DBHelper(activity);\n  List<Result> items=new ArrayList<Result>();\n  List<String> dialogItems=new ArrayList<String>();\n  SQLiteDatabase db=null;\n  Cursor cursor=null;\n  try {\n    db=helper.getReadableDatabase();\n    cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n    while (cursor.moveToNext()) {\n      String text=cursor.getString(0);\n      String format=cursor.getString(2);\n      long timestamp=cursor.getLong(3);\n      Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n      items.add(result);\n      StringBuilder displayResult=new StringBuilder();\n      String display=cursor.getString(1);\n      if (display == null || display.length() == 0) {\n        display=result.getText();\n      }\n      displayResult.append(display);\n      String details=cursor.getString(4);\n      if (details != null && details.length() > 0) {\n        displayResult.append(\" : \").append(details);\n      }\n      dialogItems.add(displayResult.toString());\n    }\n  }\n catch (  SQLiteException sqle) {\n    Log.w(TAG,\"Error while opening database\",sqle);\n  }\n finally {\n    if (cursor != null) {\n      cursor.close();\n    }\n    if (db != null) {\n      db.close();\n    }\n  }\n  Resources res=activity.getResources();\n  dialogItems.add(res.getString(R.string.history_send));\n  dialogItems.add(res.getString(R.string.history_clear_text));\n  DialogInterface.OnClickListener clickListener=new HistoryClickListener(this,activity,items);\n  AlertDialog.Builder builder=new AlertDialog.Builder(activity);\n  builder.setTitle(R.string.history_title);\n  builder.setItems(dialogItems.toArray(new String[dialogItems.size()]),clickListener);\n  return builder.create();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 322,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 1931,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 135,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "public AlertDialog buildAlert(){\n  SQLiteOpenHelper helper=new DBHelper(activity);\n  List<Result> items=new ArrayList<Result>();\n  List<String> dialogItems=new ArrayList<String>();\n  SQLiteDatabase db=null;\n  Cursor cursor=null;\n  try {\n    db=helper.getReadableDatabase();\n    cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n    while (cursor.moveToNext()) {\n      String text=cursor.getString(0);\n      String format=cursor.getString(2);\n      long timestamp=cursor.getLong(3);\n      Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n      items.add(result);\n      StringBuilder displayResult=new StringBuilder();\n      String display=cursor.getString(1);\n      if (display == null || display.length() == 0) {\n        display=result.getText();\n      }\n      displayResult.append(display);\n      String details=cursor.getString(4);\n      if (details != null && details.length() > 0) {\n        displayResult.append(\" : \").append(details);\n      }\n      dialogItems.add(displayResult.toString());\n    }\n  }\n catch (  SQLiteException sqle) {\n    Log.w(TAG,\"Error while opening database\",sqle);\n  }\n finally {\n    if (cursor != null) {\n      cursor.close();\n    }\n    if (db != null) {\n      db.close();\n    }\n  }\n  Resources res=activity.getResources();\n  dialogItems.add(res.getString(R.string.history_send));\n  dialogItems.add(res.getString(R.string.history_clear_text));\n  DialogInterface.OnClickListener clickListener=new HistoryClickListener(this,activity,items);\n  AlertDialog.Builder builder=new AlertDialog.Builder(activity);\n  builder.setTitle(R.string.history_title);\n  builder.setItems(dialogItems.toArray(new String[dialogItems.size()]),clickListener);\n  return builder.create();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 327,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 106,
+        "startLineNumber" : 92,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 92,
+        "endColumnNumber" : 112
+      },
+      "nodeContext" : "cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 19,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "null"
+  }, {
+    "nodeContext" : "null",
+    "nodeType" : "NullLiteral",
+    "nodePosition" : {
+      "charLength" : 4,
+      "startLineNumber" : 92,
+      "startColumnNumber" : 60,
+      "endLineNumber" : 92,
+      "endColumnNumber" : 64
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
+      "nodePosition" : {
+        "charLength" : 96,
+        "startLineNumber" : 92,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 92,
+        "endColumnNumber" : 111
+      },
+      "nodeContext" : "db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\")",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 16,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 105,
+        "startLineNumber" : 92,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 92,
+        "endColumnNumber" : 111
+      },
+      "nodeContext" : "cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\")",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 18,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 106,
+        "startLineNumber" : 92,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 92,
+        "endColumnNumber" : 112
+      },
+      "nodeContext" : "cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 19,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 939,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  db=helper.getReadableDatabase();\n  cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n  while (cursor.moveToNext()) {\n    String text=cursor.getString(0);\n    String format=cursor.getString(2);\n    long timestamp=cursor.getLong(3);\n    Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n    items.add(result);\n    StringBuilder displayResult=new StringBuilder();\n    String display=cursor.getString(1);\n    if (display == null || display.length() == 0) {\n      display=result.getText();\n    }\n    displayResult.append(display);\n    String details=cursor.getString(4);\n    if (details != null && details.length() > 0) {\n      displayResult.append(\" : \").append(details);\n    }\n    dialogItems.add(displayResult.toString());\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 152,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1164,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 125,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "try {\n  db=helper.getReadableDatabase();\n  cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n  while (cursor.moveToNext()) {\n    String text=cursor.getString(0);\n    String format=cursor.getString(2);\n    long timestamp=cursor.getLong(3);\n    Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n    items.add(result);\n    StringBuilder displayResult=new StringBuilder();\n    String display=cursor.getString(1);\n    if (display == null || display.length() == 0) {\n      display=result.getText();\n    }\n    displayResult.append(display);\n    String details=cursor.getString(4);\n    if (details != null && details.length() > 0) {\n      displayResult.append(\" : \").append(details);\n    }\n    dialogItems.add(displayResult.toString());\n  }\n}\n catch (SQLiteException sqle) {\n  Log.w(TAG,\"Error while opening database\",sqle);\n}\n finally {\n  if (cursor != null) {\n    cursor.close();\n  }\n  if (db != null) {\n    db.close();\n  }\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 185,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 1899,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 135,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  SQLiteOpenHelper helper=new DBHelper(activity);\n  List<Result> items=new ArrayList<Result>();\n  List<String> dialogItems=new ArrayList<String>();\n  SQLiteDatabase db=null;\n  Cursor cursor=null;\n  try {\n    db=helper.getReadableDatabase();\n    cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n    while (cursor.moveToNext()) {\n      String text=cursor.getString(0);\n      String format=cursor.getString(2);\n      long timestamp=cursor.getLong(3);\n      Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n      items.add(result);\n      StringBuilder displayResult=new StringBuilder();\n      String display=cursor.getString(1);\n      if (display == null || display.length() == 0) {\n        display=result.getText();\n      }\n      displayResult.append(display);\n      String details=cursor.getString(4);\n      if (details != null && details.length() > 0) {\n        displayResult.append(\" : \").append(details);\n      }\n      dialogItems.add(displayResult.toString());\n    }\n  }\n catch (  SQLiteException sqle) {\n    Log.w(TAG,\"Error while opening database\",sqle);\n  }\n finally {\n    if (cursor != null) {\n      cursor.close();\n    }\n    if (db != null) {\n      db.close();\n    }\n  }\n  Resources res=activity.getResources();\n  dialogItems.add(res.getString(R.string.history_send));\n  dialogItems.add(res.getString(R.string.history_clear_text));\n  DialogInterface.OnClickListener clickListener=new HistoryClickListener(this,activity,items);\n  AlertDialog.Builder builder=new AlertDialog.Builder(activity);\n  builder.setTitle(R.string.history_title);\n  builder.setItems(dialogItems.toArray(new String[dialogItems.size()]),clickListener);\n  return builder.create();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 322,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 1931,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 135,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "public AlertDialog buildAlert(){\n  SQLiteOpenHelper helper=new DBHelper(activity);\n  List<Result> items=new ArrayList<Result>();\n  List<String> dialogItems=new ArrayList<String>();\n  SQLiteDatabase db=null;\n  Cursor cursor=null;\n  try {\n    db=helper.getReadableDatabase();\n    cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n    while (cursor.moveToNext()) {\n      String text=cursor.getString(0);\n      String format=cursor.getString(2);\n      long timestamp=cursor.getLong(3);\n      Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n      items.add(result);\n      StringBuilder displayResult=new StringBuilder();\n      String display=cursor.getString(1);\n      if (display == null || display.length() == 0) {\n        display=result.getText();\n      }\n      displayResult.append(display);\n      String details=cursor.getString(4);\n      if (details != null && details.length() > 0) {\n        displayResult.append(\" : \").append(details);\n      }\n      dialogItems.add(displayResult.toString());\n    }\n  }\n catch (  SQLiteException sqle) {\n    Log.w(TAG,\"Error while opening database\",sqle);\n  }\n finally {\n    if (cursor != null) {\n      cursor.close();\n    }\n    if (db != null) {\n      db.close();\n    }\n  }\n  Resources res=activity.getResources();\n  dialogItems.add(res.getString(R.string.history_send));\n  dialogItems.add(res.getString(R.string.history_clear_text));\n  DialogInterface.OnClickListener clickListener=new HistoryClickListener(this,activity,items);\n  AlertDialog.Builder builder=new AlertDialog.Builder(activity);\n  builder.setTitle(R.string.history_title);\n  builder.setItems(dialogItems.toArray(new String[dialogItems.size()]),clickListener);\n  return builder.create();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 327,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 106,
+        "startLineNumber" : 92,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 92,
+        "endColumnNumber" : 112
+      },
+      "nodeContext" : "cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 19,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "null"
+  }, {
+    "nodeContext" : "null",
+    "nodeType" : "NullLiteral",
+    "nodePosition" : {
+      "charLength" : 4,
+      "startLineNumber" : 92,
+      "startColumnNumber" : 66,
+      "endLineNumber" : 92,
+      "endColumnNumber" : 70
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
+      "nodePosition" : {
+        "charLength" : 96,
+        "startLineNumber" : 92,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 92,
+        "endColumnNumber" : 111
+      },
+      "nodeContext" : "db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\")",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 16,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 105,
+        "startLineNumber" : 92,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 92,
+        "endColumnNumber" : 111
+      },
+      "nodeContext" : "cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\")",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 18,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 106,
+        "startLineNumber" : 92,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 92,
+        "endColumnNumber" : 112
+      },
+      "nodeContext" : "cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 19,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 939,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  db=helper.getReadableDatabase();\n  cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n  while (cursor.moveToNext()) {\n    String text=cursor.getString(0);\n    String format=cursor.getString(2);\n    long timestamp=cursor.getLong(3);\n    Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n    items.add(result);\n    StringBuilder displayResult=new StringBuilder();\n    String display=cursor.getString(1);\n    if (display == null || display.length() == 0) {\n      display=result.getText();\n    }\n    displayResult.append(display);\n    String details=cursor.getString(4);\n    if (details != null && details.length() > 0) {\n      displayResult.append(\" : \").append(details);\n    }\n    dialogItems.add(displayResult.toString());\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 152,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1164,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 125,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "try {\n  db=helper.getReadableDatabase();\n  cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n  while (cursor.moveToNext()) {\n    String text=cursor.getString(0);\n    String format=cursor.getString(2);\n    long timestamp=cursor.getLong(3);\n    Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n    items.add(result);\n    StringBuilder displayResult=new StringBuilder();\n    String display=cursor.getString(1);\n    if (display == null || display.length() == 0) {\n      display=result.getText();\n    }\n    displayResult.append(display);\n    String details=cursor.getString(4);\n    if (details != null && details.length() > 0) {\n      displayResult.append(\" : \").append(details);\n    }\n    dialogItems.add(displayResult.toString());\n  }\n}\n catch (SQLiteException sqle) {\n  Log.w(TAG,\"Error while opening database\",sqle);\n}\n finally {\n  if (cursor != null) {\n    cursor.close();\n  }\n  if (db != null) {\n    db.close();\n  }\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 185,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 1899,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 135,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  SQLiteOpenHelper helper=new DBHelper(activity);\n  List<Result> items=new ArrayList<Result>();\n  List<String> dialogItems=new ArrayList<String>();\n  SQLiteDatabase db=null;\n  Cursor cursor=null;\n  try {\n    db=helper.getReadableDatabase();\n    cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n    while (cursor.moveToNext()) {\n      String text=cursor.getString(0);\n      String format=cursor.getString(2);\n      long timestamp=cursor.getLong(3);\n      Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n      items.add(result);\n      StringBuilder displayResult=new StringBuilder();\n      String display=cursor.getString(1);\n      if (display == null || display.length() == 0) {\n        display=result.getText();\n      }\n      displayResult.append(display);\n      String details=cursor.getString(4);\n      if (details != null && details.length() > 0) {\n        displayResult.append(\" : \").append(details);\n      }\n      dialogItems.add(displayResult.toString());\n    }\n  }\n catch (  SQLiteException sqle) {\n    Log.w(TAG,\"Error while opening database\",sqle);\n  }\n finally {\n    if (cursor != null) {\n      cursor.close();\n    }\n    if (db != null) {\n      db.close();\n    }\n  }\n  Resources res=activity.getResources();\n  dialogItems.add(res.getString(R.string.history_send));\n  dialogItems.add(res.getString(R.string.history_clear_text));\n  DialogInterface.OnClickListener clickListener=new HistoryClickListener(this,activity,items);\n  AlertDialog.Builder builder=new AlertDialog.Builder(activity);\n  builder.setTitle(R.string.history_title);\n  builder.setItems(dialogItems.toArray(new String[dialogItems.size()]),clickListener);\n  return builder.create();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 322,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 1931,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 135,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "public AlertDialog buildAlert(){\n  SQLiteOpenHelper helper=new DBHelper(activity);\n  List<Result> items=new ArrayList<Result>();\n  List<String> dialogItems=new ArrayList<String>();\n  SQLiteDatabase db=null;\n  Cursor cursor=null;\n  try {\n    db=helper.getReadableDatabase();\n    cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n    while (cursor.moveToNext()) {\n      String text=cursor.getString(0);\n      String format=cursor.getString(2);\n      long timestamp=cursor.getLong(3);\n      Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n      items.add(result);\n      StringBuilder displayResult=new StringBuilder();\n      String display=cursor.getString(1);\n      if (display == null || display.length() == 0) {\n        display=result.getText();\n      }\n      displayResult.append(display);\n      String details=cursor.getString(4);\n      if (details != null && details.length() > 0) {\n        displayResult.append(\" : \").append(details);\n      }\n      dialogItems.add(displayResult.toString());\n    }\n  }\n catch (  SQLiteException sqle) {\n    Log.w(TAG,\"Error while opening database\",sqle);\n  }\n finally {\n    if (cursor != null) {\n      cursor.close();\n    }\n    if (db != null) {\n      db.close();\n    }\n  }\n  Resources res=activity.getResources();\n  dialogItems.add(res.getString(R.string.history_send));\n  dialogItems.add(res.getString(R.string.history_clear_text));\n  DialogInterface.OnClickListener clickListener=new HistoryClickListener(this,activity,items);\n  AlertDialog.Builder builder=new AlertDialog.Builder(activity);\n  builder.setTitle(R.string.history_title);\n  builder.setItems(dialogItems.toArray(new String[dialogItems.size()]),clickListener);\n  return builder.create();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 327,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 106,
+        "startLineNumber" : 92,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 92,
+        "endColumnNumber" : 112
+      },
+      "nodeContext" : "cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 19,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "null"
+  }, {
+    "nodeContext" : "null",
+    "nodeType" : "NullLiteral",
+    "nodePosition" : {
+      "charLength" : 4,
+      "startLineNumber" : 92,
+      "startColumnNumber" : 72,
+      "endLineNumber" : 92,
+      "endColumnNumber" : 76
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
+      "nodePosition" : {
+        "charLength" : 96,
+        "startLineNumber" : 92,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 92,
+        "endColumnNumber" : 111
+      },
+      "nodeContext" : "db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\")",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 16,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 105,
+        "startLineNumber" : 92,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 92,
+        "endColumnNumber" : 111
+      },
+      "nodeContext" : "cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\")",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 18,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 106,
+        "startLineNumber" : 92,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 92,
+        "endColumnNumber" : 112
+      },
+      "nodeContext" : "cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 19,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 939,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  db=helper.getReadableDatabase();\n  cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n  while (cursor.moveToNext()) {\n    String text=cursor.getString(0);\n    String format=cursor.getString(2);\n    long timestamp=cursor.getLong(3);\n    Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n    items.add(result);\n    StringBuilder displayResult=new StringBuilder();\n    String display=cursor.getString(1);\n    if (display == null || display.length() == 0) {\n      display=result.getText();\n    }\n    displayResult.append(display);\n    String details=cursor.getString(4);\n    if (details != null && details.length() > 0) {\n      displayResult.append(\" : \").append(details);\n    }\n    dialogItems.add(displayResult.toString());\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 152,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1164,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 125,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "try {\n  db=helper.getReadableDatabase();\n  cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n  while (cursor.moveToNext()) {\n    String text=cursor.getString(0);\n    String format=cursor.getString(2);\n    long timestamp=cursor.getLong(3);\n    Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n    items.add(result);\n    StringBuilder displayResult=new StringBuilder();\n    String display=cursor.getString(1);\n    if (display == null || display.length() == 0) {\n      display=result.getText();\n    }\n    displayResult.append(display);\n    String details=cursor.getString(4);\n    if (details != null && details.length() > 0) {\n      displayResult.append(\" : \").append(details);\n    }\n    dialogItems.add(displayResult.toString());\n  }\n}\n catch (SQLiteException sqle) {\n  Log.w(TAG,\"Error while opening database\",sqle);\n}\n finally {\n  if (cursor != null) {\n    cursor.close();\n  }\n  if (db != null) {\n    db.close();\n  }\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 185,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 1899,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 135,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  SQLiteOpenHelper helper=new DBHelper(activity);\n  List<Result> items=new ArrayList<Result>();\n  List<String> dialogItems=new ArrayList<String>();\n  SQLiteDatabase db=null;\n  Cursor cursor=null;\n  try {\n    db=helper.getReadableDatabase();\n    cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n    while (cursor.moveToNext()) {\n      String text=cursor.getString(0);\n      String format=cursor.getString(2);\n      long timestamp=cursor.getLong(3);\n      Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n      items.add(result);\n      StringBuilder displayResult=new StringBuilder();\n      String display=cursor.getString(1);\n      if (display == null || display.length() == 0) {\n        display=result.getText();\n      }\n      displayResult.append(display);\n      String details=cursor.getString(4);\n      if (details != null && details.length() > 0) {\n        displayResult.append(\" : \").append(details);\n      }\n      dialogItems.add(displayResult.toString());\n    }\n  }\n catch (  SQLiteException sqle) {\n    Log.w(TAG,\"Error while opening database\",sqle);\n  }\n finally {\n    if (cursor != null) {\n      cursor.close();\n    }\n    if (db != null) {\n      db.close();\n    }\n  }\n  Resources res=activity.getResources();\n  dialogItems.add(res.getString(R.string.history_send));\n  dialogItems.add(res.getString(R.string.history_clear_text));\n  DialogInterface.OnClickListener clickListener=new HistoryClickListener(this,activity,items);\n  AlertDialog.Builder builder=new AlertDialog.Builder(activity);\n  builder.setTitle(R.string.history_title);\n  builder.setItems(dialogItems.toArray(new String[dialogItems.size()]),clickListener);\n  return builder.create();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 322,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 1931,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 135,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "public AlertDialog buildAlert(){\n  SQLiteOpenHelper helper=new DBHelper(activity);\n  List<Result> items=new ArrayList<Result>();\n  List<String> dialogItems=new ArrayList<String>();\n  SQLiteDatabase db=null;\n  Cursor cursor=null;\n  try {\n    db=helper.getReadableDatabase();\n    cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n    while (cursor.moveToNext()) {\n      String text=cursor.getString(0);\n      String format=cursor.getString(2);\n      long timestamp=cursor.getLong(3);\n      Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n      items.add(result);\n      StringBuilder displayResult=new StringBuilder();\n      String display=cursor.getString(1);\n      if (display == null || display.length() == 0) {\n        display=result.getText();\n      }\n      displayResult.append(display);\n      String details=cursor.getString(4);\n      if (details != null && details.length() > 0) {\n        displayResult.append(\" : \").append(details);\n      }\n      dialogItems.add(displayResult.toString());\n    }\n  }\n catch (  SQLiteException sqle) {\n    Log.w(TAG,\"Error while opening database\",sqle);\n  }\n finally {\n    if (cursor != null) {\n      cursor.close();\n    }\n    if (db != null) {\n      db.close();\n    }\n  }\n  Resources res=activity.getResources();\n  dialogItems.add(res.getString(R.string.history_send));\n  dialogItems.add(res.getString(R.string.history_clear_text));\n  DialogInterface.OnClickListener clickListener=new HistoryClickListener(this,activity,items);\n  AlertDialog.Builder builder=new AlertDialog.Builder(activity);\n  builder.setTitle(R.string.history_title);\n  builder.setItems(dialogItems.toArray(new String[dialogItems.size()]),clickListener);\n  return builder.create();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 327,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 106,
+        "startLineNumber" : 92,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 92,
+        "endColumnNumber" : 112
+      },
+      "nodeContext" : "cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 19,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "null"
+  }, {
+    "nodeContext" : "null",
+    "nodeType" : "NullLiteral",
+    "nodePosition" : {
+      "charLength" : 4,
+      "startLineNumber" : 99,
+      "startColumnNumber" : 41,
+      "endLineNumber" : 99,
+      "endColumnNumber" : 45
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 70,
+        "startLineNumber" : 99,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 99,
+        "endColumnNumber" : 94
+      },
+      "nodeContext" : "new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp)",
+      "nodeType" : "ClassInstanceCreation",
+      "astNodeNumber" : 11,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 79,
+        "startLineNumber" : 99,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 99,
+        "endColumnNumber" : 94
+      },
+      "nodeContext" : "result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 13,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 87,
+        "startLineNumber" : 99,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 99,
+        "endColumnNumber" : 95
+      },
+      "nodeContext" : "Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 16,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.WhileStatement,body]",
+      "nodePosition" : {
+        "charLength" : 740,
+        "startLineNumber" : 94,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 114,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "{\n  String text=cursor.getString(0);\n  String format=cursor.getString(2);\n  long timestamp=cursor.getLong(3);\n  Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n  items.add(result);\n  StringBuilder displayResult=new StringBuilder();\n  String display=cursor.getString(1);\n  if (display == null || display.length() == 0) {\n    display=result.getText();\n  }\n  displayResult.append(display);\n  String details=cursor.getString(4);\n  if (details != null && details.length() > 0) {\n    displayResult.append(\" : \").append(details);\n  }\n  dialogItems.add(displayResult.toString());\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 122,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 768,
+        "startLineNumber" : 94,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 114,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "while (cursor.moveToNext()) {\n  String text=cursor.getString(0);\n  String format=cursor.getString(2);\n  long timestamp=cursor.getLong(3);\n  Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n  items.add(result);\n  StringBuilder displayResult=new StringBuilder();\n  String display=cursor.getString(1);\n  if (display == null || display.length() == 0) {\n    display=result.getText();\n  }\n  displayResult.append(display);\n  String details=cursor.getString(4);\n  if (details != null && details.length() > 0) {\n    displayResult.append(\" : \").append(details);\n  }\n  dialogItems.add(displayResult.toString());\n}\n",
+      "nodeType" : "WhileStatement",
+      "astNodeNumber" : 126,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 939,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  db=helper.getReadableDatabase();\n  cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n  while (cursor.moveToNext()) {\n    String text=cursor.getString(0);\n    String format=cursor.getString(2);\n    long timestamp=cursor.getLong(3);\n    Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n    items.add(result);\n    StringBuilder displayResult=new StringBuilder();\n    String display=cursor.getString(1);\n    if (display == null || display.length() == 0) {\n      display=result.getText();\n    }\n    displayResult.append(display);\n    String details=cursor.getString(4);\n    if (details != null && details.length() > 0) {\n      displayResult.append(\" : \").append(details);\n    }\n    dialogItems.add(displayResult.toString());\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 152,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1164,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 125,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "try {\n  db=helper.getReadableDatabase();\n  cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n  while (cursor.moveToNext()) {\n    String text=cursor.getString(0);\n    String format=cursor.getString(2);\n    long timestamp=cursor.getLong(3);\n    Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n    items.add(result);\n    StringBuilder displayResult=new StringBuilder();\n    String display=cursor.getString(1);\n    if (display == null || display.length() == 0) {\n      display=result.getText();\n    }\n    displayResult.append(display);\n    String details=cursor.getString(4);\n    if (details != null && details.length() > 0) {\n      displayResult.append(\" : \").append(details);\n    }\n    dialogItems.add(displayResult.toString());\n  }\n}\n catch (SQLiteException sqle) {\n  Log.w(TAG,\"Error while opening database\",sqle);\n}\n finally {\n  if (cursor != null) {\n    cursor.close();\n  }\n  if (db != null) {\n    db.close();\n  }\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 185,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 1899,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 135,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  SQLiteOpenHelper helper=new DBHelper(activity);\n  List<Result> items=new ArrayList<Result>();\n  List<String> dialogItems=new ArrayList<String>();\n  SQLiteDatabase db=null;\n  Cursor cursor=null;\n  try {\n    db=helper.getReadableDatabase();\n    cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n    while (cursor.moveToNext()) {\n      String text=cursor.getString(0);\n      String format=cursor.getString(2);\n      long timestamp=cursor.getLong(3);\n      Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n      items.add(result);\n      StringBuilder displayResult=new StringBuilder();\n      String display=cursor.getString(1);\n      if (display == null || display.length() == 0) {\n        display=result.getText();\n      }\n      displayResult.append(display);\n      String details=cursor.getString(4);\n      if (details != null && details.length() > 0) {\n        displayResult.append(\" : \").append(details);\n      }\n      dialogItems.add(displayResult.toString());\n    }\n  }\n catch (  SQLiteException sqle) {\n    Log.w(TAG,\"Error while opening database\",sqle);\n  }\n finally {\n    if (cursor != null) {\n      cursor.close();\n    }\n    if (db != null) {\n      db.close();\n    }\n  }\n  Resources res=activity.getResources();\n  dialogItems.add(res.getString(R.string.history_send));\n  dialogItems.add(res.getString(R.string.history_clear_text));\n  DialogInterface.OnClickListener clickListener=new HistoryClickListener(this,activity,items);\n  AlertDialog.Builder builder=new AlertDialog.Builder(activity);\n  builder.setTitle(R.string.history_title);\n  builder.setItems(dialogItems.toArray(new String[dialogItems.size()]),clickListener);\n  return builder.create();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 322,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 1931,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 135,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "public AlertDialog buildAlert(){\n  SQLiteOpenHelper helper=new DBHelper(activity);\n  List<Result> items=new ArrayList<Result>();\n  List<String> dialogItems=new ArrayList<String>();\n  SQLiteDatabase db=null;\n  Cursor cursor=null;\n  try {\n    db=helper.getReadableDatabase();\n    cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n    while (cursor.moveToNext()) {\n      String text=cursor.getString(0);\n      String format=cursor.getString(2);\n      long timestamp=cursor.getLong(3);\n      Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n      items.add(result);\n      StringBuilder displayResult=new StringBuilder();\n      String display=cursor.getString(1);\n      if (display == null || display.length() == 0) {\n        display=result.getText();\n      }\n      displayResult.append(display);\n      String details=cursor.getString(4);\n      if (details != null && details.length() > 0) {\n        displayResult.append(\" : \").append(details);\n      }\n      dialogItems.add(displayResult.toString());\n    }\n  }\n catch (  SQLiteException sqle) {\n    Log.w(TAG,\"Error while opening database\",sqle);\n  }\n finally {\n    if (cursor != null) {\n      cursor.close();\n    }\n    if (db != null) {\n      db.close();\n    }\n  }\n  Resources res=activity.getResources();\n  dialogItems.add(res.getString(R.string.history_send));\n  dialogItems.add(res.getString(R.string.history_clear_text));\n  DialogInterface.OnClickListener clickListener=new HistoryClickListener(this,activity,items);\n  AlertDialog.Builder builder=new AlertDialog.Builder(activity);\n  builder.setTitle(R.string.history_title);\n  builder.setItems(dialogItems.toArray(new String[dialogItems.size()]),clickListener);\n  return builder.create();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 327,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 87,
+        "startLineNumber" : 99,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 99,
+        "endColumnNumber" : 95
+      },
+      "nodeContext" : "Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 16,
       "astHeight" : 5
     },
-    "tokenLength" : 4,
-    "type" : "int"
+    "tokenLength" : 1,
+    "type" : "null"
+  }, {
+    "nodeContext" : "null",
+    "nodeType" : "NullLiteral",
+    "nodePosition" : {
+      "charLength" : 4,
+      "startLineNumber" : 99,
+      "startColumnNumber" : 47,
+      "endLineNumber" : 99,
+      "endColumnNumber" : 51
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 70,
+        "startLineNumber" : 99,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 99,
+        "endColumnNumber" : 94
+      },
+      "nodeContext" : "new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp)",
+      "nodeType" : "ClassInstanceCreation",
+      "astNodeNumber" : 11,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 79,
+        "startLineNumber" : 99,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 99,
+        "endColumnNumber" : 94
+      },
+      "nodeContext" : "result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 13,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 87,
+        "startLineNumber" : 99,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 99,
+        "endColumnNumber" : 95
+      },
+      "nodeContext" : "Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 16,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.WhileStatement,body]",
+      "nodePosition" : {
+        "charLength" : 740,
+        "startLineNumber" : 94,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 114,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "{\n  String text=cursor.getString(0);\n  String format=cursor.getString(2);\n  long timestamp=cursor.getLong(3);\n  Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n  items.add(result);\n  StringBuilder displayResult=new StringBuilder();\n  String display=cursor.getString(1);\n  if (display == null || display.length() == 0) {\n    display=result.getText();\n  }\n  displayResult.append(display);\n  String details=cursor.getString(4);\n  if (details != null && details.length() > 0) {\n    displayResult.append(\" : \").append(details);\n  }\n  dialogItems.add(displayResult.toString());\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 122,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 768,
+        "startLineNumber" : 94,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 114,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "while (cursor.moveToNext()) {\n  String text=cursor.getString(0);\n  String format=cursor.getString(2);\n  long timestamp=cursor.getLong(3);\n  Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n  items.add(result);\n  StringBuilder displayResult=new StringBuilder();\n  String display=cursor.getString(1);\n  if (display == null || display.length() == 0) {\n    display=result.getText();\n  }\n  displayResult.append(display);\n  String details=cursor.getString(4);\n  if (details != null && details.length() > 0) {\n    displayResult.append(\" : \").append(details);\n  }\n  dialogItems.add(displayResult.toString());\n}\n",
+      "nodeType" : "WhileStatement",
+      "astNodeNumber" : 126,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 939,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  db=helper.getReadableDatabase();\n  cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n  while (cursor.moveToNext()) {\n    String text=cursor.getString(0);\n    String format=cursor.getString(2);\n    long timestamp=cursor.getLong(3);\n    Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n    items.add(result);\n    StringBuilder displayResult=new StringBuilder();\n    String display=cursor.getString(1);\n    if (display == null || display.length() == 0) {\n      display=result.getText();\n    }\n    displayResult.append(display);\n    String details=cursor.getString(4);\n    if (details != null && details.length() > 0) {\n      displayResult.append(\" : \").append(details);\n    }\n    dialogItems.add(displayResult.toString());\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 152,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1164,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 125,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "try {\n  db=helper.getReadableDatabase();\n  cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n  while (cursor.moveToNext()) {\n    String text=cursor.getString(0);\n    String format=cursor.getString(2);\n    long timestamp=cursor.getLong(3);\n    Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n    items.add(result);\n    StringBuilder displayResult=new StringBuilder();\n    String display=cursor.getString(1);\n    if (display == null || display.length() == 0) {\n      display=result.getText();\n    }\n    displayResult.append(display);\n    String details=cursor.getString(4);\n    if (details != null && details.length() > 0) {\n      displayResult.append(\" : \").append(details);\n    }\n    dialogItems.add(displayResult.toString());\n  }\n}\n catch (SQLiteException sqle) {\n  Log.w(TAG,\"Error while opening database\",sqle);\n}\n finally {\n  if (cursor != null) {\n    cursor.close();\n  }\n  if (db != null) {\n    db.close();\n  }\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 185,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 1899,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 135,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  SQLiteOpenHelper helper=new DBHelper(activity);\n  List<Result> items=new ArrayList<Result>();\n  List<String> dialogItems=new ArrayList<String>();\n  SQLiteDatabase db=null;\n  Cursor cursor=null;\n  try {\n    db=helper.getReadableDatabase();\n    cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n    while (cursor.moveToNext()) {\n      String text=cursor.getString(0);\n      String format=cursor.getString(2);\n      long timestamp=cursor.getLong(3);\n      Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n      items.add(result);\n      StringBuilder displayResult=new StringBuilder();\n      String display=cursor.getString(1);\n      if (display == null || display.length() == 0) {\n        display=result.getText();\n      }\n      displayResult.append(display);\n      String details=cursor.getString(4);\n      if (details != null && details.length() > 0) {\n        displayResult.append(\" : \").append(details);\n      }\n      dialogItems.add(displayResult.toString());\n    }\n  }\n catch (  SQLiteException sqle) {\n    Log.w(TAG,\"Error while opening database\",sqle);\n  }\n finally {\n    if (cursor != null) {\n      cursor.close();\n    }\n    if (db != null) {\n      db.close();\n    }\n  }\n  Resources res=activity.getResources();\n  dialogItems.add(res.getString(R.string.history_send));\n  dialogItems.add(res.getString(R.string.history_clear_text));\n  DialogInterface.OnClickListener clickListener=new HistoryClickListener(this,activity,items);\n  AlertDialog.Builder builder=new AlertDialog.Builder(activity);\n  builder.setTitle(R.string.history_title);\n  builder.setItems(dialogItems.toArray(new String[dialogItems.size()]),clickListener);\n  return builder.create();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 322,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 1931,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 135,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "public AlertDialog buildAlert(){\n  SQLiteOpenHelper helper=new DBHelper(activity);\n  List<Result> items=new ArrayList<Result>();\n  List<String> dialogItems=new ArrayList<String>();\n  SQLiteDatabase db=null;\n  Cursor cursor=null;\n  try {\n    db=helper.getReadableDatabase();\n    cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n    while (cursor.moveToNext()) {\n      String text=cursor.getString(0);\n      String format=cursor.getString(2);\n      long timestamp=cursor.getLong(3);\n      Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n      items.add(result);\n      StringBuilder displayResult=new StringBuilder();\n      String display=cursor.getString(1);\n      if (display == null || display.length() == 0) {\n        display=result.getText();\n      }\n      displayResult.append(display);\n      String details=cursor.getString(4);\n      if (details != null && details.length() > 0) {\n        displayResult.append(\" : \").append(details);\n      }\n      dialogItems.add(displayResult.toString());\n    }\n  }\n catch (  SQLiteException sqle) {\n    Log.w(TAG,\"Error while opening database\",sqle);\n  }\n finally {\n    if (cursor != null) {\n      cursor.close();\n    }\n    if (db != null) {\n      db.close();\n    }\n  }\n  Resources res=activity.getResources();\n  dialogItems.add(res.getString(R.string.history_send));\n  dialogItems.add(res.getString(R.string.history_clear_text));\n  DialogInterface.OnClickListener clickListener=new HistoryClickListener(this,activity,items);\n  AlertDialog.Builder builder=new AlertDialog.Builder(activity);\n  builder.setTitle(R.string.history_title);\n  builder.setItems(dialogItems.toArray(new String[dialogItems.size()]),clickListener);\n  return builder.create();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 327,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 87,
+        "startLineNumber" : 99,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 99,
+        "endColumnNumber" : 95
+      },
+      "nodeContext" : "Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 16,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "null"
+  }, {
+    "nodeContext" : "null",
+    "nodeType" : "NullLiteral",
+    "nodePosition" : {
+      "charLength" : 4,
+      "startLineNumber" : 104,
+      "startColumnNumber" : 23,
+      "endLineNumber" : 104,
+      "endColumnNumber" : 27
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 15,
+        "startLineNumber" : 104,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 104,
+        "endColumnNumber" : 27
+      },
+      "nodeContext" : "display == null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 40,
+        "startLineNumber" : 104,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 104,
+        "endColumnNumber" : 52
+      },
+      "nodeContext" : "display == null || display.length() == 0",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 95,
+        "startLineNumber" : 104,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 106,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (display == null || display.length() == 0) {\n  display=result.getText();\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 17,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.WhileStatement,body]",
+      "nodePosition" : {
+        "charLength" : 740,
+        "startLineNumber" : 94,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 114,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "{\n  String text=cursor.getString(0);\n  String format=cursor.getString(2);\n  long timestamp=cursor.getLong(3);\n  Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n  items.add(result);\n  StringBuilder displayResult=new StringBuilder();\n  String display=cursor.getString(1);\n  if (display == null || display.length() == 0) {\n    display=result.getText();\n  }\n  displayResult.append(display);\n  String details=cursor.getString(4);\n  if (details != null && details.length() > 0) {\n    displayResult.append(\" : \").append(details);\n  }\n  dialogItems.add(displayResult.toString());\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 122,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 768,
+        "startLineNumber" : 94,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 114,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "while (cursor.moveToNext()) {\n  String text=cursor.getString(0);\n  String format=cursor.getString(2);\n  long timestamp=cursor.getLong(3);\n  Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n  items.add(result);\n  StringBuilder displayResult=new StringBuilder();\n  String display=cursor.getString(1);\n  if (display == null || display.length() == 0) {\n    display=result.getText();\n  }\n  displayResult.append(display);\n  String details=cursor.getString(4);\n  if (details != null && details.length() > 0) {\n    displayResult.append(\" : \").append(details);\n  }\n  dialogItems.add(displayResult.toString());\n}\n",
+      "nodeType" : "WhileStatement",
+      "astNodeNumber" : 126,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 939,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  db=helper.getReadableDatabase();\n  cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n  while (cursor.moveToNext()) {\n    String text=cursor.getString(0);\n    String format=cursor.getString(2);\n    long timestamp=cursor.getLong(3);\n    Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n    items.add(result);\n    StringBuilder displayResult=new StringBuilder();\n    String display=cursor.getString(1);\n    if (display == null || display.length() == 0) {\n      display=result.getText();\n    }\n    displayResult.append(display);\n    String details=cursor.getString(4);\n    if (details != null && details.length() > 0) {\n      displayResult.append(\" : \").append(details);\n    }\n    dialogItems.add(displayResult.toString());\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 152,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1164,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 125,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "try {\n  db=helper.getReadableDatabase();\n  cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n  while (cursor.moveToNext()) {\n    String text=cursor.getString(0);\n    String format=cursor.getString(2);\n    long timestamp=cursor.getLong(3);\n    Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n    items.add(result);\n    StringBuilder displayResult=new StringBuilder();\n    String display=cursor.getString(1);\n    if (display == null || display.length() == 0) {\n      display=result.getText();\n    }\n    displayResult.append(display);\n    String details=cursor.getString(4);\n    if (details != null && details.length() > 0) {\n      displayResult.append(\" : \").append(details);\n    }\n    dialogItems.add(displayResult.toString());\n  }\n}\n catch (SQLiteException sqle) {\n  Log.w(TAG,\"Error while opening database\",sqle);\n}\n finally {\n  if (cursor != null) {\n    cursor.close();\n  }\n  if (db != null) {\n    db.close();\n  }\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 185,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 1899,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 135,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  SQLiteOpenHelper helper=new DBHelper(activity);\n  List<Result> items=new ArrayList<Result>();\n  List<String> dialogItems=new ArrayList<String>();\n  SQLiteDatabase db=null;\n  Cursor cursor=null;\n  try {\n    db=helper.getReadableDatabase();\n    cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n    while (cursor.moveToNext()) {\n      String text=cursor.getString(0);\n      String format=cursor.getString(2);\n      long timestamp=cursor.getLong(3);\n      Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n      items.add(result);\n      StringBuilder displayResult=new StringBuilder();\n      String display=cursor.getString(1);\n      if (display == null || display.length() == 0) {\n        display=result.getText();\n      }\n      displayResult.append(display);\n      String details=cursor.getString(4);\n      if (details != null && details.length() > 0) {\n        displayResult.append(\" : \").append(details);\n      }\n      dialogItems.add(displayResult.toString());\n    }\n  }\n catch (  SQLiteException sqle) {\n    Log.w(TAG,\"Error while opening database\",sqle);\n  }\n finally {\n    if (cursor != null) {\n      cursor.close();\n    }\n    if (db != null) {\n      db.close();\n    }\n  }\n  Resources res=activity.getResources();\n  dialogItems.add(res.getString(R.string.history_send));\n  dialogItems.add(res.getString(R.string.history_clear_text));\n  DialogInterface.OnClickListener clickListener=new HistoryClickListener(this,activity,items);\n  AlertDialog.Builder builder=new AlertDialog.Builder(activity);\n  builder.setTitle(R.string.history_title);\n  builder.setItems(dialogItems.toArray(new String[dialogItems.size()]),clickListener);\n  return builder.create();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 322,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 1931,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 135,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "public AlertDialog buildAlert(){\n  SQLiteOpenHelper helper=new DBHelper(activity);\n  List<Result> items=new ArrayList<Result>();\n  List<String> dialogItems=new ArrayList<String>();\n  SQLiteDatabase db=null;\n  Cursor cursor=null;\n  try {\n    db=helper.getReadableDatabase();\n    cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n    while (cursor.moveToNext()) {\n      String text=cursor.getString(0);\n      String format=cursor.getString(2);\n      long timestamp=cursor.getLong(3);\n      Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n      items.add(result);\n      StringBuilder displayResult=new StringBuilder();\n      String display=cursor.getString(1);\n      if (display == null || display.length() == 0) {\n        display=result.getText();\n      }\n      displayResult.append(display);\n      String details=cursor.getString(4);\n      if (details != null && details.length() > 0) {\n        displayResult.append(\" : \").append(details);\n      }\n      dialogItems.add(displayResult.toString());\n    }\n  }\n catch (  SQLiteException sqle) {\n    Log.w(TAG,\"Error while opening database\",sqle);\n  }\n finally {\n    if (cursor != null) {\n      cursor.close();\n    }\n    if (db != null) {\n      db.close();\n    }\n  }\n  Resources res=activity.getResources();\n  dialogItems.add(res.getString(R.string.history_send));\n  dialogItems.add(res.getString(R.string.history_clear_text));\n  DialogInterface.OnClickListener clickListener=new HistoryClickListener(this,activity,items);\n  AlertDialog.Builder builder=new AlertDialog.Builder(activity);\n  builder.setTitle(R.string.history_title);\n  builder.setItems(dialogItems.toArray(new String[dialogItems.size()]),clickListener);\n  return builder.create();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 327,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 40,
+        "startLineNumber" : 104,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 104,
+        "endColumnNumber" : 52
+      },
+      "nodeContext" : "display == null || display.length() == 0",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "null"
+  }, {
+    "nodeContext" : "null",
+    "nodeType" : "NullLiteral",
+    "nodePosition" : {
+      "charLength" : 4,
+      "startLineNumber" : 110,
+      "startColumnNumber" : 23,
+      "endLineNumber" : 110,
+      "endColumnNumber" : 27
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 15,
+        "startLineNumber" : 110,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 110,
+        "endColumnNumber" : 27
+      },
+      "nodeContext" : "details != null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 39,
+        "startLineNumber" : 110,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 110,
+        "endColumnNumber" : 51
+      },
+      "nodeContext" : "details != null && details.length() > 0",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 111,
+        "startLineNumber" : 110,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 112,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (details != null && details.length() > 0) {\n  displayResult.append(\" : \").append(details);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 19,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.WhileStatement,body]",
+      "nodePosition" : {
+        "charLength" : 740,
+        "startLineNumber" : 94,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 114,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "{\n  String text=cursor.getString(0);\n  String format=cursor.getString(2);\n  long timestamp=cursor.getLong(3);\n  Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n  items.add(result);\n  StringBuilder displayResult=new StringBuilder();\n  String display=cursor.getString(1);\n  if (display == null || display.length() == 0) {\n    display=result.getText();\n  }\n  displayResult.append(display);\n  String details=cursor.getString(4);\n  if (details != null && details.length() > 0) {\n    displayResult.append(\" : \").append(details);\n  }\n  dialogItems.add(displayResult.toString());\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 122,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 768,
+        "startLineNumber" : 94,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 114,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "while (cursor.moveToNext()) {\n  String text=cursor.getString(0);\n  String format=cursor.getString(2);\n  long timestamp=cursor.getLong(3);\n  Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n  items.add(result);\n  StringBuilder displayResult=new StringBuilder();\n  String display=cursor.getString(1);\n  if (display == null || display.length() == 0) {\n    display=result.getText();\n  }\n  displayResult.append(display);\n  String details=cursor.getString(4);\n  if (details != null && details.length() > 0) {\n    displayResult.append(\" : \").append(details);\n  }\n  dialogItems.add(displayResult.toString());\n}\n",
+      "nodeType" : "WhileStatement",
+      "astNodeNumber" : 126,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 939,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 116,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  db=helper.getReadableDatabase();\n  cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n  while (cursor.moveToNext()) {\n    String text=cursor.getString(0);\n    String format=cursor.getString(2);\n    long timestamp=cursor.getLong(3);\n    Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n    items.add(result);\n    StringBuilder displayResult=new StringBuilder();\n    String display=cursor.getString(1);\n    if (display == null || display.length() == 0) {\n      display=result.getText();\n    }\n    displayResult.append(display);\n    String details=cursor.getString(4);\n    if (details != null && details.length() > 0) {\n      displayResult.append(\" : \").append(details);\n    }\n    dialogItems.add(displayResult.toString());\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 152,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1164,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 125,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "try {\n  db=helper.getReadableDatabase();\n  cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n  while (cursor.moveToNext()) {\n    String text=cursor.getString(0);\n    String format=cursor.getString(2);\n    long timestamp=cursor.getLong(3);\n    Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n    items.add(result);\n    StringBuilder displayResult=new StringBuilder();\n    String display=cursor.getString(1);\n    if (display == null || display.length() == 0) {\n      display=result.getText();\n    }\n    displayResult.append(display);\n    String details=cursor.getString(4);\n    if (details != null && details.length() > 0) {\n      displayResult.append(\" : \").append(details);\n    }\n    dialogItems.add(displayResult.toString());\n  }\n}\n catch (SQLiteException sqle) {\n  Log.w(TAG,\"Error while opening database\",sqle);\n}\n finally {\n  if (cursor != null) {\n    cursor.close();\n  }\n  if (db != null) {\n    db.close();\n  }\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 185,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 1899,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 135,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  SQLiteOpenHelper helper=new DBHelper(activity);\n  List<Result> items=new ArrayList<Result>();\n  List<String> dialogItems=new ArrayList<String>();\n  SQLiteDatabase db=null;\n  Cursor cursor=null;\n  try {\n    db=helper.getReadableDatabase();\n    cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n    while (cursor.moveToNext()) {\n      String text=cursor.getString(0);\n      String format=cursor.getString(2);\n      long timestamp=cursor.getLong(3);\n      Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n      items.add(result);\n      StringBuilder displayResult=new StringBuilder();\n      String display=cursor.getString(1);\n      if (display == null || display.length() == 0) {\n        display=result.getText();\n      }\n      displayResult.append(display);\n      String details=cursor.getString(4);\n      if (details != null && details.length() > 0) {\n        displayResult.append(\" : \").append(details);\n      }\n      dialogItems.add(displayResult.toString());\n    }\n  }\n catch (  SQLiteException sqle) {\n    Log.w(TAG,\"Error while opening database\",sqle);\n  }\n finally {\n    if (cursor != null) {\n      cursor.close();\n    }\n    if (db != null) {\n      db.close();\n    }\n  }\n  Resources res=activity.getResources();\n  dialogItems.add(res.getString(R.string.history_send));\n  dialogItems.add(res.getString(R.string.history_clear_text));\n  DialogInterface.OnClickListener clickListener=new HistoryClickListener(this,activity,items);\n  AlertDialog.Builder builder=new AlertDialog.Builder(activity);\n  builder.setTitle(R.string.history_title);\n  builder.setItems(dialogItems.toArray(new String[dialogItems.size()]),clickListener);\n  return builder.create();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 322,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 1931,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 135,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "public AlertDialog buildAlert(){\n  SQLiteOpenHelper helper=new DBHelper(activity);\n  List<Result> items=new ArrayList<Result>();\n  List<String> dialogItems=new ArrayList<String>();\n  SQLiteDatabase db=null;\n  Cursor cursor=null;\n  try {\n    db=helper.getReadableDatabase();\n    cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n    while (cursor.moveToNext()) {\n      String text=cursor.getString(0);\n      String format=cursor.getString(2);\n      long timestamp=cursor.getLong(3);\n      Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n      items.add(result);\n      StringBuilder displayResult=new StringBuilder();\n      String display=cursor.getString(1);\n      if (display == null || display.length() == 0) {\n        display=result.getText();\n      }\n      displayResult.append(display);\n      String details=cursor.getString(4);\n      if (details != null && details.length() > 0) {\n        displayResult.append(\" : \").append(details);\n      }\n      dialogItems.add(displayResult.toString());\n    }\n  }\n catch (  SQLiteException sqle) {\n    Log.w(TAG,\"Error while opening database\",sqle);\n  }\n finally {\n    if (cursor != null) {\n      cursor.close();\n    }\n    if (db != null) {\n      db.close();\n    }\n  }\n  Resources res=activity.getResources();\n  dialogItems.add(res.getString(R.string.history_send));\n  dialogItems.add(res.getString(R.string.history_clear_text));\n  DialogInterface.OnClickListener clickListener=new HistoryClickListener(this,activity,items);\n  AlertDialog.Builder builder=new AlertDialog.Builder(activity);\n  builder.setTitle(R.string.history_title);\n  builder.setItems(dialogItems.toArray(new String[dialogItems.size()]),clickListener);\n  return builder.create();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 327,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 39,
+        "startLineNumber" : 110,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 110,
+        "endColumnNumber" : 51
+      },
+      "nodeContext" : "details != null && details.length() > 0",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "null"
+  }, {
+    "nodeContext" : "null",
+    "nodeType" : "NullLiteral",
+    "nodePosition" : {
+      "charLength" : 4,
+      "startLineNumber" : 119,
+      "startColumnNumber" : 20,
+      "endLineNumber" : 119,
+      "endColumnNumber" : 24
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 14,
+        "startLineNumber" : 119,
+        "startColumnNumber" : 10,
+        "endLineNumber" : 119,
+        "endColumnNumber" : 24
+      },
+      "nodeContext" : "cursor != null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 53,
+        "startLineNumber" : 119,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 121,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "if (cursor != null) {\n  cursor.close();\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,finally]",
+      "nodePosition" : {
+        "charLength" : 119,
+        "startLineNumber" : 118,
+        "startColumnNumber" : 14,
+        "endLineNumber" : 125,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (cursor != null) {\n    cursor.close();\n  }\n  if (db != null) {\n    db.close();\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 19,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1164,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 125,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "try {\n  db=helper.getReadableDatabase();\n  cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n  while (cursor.moveToNext()) {\n    String text=cursor.getString(0);\n    String format=cursor.getString(2);\n    long timestamp=cursor.getLong(3);\n    Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n    items.add(result);\n    StringBuilder displayResult=new StringBuilder();\n    String display=cursor.getString(1);\n    if (display == null || display.length() == 0) {\n      display=result.getText();\n    }\n    displayResult.append(display);\n    String details=cursor.getString(4);\n    if (details != null && details.length() > 0) {\n      displayResult.append(\" : \").append(details);\n    }\n    dialogItems.add(displayResult.toString());\n  }\n}\n catch (SQLiteException sqle) {\n  Log.w(TAG,\"Error while opening database\",sqle);\n}\n finally {\n  if (cursor != null) {\n    cursor.close();\n  }\n  if (db != null) {\n    db.close();\n  }\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 185,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 1899,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 135,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  SQLiteOpenHelper helper=new DBHelper(activity);\n  List<Result> items=new ArrayList<Result>();\n  List<String> dialogItems=new ArrayList<String>();\n  SQLiteDatabase db=null;\n  Cursor cursor=null;\n  try {\n    db=helper.getReadableDatabase();\n    cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n    while (cursor.moveToNext()) {\n      String text=cursor.getString(0);\n      String format=cursor.getString(2);\n      long timestamp=cursor.getLong(3);\n      Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n      items.add(result);\n      StringBuilder displayResult=new StringBuilder();\n      String display=cursor.getString(1);\n      if (display == null || display.length() == 0) {\n        display=result.getText();\n      }\n      displayResult.append(display);\n      String details=cursor.getString(4);\n      if (details != null && details.length() > 0) {\n        displayResult.append(\" : \").append(details);\n      }\n      dialogItems.add(displayResult.toString());\n    }\n  }\n catch (  SQLiteException sqle) {\n    Log.w(TAG,\"Error while opening database\",sqle);\n  }\n finally {\n    if (cursor != null) {\n      cursor.close();\n    }\n    if (db != null) {\n      db.close();\n    }\n  }\n  Resources res=activity.getResources();\n  dialogItems.add(res.getString(R.string.history_send));\n  dialogItems.add(res.getString(R.string.history_clear_text));\n  DialogInterface.OnClickListener clickListener=new HistoryClickListener(this,activity,items);\n  AlertDialog.Builder builder=new AlertDialog.Builder(activity);\n  builder.setTitle(R.string.history_title);\n  builder.setItems(dialogItems.toArray(new String[dialogItems.size()]),clickListener);\n  return builder.create();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 322,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 1931,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 135,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "public AlertDialog buildAlert(){\n  SQLiteOpenHelper helper=new DBHelper(activity);\n  List<Result> items=new ArrayList<Result>();\n  List<String> dialogItems=new ArrayList<String>();\n  SQLiteDatabase db=null;\n  Cursor cursor=null;\n  try {\n    db=helper.getReadableDatabase();\n    cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n    while (cursor.moveToNext()) {\n      String text=cursor.getString(0);\n      String format=cursor.getString(2);\n      long timestamp=cursor.getLong(3);\n      Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n      items.add(result);\n      StringBuilder displayResult=new StringBuilder();\n      String display=cursor.getString(1);\n      if (display == null || display.length() == 0) {\n        display=result.getText();\n      }\n      displayResult.append(display);\n      String details=cursor.getString(4);\n      if (details != null && details.length() > 0) {\n        displayResult.append(\" : \").append(details);\n      }\n      dialogItems.add(displayResult.toString());\n    }\n  }\n catch (  SQLiteException sqle) {\n    Log.w(TAG,\"Error while opening database\",sqle);\n  }\n finally {\n    if (cursor != null) {\n      cursor.close();\n    }\n    if (db != null) {\n      db.close();\n    }\n  }\n  Resources res=activity.getResources();\n  dialogItems.add(res.getString(R.string.history_send));\n  dialogItems.add(res.getString(R.string.history_clear_text));\n  DialogInterface.OnClickListener clickListener=new HistoryClickListener(this,activity,items);\n  AlertDialog.Builder builder=new AlertDialog.Builder(activity);\n  builder.setTitle(R.string.history_title);\n  builder.setItems(dialogItems.toArray(new String[dialogItems.size()]),clickListener);\n  return builder.create();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 327,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 14,
+        "startLineNumber" : 119,
+        "startColumnNumber" : 10,
+        "endLineNumber" : 119,
+        "endColumnNumber" : 24
+      },
+      "nodeContext" : "cursor != null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    },
+    "tokenLength" : 1,
+    "type" : "null"
+  }, {
+    "nodeContext" : "null",
+    "nodeType" : "NullLiteral",
+    "nodePosition" : {
+      "charLength" : 4,
+      "startLineNumber" : 122,
+      "startColumnNumber" : 16,
+      "endLineNumber" : 122,
+      "endColumnNumber" : 20
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 10,
+        "startLineNumber" : 122,
+        "startColumnNumber" : 10,
+        "endLineNumber" : 122,
+        "endColumnNumber" : 20
+      },
+      "nodeContext" : "db != null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 45,
+        "startLineNumber" : 122,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 124,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "if (db != null) {\n  db.close();\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,finally]",
+      "nodePosition" : {
+        "charLength" : 119,
+        "startLineNumber" : 118,
+        "startColumnNumber" : 14,
+        "endLineNumber" : 125,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (cursor != null) {\n    cursor.close();\n  }\n  if (db != null) {\n    db.close();\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 19,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1164,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 125,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "try {\n  db=helper.getReadableDatabase();\n  cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n  while (cursor.moveToNext()) {\n    String text=cursor.getString(0);\n    String format=cursor.getString(2);\n    long timestamp=cursor.getLong(3);\n    Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n    items.add(result);\n    StringBuilder displayResult=new StringBuilder();\n    String display=cursor.getString(1);\n    if (display == null || display.length() == 0) {\n      display=result.getText();\n    }\n    displayResult.append(display);\n    String details=cursor.getString(4);\n    if (details != null && details.length() > 0) {\n      displayResult.append(\" : \").append(details);\n    }\n    dialogItems.add(displayResult.toString());\n  }\n}\n catch (SQLiteException sqle) {\n  Log.w(TAG,\"Error while opening database\",sqle);\n}\n finally {\n  if (cursor != null) {\n    cursor.close();\n  }\n  if (db != null) {\n    db.close();\n  }\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 185,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 1899,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 135,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  SQLiteOpenHelper helper=new DBHelper(activity);\n  List<Result> items=new ArrayList<Result>();\n  List<String> dialogItems=new ArrayList<String>();\n  SQLiteDatabase db=null;\n  Cursor cursor=null;\n  try {\n    db=helper.getReadableDatabase();\n    cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n    while (cursor.moveToNext()) {\n      String text=cursor.getString(0);\n      String format=cursor.getString(2);\n      long timestamp=cursor.getLong(3);\n      Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n      items.add(result);\n      StringBuilder displayResult=new StringBuilder();\n      String display=cursor.getString(1);\n      if (display == null || display.length() == 0) {\n        display=result.getText();\n      }\n      displayResult.append(display);\n      String details=cursor.getString(4);\n      if (details != null && details.length() > 0) {\n        displayResult.append(\" : \").append(details);\n      }\n      dialogItems.add(displayResult.toString());\n    }\n  }\n catch (  SQLiteException sqle) {\n    Log.w(TAG,\"Error while opening database\",sqle);\n  }\n finally {\n    if (cursor != null) {\n      cursor.close();\n    }\n    if (db != null) {\n      db.close();\n    }\n  }\n  Resources res=activity.getResources();\n  dialogItems.add(res.getString(R.string.history_send));\n  dialogItems.add(res.getString(R.string.history_clear_text));\n  DialogInterface.OnClickListener clickListener=new HistoryClickListener(this,activity,items);\n  AlertDialog.Builder builder=new AlertDialog.Builder(activity);\n  builder.setTitle(R.string.history_title);\n  builder.setItems(dialogItems.toArray(new String[dialogItems.size()]),clickListener);\n  return builder.create();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 322,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 1931,
+        "startLineNumber" : 79,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 135,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "public AlertDialog buildAlert(){\n  SQLiteOpenHelper helper=new DBHelper(activity);\n  List<Result> items=new ArrayList<Result>();\n  List<String> dialogItems=new ArrayList<String>();\n  SQLiteDatabase db=null;\n  Cursor cursor=null;\n  try {\n    db=helper.getReadableDatabase();\n    cursor=db.query(DBHelper.TABLE_NAME,COLUMNS,null,null,null,null,DBHelper.TIMESTAMP_COL + \" DESC\");\n    while (cursor.moveToNext()) {\n      String text=cursor.getString(0);\n      String format=cursor.getString(2);\n      long timestamp=cursor.getLong(3);\n      Result result=new Result(text,null,null,BarcodeFormat.valueOf(format),timestamp);\n      items.add(result);\n      StringBuilder displayResult=new StringBuilder();\n      String display=cursor.getString(1);\n      if (display == null || display.length() == 0) {\n        display=result.getText();\n      }\n      displayResult.append(display);\n      String details=cursor.getString(4);\n      if (details != null && details.length() > 0) {\n        displayResult.append(\" : \").append(details);\n      }\n      dialogItems.add(displayResult.toString());\n    }\n  }\n catch (  SQLiteException sqle) {\n    Log.w(TAG,\"Error while opening database\",sqle);\n  }\n finally {\n    if (cursor != null) {\n      cursor.close();\n    }\n    if (db != null) {\n      db.close();\n    }\n  }\n  Resources res=activity.getResources();\n  dialogItems.add(res.getString(R.string.history_send));\n  dialogItems.add(res.getString(R.string.history_clear_text));\n  DialogInterface.OnClickListener clickListener=new HistoryClickListener(this,activity,items);\n  AlertDialog.Builder builder=new AlertDialog.Builder(activity);\n  builder.setTitle(R.string.history_title);\n  builder.setItems(dialogItems.toArray(new String[dialogItems.size()]),clickListener);\n  return builder.create();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 327,
+      "astHeight" : 12
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 10,
+        "startLineNumber" : 122,
+        "startColumnNumber" : 10,
+        "endLineNumber" : 122,
+        "endColumnNumber" : 20
+      },
+      "nodeContext" : "db != null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    },
+    "tokenLength" : 1,
+    "type" : "null"
   } ],
   "positionList" : [ {
-    "charLength" : 19,
-    "startLineNumber" : 58,
-    "startColumnNumber" : 15,
-    "endLineNumber" : 58,
-    "endColumnNumber" : 34
+    "charLength" : 4,
+    "startLineNumber" : 86,
+    "startColumnNumber" : 24,
+    "endLineNumber" : 86,
+    "endColumnNumber" : 28
+  }, {
+    "charLength" : 4,
+    "startLineNumber" : 87,
+    "startColumnNumber" : 20,
+    "endLineNumber" : 87,
+    "endColumnNumber" : 24
+  }, {
+    "charLength" : 4,
+    "startLineNumber" : 92,
+    "startColumnNumber" : 54,
+    "endLineNumber" : 92,
+    "endColumnNumber" : 58
+  }, {
+    "charLength" : 4,
+    "startLineNumber" : 92,
+    "startColumnNumber" : 60,
+    "endLineNumber" : 92,
+    "endColumnNumber" : 64
+  }, {
+    "charLength" : 4,
+    "startLineNumber" : 92,
+    "startColumnNumber" : 66,
+    "endLineNumber" : 92,
+    "endColumnNumber" : 70
+  }, {
+    "charLength" : 4,
+    "startLineNumber" : 92,
+    "startColumnNumber" : 72,
+    "endLineNumber" : 92,
+    "endColumnNumber" : 76
+  }, {
+    "charLength" : 4,
+    "startLineNumber" : 99,
+    "startColumnNumber" : 41,
+    "endLineNumber" : 99,
+    "endColumnNumber" : 45
+  }, {
+    "charLength" : 4,
+    "startLineNumber" : 99,
+    "startColumnNumber" : 47,
+    "endLineNumber" : 99,
+    "endColumnNumber" : 51
+  }, {
+    "charLength" : 4,
+    "startLineNumber" : 104,
+    "startColumnNumber" : 23,
+    "endLineNumber" : 104,
+    "endColumnNumber" : 27
+  }, {
+    "charLength" : 4,
+    "startLineNumber" : 110,
+    "startColumnNumber" : 23,
+    "endLineNumber" : 110,
+    "endColumnNumber" : 27
+  }, {
+    "charLength" : 4,
+    "startLineNumber" : 119,
+    "startColumnNumber" : 20,
+    "endLineNumber" : 119,
+    "endColumnNumber" : 24
+  }, {
+    "charLength" : 4,
+    "startLineNumber" : 122,
+    "startColumnNumber" : 16,
+    "endLineNumber" : 122,
+    "endColumnNumber" : 20
   } ],
-  "layoutRelationDataList" : [ ]
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 4,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 5,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 6,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 7,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 8,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 9,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 10,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 11,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 4,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 5,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 6,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 7,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 8,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 9,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 10,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 11,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 3,
+    "layout" : 0
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 4,
+    "layout" : 0
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 5,
+    "layout" : 0
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 7,
+    "layout" : 3
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 10,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 11,
+    "layout" : 4
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 2,
+    "layout" : 0
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 4,
+    "layout" : 0
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 5,
+    "layout" : 0
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 7,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 10,
+    "layout" : 4
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 11,
+    "layout" : 4
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 2,
+    "layout" : 0
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 3,
+    "layout" : 0
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 5,
+    "layout" : 0
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 7,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 10,
+    "layout" : 4
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 11,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 2,
+    "layout" : 0
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 3,
+    "layout" : 0
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 4,
+    "layout" : 0
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 7,
+    "layout" : 3
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 10,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 11,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 0,
+    "layout" : 7
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 1,
+    "layout" : 7
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 3,
+    "layout" : 5
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 4,
+    "layout" : 5
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 5,
+    "layout" : 5
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 7,
+    "layout" : 0
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 10,
+    "layout" : 6
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 11,
+    "layout" : 6
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 0,
+    "layout" : 7
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 1,
+    "layout" : 7
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 3,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 4,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 5,
+    "layout" : 5
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 6,
+    "layout" : 0
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 10,
+    "layout" : 6
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 11,
+    "layout" : 6
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 0,
+    "layout" : 7
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 1,
+    "layout" : 7
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 3,
+    "layout" : 5
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 4,
+    "layout" : 5
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 5,
+    "layout" : 5
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 7,
+    "layout" : 3
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 10,
+    "layout" : 6
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 11,
+    "layout" : 6
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 0,
+    "layout" : 7
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 1,
+    "layout" : 7
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 3,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 4,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 5,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 7,
+    "layout" : 3
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 10,
+    "layout" : 6
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 11,
+    "layout" : 6
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 7,
+    "layout" : 3
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 11,
+    "layout" : 2
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 7,
+    "layout" : 3
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 10,
+    "layout" : 2
+  } ]
 }

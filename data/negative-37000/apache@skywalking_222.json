@@ -1,0 +1,113 @@
+{
+  "id" : 222,
+  "expression" : "START_TIME",
+  "projectName" : "apache@skywalking",
+  "commitID" : "16b51d55baec4f779f312e07081d1397addbcfe9",
+  "filePath" : "/oap-server/server-storage-plugin/storage-zipkin-elasticsearch7-plugin/src/main/java/org/apache/skywalking/oap/server/storage/plugin/zipkin/elasticsearch/ZipkinTraceQueryEs7DAO.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "START_TIME",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 10,
+      "startLineNumber" : 144,
+      "startColumnNumber" : 35,
+      "endLineNumber" : 144,
+      "endColumnNumber" : 45
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 46,
+        "startLineNumber" : 144,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 144,
+        "endColumnNumber" : 62
+      },
+      "nodeContext" : "sourceBuilder.sort(START_TIME,SortOrder.DESC)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.SwitchStatement,statements]",
+      "nodePosition" : {
+        "charLength" : 47,
+        "startLineNumber" : 144,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 144,
+        "endColumnNumber" : 63
+      },
+      "nodeContext" : "sourceBuilder.sort(START_TIME,SortOrder.DESC);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 264,
+        "startLineNumber" : 142,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 149,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "switch (queryOrder) {\ncase BY_START_TIME:  sourceBuilder.sort(START_TIME,SortOrder.DESC);\nbreak;\ncase BY_DURATION:sourceBuilder.sort(LATENCY,SortOrder.DESC);\nbreak;\n}\n",
+      "nodeType" : "SwitchStatement",
+      "astNodeNumber" : 24,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3646,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 80,
+        "endLineNumber" : 175,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  SearchSourceBuilder sourceBuilder=SearchSourceBuilder.searchSource();\n  BoolQueryBuilder boolQueryBuilder=QueryBuilders.boolQuery();\n  sourceBuilder.query(boolQueryBuilder);\n  List<QueryBuilder> mustQueryList=boolQueryBuilder.must();\n  if (startSecondTB != 0 && endSecondTB != 0) {\n    mustQueryList.add(QueryBuilders.rangeQuery(TIME_BUCKET).gte(startSecondTB).lte(endSecondTB));\n  }\n  if (minDuration != 0 || maxDuration != 0) {\n    RangeQueryBuilder rangeQueryBuilder=QueryBuilders.rangeQuery(LATENCY);\n    if (minDuration != 0) {\n      rangeQueryBuilder.gte(minDuration);\n    }\n    if (maxDuration != 0) {\n      rangeQueryBuilder.lte(maxDuration);\n    }\n    mustQueryList.add(rangeQueryBuilder);\n  }\n  if (!Strings.isNullOrEmpty(endpointName)) {\n    mustQueryList.add(QueryBuilders.matchPhraseQuery(ENDPOINT_NAME,endpointName));\n  }\n  if (StringUtil.isNotEmpty(serviceId)) {\n    mustQueryList.add(QueryBuilders.termQuery(SERVICE_ID,serviceId));\n  }\n  if (StringUtil.isNotEmpty(serviceInstanceId)) {\n    mustQueryList.add(QueryBuilders.termQuery(SERVICE_INSTANCE_ID,serviceInstanceId));\n  }\n  if (!Strings.isNullOrEmpty(endpointId)) {\n    mustQueryList.add(QueryBuilders.termQuery(ENDPOINT_ID,endpointId));\n  }\n  if (!Strings.isNullOrEmpty(traceId)) {\n    mustQueryList.add(QueryBuilders.termQuery(TRACE_ID,traceId));\n  }\nswitch (traceState) {\ncase ERROR:    mustQueryList.add(QueryBuilders.matchQuery(IS_ERROR,BooleanUtils.TRUE));\n  break;\ncase SUCCESS:mustQueryList.add(QueryBuilders.matchQuery(IS_ERROR,BooleanUtils.FALSE));\nbreak;\n}\nif (CollectionUtils.isNotEmpty(tags)) {\nBoolQueryBuilder tagMatchQuery=QueryBuilders.boolQuery();\ntags.forEach(tag -> {\ntagMatchQuery.must(QueryBuilders.termQuery(TAGS,tag.toString()));\n}\n);\nmustQueryList.add(tagMatchQuery);\n}\nswitch (queryOrder) {\ncase BY_START_TIME:sourceBuilder.sort(START_TIME,SortOrder.DESC);\nbreak;\ncase BY_DURATION:sourceBuilder.sort(LATENCY,SortOrder.DESC);\nbreak;\n}\nsourceBuilder.size(limit);\nsourceBuilder.from(from);\nSearchResponse response=getClient().search(ZipkinSpanRecord.INDEX_NAME,sourceBuilder);\nTraceBrief traceBrief=new TraceBrief();\ntraceBrief.setTotal((int)response.getHits().getTotalHits().value);\nfor (SearchHit searchHit : response.getHits().getHits()) {\nBasicTrace basicTrace=new BasicTrace();\nfinal ZipkinSpanRecord zipkinSpanRecord=new ZipkinSpanRecord.Builder().storage2Entity(searchHit.getSourceAsMap());\nbasicTrace.setSegmentId(zipkinSpanRecord.getSpanId());\nbasicTrace.setStart(String.valueOf((long)zipkinSpanRecord.getStartTime()));\nbasicTrace.getEndpointNames().add(zipkinSpanRecord.getEndpointName());\nbasicTrace.setDuration(zipkinSpanRecord.getLatency());\nbasicTrace.setError(BooleanUtils.valueToBoolean(zipkinSpanRecord.getIsError()));\nbasicTrace.getTraceIds().add(zipkinSpanRecord.getTraceId());\ntraceBrief.getTraces().add(basicTrace);\n}\nreturn traceBrief;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 411,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4484,
+        "startLineNumber" : 75,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 175,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public TraceBrief queryBasicTraces(long startSecondTB,long endSecondTB,long minDuration,long maxDuration,String endpointName,String serviceId,String serviceInstanceId,String endpointId,String traceId,int limit,int from,TraceState traceState,QueryOrder queryOrder,final List<Tag> tags) throws IOException {\n  SearchSourceBuilder sourceBuilder=SearchSourceBuilder.searchSource();\n  BoolQueryBuilder boolQueryBuilder=QueryBuilders.boolQuery();\n  sourceBuilder.query(boolQueryBuilder);\n  List<QueryBuilder> mustQueryList=boolQueryBuilder.must();\n  if (startSecondTB != 0 && endSecondTB != 0) {\n    mustQueryList.add(QueryBuilders.rangeQuery(TIME_BUCKET).gte(startSecondTB).lte(endSecondTB));\n  }\n  if (minDuration != 0 || maxDuration != 0) {\n    RangeQueryBuilder rangeQueryBuilder=QueryBuilders.rangeQuery(LATENCY);\n    if (minDuration != 0) {\n      rangeQueryBuilder.gte(minDuration);\n    }\n    if (maxDuration != 0) {\n      rangeQueryBuilder.lte(maxDuration);\n    }\n    mustQueryList.add(rangeQueryBuilder);\n  }\n  if (!Strings.isNullOrEmpty(endpointName)) {\n    mustQueryList.add(QueryBuilders.matchPhraseQuery(ENDPOINT_NAME,endpointName));\n  }\n  if (StringUtil.isNotEmpty(serviceId)) {\n    mustQueryList.add(QueryBuilders.termQuery(SERVICE_ID,serviceId));\n  }\n  if (StringUtil.isNotEmpty(serviceInstanceId)) {\n    mustQueryList.add(QueryBuilders.termQuery(SERVICE_INSTANCE_ID,serviceInstanceId));\n  }\n  if (!Strings.isNullOrEmpty(endpointId)) {\n    mustQueryList.add(QueryBuilders.termQuery(ENDPOINT_ID,endpointId));\n  }\n  if (!Strings.isNullOrEmpty(traceId)) {\n    mustQueryList.add(QueryBuilders.termQuery(TRACE_ID,traceId));\n  }\nswitch (traceState) {\ncase ERROR:    mustQueryList.add(QueryBuilders.matchQuery(IS_ERROR,BooleanUtils.TRUE));\n  break;\ncase SUCCESS:mustQueryList.add(QueryBuilders.matchQuery(IS_ERROR,BooleanUtils.FALSE));\nbreak;\n}\nif (CollectionUtils.isNotEmpty(tags)) {\nBoolQueryBuilder tagMatchQuery=QueryBuilders.boolQuery();\ntags.forEach(tag -> {\ntagMatchQuery.must(QueryBuilders.termQuery(TAGS,tag.toString()));\n}\n);\nmustQueryList.add(tagMatchQuery);\n}\nswitch (queryOrder) {\ncase BY_START_TIME:sourceBuilder.sort(START_TIME,SortOrder.DESC);\nbreak;\ncase BY_DURATION:sourceBuilder.sort(LATENCY,SortOrder.DESC);\nbreak;\n}\nsourceBuilder.size(limit);\nsourceBuilder.from(from);\nSearchResponse response=getClient().search(ZipkinSpanRecord.INDEX_NAME,sourceBuilder);\nTraceBrief traceBrief=new TraceBrief();\ntraceBrief.setTotal((int)response.getHits().getTotalHits().value);\nfor (SearchHit searchHit : response.getHits().getHits()) {\nBasicTrace basicTrace=new BasicTrace();\nfinal ZipkinSpanRecord zipkinSpanRecord=new ZipkinSpanRecord.Builder().storage2Entity(searchHit.getSourceAsMap());\nbasicTrace.setSegmentId(zipkinSpanRecord.getSpanId());\nbasicTrace.setStart(String.valueOf((long)zipkinSpanRecord.getStartTime()));\nbasicTrace.getEndpointNames().add(zipkinSpanRecord.getEndpointName());\nbasicTrace.setDuration(zipkinSpanRecord.getLatency());\nbasicTrace.setError(BooleanUtils.valueToBoolean(zipkinSpanRecord.getIsError()));\nbasicTrace.getTraceIds().add(zipkinSpanRecord.getTraceId());\ntraceBrief.getTraces().add(basicTrace);\n}\nreturn traceBrief;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 474,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.SwitchStatement,statements]",
+      "nodePosition" : {
+        "charLength" : 47,
+        "startLineNumber" : 144,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 144,
+        "endColumnNumber" : 63
+      },
+      "nodeContext" : "sourceBuilder.sort(START_TIME,SortOrder.DESC);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 2,
+    "type" : "java.lang.String"
+  } ],
+  "positionList" : [ {
+    "charLength" : 10,
+    "startLineNumber" : 144,
+    "startColumnNumber" : 35,
+    "endLineNumber" : 144,
+    "endColumnNumber" : 45
+  } ],
+  "layoutRelationDataList" : [ ]
+}

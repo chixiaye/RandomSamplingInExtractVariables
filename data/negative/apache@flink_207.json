@@ -1,221 +1,567 @@
 {
   "id" : 207,
-  "expression" : "enabledResultWithTiny",
+  "expression" : "store",
   "projectName" : "apache@flink",
-  "commitID" : "f8cb19e70ca7da6423dfb01b97e05c4d520c9fde",
-  "filePath" : "/flink-tests/src/test/java/org/apache/flink/test/manual/OverwriteObjects.java",
-  "occurrences" : 2,
+  "commitID" : "c3df4c3f1f868d40e1e70404bea41b7a007e8b08",
+  "filePath" : "flink-runtime/src/test/java/org/apache/flink/runtime/checkpoint/ZooKeeperCompletedCheckpointStoreITCase.java",
+  "occurrences" : 5,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "enabledResultWithTiny",
+    "nodeContext" : "store",
     "nodeType" : "SimpleName",
     "nodePosition" : {
-      "charLength" : 21,
-      "startLineNumber" : 332,
-      "startColumnNumber" : 52,
-      "endLineNumber" : 332,
-      "endColumnNumber" : 73
+      "charLength" : 5,
+      "startLineNumber" : 206,
+      "startColumnNumber" : 8,
+      "endLineNumber" : 206,
+      "endColumnNumber" : 13
     },
     "astNodeNumber" : 1,
     "astHeight" : 1,
     "parentDataList" : [ {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
-      "nodePosition" : {
-        "charLength" : 25,
-        "startLineNumber" : 332,
-        "startColumnNumber" : 49,
-        "endLineNumber" : 332,
-        "endColumnNumber" : 74
-      },
-      "nodeContext" : "is(enabledResultWithTiny)",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 3,
-      "astHeight" : 2
-    }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
       "nodePosition" : {
-        "charLength" : 67,
-        "startLineNumber" : 332,
+        "charLength" : 86,
+        "startLineNumber" : 206,
         "startColumnNumber" : 8,
-        "endLineNumber" : 332,
-        "endColumnNumber" : 75
+        "endLineNumber" : 206,
+        "endColumnNumber" : 94
       },
-      "nodeContext" : "Assert.assertThat(enabledResultWithHuge,is(enabledResultWithTiny))",
+      "nodeContext" : "store.addCheckpointAndSubsumeOldestOne(checkpoint,new CheckpointsCleaner(),() -> {\n}\n)",
       "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 7,
-      "astHeight" : 3
+      "astNodeNumber" : 9,
+      "astHeight" : 4
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 68,
-        "startLineNumber" : 332,
+        "charLength" : 87,
+        "startLineNumber" : 206,
         "startColumnNumber" : 8,
-        "endLineNumber" : 332,
-        "endColumnNumber" : 76
+        "endLineNumber" : 206,
+        "endColumnNumber" : 95
       },
-      "nodeContext" : "Assert.assertThat(enabledResultWithHuge,is(enabledResultWithTiny));\n",
+      "nodeContext" : "store.addCheckpointAndSubsumeOldestOne(checkpoint,new CheckpointsCleaner(),() -> {\n}\n);\n",
       "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 8,
-      "astHeight" : 4
+      "astNodeNumber" : 10,
+      "astHeight" : 5
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 1590,
-        "startLineNumber" : 311,
-        "startColumnNumber" : 69,
-        "endLineNumber" : 350,
+        "charLength" : 2043,
+        "startLineNumber" : 199,
+        "startColumnNumber" : 63,
+        "endLineNumber" : 244,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  LOG.info(\"Testing cross\");\n  DataSet<Tuple2<IntValue,IntValue>> small=getDataSet(env,100,20);\n  DataSet<Tuple2<IntValue,IntValue>> large=getDataSet(env,10000,2000);\n  env.getConfig().enableObjectReuse();\n  List<Tuple2<IntValue,IntValue>> enabledResultWithHuge=small.crossWithHuge(large).with(new OverwriteObjectsCross()).collect();\n  List<Tuple2<IntValue,IntValue>> enabledResultWithTiny=small.crossWithTiny(large).with(new OverwriteObjectsCross()).collect();\n  Assert.assertThat(enabledResultWithHuge,is(enabledResultWithTiny));\n  env.getConfig().disableObjectReuse();\n  List<Tuple2<IntValue,IntValue>> disabledResultWithHuge=small.crossWithHuge(large).with(new OverwriteObjectsCross()).collect();\n  List<Tuple2<IntValue,IntValue>> disabledResultWithTiny=small.crossWithTiny(large).with(new OverwriteObjectsCross()).collect();\n  Assert.assertThat(disabledResultWithHuge,is(disabledResultWithTiny));\n  Assert.assertThat(disabledResultWithHuge,is(enabledResultWithHuge));\n  Assert.assertThat(disabledResultWithTiny,is(enabledResultWithTiny));\n}\n",
+      "nodeContext" : "{\n  CuratorFramework client=ZOOKEEPER.getClient();\n  SharedStateRegistry sharedStateRegistry=new SharedStateRegistryImpl();\n  CompletedCheckpointStore store=createRecoveredCompletedCheckpointStore(1);\n  TestCompletedCheckpoint checkpoint=createCheckpoint(0,sharedStateRegistry);\n  store.addCheckpointAndSubsumeOldestOne(checkpoint,new CheckpointsCleaner(),() -> {\n  }\n);\n  assertEquals(1,store.getNumberOfRetainedCheckpoints());\n  assertNotNull(client.checkExists().forPath(CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID())));\n  store.shutdown(JobStatus.SUSPENDED,new CheckpointsCleaner());\n  assertEquals(0,store.getNumberOfRetainedCheckpoints());\n  final String checkpointPath=CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID());\n  final List<String> checkpointPathChildren=client.getChildren().forPath(checkpointPath);\n  assertEquals(\"The checkpoint node should not be marked for deletion.\",1,checkpointPathChildren.size());\n  final String locksNodeName=Iterables.getOnlyElement(checkpointPathChildren);\n  final String locksNodePath=ZooKeeperUtils.generateZookeeperPath(checkpointPath,locksNodeName);\n  final Stat locksStat=client.checkExists().forPath(locksNodePath);\n  assertEquals(\"There shouldn't be any lock node available for the checkpoint\",0,locksStat.getNumChildren());\n  sharedStateRegistry.close();\n  store=createRecoveredCompletedCheckpointStore(1);\n  CompletedCheckpoint recovered=store.getLatestCheckpoint();\n  assertEquals(checkpoint,recovered);\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 182,
+      "astNodeNumber" : 185,
       "astHeight" : 8
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 1655,
-        "startLineNumber" : 311,
+        "charLength" : 2302,
+        "startLineNumber" : 194,
         "startColumnNumber" : 4,
-        "endLineNumber" : 350,
+        "endLineNumber" : 244,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "public void testCross(ExecutionEnvironment env) throws Exception {\n  LOG.info(\"Testing cross\");\n  DataSet<Tuple2<IntValue,IntValue>> small=getDataSet(env,100,20);\n  DataSet<Tuple2<IntValue,IntValue>> large=getDataSet(env,10000,2000);\n  env.getConfig().enableObjectReuse();\n  List<Tuple2<IntValue,IntValue>> enabledResultWithHuge=small.crossWithHuge(large).with(new OverwriteObjectsCross()).collect();\n  List<Tuple2<IntValue,IntValue>> enabledResultWithTiny=small.crossWithTiny(large).with(new OverwriteObjectsCross()).collect();\n  Assert.assertThat(enabledResultWithHuge,is(enabledResultWithTiny));\n  env.getConfig().disableObjectReuse();\n  List<Tuple2<IntValue,IntValue>> disabledResultWithHuge=small.crossWithHuge(large).with(new OverwriteObjectsCross()).collect();\n  List<Tuple2<IntValue,IntValue>> disabledResultWithTiny=small.crossWithTiny(large).with(new OverwriteObjectsCross()).collect();\n  Assert.assertThat(disabledResultWithHuge,is(disabledResultWithTiny));\n  Assert.assertThat(disabledResultWithHuge,is(enabledResultWithHuge));\n  Assert.assertThat(disabledResultWithTiny,is(enabledResultWithTiny));\n}\n",
+      "nodeContext" : "/** \n * Tests that suspends keeps all checkpoints (so that they can be recovered later by the ZooKeeper store). Furthermore, suspending a job should release all locks.\n */\n@Test public void testSuspendKeepsCheckpoints() throws Exception {\n  CuratorFramework client=ZOOKEEPER.getClient();\n  SharedStateRegistry sharedStateRegistry=new SharedStateRegistryImpl();\n  CompletedCheckpointStore store=createRecoveredCompletedCheckpointStore(1);\n  TestCompletedCheckpoint checkpoint=createCheckpoint(0,sharedStateRegistry);\n  store.addCheckpointAndSubsumeOldestOne(checkpoint,new CheckpointsCleaner(),() -> {\n  }\n);\n  assertEquals(1,store.getNumberOfRetainedCheckpoints());\n  assertNotNull(client.checkExists().forPath(CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID())));\n  store.shutdown(JobStatus.SUSPENDED,new CheckpointsCleaner());\n  assertEquals(0,store.getNumberOfRetainedCheckpoints());\n  final String checkpointPath=CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID());\n  final List<String> checkpointPathChildren=client.getChildren().forPath(checkpointPath);\n  assertEquals(\"The checkpoint node should not be marked for deletion.\",1,checkpointPathChildren.size());\n  final String locksNodeName=Iterables.getOnlyElement(checkpointPathChildren);\n  final String locksNodePath=ZooKeeperUtils.generateZookeeperPath(checkpointPath,locksNodeName);\n  final Stat locksStat=client.checkExists().forPath(locksNodePath);\n  assertEquals(\"There shouldn't be any lock node available for the checkpoint\",0,locksStat.getNumChildren());\n  sharedStateRegistry.close();\n  store=createRecoveredCompletedCheckpointStore(1);\n  CompletedCheckpoint recovered=store.getLatestCheckpoint();\n  assertEquals(checkpoint,recovered);\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 192,
+      "astNodeNumber" : 194,
       "astHeight" : 9
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 68,
-        "startLineNumber" : 332,
+        "charLength" : 87,
+        "startLineNumber" : 206,
         "startColumnNumber" : 8,
-        "endLineNumber" : 332,
-        "endColumnNumber" : 76
+        "endLineNumber" : 206,
+        "endColumnNumber" : 95
       },
-      "nodeContext" : "Assert.assertThat(enabledResultWithHuge,is(enabledResultWithTiny));\n",
+      "nodeContext" : "store.addCheckpointAndSubsumeOldestOne(checkpoint,new CheckpointsCleaner(),() -> {\n}\n);\n",
       "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 8,
-      "astHeight" : 4
+      "astNodeNumber" : 10,
+      "astHeight" : 5
     },
     "tokenLength" : 1,
-    "type" : "java.util.List<org.apache.flink.api.java.tuple.Tuple2<org.apache.flink.types.IntValue,org.apache.flink.types.IntValue>>"
+    "type" : "org.apache.flink.runtime.checkpoint.CompletedCheckpointStore"
   }, {
-    "nodeContext" : "enabledResultWithTiny",
+    "nodeContext" : "store",
     "nodeType" : "SimpleName",
     "nodePosition" : {
-      "charLength" : 21,
-      "startLineNumber" : 349,
-      "startColumnNumber" : 53,
-      "endLineNumber" : 349,
-      "endColumnNumber" : 74
+      "charLength" : 5,
+      "startLineNumber" : 207,
+      "startColumnNumber" : 24,
+      "endLineNumber" : 207,
+      "endColumnNumber" : 29
     },
     "astNodeNumber" : 1,
     "astHeight" : 1,
     "parentDataList" : [ {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
       "nodePosition" : {
-        "charLength" : 25,
-        "startLineNumber" : 349,
-        "startColumnNumber" : 50,
-        "endLineNumber" : 349,
-        "endColumnNumber" : 75
+        "charLength" : 38,
+        "startLineNumber" : 207,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 207,
+        "endColumnNumber" : 62
       },
-      "nodeContext" : "is(enabledResultWithTiny)",
+      "nodeContext" : "store.getNumberOfRetainedCheckpoints()",
       "nodeType" : "MethodInvocation",
       "astNodeNumber" : 3,
       "astHeight" : 2
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
       "nodePosition" : {
-        "charLength" : 68,
-        "startLineNumber" : 349,
+        "charLength" : 55,
+        "startLineNumber" : 207,
         "startColumnNumber" : 8,
-        "endLineNumber" : 349,
-        "endColumnNumber" : 76
+        "endLineNumber" : 207,
+        "endColumnNumber" : 63
       },
-      "nodeContext" : "Assert.assertThat(disabledResultWithTiny,is(enabledResultWithTiny))",
+      "nodeContext" : "assertEquals(1,store.getNumberOfRetainedCheckpoints())",
       "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 7,
+      "astNodeNumber" : 6,
       "astHeight" : 3
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 69,
-        "startLineNumber" : 349,
+        "charLength" : 56,
+        "startLineNumber" : 207,
         "startColumnNumber" : 8,
-        "endLineNumber" : 349,
-        "endColumnNumber" : 77
+        "endLineNumber" : 207,
+        "endColumnNumber" : 64
       },
-      "nodeContext" : "Assert.assertThat(disabledResultWithTiny,is(enabledResultWithTiny));\n",
+      "nodeContext" : "assertEquals(1,store.getNumberOfRetainedCheckpoints());\n",
       "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 8,
+      "astNodeNumber" : 7,
       "astHeight" : 4
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 1590,
-        "startLineNumber" : 311,
-        "startColumnNumber" : 69,
-        "endLineNumber" : 350,
+        "charLength" : 2043,
+        "startLineNumber" : 199,
+        "startColumnNumber" : 63,
+        "endLineNumber" : 244,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  LOG.info(\"Testing cross\");\n  DataSet<Tuple2<IntValue,IntValue>> small=getDataSet(env,100,20);\n  DataSet<Tuple2<IntValue,IntValue>> large=getDataSet(env,10000,2000);\n  env.getConfig().enableObjectReuse();\n  List<Tuple2<IntValue,IntValue>> enabledResultWithHuge=small.crossWithHuge(large).with(new OverwriteObjectsCross()).collect();\n  List<Tuple2<IntValue,IntValue>> enabledResultWithTiny=small.crossWithTiny(large).with(new OverwriteObjectsCross()).collect();\n  Assert.assertThat(enabledResultWithHuge,is(enabledResultWithTiny));\n  env.getConfig().disableObjectReuse();\n  List<Tuple2<IntValue,IntValue>> disabledResultWithHuge=small.crossWithHuge(large).with(new OverwriteObjectsCross()).collect();\n  List<Tuple2<IntValue,IntValue>> disabledResultWithTiny=small.crossWithTiny(large).with(new OverwriteObjectsCross()).collect();\n  Assert.assertThat(disabledResultWithHuge,is(disabledResultWithTiny));\n  Assert.assertThat(disabledResultWithHuge,is(enabledResultWithHuge));\n  Assert.assertThat(disabledResultWithTiny,is(enabledResultWithTiny));\n}\n",
+      "nodeContext" : "{\n  CuratorFramework client=ZOOKEEPER.getClient();\n  SharedStateRegistry sharedStateRegistry=new SharedStateRegistryImpl();\n  CompletedCheckpointStore store=createRecoveredCompletedCheckpointStore(1);\n  TestCompletedCheckpoint checkpoint=createCheckpoint(0,sharedStateRegistry);\n  store.addCheckpointAndSubsumeOldestOne(checkpoint,new CheckpointsCleaner(),() -> {\n  }\n);\n  assertEquals(1,store.getNumberOfRetainedCheckpoints());\n  assertNotNull(client.checkExists().forPath(CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID())));\n  store.shutdown(JobStatus.SUSPENDED,new CheckpointsCleaner());\n  assertEquals(0,store.getNumberOfRetainedCheckpoints());\n  final String checkpointPath=CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID());\n  final List<String> checkpointPathChildren=client.getChildren().forPath(checkpointPath);\n  assertEquals(\"The checkpoint node should not be marked for deletion.\",1,checkpointPathChildren.size());\n  final String locksNodeName=Iterables.getOnlyElement(checkpointPathChildren);\n  final String locksNodePath=ZooKeeperUtils.generateZookeeperPath(checkpointPath,locksNodeName);\n  final Stat locksStat=client.checkExists().forPath(locksNodePath);\n  assertEquals(\"There shouldn't be any lock node available for the checkpoint\",0,locksStat.getNumChildren());\n  sharedStateRegistry.close();\n  store=createRecoveredCompletedCheckpointStore(1);\n  CompletedCheckpoint recovered=store.getLatestCheckpoint();\n  assertEquals(checkpoint,recovered);\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 182,
+      "astNodeNumber" : 185,
       "astHeight" : 8
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 1655,
-        "startLineNumber" : 311,
+        "charLength" : 2302,
+        "startLineNumber" : 194,
         "startColumnNumber" : 4,
-        "endLineNumber" : 350,
+        "endLineNumber" : 244,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "public void testCross(ExecutionEnvironment env) throws Exception {\n  LOG.info(\"Testing cross\");\n  DataSet<Tuple2<IntValue,IntValue>> small=getDataSet(env,100,20);\n  DataSet<Tuple2<IntValue,IntValue>> large=getDataSet(env,10000,2000);\n  env.getConfig().enableObjectReuse();\n  List<Tuple2<IntValue,IntValue>> enabledResultWithHuge=small.crossWithHuge(large).with(new OverwriteObjectsCross()).collect();\n  List<Tuple2<IntValue,IntValue>> enabledResultWithTiny=small.crossWithTiny(large).with(new OverwriteObjectsCross()).collect();\n  Assert.assertThat(enabledResultWithHuge,is(enabledResultWithTiny));\n  env.getConfig().disableObjectReuse();\n  List<Tuple2<IntValue,IntValue>> disabledResultWithHuge=small.crossWithHuge(large).with(new OverwriteObjectsCross()).collect();\n  List<Tuple2<IntValue,IntValue>> disabledResultWithTiny=small.crossWithTiny(large).with(new OverwriteObjectsCross()).collect();\n  Assert.assertThat(disabledResultWithHuge,is(disabledResultWithTiny));\n  Assert.assertThat(disabledResultWithHuge,is(enabledResultWithHuge));\n  Assert.assertThat(disabledResultWithTiny,is(enabledResultWithTiny));\n}\n",
+      "nodeContext" : "/** \n * Tests that suspends keeps all checkpoints (so that they can be recovered later by the ZooKeeper store). Furthermore, suspending a job should release all locks.\n */\n@Test public void testSuspendKeepsCheckpoints() throws Exception {\n  CuratorFramework client=ZOOKEEPER.getClient();\n  SharedStateRegistry sharedStateRegistry=new SharedStateRegistryImpl();\n  CompletedCheckpointStore store=createRecoveredCompletedCheckpointStore(1);\n  TestCompletedCheckpoint checkpoint=createCheckpoint(0,sharedStateRegistry);\n  store.addCheckpointAndSubsumeOldestOne(checkpoint,new CheckpointsCleaner(),() -> {\n  }\n);\n  assertEquals(1,store.getNumberOfRetainedCheckpoints());\n  assertNotNull(client.checkExists().forPath(CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID())));\n  store.shutdown(JobStatus.SUSPENDED,new CheckpointsCleaner());\n  assertEquals(0,store.getNumberOfRetainedCheckpoints());\n  final String checkpointPath=CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID());\n  final List<String> checkpointPathChildren=client.getChildren().forPath(checkpointPath);\n  assertEquals(\"The checkpoint node should not be marked for deletion.\",1,checkpointPathChildren.size());\n  final String locksNodeName=Iterables.getOnlyElement(checkpointPathChildren);\n  final String locksNodePath=ZooKeeperUtils.generateZookeeperPath(checkpointPath,locksNodeName);\n  final Stat locksStat=client.checkExists().forPath(locksNodePath);\n  assertEquals(\"There shouldn't be any lock node available for the checkpoint\",0,locksStat.getNumChildren());\n  sharedStateRegistry.close();\n  store=createRecoveredCompletedCheckpointStore(1);\n  CompletedCheckpoint recovered=store.getLatestCheckpoint();\n  assertEquals(checkpoint,recovered);\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 192,
+      "astNodeNumber" : 194,
       "astHeight" : 9
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 69,
-        "startLineNumber" : 349,
+        "charLength" : 56,
+        "startLineNumber" : 207,
         "startColumnNumber" : 8,
-        "endLineNumber" : 349,
-        "endColumnNumber" : 77
+        "endLineNumber" : 207,
+        "endColumnNumber" : 64
       },
-      "nodeContext" : "Assert.assertThat(disabledResultWithTiny,is(enabledResultWithTiny));\n",
+      "nodeContext" : "assertEquals(1,store.getNumberOfRetainedCheckpoints());\n",
       "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.flink.runtime.checkpoint.CompletedCheckpointStore"
+  }, {
+    "nodeContext" : "store",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 215,
+      "startColumnNumber" : 8,
+      "endLineNumber" : 215,
+      "endColumnNumber" : 13
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 61,
+        "startLineNumber" : 215,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 215,
+        "endColumnNumber" : 69
+      },
+      "nodeContext" : "store.shutdown(JobStatus.SUSPENDED,new CheckpointsCleaner())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 62,
+        "startLineNumber" : 215,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 215,
+        "endColumnNumber" : 70
+      },
+      "nodeContext" : "store.shutdown(JobStatus.SUSPENDED,new CheckpointsCleaner());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2043,
+        "startLineNumber" : 199,
+        "startColumnNumber" : 63,
+        "endLineNumber" : 244,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  CuratorFramework client=ZOOKEEPER.getClient();\n  SharedStateRegistry sharedStateRegistry=new SharedStateRegistryImpl();\n  CompletedCheckpointStore store=createRecoveredCompletedCheckpointStore(1);\n  TestCompletedCheckpoint checkpoint=createCheckpoint(0,sharedStateRegistry);\n  store.addCheckpointAndSubsumeOldestOne(checkpoint,new CheckpointsCleaner(),() -> {\n  }\n);\n  assertEquals(1,store.getNumberOfRetainedCheckpoints());\n  assertNotNull(client.checkExists().forPath(CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID())));\n  store.shutdown(JobStatus.SUSPENDED,new CheckpointsCleaner());\n  assertEquals(0,store.getNumberOfRetainedCheckpoints());\n  final String checkpointPath=CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID());\n  final List<String> checkpointPathChildren=client.getChildren().forPath(checkpointPath);\n  assertEquals(\"The checkpoint node should not be marked for deletion.\",1,checkpointPathChildren.size());\n  final String locksNodeName=Iterables.getOnlyElement(checkpointPathChildren);\n  final String locksNodePath=ZooKeeperUtils.generateZookeeperPath(checkpointPath,locksNodeName);\n  final Stat locksStat=client.checkExists().forPath(locksNodePath);\n  assertEquals(\"There shouldn't be any lock node available for the checkpoint\",0,locksStat.getNumChildren());\n  sharedStateRegistry.close();\n  store=createRecoveredCompletedCheckpointStore(1);\n  CompletedCheckpoint recovered=store.getLatestCheckpoint();\n  assertEquals(checkpoint,recovered);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 185,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 2302,
+        "startLineNumber" : 194,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 244,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Tests that suspends keeps all checkpoints (so that they can be recovered later by the ZooKeeper store). Furthermore, suspending a job should release all locks.\n */\n@Test public void testSuspendKeepsCheckpoints() throws Exception {\n  CuratorFramework client=ZOOKEEPER.getClient();\n  SharedStateRegistry sharedStateRegistry=new SharedStateRegistryImpl();\n  CompletedCheckpointStore store=createRecoveredCompletedCheckpointStore(1);\n  TestCompletedCheckpoint checkpoint=createCheckpoint(0,sharedStateRegistry);\n  store.addCheckpointAndSubsumeOldestOne(checkpoint,new CheckpointsCleaner(),() -> {\n  }\n);\n  assertEquals(1,store.getNumberOfRetainedCheckpoints());\n  assertNotNull(client.checkExists().forPath(CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID())));\n  store.shutdown(JobStatus.SUSPENDED,new CheckpointsCleaner());\n  assertEquals(0,store.getNumberOfRetainedCheckpoints());\n  final String checkpointPath=CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID());\n  final List<String> checkpointPathChildren=client.getChildren().forPath(checkpointPath);\n  assertEquals(\"The checkpoint node should not be marked for deletion.\",1,checkpointPathChildren.size());\n  final String locksNodeName=Iterables.getOnlyElement(checkpointPathChildren);\n  final String locksNodePath=ZooKeeperUtils.generateZookeeperPath(checkpointPath,locksNodeName);\n  final Stat locksStat=client.checkExists().forPath(locksNodePath);\n  assertEquals(\"There shouldn't be any lock node available for the checkpoint\",0,locksStat.getNumChildren());\n  sharedStateRegistry.close();\n  store=createRecoveredCompletedCheckpointStore(1);\n  CompletedCheckpoint recovered=store.getLatestCheckpoint();\n  assertEquals(checkpoint,recovered);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 194,
+      "astHeight" : 9
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 62,
+        "startLineNumber" : 215,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 215,
+        "endColumnNumber" : 70
+      },
+      "nodeContext" : "store.shutdown(JobStatus.SUSPENDED,new CheckpointsCleaner());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.flink.runtime.checkpoint.CompletedCheckpointStore"
+  }, {
+    "nodeContext" : "store",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 217,
+      "startColumnNumber" : 24,
+      "endLineNumber" : 217,
+      "endColumnNumber" : 29
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 38,
+        "startLineNumber" : 217,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 217,
+        "endColumnNumber" : 62
+      },
+      "nodeContext" : "store.getNumberOfRetainedCheckpoints()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 55,
+        "startLineNumber" : 217,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 217,
+        "endColumnNumber" : 63
+      },
+      "nodeContext" : "assertEquals(0,store.getNumberOfRetainedCheckpoints())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 56,
+        "startLineNumber" : 217,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 217,
+        "endColumnNumber" : 64
+      },
+      "nodeContext" : "assertEquals(0,store.getNumberOfRetainedCheckpoints());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2043,
+        "startLineNumber" : 199,
+        "startColumnNumber" : 63,
+        "endLineNumber" : 244,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  CuratorFramework client=ZOOKEEPER.getClient();\n  SharedStateRegistry sharedStateRegistry=new SharedStateRegistryImpl();\n  CompletedCheckpointStore store=createRecoveredCompletedCheckpointStore(1);\n  TestCompletedCheckpoint checkpoint=createCheckpoint(0,sharedStateRegistry);\n  store.addCheckpointAndSubsumeOldestOne(checkpoint,new CheckpointsCleaner(),() -> {\n  }\n);\n  assertEquals(1,store.getNumberOfRetainedCheckpoints());\n  assertNotNull(client.checkExists().forPath(CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID())));\n  store.shutdown(JobStatus.SUSPENDED,new CheckpointsCleaner());\n  assertEquals(0,store.getNumberOfRetainedCheckpoints());\n  final String checkpointPath=CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID());\n  final List<String> checkpointPathChildren=client.getChildren().forPath(checkpointPath);\n  assertEquals(\"The checkpoint node should not be marked for deletion.\",1,checkpointPathChildren.size());\n  final String locksNodeName=Iterables.getOnlyElement(checkpointPathChildren);\n  final String locksNodePath=ZooKeeperUtils.generateZookeeperPath(checkpointPath,locksNodeName);\n  final Stat locksStat=client.checkExists().forPath(locksNodePath);\n  assertEquals(\"There shouldn't be any lock node available for the checkpoint\",0,locksStat.getNumChildren());\n  sharedStateRegistry.close();\n  store=createRecoveredCompletedCheckpointStore(1);\n  CompletedCheckpoint recovered=store.getLatestCheckpoint();\n  assertEquals(checkpoint,recovered);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 185,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 2302,
+        "startLineNumber" : 194,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 244,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Tests that suspends keeps all checkpoints (so that they can be recovered later by the ZooKeeper store). Furthermore, suspending a job should release all locks.\n */\n@Test public void testSuspendKeepsCheckpoints() throws Exception {\n  CuratorFramework client=ZOOKEEPER.getClient();\n  SharedStateRegistry sharedStateRegistry=new SharedStateRegistryImpl();\n  CompletedCheckpointStore store=createRecoveredCompletedCheckpointStore(1);\n  TestCompletedCheckpoint checkpoint=createCheckpoint(0,sharedStateRegistry);\n  store.addCheckpointAndSubsumeOldestOne(checkpoint,new CheckpointsCleaner(),() -> {\n  }\n);\n  assertEquals(1,store.getNumberOfRetainedCheckpoints());\n  assertNotNull(client.checkExists().forPath(CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID())));\n  store.shutdown(JobStatus.SUSPENDED,new CheckpointsCleaner());\n  assertEquals(0,store.getNumberOfRetainedCheckpoints());\n  final String checkpointPath=CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID());\n  final List<String> checkpointPathChildren=client.getChildren().forPath(checkpointPath);\n  assertEquals(\"The checkpoint node should not be marked for deletion.\",1,checkpointPathChildren.size());\n  final String locksNodeName=Iterables.getOnlyElement(checkpointPathChildren);\n  final String locksNodePath=ZooKeeperUtils.generateZookeeperPath(checkpointPath,locksNodeName);\n  final Stat locksStat=client.checkExists().forPath(locksNodePath);\n  assertEquals(\"There shouldn't be any lock node available for the checkpoint\",0,locksStat.getNumChildren());\n  sharedStateRegistry.close();\n  store=createRecoveredCompletedCheckpointStore(1);\n  CompletedCheckpoint recovered=store.getLatestCheckpoint();\n  assertEquals(checkpoint,recovered);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 194,
+      "astHeight" : 9
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 56,
+        "startLineNumber" : 217,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 217,
+        "endColumnNumber" : 64
+      },
+      "nodeContext" : "assertEquals(0,store.getNumberOfRetainedCheckpoints());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.flink.runtime.checkpoint.CompletedCheckpointStore"
+  }, {
+    "nodeContext" : "store",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 242,
+      "startColumnNumber" : 40,
+      "endLineNumber" : 242,
+      "endColumnNumber" : 45
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 27,
+        "startLineNumber" : 242,
+        "startColumnNumber" : 40,
+        "endLineNumber" : 242,
+        "endColumnNumber" : 67
+      },
+      "nodeContext" : "store.getLatestCheckpoint()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 39,
+        "startLineNumber" : 242,
+        "startColumnNumber" : 28,
+        "endLineNumber" : 242,
+        "endColumnNumber" : 67
+      },
+      "nodeContext" : "recovered=store.getLatestCheckpoint()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 60,
+        "startLineNumber" : 242,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 242,
+        "endColumnNumber" : 68
+      },
+      "nodeContext" : "CompletedCheckpoint recovered=store.getLatestCheckpoint();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 2043,
+        "startLineNumber" : 199,
+        "startColumnNumber" : 63,
+        "endLineNumber" : 244,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  CuratorFramework client=ZOOKEEPER.getClient();\n  SharedStateRegistry sharedStateRegistry=new SharedStateRegistryImpl();\n  CompletedCheckpointStore store=createRecoveredCompletedCheckpointStore(1);\n  TestCompletedCheckpoint checkpoint=createCheckpoint(0,sharedStateRegistry);\n  store.addCheckpointAndSubsumeOldestOne(checkpoint,new CheckpointsCleaner(),() -> {\n  }\n);\n  assertEquals(1,store.getNumberOfRetainedCheckpoints());\n  assertNotNull(client.checkExists().forPath(CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID())));\n  store.shutdown(JobStatus.SUSPENDED,new CheckpointsCleaner());\n  assertEquals(0,store.getNumberOfRetainedCheckpoints());\n  final String checkpointPath=CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID());\n  final List<String> checkpointPathChildren=client.getChildren().forPath(checkpointPath);\n  assertEquals(\"The checkpoint node should not be marked for deletion.\",1,checkpointPathChildren.size());\n  final String locksNodeName=Iterables.getOnlyElement(checkpointPathChildren);\n  final String locksNodePath=ZooKeeperUtils.generateZookeeperPath(checkpointPath,locksNodeName);\n  final Stat locksStat=client.checkExists().forPath(locksNodePath);\n  assertEquals(\"There shouldn't be any lock node available for the checkpoint\",0,locksStat.getNumChildren());\n  sharedStateRegistry.close();\n  store=createRecoveredCompletedCheckpointStore(1);\n  CompletedCheckpoint recovered=store.getLatestCheckpoint();\n  assertEquals(checkpoint,recovered);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 185,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 2302,
+        "startLineNumber" : 194,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 244,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Tests that suspends keeps all checkpoints (so that they can be recovered later by the ZooKeeper store). Furthermore, suspending a job should release all locks.\n */\n@Test public void testSuspendKeepsCheckpoints() throws Exception {\n  CuratorFramework client=ZOOKEEPER.getClient();\n  SharedStateRegistry sharedStateRegistry=new SharedStateRegistryImpl();\n  CompletedCheckpointStore store=createRecoveredCompletedCheckpointStore(1);\n  TestCompletedCheckpoint checkpoint=createCheckpoint(0,sharedStateRegistry);\n  store.addCheckpointAndSubsumeOldestOne(checkpoint,new CheckpointsCleaner(),() -> {\n  }\n);\n  assertEquals(1,store.getNumberOfRetainedCheckpoints());\n  assertNotNull(client.checkExists().forPath(CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID())));\n  store.shutdown(JobStatus.SUSPENDED,new CheckpointsCleaner());\n  assertEquals(0,store.getNumberOfRetainedCheckpoints());\n  final String checkpointPath=CHECKPOINT_PATH + checkpointStoreUtil.checkpointIDToName(checkpoint.getCheckpointID());\n  final List<String> checkpointPathChildren=client.getChildren().forPath(checkpointPath);\n  assertEquals(\"The checkpoint node should not be marked for deletion.\",1,checkpointPathChildren.size());\n  final String locksNodeName=Iterables.getOnlyElement(checkpointPathChildren);\n  final String locksNodePath=ZooKeeperUtils.generateZookeeperPath(checkpointPath,locksNodeName);\n  final Stat locksStat=client.checkExists().forPath(locksNodePath);\n  assertEquals(\"There shouldn't be any lock node available for the checkpoint\",0,locksStat.getNumChildren());\n  sharedStateRegistry.close();\n  store=createRecoveredCompletedCheckpointStore(1);\n  CompletedCheckpoint recovered=store.getLatestCheckpoint();\n  assertEquals(checkpoint,recovered);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 194,
+      "astHeight" : 9
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 60,
+        "startLineNumber" : 242,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 242,
+        "endColumnNumber" : 68
+      },
+      "nodeContext" : "CompletedCheckpoint recovered=store.getLatestCheckpoint();\n",
+      "nodeType" : "VariableDeclarationStatement",
       "astNodeNumber" : 8,
       "astHeight" : 4
     },
     "tokenLength" : 1,
-    "type" : "java.util.List<org.apache.flink.api.java.tuple.Tuple2<org.apache.flink.types.IntValue,org.apache.flink.types.IntValue>>"
+    "type" : "org.apache.flink.runtime.checkpoint.CompletedCheckpointStore"
   } ],
   "positionList" : [ {
-    "charLength" : 21,
-    "startLineNumber" : 332,
-    "startColumnNumber" : 52,
-    "endLineNumber" : 332,
-    "endColumnNumber" : 73
+    "charLength" : 5,
+    "startLineNumber" : 206,
+    "startColumnNumber" : 8,
+    "endLineNumber" : 206,
+    "endColumnNumber" : 13
   }, {
-    "charLength" : 21,
-    "startLineNumber" : 349,
-    "startColumnNumber" : 53,
-    "endLineNumber" : 349,
-    "endColumnNumber" : 74
+    "charLength" : 5,
+    "startLineNumber" : 207,
+    "startColumnNumber" : 24,
+    "endLineNumber" : 207,
+    "endColumnNumber" : 29
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 215,
+    "startColumnNumber" : 8,
+    "endLineNumber" : 215,
+    "endColumnNumber" : 13
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 217,
+    "startColumnNumber" : 24,
+    "endLineNumber" : 217,
+    "endColumnNumber" : 29
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 242,
+    "startColumnNumber" : 40,
+    "endLineNumber" : 242,
+    "endColumnNumber" : 45
   } ],
   "layoutRelationDataList" : [ {
     "firstKey" : 0,
     "secondKey" : 1,
-    "layout" : 3
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 4,
+    "layout" : 2
   }, {
     "firstKey" : 1,
     "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 4,
+    "layout" : 2
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 3,
     "layout" : 3
   } ]
 }

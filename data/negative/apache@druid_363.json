@@ -1,100 +1,126 @@
 {
   "id" : 363,
-  "expression" : "i",
+  "expression" : "Collection",
   "projectName" : "apache@druid",
-  "commitID" : "f6662b4893a9b8cc8a0ebb77e63daddde882148d",
-  "filePath" : "/extensions-contrib/influxdb-emitter/src/main/java/org/apache/druid/emitter/influxdb/InfluxdbEmitter.java",
+  "commitID" : "2df42143aec6c50e9ac31d89cd75749d10d37a3d",
+  "filePath" : "server/src/main/java/org/apache/druid/segment/realtime/appenderator/SegmentPublisherHelper.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "i",
+    "nodeContext" : "Collection",
     "nodeType" : "SimpleName",
     "nodePosition" : {
-      "charLength" : 1,
-      "startLineNumber" : 216,
-      "startColumnNumber" : 20,
-      "endLineNumber" : 216,
-      "endColumnNumber" : 21
+      "charLength" : 10,
+      "startLineNumber" : 112,
+      "startColumnNumber" : 56,
+      "endLineNumber" : 112,
+      "endColumnNumber" : 66
     },
     "astNodeNumber" : 1,
     "astHeight" : 1,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,expression]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
       "nodePosition" : {
-        "charLength" : 20,
-        "startLineNumber" : 216,
-        "startColumnNumber" : 20,
-        "endLineNumber" : 216,
-        "endColumnNumber" : 40
+        "charLength" : 18,
+        "startLineNumber" : 112,
+        "startColumnNumber" : 56,
+        "endLineNumber" : 112,
+        "endColumnNumber" : 74
       },
-      "nodeContext" : "i < initialQueueSize",
-      "nodeType" : "InfixExpression",
+      "nodeContext" : "Collection::stream",
+      "nodeType" : "ExpressionMethodReference",
       "astNodeNumber" : 3,
       "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 64,
+        "startLineNumber" : 112,
+        "startColumnNumber" : 11,
+        "endLineNumber" : 112,
+        "endColumnNumber" : 75
+      },
+      "nodeContext" : "intervalToSegments.values().stream().flatMap(Collection::stream)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ReturnStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 92,
+        "startLineNumber" : 112,
+        "startColumnNumber" : 11,
+        "endLineNumber" : 112,
+        "endColumnNumber" : 103
+      },
+      "nodeContext" : "intervalToSegments.values().stream().flatMap(Collection::stream).collect(Collectors.toSet())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 119,
-        "startLineNumber" : 216,
+        "charLength" : 100,
+        "startLineNumber" : 112,
         "startColumnNumber" : 4,
-        "endLineNumber" : 218,
-        "endColumnNumber" : 5
+        "endLineNumber" : 112,
+        "endColumnNumber" : 104
       },
-      "nodeContext" : "for (int i=0; i < initialQueueSize; i++) {\n  payload.append(transformForInfluxSystems(eventsQueue.poll()));\n}\n",
-      "nodeType" : "ForStatement",
-      "astNodeNumber" : 21,
-      "astHeight" : 7
+      "nodeContext" : "return intervalToSegments.values().stream().flatMap(Collection::stream).collect(Collectors.toSet());\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 16,
+      "astHeight" : 6
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 263,
-        "startLineNumber" : 213,
+        "charLength" : 2868,
+        "startLineNumber" : 54,
         "startColumnNumber" : 2,
-        "endLineNumber" : 220,
+        "endLineNumber" : 113,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "{\n  StringBuilder payload=new StringBuilder();\n  int initialQueueSize=eventsQueue.size();\n  for (int i=0; i < initialQueueSize; i++) {\n    payload.append(transformForInfluxSystems(eventsQueue.poll()));\n  }\n  postToInflux(payload.toString());\n}\n",
+      "nodeContext" : "{\n  final Map<Interval,List<DataSegment>> intervalToSegments=new HashMap<>();\n  segments.forEach(segment -> intervalToSegments.computeIfAbsent(segment.getInterval(),k -> new ArrayList<>()).add(segment));\n  for (  Entry<Interval,List<DataSegment>> entry : intervalToSegments.entrySet()) {\n    final Interval interval=entry.getKey();\n    final List<DataSegment> segmentsPerInterval=entry.getValue();\n    final ShardSpec firstShardSpec=segmentsPerInterval.get(0).getShardSpec();\n    final boolean anyMismatch=segmentsPerInterval.stream().anyMatch(segment -> segment.getShardSpec().getClass() != firstShardSpec.getClass());\n    if (anyMismatch) {\n      throw new ISE(\"Mismatched shardSpecs in interval[%s] for segments[%s]\",interval,segmentsPerInterval);\n    }\n    final Function<DataSegment,DataSegment> annotateFn;\n    if (firstShardSpec instanceof OverwriteShardSpec) {\n      annotateFn=annotateAtomicUpdateGroupFn(segmentsPerInterval.size());\n    }\n else     if (firstShardSpec instanceof BuildingShardSpec) {\n      int expectedCorePartitionSetSize=segmentsPerInterval.size();\n      int actualCorePartitionSetSize=Math.toIntExact(segmentsPerInterval.stream().filter(segment -> segment.getShardSpec().getPartitionNum() < expectedCorePartitionSetSize).count());\n      if (expectedCorePartitionSetSize != actualCorePartitionSetSize) {\n        LOG.errorSegments(segmentsPerInterval,\"Cannot publish segments due to incomplete time chunk\");\n        throw new ISE(\"Cannot publish segments due to incomplete time chunk for interval[%s]. \" + \"Expected [%s] segments in the core partition, but only [%] segments are found. \" + \"See task logs for more details about these segments.\",interval,expectedCorePartitionSetSize,actualCorePartitionSetSize);\n      }\n      annotateFn=annotateCorePartitionSetSizeFn(expectedCorePartitionSetSize);\n    }\n else     if (firstShardSpec instanceof BucketNumberedShardSpec) {\n      throw new ISE(\"Cannot publish segments with shardSpec[%s]\",firstShardSpec);\n    }\n else {\n      annotateFn=null;\n    }\n    if (annotateFn != null) {\n      intervalToSegments.put(interval,segmentsPerInterval.stream().map(annotateFn).collect(Collectors.toList()));\n    }\n  }\n  return intervalToSegments.values().stream().flatMap(Collection::stream).collect(Collectors.toSet());\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 43,
-      "astHeight" : 8
+      "astNodeNumber" : 268,
+      "astHeight" : 16
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 357,
-        "startLineNumber" : 212,
+        "charLength" : 3415,
+        "startLineNumber" : 45,
         "startColumnNumber" : 2,
-        "endLineNumber" : 220,
+        "endLineNumber" : 113,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "public void transformAndSendToInfluxdb(LinkedBlockingQueue<ServiceMetricEvent> eventsQueue){\n  StringBuilder payload=new StringBuilder();\n  int initialQueueSize=eventsQueue.size();\n  for (int i=0; i < initialQueueSize; i++) {\n    payload.append(transformForInfluxSystems(eventsQueue.poll()));\n  }\n  postToInflux(payload.toString());\n}\n",
+      "nodeContext" : "/** \n * This method fills missing information in the shard spec if necessary when publishing segments. - When time chunk lock is used, the non-appending task should set the proper size of the core partitions for dynamically-partitioned segments. See  {@link #annotateCorePartitionSetSizeFn}. - When segment lock is used, the overwriting task should set the proper size of the atomic update group. See  {@link #annotateAtomicUpdateGroupFn}.\n */\nstatic Set<DataSegment> annotateShardSpec(Set<DataSegment> segments){\n  final Map<Interval,List<DataSegment>> intervalToSegments=new HashMap<>();\n  segments.forEach(segment -> intervalToSegments.computeIfAbsent(segment.getInterval(),k -> new ArrayList<>()).add(segment));\n  for (  Entry<Interval,List<DataSegment>> entry : intervalToSegments.entrySet()) {\n    final Interval interval=entry.getKey();\n    final List<DataSegment> segmentsPerInterval=entry.getValue();\n    final ShardSpec firstShardSpec=segmentsPerInterval.get(0).getShardSpec();\n    final boolean anyMismatch=segmentsPerInterval.stream().anyMatch(segment -> segment.getShardSpec().getClass() != firstShardSpec.getClass());\n    if (anyMismatch) {\n      throw new ISE(\"Mismatched shardSpecs in interval[%s] for segments[%s]\",interval,segmentsPerInterval);\n    }\n    final Function<DataSegment,DataSegment> annotateFn;\n    if (firstShardSpec instanceof OverwriteShardSpec) {\n      annotateFn=annotateAtomicUpdateGroupFn(segmentsPerInterval.size());\n    }\n else     if (firstShardSpec instanceof BuildingShardSpec) {\n      int expectedCorePartitionSetSize=segmentsPerInterval.size();\n      int actualCorePartitionSetSize=Math.toIntExact(segmentsPerInterval.stream().filter(segment -> segment.getShardSpec().getPartitionNum() < expectedCorePartitionSetSize).count());\n      if (expectedCorePartitionSetSize != actualCorePartitionSetSize) {\n        LOG.errorSegments(segmentsPerInterval,\"Cannot publish segments due to incomplete time chunk\");\n        throw new ISE(\"Cannot publish segments due to incomplete time chunk for interval[%s]. \" + \"Expected [%s] segments in the core partition, but only [%] segments are found. \" + \"See task logs for more details about these segments.\",interval,expectedCorePartitionSetSize,actualCorePartitionSetSize);\n      }\n      annotateFn=annotateCorePartitionSetSizeFn(expectedCorePartitionSetSize);\n    }\n else     if (firstShardSpec instanceof BucketNumberedShardSpec) {\n      throw new ISE(\"Cannot publish segments with shardSpec[%s]\",firstShardSpec);\n    }\n else {\n      annotateFn=null;\n    }\n    if (annotateFn != null) {\n      intervalToSegments.put(interval,segmentsPerInterval.stream().map(annotateFn).collect(Collectors.toList()));\n    }\n  }\n  return intervalToSegments.values().stream().flatMap(Collection::stream).collect(Collectors.toSet());\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 54,
-      "astHeight" : 9
+      "astNodeNumber" : 284,
+      "astHeight" : 17
     } ],
     "currentLineData" : {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,expression]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 20,
-        "startLineNumber" : 216,
-        "startColumnNumber" : 20,
-        "endLineNumber" : 216,
-        "endColumnNumber" : 40
+        "charLength" : 100,
+        "startLineNumber" : 112,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 112,
+        "endColumnNumber" : 104
       },
-      "nodeContext" : "i < initialQueueSize",
-      "nodeType" : "InfixExpression",
-      "astNodeNumber" : 3,
-      "astHeight" : 2
+      "nodeContext" : "return intervalToSegments.values().stream().flatMap(Collection::stream).collect(Collectors.toSet());\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 16,
+      "astHeight" : 6
     },
     "tokenLength" : 1,
-    "type" : "int"
+    "type" : "java.util.Collection"
   } ],
   "positionList" : [ {
-    "charLength" : 1,
-    "startLineNumber" : 216,
-    "startColumnNumber" : 20,
-    "endLineNumber" : 216,
-    "endColumnNumber" : 21
+    "charLength" : 10,
+    "startLineNumber" : 112,
+    "startColumnNumber" : 56,
+    "endLineNumber" : 112,
+    "endColumnNumber" : 66
   } ],
   "layoutRelationDataList" : [ ]
 }

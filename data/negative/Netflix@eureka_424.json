@@ -1,221 +1,363 @@
 {
   "id" : 424,
-  "expression" : "this",
+  "expression" : "config",
   "projectName" : "Netflix@eureka",
-  "commitID" : "2f6d04dae7f6fca2a17e85fc53020e13272a79b2",
-  "filePath" : "/eureka-server/src/main/java/com/netflix/eureka2/server/transport/tcp/discovery/TcpDiscoveryHandler.java",
-  "occurrences" : 2,
+  "commitID" : "295f257424f0952b17a6903940bbd4e2f2fced03",
+  "filePath" : "eureka-client/src/main/java/com/netflix/discovery/DiscoveryClient.java",
+  "occurrences" : 3,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "this",
-    "nodeType" : "ThisExpression",
+    "nodeContext" : "config",
+    "nodeType" : "SimpleName",
     "nodePosition" : {
-      "charLength" : 4,
-      "startLineNumber" : 55,
-      "startColumnNumber" : 8,
-      "endLineNumber" : 55,
-      "endColumnNumber" : 12
+      "charLength" : 6,
+      "startLineNumber" : 217,
+      "startColumnNumber" : 27,
+      "endLineNumber" : 217,
+      "endColumnNumber" : 33
     },
     "astNodeNumber" : 1,
     "astHeight" : 1,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,leftHandSide]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
       "nodePosition" : {
-        "charLength" : 13,
-        "startLineNumber" : 55,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 55,
-        "endColumnNumber" : 21
+        "charLength" : 21,
+        "startLineNumber" : 217,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 217,
+        "endColumnNumber" : 33
       },
-      "nodeContext" : "this.registry",
-      "nodeType" : "FieldAccess",
+      "nodeContext" : "clientConfig=config",
+      "nodeType" : "Assignment",
       "astNodeNumber" : 3,
       "astHeight" : 2
     }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 24,
-        "startLineNumber" : 55,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 55,
-        "endColumnNumber" : 32
+        "charLength" : 22,
+        "startLineNumber" : 217,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 217,
+        "endColumnNumber" : 34
       },
-      "nodeContext" : "this.registry=registry",
-      "nodeType" : "Assignment",
-      "astNodeNumber" : 5,
+      "nodeContext" : "clientConfig=config;\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 4,
       "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 3965,
+        "startLineNumber" : 211,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 284,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  scheduler=Executors.newScheduledThreadPool(4,new ThreadFactoryBuilder().setNameFormat(\"DiscoveryClient-%d\").setDaemon(true).build());\n  clientConfig=config;\n  final String zone=getZone(myInfo);\n  eurekaServiceUrls.set(getDiscoveryServiceUrls(zone));\n  scheduler.scheduleWithFixedDelay(getServiceUrlUpdateTask(zone),clientConfig.getEurekaServiceUrlPollIntervalSeconds(),clientConfig.getEurekaServiceUrlPollIntervalSeconds(),TimeUnit.SECONDS);\n  localRegionApps.set(new Applications());\n  heartbeatExecutor=new ThreadPoolExecutor(1,clientConfig.getHeartbeatExecutorThreadPoolSize(),0,TimeUnit.SECONDS,new SynchronousQueue<Runnable>());\n  cacheRefreshExecutor=new ThreadPoolExecutor(1,clientConfig.getCacheRefreshExecutorThreadPoolSize(),0,TimeUnit.SECONDS,new SynchronousQueue<Runnable>());\n  fetchRegistryGeneration=new AtomicLong(0);\n  if (myInfo != null) {\n    instanceInfo=myInfo;\n    appPathIdentifier=instanceInfo.getAppName() + \"/\" + instanceInfo.getId();\n  }\n  String proxyHost=clientConfig.getProxyHost();\n  String proxyPort=clientConfig.getProxyPort();\n  discoveryJerseyClient=EurekaJerseyClient.createJerseyClient(\"DiscoveryClient-HTTPClient\",clientConfig.getEurekaServerConnectTimeoutSeconds() * 1000,clientConfig.getEurekaServerReadTimeoutSeconds() * 1000,clientConfig.getEurekaServerTotalConnectionsPerHost(),clientConfig.getEurekaServerTotalConnections(),clientConfig.getEurekaConnectionIdleTimeoutSeconds());\n  discoveryApacheClient=discoveryJerseyClient.getClient();\n  ClientConfig cc=discoveryJerseyClient.getClientconfig();\n  remoteRegionsToFetch=new AtomicReference<String>(clientConfig.fetchRegistryForRemoteRegions());\n  AzToRegionMapper azToRegionMapper;\n  if (clientConfig.shouldUseDnsForFetchingServiceUrls()) {\n    azToRegionMapper=new DNSBasedAzToRegionMapper();\n  }\n else {\n    azToRegionMapper=new PropertyBasedAzToRegionMapper(clientConfig);\n  }\n  if (null != remoteRegionsToFetch.get()) {\n    azToRegionMapper.setRegionsToFetch(remoteRegionsToFetch.get().split(\",\"));\n  }\n  instanceRegionChecker=new InstanceRegionChecker(azToRegionMapper,clientConfig.getRegion());\n  boolean enableGZIPContentEncodingFilter=config.shouldGZipContent();\n  if (enableGZIPContentEncodingFilter) {\n    discoveryApacheClient.addFilter(new GZIPContentEncodingFilter(false));\n  }\n  String ip=instanceInfo == null ? null : instanceInfo.getIPAddr();\n  EurekaClientIdentity identity=new EurekaClientIdentity(ip);\n  discoveryApacheClient.addFilter(new EurekaIdentityHeaderFilter(identity));\n  if (proxyHost != null && proxyPort != null) {\n    cc.getProperties().put(DefaultApacheHttpClient4Config.PROPERTY_PROXY_URI,\"http://\" + proxyHost + \":\"+ proxyPort);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 319,
+      "astHeight" : 10
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 25,
-        "startLineNumber" : 55,
+        "charLength" : 4085,
+        "startLineNumber" : 211,
         "startColumnNumber" : 8,
-        "endLineNumber" : 55,
-        "endColumnNumber" : 33
+        "endLineNumber" : 286,
+        "endColumnNumber" : 9
       },
-      "nodeContext" : "this.registry=registry;\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 6,
-      "astHeight" : 4
+      "nodeContext" : "try {\n  scheduler=Executors.newScheduledThreadPool(4,new ThreadFactoryBuilder().setNameFormat(\"DiscoveryClient-%d\").setDaemon(true).build());\n  clientConfig=config;\n  final String zone=getZone(myInfo);\n  eurekaServiceUrls.set(getDiscoveryServiceUrls(zone));\n  scheduler.scheduleWithFixedDelay(getServiceUrlUpdateTask(zone),clientConfig.getEurekaServiceUrlPollIntervalSeconds(),clientConfig.getEurekaServiceUrlPollIntervalSeconds(),TimeUnit.SECONDS);\n  localRegionApps.set(new Applications());\n  heartbeatExecutor=new ThreadPoolExecutor(1,clientConfig.getHeartbeatExecutorThreadPoolSize(),0,TimeUnit.SECONDS,new SynchronousQueue<Runnable>());\n  cacheRefreshExecutor=new ThreadPoolExecutor(1,clientConfig.getCacheRefreshExecutorThreadPoolSize(),0,TimeUnit.SECONDS,new SynchronousQueue<Runnable>());\n  fetchRegistryGeneration=new AtomicLong(0);\n  if (myInfo != null) {\n    instanceInfo=myInfo;\n    appPathIdentifier=instanceInfo.getAppName() + \"/\" + instanceInfo.getId();\n  }\n  String proxyHost=clientConfig.getProxyHost();\n  String proxyPort=clientConfig.getProxyPort();\n  discoveryJerseyClient=EurekaJerseyClient.createJerseyClient(\"DiscoveryClient-HTTPClient\",clientConfig.getEurekaServerConnectTimeoutSeconds() * 1000,clientConfig.getEurekaServerReadTimeoutSeconds() * 1000,clientConfig.getEurekaServerTotalConnectionsPerHost(),clientConfig.getEurekaServerTotalConnections(),clientConfig.getEurekaConnectionIdleTimeoutSeconds());\n  discoveryApacheClient=discoveryJerseyClient.getClient();\n  ClientConfig cc=discoveryJerseyClient.getClientconfig();\n  remoteRegionsToFetch=new AtomicReference<String>(clientConfig.fetchRegistryForRemoteRegions());\n  AzToRegionMapper azToRegionMapper;\n  if (clientConfig.shouldUseDnsForFetchingServiceUrls()) {\n    azToRegionMapper=new DNSBasedAzToRegionMapper();\n  }\n else {\n    azToRegionMapper=new PropertyBasedAzToRegionMapper(clientConfig);\n  }\n  if (null != remoteRegionsToFetch.get()) {\n    azToRegionMapper.setRegionsToFetch(remoteRegionsToFetch.get().split(\",\"));\n  }\n  instanceRegionChecker=new InstanceRegionChecker(azToRegionMapper,clientConfig.getRegion());\n  boolean enableGZIPContentEncodingFilter=config.shouldGZipContent();\n  if (enableGZIPContentEncodingFilter) {\n    discoveryApacheClient.addFilter(new GZIPContentEncodingFilter(false));\n  }\n  String ip=instanceInfo == null ? null : instanceInfo.getIPAddr();\n  EurekaClientIdentity identity=new EurekaClientIdentity(ip);\n  discoveryApacheClient.addFilter(new EurekaIdentityHeaderFilter(identity));\n  if (proxyHost != null && proxyPort != null) {\n    cc.getProperties().put(DefaultApacheHttpClient4Config.PROPERTY_PROXY_URI,\"http://\" + proxyHost + \":\"+ proxyPort);\n  }\n}\n catch (Throwable e) {\n  throw new RuntimeException(\"Failed to initialize DiscoveryClient!\",e);\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 332,
+      "astHeight" : 11
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 85,
-        "startLineNumber" : 54,
-        "startColumnNumber" : 104,
-        "endLineNumber" : 57,
+        "charLength" : 5070,
+        "startLineNumber" : 199,
+        "startColumnNumber" : 109,
+        "endLineNumber" : 301,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  this.registry=registry;\n  this.metricFactory=metricFactory;\n}\n",
+      "nodeContext" : "{\n  if (args != null) {\n    healthCheckHandlerProvider=args.healthCheckHandlerProvider;\n    healthCheckCallbackProvider=args.healthCheckCallbackProvider;\n    eventBus=args.eventBus;\n  }\n else {\n    healthCheckCallbackProvider=null;\n    healthCheckHandlerProvider=null;\n    eventBus=null;\n  }\n  try {\n    scheduler=Executors.newScheduledThreadPool(4,new ThreadFactoryBuilder().setNameFormat(\"DiscoveryClient-%d\").setDaemon(true).build());\n    clientConfig=config;\n    final String zone=getZone(myInfo);\n    eurekaServiceUrls.set(getDiscoveryServiceUrls(zone));\n    scheduler.scheduleWithFixedDelay(getServiceUrlUpdateTask(zone),clientConfig.getEurekaServiceUrlPollIntervalSeconds(),clientConfig.getEurekaServiceUrlPollIntervalSeconds(),TimeUnit.SECONDS);\n    localRegionApps.set(new Applications());\n    heartbeatExecutor=new ThreadPoolExecutor(1,clientConfig.getHeartbeatExecutorThreadPoolSize(),0,TimeUnit.SECONDS,new SynchronousQueue<Runnable>());\n    cacheRefreshExecutor=new ThreadPoolExecutor(1,clientConfig.getCacheRefreshExecutorThreadPoolSize(),0,TimeUnit.SECONDS,new SynchronousQueue<Runnable>());\n    fetchRegistryGeneration=new AtomicLong(0);\n    if (myInfo != null) {\n      instanceInfo=myInfo;\n      appPathIdentifier=instanceInfo.getAppName() + \"/\" + instanceInfo.getId();\n    }\n    String proxyHost=clientConfig.getProxyHost();\n    String proxyPort=clientConfig.getProxyPort();\n    discoveryJerseyClient=EurekaJerseyClient.createJerseyClient(\"DiscoveryClient-HTTPClient\",clientConfig.getEurekaServerConnectTimeoutSeconds() * 1000,clientConfig.getEurekaServerReadTimeoutSeconds() * 1000,clientConfig.getEurekaServerTotalConnectionsPerHost(),clientConfig.getEurekaServerTotalConnections(),clientConfig.getEurekaConnectionIdleTimeoutSeconds());\n    discoveryApacheClient=discoveryJerseyClient.getClient();\n    ClientConfig cc=discoveryJerseyClient.getClientconfig();\n    remoteRegionsToFetch=new AtomicReference<String>(clientConfig.fetchRegistryForRemoteRegions());\n    AzToRegionMapper azToRegionMapper;\n    if (clientConfig.shouldUseDnsForFetchingServiceUrls()) {\n      azToRegionMapper=new DNSBasedAzToRegionMapper();\n    }\n else {\n      azToRegionMapper=new PropertyBasedAzToRegionMapper(clientConfig);\n    }\n    if (null != remoteRegionsToFetch.get()) {\n      azToRegionMapper.setRegionsToFetch(remoteRegionsToFetch.get().split(\",\"));\n    }\n    instanceRegionChecker=new InstanceRegionChecker(azToRegionMapper,clientConfig.getRegion());\n    boolean enableGZIPContentEncodingFilter=config.shouldGZipContent();\n    if (enableGZIPContentEncodingFilter) {\n      discoveryApacheClient.addFilter(new GZIPContentEncodingFilter(false));\n    }\n    String ip=instanceInfo == null ? null : instanceInfo.getIPAddr();\n    EurekaClientIdentity identity=new EurekaClientIdentity(ip);\n    discoveryApacheClient.addFilter(new EurekaIdentityHeaderFilter(identity));\n    if (proxyHost != null && proxyPort != null) {\n      cc.getProperties().put(DefaultApacheHttpClient4Config.PROPERTY_PROXY_URI,\"http://\" + proxyHost + \":\"+ proxyPort);\n    }\n  }\n catch (  Throwable e) {\n    throw new RuntimeException(\"Failed to initialize DiscoveryClient!\",e);\n  }\n  if (clientConfig.shouldFetchRegistry() && !fetchRegistry(false)) {\n    fetchRegistryFromBackup();\n  }\n  initScheduledTasks();\n  try {\n    Monitors.registerObject(this);\n  }\n catch (  Throwable e) {\n    logger.warn(\"Cannot register timers\",e);\n  }\n  DiscoveryManager.getInstance().setDiscoveryClient(this);\n  DiscoveryManager.getInstance().setEurekaClientConfig(config);\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 13,
-      "astHeight" : 5
+      "astNodeNumber" : 418,
+      "astHeight" : 12
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 197,
-        "startLineNumber" : 53,
+        "charLength" : 5187,
+        "startLineNumber" : 198,
         "startColumnNumber" : 4,
-        "endLineNumber" : 57,
+        "endLineNumber" : 301,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "@Inject public TcpDiscoveryHandler(SourcedEurekaRegistry registry,EurekaServerMetricFactory metricFactory){\n  this.registry=registry;\n  this.metricFactory=metricFactory;\n}\n",
+      "nodeContext" : "@Inject public DiscoveryClient(InstanceInfo myInfo,EurekaClientConfig config,DiscoveryClientOptionalArgs args){\n  if (args != null) {\n    healthCheckHandlerProvider=args.healthCheckHandlerProvider;\n    healthCheckCallbackProvider=args.healthCheckCallbackProvider;\n    eventBus=args.eventBus;\n  }\n else {\n    healthCheckCallbackProvider=null;\n    healthCheckHandlerProvider=null;\n    eventBus=null;\n  }\n  try {\n    scheduler=Executors.newScheduledThreadPool(4,new ThreadFactoryBuilder().setNameFormat(\"DiscoveryClient-%d\").setDaemon(true).build());\n    clientConfig=config;\n    final String zone=getZone(myInfo);\n    eurekaServiceUrls.set(getDiscoveryServiceUrls(zone));\n    scheduler.scheduleWithFixedDelay(getServiceUrlUpdateTask(zone),clientConfig.getEurekaServiceUrlPollIntervalSeconds(),clientConfig.getEurekaServiceUrlPollIntervalSeconds(),TimeUnit.SECONDS);\n    localRegionApps.set(new Applications());\n    heartbeatExecutor=new ThreadPoolExecutor(1,clientConfig.getHeartbeatExecutorThreadPoolSize(),0,TimeUnit.SECONDS,new SynchronousQueue<Runnable>());\n    cacheRefreshExecutor=new ThreadPoolExecutor(1,clientConfig.getCacheRefreshExecutorThreadPoolSize(),0,TimeUnit.SECONDS,new SynchronousQueue<Runnable>());\n    fetchRegistryGeneration=new AtomicLong(0);\n    if (myInfo != null) {\n      instanceInfo=myInfo;\n      appPathIdentifier=instanceInfo.getAppName() + \"/\" + instanceInfo.getId();\n    }\n    String proxyHost=clientConfig.getProxyHost();\n    String proxyPort=clientConfig.getProxyPort();\n    discoveryJerseyClient=EurekaJerseyClient.createJerseyClient(\"DiscoveryClient-HTTPClient\",clientConfig.getEurekaServerConnectTimeoutSeconds() * 1000,clientConfig.getEurekaServerReadTimeoutSeconds() * 1000,clientConfig.getEurekaServerTotalConnectionsPerHost(),clientConfig.getEurekaServerTotalConnections(),clientConfig.getEurekaConnectionIdleTimeoutSeconds());\n    discoveryApacheClient=discoveryJerseyClient.getClient();\n    ClientConfig cc=discoveryJerseyClient.getClientconfig();\n    remoteRegionsToFetch=new AtomicReference<String>(clientConfig.fetchRegistryForRemoteRegions());\n    AzToRegionMapper azToRegionMapper;\n    if (clientConfig.shouldUseDnsForFetchingServiceUrls()) {\n      azToRegionMapper=new DNSBasedAzToRegionMapper();\n    }\n else {\n      azToRegionMapper=new PropertyBasedAzToRegionMapper(clientConfig);\n    }\n    if (null != remoteRegionsToFetch.get()) {\n      azToRegionMapper.setRegionsToFetch(remoteRegionsToFetch.get().split(\",\"));\n    }\n    instanceRegionChecker=new InstanceRegionChecker(azToRegionMapper,clientConfig.getRegion());\n    boolean enableGZIPContentEncodingFilter=config.shouldGZipContent();\n    if (enableGZIPContentEncodingFilter) {\n      discoveryApacheClient.addFilter(new GZIPContentEncodingFilter(false));\n    }\n    String ip=instanceInfo == null ? null : instanceInfo.getIPAddr();\n    EurekaClientIdentity identity=new EurekaClientIdentity(ip);\n    discoveryApacheClient.addFilter(new EurekaIdentityHeaderFilter(identity));\n    if (proxyHost != null && proxyPort != null) {\n      cc.getProperties().put(DefaultApacheHttpClient4Config.PROPERTY_PROXY_URI,\"http://\" + proxyHost + \":\"+ proxyPort);\n    }\n  }\n catch (  Throwable e) {\n    throw new RuntimeException(\"Failed to initialize DiscoveryClient!\",e);\n  }\n  if (clientConfig.shouldFetchRegistry() && !fetchRegistry(false)) {\n    fetchRegistryFromBackup();\n  }\n  initScheduledTasks();\n  try {\n    Monitors.registerObject(this);\n  }\n catch (  Throwable e) {\n    logger.warn(\"Cannot register timers\",e);\n  }\n  DiscoveryManager.getInstance().setDiscoveryClient(this);\n  DiscoveryManager.getInstance().setEurekaClientConfig(config);\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 26,
-      "astHeight" : 6
+      "astNodeNumber" : 435,
+      "astHeight" : 13
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 25,
-        "startLineNumber" : 55,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 55,
-        "endColumnNumber" : 33
+        "charLength" : 22,
+        "startLineNumber" : 217,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 217,
+        "endColumnNumber" : 34
       },
-      "nodeContext" : "this.registry=registry;\n",
+      "nodeContext" : "clientConfig=config;\n",
       "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 6,
-      "astHeight" : 4
+      "astNodeNumber" : 4,
+      "astHeight" : 3
     },
     "tokenLength" : 1,
-    "type" : "com.netflix.eureka2.server.transport.tcp.discovery.TcpDiscoveryHandler"
+    "type" : "com.netflix.discovery.EurekaClientConfig"
   }, {
-    "nodeContext" : "this",
-    "nodeType" : "ThisExpression",
+    "nodeContext" : "config",
+    "nodeType" : "SimpleName",
     "nodePosition" : {
-      "charLength" : 4,
-      "startLineNumber" : 56,
-      "startColumnNumber" : 8,
-      "endLineNumber" : 56,
-      "endColumnNumber" : 12
+      "charLength" : 6,
+      "startLineNumber" : 263,
+      "startColumnNumber" : 54,
+      "endLineNumber" : 263,
+      "endColumnNumber" : 60
     },
     "astNodeNumber" : 1,
     "astHeight" : 1,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,leftHandSide]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
       "nodePosition" : {
-        "charLength" : 18,
-        "startLineNumber" : 56,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 56,
-        "endColumnNumber" : 26
+        "charLength" : 26,
+        "startLineNumber" : 263,
+        "startColumnNumber" : 54,
+        "endLineNumber" : 263,
+        "endColumnNumber" : 80
       },
-      "nodeContext" : "this.metricFactory",
-      "nodeType" : "FieldAccess",
+      "nodeContext" : "config.shouldGZipContent()",
+      "nodeType" : "MethodInvocation",
       "astNodeNumber" : 3,
       "astHeight" : 2
     }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
       "nodePosition" : {
-        "charLength" : 34,
-        "startLineNumber" : 56,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 56,
-        "endColumnNumber" : 42
+        "charLength" : 60,
+        "startLineNumber" : 263,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 263,
+        "endColumnNumber" : 80
       },
-      "nodeContext" : "this.metricFactory=metricFactory",
-      "nodeType" : "Assignment",
+      "nodeContext" : "enableGZIPContentEncodingFilter=config.shouldGZipContent()",
+      "nodeType" : "VariableDeclarationFragment",
       "astNodeNumber" : 5,
       "astHeight" : 3
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 35,
-        "startLineNumber" : 56,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 56,
-        "endColumnNumber" : 43
+        "charLength" : 69,
+        "startLineNumber" : 263,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 263,
+        "endColumnNumber" : 81
       },
-      "nodeContext" : "this.metricFactory=metricFactory;\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 6,
+      "nodeContext" : "boolean enableGZIPContentEncodingFilter=config.shouldGZipContent();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 7,
       "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 3965,
+        "startLineNumber" : 211,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 284,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  scheduler=Executors.newScheduledThreadPool(4,new ThreadFactoryBuilder().setNameFormat(\"DiscoveryClient-%d\").setDaemon(true).build());\n  clientConfig=config;\n  final String zone=getZone(myInfo);\n  eurekaServiceUrls.set(getDiscoveryServiceUrls(zone));\n  scheduler.scheduleWithFixedDelay(getServiceUrlUpdateTask(zone),clientConfig.getEurekaServiceUrlPollIntervalSeconds(),clientConfig.getEurekaServiceUrlPollIntervalSeconds(),TimeUnit.SECONDS);\n  localRegionApps.set(new Applications());\n  heartbeatExecutor=new ThreadPoolExecutor(1,clientConfig.getHeartbeatExecutorThreadPoolSize(),0,TimeUnit.SECONDS,new SynchronousQueue<Runnable>());\n  cacheRefreshExecutor=new ThreadPoolExecutor(1,clientConfig.getCacheRefreshExecutorThreadPoolSize(),0,TimeUnit.SECONDS,new SynchronousQueue<Runnable>());\n  fetchRegistryGeneration=new AtomicLong(0);\n  if (myInfo != null) {\n    instanceInfo=myInfo;\n    appPathIdentifier=instanceInfo.getAppName() + \"/\" + instanceInfo.getId();\n  }\n  String proxyHost=clientConfig.getProxyHost();\n  String proxyPort=clientConfig.getProxyPort();\n  discoveryJerseyClient=EurekaJerseyClient.createJerseyClient(\"DiscoveryClient-HTTPClient\",clientConfig.getEurekaServerConnectTimeoutSeconds() * 1000,clientConfig.getEurekaServerReadTimeoutSeconds() * 1000,clientConfig.getEurekaServerTotalConnectionsPerHost(),clientConfig.getEurekaServerTotalConnections(),clientConfig.getEurekaConnectionIdleTimeoutSeconds());\n  discoveryApacheClient=discoveryJerseyClient.getClient();\n  ClientConfig cc=discoveryJerseyClient.getClientconfig();\n  remoteRegionsToFetch=new AtomicReference<String>(clientConfig.fetchRegistryForRemoteRegions());\n  AzToRegionMapper azToRegionMapper;\n  if (clientConfig.shouldUseDnsForFetchingServiceUrls()) {\n    azToRegionMapper=new DNSBasedAzToRegionMapper();\n  }\n else {\n    azToRegionMapper=new PropertyBasedAzToRegionMapper(clientConfig);\n  }\n  if (null != remoteRegionsToFetch.get()) {\n    azToRegionMapper.setRegionsToFetch(remoteRegionsToFetch.get().split(\",\"));\n  }\n  instanceRegionChecker=new InstanceRegionChecker(azToRegionMapper,clientConfig.getRegion());\n  boolean enableGZIPContentEncodingFilter=config.shouldGZipContent();\n  if (enableGZIPContentEncodingFilter) {\n    discoveryApacheClient.addFilter(new GZIPContentEncodingFilter(false));\n  }\n  String ip=instanceInfo == null ? null : instanceInfo.getIPAddr();\n  EurekaClientIdentity identity=new EurekaClientIdentity(ip);\n  discoveryApacheClient.addFilter(new EurekaIdentityHeaderFilter(identity));\n  if (proxyHost != null && proxyPort != null) {\n    cc.getProperties().put(DefaultApacheHttpClient4Config.PROPERTY_PROXY_URI,\"http://\" + proxyHost + \":\"+ proxyPort);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 319,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 4085,
+        "startLineNumber" : 211,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 286,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "try {\n  scheduler=Executors.newScheduledThreadPool(4,new ThreadFactoryBuilder().setNameFormat(\"DiscoveryClient-%d\").setDaemon(true).build());\n  clientConfig=config;\n  final String zone=getZone(myInfo);\n  eurekaServiceUrls.set(getDiscoveryServiceUrls(zone));\n  scheduler.scheduleWithFixedDelay(getServiceUrlUpdateTask(zone),clientConfig.getEurekaServiceUrlPollIntervalSeconds(),clientConfig.getEurekaServiceUrlPollIntervalSeconds(),TimeUnit.SECONDS);\n  localRegionApps.set(new Applications());\n  heartbeatExecutor=new ThreadPoolExecutor(1,clientConfig.getHeartbeatExecutorThreadPoolSize(),0,TimeUnit.SECONDS,new SynchronousQueue<Runnable>());\n  cacheRefreshExecutor=new ThreadPoolExecutor(1,clientConfig.getCacheRefreshExecutorThreadPoolSize(),0,TimeUnit.SECONDS,new SynchronousQueue<Runnable>());\n  fetchRegistryGeneration=new AtomicLong(0);\n  if (myInfo != null) {\n    instanceInfo=myInfo;\n    appPathIdentifier=instanceInfo.getAppName() + \"/\" + instanceInfo.getId();\n  }\n  String proxyHost=clientConfig.getProxyHost();\n  String proxyPort=clientConfig.getProxyPort();\n  discoveryJerseyClient=EurekaJerseyClient.createJerseyClient(\"DiscoveryClient-HTTPClient\",clientConfig.getEurekaServerConnectTimeoutSeconds() * 1000,clientConfig.getEurekaServerReadTimeoutSeconds() * 1000,clientConfig.getEurekaServerTotalConnectionsPerHost(),clientConfig.getEurekaServerTotalConnections(),clientConfig.getEurekaConnectionIdleTimeoutSeconds());\n  discoveryApacheClient=discoveryJerseyClient.getClient();\n  ClientConfig cc=discoveryJerseyClient.getClientconfig();\n  remoteRegionsToFetch=new AtomicReference<String>(clientConfig.fetchRegistryForRemoteRegions());\n  AzToRegionMapper azToRegionMapper;\n  if (clientConfig.shouldUseDnsForFetchingServiceUrls()) {\n    azToRegionMapper=new DNSBasedAzToRegionMapper();\n  }\n else {\n    azToRegionMapper=new PropertyBasedAzToRegionMapper(clientConfig);\n  }\n  if (null != remoteRegionsToFetch.get()) {\n    azToRegionMapper.setRegionsToFetch(remoteRegionsToFetch.get().split(\",\"));\n  }\n  instanceRegionChecker=new InstanceRegionChecker(azToRegionMapper,clientConfig.getRegion());\n  boolean enableGZIPContentEncodingFilter=config.shouldGZipContent();\n  if (enableGZIPContentEncodingFilter) {\n    discoveryApacheClient.addFilter(new GZIPContentEncodingFilter(false));\n  }\n  String ip=instanceInfo == null ? null : instanceInfo.getIPAddr();\n  EurekaClientIdentity identity=new EurekaClientIdentity(ip);\n  discoveryApacheClient.addFilter(new EurekaIdentityHeaderFilter(identity));\n  if (proxyHost != null && proxyPort != null) {\n    cc.getProperties().put(DefaultApacheHttpClient4Config.PROPERTY_PROXY_URI,\"http://\" + proxyHost + \":\"+ proxyPort);\n  }\n}\n catch (Throwable e) {\n  throw new RuntimeException(\"Failed to initialize DiscoveryClient!\",e);\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 332,
+      "astHeight" : 11
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 85,
-        "startLineNumber" : 54,
-        "startColumnNumber" : 104,
-        "endLineNumber" : 57,
+        "charLength" : 5070,
+        "startLineNumber" : 199,
+        "startColumnNumber" : 109,
+        "endLineNumber" : 301,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  this.registry=registry;\n  this.metricFactory=metricFactory;\n}\n",
+      "nodeContext" : "{\n  if (args != null) {\n    healthCheckHandlerProvider=args.healthCheckHandlerProvider;\n    healthCheckCallbackProvider=args.healthCheckCallbackProvider;\n    eventBus=args.eventBus;\n  }\n else {\n    healthCheckCallbackProvider=null;\n    healthCheckHandlerProvider=null;\n    eventBus=null;\n  }\n  try {\n    scheduler=Executors.newScheduledThreadPool(4,new ThreadFactoryBuilder().setNameFormat(\"DiscoveryClient-%d\").setDaemon(true).build());\n    clientConfig=config;\n    final String zone=getZone(myInfo);\n    eurekaServiceUrls.set(getDiscoveryServiceUrls(zone));\n    scheduler.scheduleWithFixedDelay(getServiceUrlUpdateTask(zone),clientConfig.getEurekaServiceUrlPollIntervalSeconds(),clientConfig.getEurekaServiceUrlPollIntervalSeconds(),TimeUnit.SECONDS);\n    localRegionApps.set(new Applications());\n    heartbeatExecutor=new ThreadPoolExecutor(1,clientConfig.getHeartbeatExecutorThreadPoolSize(),0,TimeUnit.SECONDS,new SynchronousQueue<Runnable>());\n    cacheRefreshExecutor=new ThreadPoolExecutor(1,clientConfig.getCacheRefreshExecutorThreadPoolSize(),0,TimeUnit.SECONDS,new SynchronousQueue<Runnable>());\n    fetchRegistryGeneration=new AtomicLong(0);\n    if (myInfo != null) {\n      instanceInfo=myInfo;\n      appPathIdentifier=instanceInfo.getAppName() + \"/\" + instanceInfo.getId();\n    }\n    String proxyHost=clientConfig.getProxyHost();\n    String proxyPort=clientConfig.getProxyPort();\n    discoveryJerseyClient=EurekaJerseyClient.createJerseyClient(\"DiscoveryClient-HTTPClient\",clientConfig.getEurekaServerConnectTimeoutSeconds() * 1000,clientConfig.getEurekaServerReadTimeoutSeconds() * 1000,clientConfig.getEurekaServerTotalConnectionsPerHost(),clientConfig.getEurekaServerTotalConnections(),clientConfig.getEurekaConnectionIdleTimeoutSeconds());\n    discoveryApacheClient=discoveryJerseyClient.getClient();\n    ClientConfig cc=discoveryJerseyClient.getClientconfig();\n    remoteRegionsToFetch=new AtomicReference<String>(clientConfig.fetchRegistryForRemoteRegions());\n    AzToRegionMapper azToRegionMapper;\n    if (clientConfig.shouldUseDnsForFetchingServiceUrls()) {\n      azToRegionMapper=new DNSBasedAzToRegionMapper();\n    }\n else {\n      azToRegionMapper=new PropertyBasedAzToRegionMapper(clientConfig);\n    }\n    if (null != remoteRegionsToFetch.get()) {\n      azToRegionMapper.setRegionsToFetch(remoteRegionsToFetch.get().split(\",\"));\n    }\n    instanceRegionChecker=new InstanceRegionChecker(azToRegionMapper,clientConfig.getRegion());\n    boolean enableGZIPContentEncodingFilter=config.shouldGZipContent();\n    if (enableGZIPContentEncodingFilter) {\n      discoveryApacheClient.addFilter(new GZIPContentEncodingFilter(false));\n    }\n    String ip=instanceInfo == null ? null : instanceInfo.getIPAddr();\n    EurekaClientIdentity identity=new EurekaClientIdentity(ip);\n    discoveryApacheClient.addFilter(new EurekaIdentityHeaderFilter(identity));\n    if (proxyHost != null && proxyPort != null) {\n      cc.getProperties().put(DefaultApacheHttpClient4Config.PROPERTY_PROXY_URI,\"http://\" + proxyHost + \":\"+ proxyPort);\n    }\n  }\n catch (  Throwable e) {\n    throw new RuntimeException(\"Failed to initialize DiscoveryClient!\",e);\n  }\n  if (clientConfig.shouldFetchRegistry() && !fetchRegistry(false)) {\n    fetchRegistryFromBackup();\n  }\n  initScheduledTasks();\n  try {\n    Monitors.registerObject(this);\n  }\n catch (  Throwable e) {\n    logger.warn(\"Cannot register timers\",e);\n  }\n  DiscoveryManager.getInstance().setDiscoveryClient(this);\n  DiscoveryManager.getInstance().setEurekaClientConfig(config);\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 13,
-      "astHeight" : 5
+      "astNodeNumber" : 418,
+      "astHeight" : 12
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 197,
-        "startLineNumber" : 53,
+        "charLength" : 5187,
+        "startLineNumber" : 198,
         "startColumnNumber" : 4,
-        "endLineNumber" : 57,
+        "endLineNumber" : 301,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "@Inject public TcpDiscoveryHandler(SourcedEurekaRegistry registry,EurekaServerMetricFactory metricFactory){\n  this.registry=registry;\n  this.metricFactory=metricFactory;\n}\n",
+      "nodeContext" : "@Inject public DiscoveryClient(InstanceInfo myInfo,EurekaClientConfig config,DiscoveryClientOptionalArgs args){\n  if (args != null) {\n    healthCheckHandlerProvider=args.healthCheckHandlerProvider;\n    healthCheckCallbackProvider=args.healthCheckCallbackProvider;\n    eventBus=args.eventBus;\n  }\n else {\n    healthCheckCallbackProvider=null;\n    healthCheckHandlerProvider=null;\n    eventBus=null;\n  }\n  try {\n    scheduler=Executors.newScheduledThreadPool(4,new ThreadFactoryBuilder().setNameFormat(\"DiscoveryClient-%d\").setDaemon(true).build());\n    clientConfig=config;\n    final String zone=getZone(myInfo);\n    eurekaServiceUrls.set(getDiscoveryServiceUrls(zone));\n    scheduler.scheduleWithFixedDelay(getServiceUrlUpdateTask(zone),clientConfig.getEurekaServiceUrlPollIntervalSeconds(),clientConfig.getEurekaServiceUrlPollIntervalSeconds(),TimeUnit.SECONDS);\n    localRegionApps.set(new Applications());\n    heartbeatExecutor=new ThreadPoolExecutor(1,clientConfig.getHeartbeatExecutorThreadPoolSize(),0,TimeUnit.SECONDS,new SynchronousQueue<Runnable>());\n    cacheRefreshExecutor=new ThreadPoolExecutor(1,clientConfig.getCacheRefreshExecutorThreadPoolSize(),0,TimeUnit.SECONDS,new SynchronousQueue<Runnable>());\n    fetchRegistryGeneration=new AtomicLong(0);\n    if (myInfo != null) {\n      instanceInfo=myInfo;\n      appPathIdentifier=instanceInfo.getAppName() + \"/\" + instanceInfo.getId();\n    }\n    String proxyHost=clientConfig.getProxyHost();\n    String proxyPort=clientConfig.getProxyPort();\n    discoveryJerseyClient=EurekaJerseyClient.createJerseyClient(\"DiscoveryClient-HTTPClient\",clientConfig.getEurekaServerConnectTimeoutSeconds() * 1000,clientConfig.getEurekaServerReadTimeoutSeconds() * 1000,clientConfig.getEurekaServerTotalConnectionsPerHost(),clientConfig.getEurekaServerTotalConnections(),clientConfig.getEurekaConnectionIdleTimeoutSeconds());\n    discoveryApacheClient=discoveryJerseyClient.getClient();\n    ClientConfig cc=discoveryJerseyClient.getClientconfig();\n    remoteRegionsToFetch=new AtomicReference<String>(clientConfig.fetchRegistryForRemoteRegions());\n    AzToRegionMapper azToRegionMapper;\n    if (clientConfig.shouldUseDnsForFetchingServiceUrls()) {\n      azToRegionMapper=new DNSBasedAzToRegionMapper();\n    }\n else {\n      azToRegionMapper=new PropertyBasedAzToRegionMapper(clientConfig);\n    }\n    if (null != remoteRegionsToFetch.get()) {\n      azToRegionMapper.setRegionsToFetch(remoteRegionsToFetch.get().split(\",\"));\n    }\n    instanceRegionChecker=new InstanceRegionChecker(azToRegionMapper,clientConfig.getRegion());\n    boolean enableGZIPContentEncodingFilter=config.shouldGZipContent();\n    if (enableGZIPContentEncodingFilter) {\n      discoveryApacheClient.addFilter(new GZIPContentEncodingFilter(false));\n    }\n    String ip=instanceInfo == null ? null : instanceInfo.getIPAddr();\n    EurekaClientIdentity identity=new EurekaClientIdentity(ip);\n    discoveryApacheClient.addFilter(new EurekaIdentityHeaderFilter(identity));\n    if (proxyHost != null && proxyPort != null) {\n      cc.getProperties().put(DefaultApacheHttpClient4Config.PROPERTY_PROXY_URI,\"http://\" + proxyHost + \":\"+ proxyPort);\n    }\n  }\n catch (  Throwable e) {\n    throw new RuntimeException(\"Failed to initialize DiscoveryClient!\",e);\n  }\n  if (clientConfig.shouldFetchRegistry() && !fetchRegistry(false)) {\n    fetchRegistryFromBackup();\n  }\n  initScheduledTasks();\n  try {\n    Monitors.registerObject(this);\n  }\n catch (  Throwable e) {\n    logger.warn(\"Cannot register timers\",e);\n  }\n  DiscoveryManager.getInstance().setDiscoveryClient(this);\n  DiscoveryManager.getInstance().setEurekaClientConfig(config);\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 26,
-      "astHeight" : 6
+      "astNodeNumber" : 435,
+      "astHeight" : 13
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 35,
-        "startLineNumber" : 56,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 56,
-        "endColumnNumber" : 43
+        "charLength" : 69,
+        "startLineNumber" : 263,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 263,
+        "endColumnNumber" : 81
       },
-      "nodeContext" : "this.metricFactory=metricFactory;\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 6,
+      "nodeContext" : "boolean enableGZIPContentEncodingFilter=config.shouldGZipContent();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 7,
       "astHeight" : 4
     },
     "tokenLength" : 1,
-    "type" : "com.netflix.eureka2.server.transport.tcp.discovery.TcpDiscoveryHandler"
+    "type" : "com.netflix.discovery.EurekaClientConfig"
+  }, {
+    "nodeContext" : "config",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 6,
+      "startLineNumber" : 300,
+      "startColumnNumber" : 61,
+      "endLineNumber" : 300,
+      "endColumnNumber" : 67
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 60,
+        "startLineNumber" : 300,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 300,
+        "endColumnNumber" : 68
+      },
+      "nodeContext" : "DiscoveryManager.getInstance().setEurekaClientConfig(config)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 61,
+        "startLineNumber" : 300,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 300,
+        "endColumnNumber" : 69
+      },
+      "nodeContext" : "DiscoveryManager.getInstance().setEurekaClientConfig(config);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5070,
+        "startLineNumber" : 199,
+        "startColumnNumber" : 109,
+        "endLineNumber" : 301,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (args != null) {\n    healthCheckHandlerProvider=args.healthCheckHandlerProvider;\n    healthCheckCallbackProvider=args.healthCheckCallbackProvider;\n    eventBus=args.eventBus;\n  }\n else {\n    healthCheckCallbackProvider=null;\n    healthCheckHandlerProvider=null;\n    eventBus=null;\n  }\n  try {\n    scheduler=Executors.newScheduledThreadPool(4,new ThreadFactoryBuilder().setNameFormat(\"DiscoveryClient-%d\").setDaemon(true).build());\n    clientConfig=config;\n    final String zone=getZone(myInfo);\n    eurekaServiceUrls.set(getDiscoveryServiceUrls(zone));\n    scheduler.scheduleWithFixedDelay(getServiceUrlUpdateTask(zone),clientConfig.getEurekaServiceUrlPollIntervalSeconds(),clientConfig.getEurekaServiceUrlPollIntervalSeconds(),TimeUnit.SECONDS);\n    localRegionApps.set(new Applications());\n    heartbeatExecutor=new ThreadPoolExecutor(1,clientConfig.getHeartbeatExecutorThreadPoolSize(),0,TimeUnit.SECONDS,new SynchronousQueue<Runnable>());\n    cacheRefreshExecutor=new ThreadPoolExecutor(1,clientConfig.getCacheRefreshExecutorThreadPoolSize(),0,TimeUnit.SECONDS,new SynchronousQueue<Runnable>());\n    fetchRegistryGeneration=new AtomicLong(0);\n    if (myInfo != null) {\n      instanceInfo=myInfo;\n      appPathIdentifier=instanceInfo.getAppName() + \"/\" + instanceInfo.getId();\n    }\n    String proxyHost=clientConfig.getProxyHost();\n    String proxyPort=clientConfig.getProxyPort();\n    discoveryJerseyClient=EurekaJerseyClient.createJerseyClient(\"DiscoveryClient-HTTPClient\",clientConfig.getEurekaServerConnectTimeoutSeconds() * 1000,clientConfig.getEurekaServerReadTimeoutSeconds() * 1000,clientConfig.getEurekaServerTotalConnectionsPerHost(),clientConfig.getEurekaServerTotalConnections(),clientConfig.getEurekaConnectionIdleTimeoutSeconds());\n    discoveryApacheClient=discoveryJerseyClient.getClient();\n    ClientConfig cc=discoveryJerseyClient.getClientconfig();\n    remoteRegionsToFetch=new AtomicReference<String>(clientConfig.fetchRegistryForRemoteRegions());\n    AzToRegionMapper azToRegionMapper;\n    if (clientConfig.shouldUseDnsForFetchingServiceUrls()) {\n      azToRegionMapper=new DNSBasedAzToRegionMapper();\n    }\n else {\n      azToRegionMapper=new PropertyBasedAzToRegionMapper(clientConfig);\n    }\n    if (null != remoteRegionsToFetch.get()) {\n      azToRegionMapper.setRegionsToFetch(remoteRegionsToFetch.get().split(\",\"));\n    }\n    instanceRegionChecker=new InstanceRegionChecker(azToRegionMapper,clientConfig.getRegion());\n    boolean enableGZIPContentEncodingFilter=config.shouldGZipContent();\n    if (enableGZIPContentEncodingFilter) {\n      discoveryApacheClient.addFilter(new GZIPContentEncodingFilter(false));\n    }\n    String ip=instanceInfo == null ? null : instanceInfo.getIPAddr();\n    EurekaClientIdentity identity=new EurekaClientIdentity(ip);\n    discoveryApacheClient.addFilter(new EurekaIdentityHeaderFilter(identity));\n    if (proxyHost != null && proxyPort != null) {\n      cc.getProperties().put(DefaultApacheHttpClient4Config.PROPERTY_PROXY_URI,\"http://\" + proxyHost + \":\"+ proxyPort);\n    }\n  }\n catch (  Throwable e) {\n    throw new RuntimeException(\"Failed to initialize DiscoveryClient!\",e);\n  }\n  if (clientConfig.shouldFetchRegistry() && !fetchRegistry(false)) {\n    fetchRegistryFromBackup();\n  }\n  initScheduledTasks();\n  try {\n    Monitors.registerObject(this);\n  }\n catch (  Throwable e) {\n    logger.warn(\"Cannot register timers\",e);\n  }\n  DiscoveryManager.getInstance().setDiscoveryClient(this);\n  DiscoveryManager.getInstance().setEurekaClientConfig(config);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 418,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 5187,
+        "startLineNumber" : 198,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 301,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Inject public DiscoveryClient(InstanceInfo myInfo,EurekaClientConfig config,DiscoveryClientOptionalArgs args){\n  if (args != null) {\n    healthCheckHandlerProvider=args.healthCheckHandlerProvider;\n    healthCheckCallbackProvider=args.healthCheckCallbackProvider;\n    eventBus=args.eventBus;\n  }\n else {\n    healthCheckCallbackProvider=null;\n    healthCheckHandlerProvider=null;\n    eventBus=null;\n  }\n  try {\n    scheduler=Executors.newScheduledThreadPool(4,new ThreadFactoryBuilder().setNameFormat(\"DiscoveryClient-%d\").setDaemon(true).build());\n    clientConfig=config;\n    final String zone=getZone(myInfo);\n    eurekaServiceUrls.set(getDiscoveryServiceUrls(zone));\n    scheduler.scheduleWithFixedDelay(getServiceUrlUpdateTask(zone),clientConfig.getEurekaServiceUrlPollIntervalSeconds(),clientConfig.getEurekaServiceUrlPollIntervalSeconds(),TimeUnit.SECONDS);\n    localRegionApps.set(new Applications());\n    heartbeatExecutor=new ThreadPoolExecutor(1,clientConfig.getHeartbeatExecutorThreadPoolSize(),0,TimeUnit.SECONDS,new SynchronousQueue<Runnable>());\n    cacheRefreshExecutor=new ThreadPoolExecutor(1,clientConfig.getCacheRefreshExecutorThreadPoolSize(),0,TimeUnit.SECONDS,new SynchronousQueue<Runnable>());\n    fetchRegistryGeneration=new AtomicLong(0);\n    if (myInfo != null) {\n      instanceInfo=myInfo;\n      appPathIdentifier=instanceInfo.getAppName() + \"/\" + instanceInfo.getId();\n    }\n    String proxyHost=clientConfig.getProxyHost();\n    String proxyPort=clientConfig.getProxyPort();\n    discoveryJerseyClient=EurekaJerseyClient.createJerseyClient(\"DiscoveryClient-HTTPClient\",clientConfig.getEurekaServerConnectTimeoutSeconds() * 1000,clientConfig.getEurekaServerReadTimeoutSeconds() * 1000,clientConfig.getEurekaServerTotalConnectionsPerHost(),clientConfig.getEurekaServerTotalConnections(),clientConfig.getEurekaConnectionIdleTimeoutSeconds());\n    discoveryApacheClient=discoveryJerseyClient.getClient();\n    ClientConfig cc=discoveryJerseyClient.getClientconfig();\n    remoteRegionsToFetch=new AtomicReference<String>(clientConfig.fetchRegistryForRemoteRegions());\n    AzToRegionMapper azToRegionMapper;\n    if (clientConfig.shouldUseDnsForFetchingServiceUrls()) {\n      azToRegionMapper=new DNSBasedAzToRegionMapper();\n    }\n else {\n      azToRegionMapper=new PropertyBasedAzToRegionMapper(clientConfig);\n    }\n    if (null != remoteRegionsToFetch.get()) {\n      azToRegionMapper.setRegionsToFetch(remoteRegionsToFetch.get().split(\",\"));\n    }\n    instanceRegionChecker=new InstanceRegionChecker(azToRegionMapper,clientConfig.getRegion());\n    boolean enableGZIPContentEncodingFilter=config.shouldGZipContent();\n    if (enableGZIPContentEncodingFilter) {\n      discoveryApacheClient.addFilter(new GZIPContentEncodingFilter(false));\n    }\n    String ip=instanceInfo == null ? null : instanceInfo.getIPAddr();\n    EurekaClientIdentity identity=new EurekaClientIdentity(ip);\n    discoveryApacheClient.addFilter(new EurekaIdentityHeaderFilter(identity));\n    if (proxyHost != null && proxyPort != null) {\n      cc.getProperties().put(DefaultApacheHttpClient4Config.PROPERTY_PROXY_URI,\"http://\" + proxyHost + \":\"+ proxyPort);\n    }\n  }\n catch (  Throwable e) {\n    throw new RuntimeException(\"Failed to initialize DiscoveryClient!\",e);\n  }\n  if (clientConfig.shouldFetchRegistry() && !fetchRegistry(false)) {\n    fetchRegistryFromBackup();\n  }\n  initScheduledTasks();\n  try {\n    Monitors.registerObject(this);\n  }\n catch (  Throwable e) {\n    logger.warn(\"Cannot register timers\",e);\n  }\n  DiscoveryManager.getInstance().setDiscoveryClient(this);\n  DiscoveryManager.getInstance().setEurekaClientConfig(config);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 435,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 61,
+        "startLineNumber" : 300,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 300,
+        "endColumnNumber" : 69
+      },
+      "nodeContext" : "DiscoveryManager.getInstance().setEurekaClientConfig(config);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "com.netflix.discovery.EurekaClientConfig"
   } ],
   "positionList" : [ {
-    "charLength" : 4,
-    "startLineNumber" : 55,
-    "startColumnNumber" : 8,
-    "endLineNumber" : 55,
-    "endColumnNumber" : 12
+    "charLength" : 6,
+    "startLineNumber" : 217,
+    "startColumnNumber" : 27,
+    "endLineNumber" : 217,
+    "endColumnNumber" : 33
   }, {
-    "charLength" : 4,
-    "startLineNumber" : 56,
-    "startColumnNumber" : 8,
-    "endLineNumber" : 56,
-    "endColumnNumber" : 12
+    "charLength" : 6,
+    "startLineNumber" : 263,
+    "startColumnNumber" : 54,
+    "endLineNumber" : 263,
+    "endColumnNumber" : 60
+  }, {
+    "charLength" : 6,
+    "startLineNumber" : 300,
+    "startColumnNumber" : 61,
+    "endLineNumber" : 300,
+    "endColumnNumber" : 67
   } ],
   "layoutRelationDataList" : [ {
     "firstKey" : 0,
     "secondKey" : 1,
-    "layout" : 3
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 4
   }, {
     "firstKey" : 1,
     "secondKey" : 0,
     "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 2
   } ]
 }

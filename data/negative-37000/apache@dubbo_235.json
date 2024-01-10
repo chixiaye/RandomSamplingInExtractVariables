@@ -1,0 +1,113 @@
+{
+  "id" : 235,
+  "expression" : "serialization",
+  "projectName" : "apache@dubbo",
+  "commitID" : "4ea0a09846fa74b7b1a6a1a548f31859a2cddcc8",
+  "filePath" : "/dubbo-remoting/dubbo-remoting-api/src/test/java/org/apache/dubbo/remoting/PerformanceClientFixedTest.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "serialization",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 13,
+      "startLineNumber" : 54,
+      "startColumnNumber" : 104,
+      "endLineNumber" : 54,
+      "endColumnNumber" : 117
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 114,
+        "startLineNumber" : 54,
+        "startColumnNumber" : 27,
+        "endLineNumber" : 54,
+        "endColumnNumber" : 141
+      },
+      "nodeContext" : "\"exchange://\" + server + \"?transporter=\"+ transporter+ \"&serialization=\"+ serialization+ \"&timeout=\"+ timeout",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 9,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 120,
+        "startLineNumber" : 54,
+        "startColumnNumber" : 21,
+        "endLineNumber" : 54,
+        "endColumnNumber" : 141
+      },
+      "nodeContext" : "url=\"exchange://\" + server + \"?transporter=\"+ transporter+ \"&serialization=\"+ serialization+ \"&timeout=\"+ timeout",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 11,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 134,
+        "startLineNumber" : 54,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 54,
+        "endColumnNumber" : 142
+      },
+      "nodeContext" : "final String url=\"exchange://\" + server + \"?transporter=\"+ transporter+ \"&serialization=\"+ serialization+ \"&timeout=\"+ timeout;\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4400,
+        "startLineNumber" : 38,
+        "startColumnNumber" : 46,
+        "endLineNumber" : 136,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (PerformanceUtils.getProperty(\"server\",null) == null) {\n    logger.warn(\"Please set -Dserver=127.0.0.1:9911\");\n    return;\n  }\n  final String server=System.getProperty(\"server\",\"127.0.0.1:9911\");\n  final String transporter=PerformanceUtils.getProperty(Constants.TRANSPORTER_KEY,Constants.DEFAULT_TRANSPORTER);\n  final String serialization=PerformanceUtils.getProperty(Constants.SERIALIZATION_KEY,Constants.DEFAULT_REMOTING_SERIALIZATION);\n  final int timeout=PerformanceUtils.getIntProperty(TIMEOUT_KEY,DEFAULT_TIMEOUT);\n  final int connectionCount=PerformanceUtils.getIntProperty(CONNECTIONS_KEY,1);\n  final String url=\"exchange://\" + server + \"?transporter=\"+ transporter+ \"&serialization=\"+ serialization+ \"&timeout=\"+ timeout;\n  Random rd=new Random(connectionCount);\n  ArrayList<ExchangeClient> arrays=new ArrayList<ExchangeClient>();\n  String oneKBlock=null;\n  String messageBlock=null;\n  int s=0;\n  int f=0;\n  System.out.println(\"initialize arrays \" + url);\n  while (s < connectionCount) {\n    ExchangeClient client=null;\n    try {\n      System.out.println(\"open connection \" + s + \" \"+ url+ arrays.size());\n      client=Exchangers.connect(url);\n      System.out.println(\"run after open\");\n      if (client.isConnected()) {\n        arrays.add(client);\n        s++;\n        System.out.println(\"open client success \" + s);\n      }\n else {\n        System.out.println(\"open client failed, try again.\");\n      }\n    }\n catch (    Throwable t) {\n      t.printStackTrace();\n    }\n finally {\n      if (client != null && !client.isConnected()) {\n        f++;\n        System.out.println(\"open client failed, try again \" + f);\n        client.close();\n      }\n    }\n  }\n  StringBuilder sb1=new StringBuilder();\n  Random rd2=new Random();\n  char[] numbersAndLetters=(\"0123456789abcdefghijklmnopqrstuvwxyz\" + \"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ\").toCharArray();\n  int size1=numbersAndLetters.length;\n  for (int j=0; j < 1024; j++) {\n    sb1.append(numbersAndLetters[rd2.nextInt(size1)]);\n  }\n  oneKBlock=sb1.toString();\n  for (int j=0; j < Integer.MAX_VALUE; j++) {\n    try {\n      String size=\"10\";\n      int request_size=10;\n      try {\n        request_size=Integer.parseInt(size);\n      }\n catch (      Throwable t) {\n        request_size=10;\n      }\n      if (messageBlock == null) {\n        StringBuilder sb=new StringBuilder();\n        for (int i=0; i < request_size; i++) {\n          sb.append(oneKBlock);\n        }\n        messageBlock=sb.toString();\n        System.out.println(\"set messageBlock to \" + messageBlock);\n      }\n      int index=rd.nextInt(connectionCount);\n      ExchangeClient client=arrays.get(index);\n      String output=(String)client.request(messageBlock).get();\n      if (output.lastIndexOf(messageBlock) < 0) {\n        System.out.println(\"send messageBlock;get \" + output);\n        throw new Throwable(\"return results invalid\");\n      }\n else {\n        if (j % 100 == 0)         System.out.println(\"OK: \" + j);\n      }\n    }\n catch (    Throwable t) {\n      t.printStackTrace();\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 487,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4453,
+        "startLineNumber" : 37,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 136,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test public void testClient() throws Exception {\n  if (PerformanceUtils.getProperty(\"server\",null) == null) {\n    logger.warn(\"Please set -Dserver=127.0.0.1:9911\");\n    return;\n  }\n  final String server=System.getProperty(\"server\",\"127.0.0.1:9911\");\n  final String transporter=PerformanceUtils.getProperty(Constants.TRANSPORTER_KEY,Constants.DEFAULT_TRANSPORTER);\n  final String serialization=PerformanceUtils.getProperty(Constants.SERIALIZATION_KEY,Constants.DEFAULT_REMOTING_SERIALIZATION);\n  final int timeout=PerformanceUtils.getIntProperty(TIMEOUT_KEY,DEFAULT_TIMEOUT);\n  final int connectionCount=PerformanceUtils.getIntProperty(CONNECTIONS_KEY,1);\n  final String url=\"exchange://\" + server + \"?transporter=\"+ transporter+ \"&serialization=\"+ serialization+ \"&timeout=\"+ timeout;\n  Random rd=new Random(connectionCount);\n  ArrayList<ExchangeClient> arrays=new ArrayList<ExchangeClient>();\n  String oneKBlock=null;\n  String messageBlock=null;\n  int s=0;\n  int f=0;\n  System.out.println(\"initialize arrays \" + url);\n  while (s < connectionCount) {\n    ExchangeClient client=null;\n    try {\n      System.out.println(\"open connection \" + s + \" \"+ url+ arrays.size());\n      client=Exchangers.connect(url);\n      System.out.println(\"run after open\");\n      if (client.isConnected()) {\n        arrays.add(client);\n        s++;\n        System.out.println(\"open client success \" + s);\n      }\n else {\n        System.out.println(\"open client failed, try again.\");\n      }\n    }\n catch (    Throwable t) {\n      t.printStackTrace();\n    }\n finally {\n      if (client != null && !client.isConnected()) {\n        f++;\n        System.out.println(\"open client failed, try again \" + f);\n        client.close();\n      }\n    }\n  }\n  StringBuilder sb1=new StringBuilder();\n  Random rd2=new Random();\n  char[] numbersAndLetters=(\"0123456789abcdefghijklmnopqrstuvwxyz\" + \"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ\").toCharArray();\n  int size1=numbersAndLetters.length;\n  for (int j=0; j < 1024; j++) {\n    sb1.append(numbersAndLetters[rd2.nextInt(size1)]);\n  }\n  oneKBlock=sb1.toString();\n  for (int j=0; j < Integer.MAX_VALUE; j++) {\n    try {\n      String size=\"10\";\n      int request_size=10;\n      try {\n        request_size=Integer.parseInt(size);\n      }\n catch (      Throwable t) {\n        request_size=10;\n      }\n      if (messageBlock == null) {\n        StringBuilder sb=new StringBuilder();\n        for (int i=0; i < request_size; i++) {\n          sb.append(oneKBlock);\n        }\n        messageBlock=sb.toString();\n        System.out.println(\"set messageBlock to \" + messageBlock);\n      }\n      int index=rd.nextInt(connectionCount);\n      ExchangeClient client=arrays.get(index);\n      String output=(String)client.request(messageBlock).get();\n      if (output.lastIndexOf(messageBlock) < 0) {\n        System.out.println(\"send messageBlock;get \" + output);\n        throw new Throwable(\"return results invalid\");\n      }\n else {\n        if (j % 100 == 0)         System.out.println(\"OK: \" + j);\n      }\n    }\n catch (    Throwable t) {\n      t.printStackTrace();\n    }\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 495,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 134,
+        "startLineNumber" : 54,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 54,
+        "endColumnNumber" : 142
+      },
+      "nodeContext" : "final String url=\"exchange://\" + server + \"?transporter=\"+ transporter+ \"&serialization=\"+ serialization+ \"&timeout=\"+ timeout;\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "java.lang.String"
+  } ],
+  "positionList" : [ {
+    "charLength" : 13,
+    "startLineNumber" : 54,
+    "startColumnNumber" : 104,
+    "endLineNumber" : 54,
+    "endColumnNumber" : 117
+  } ],
+  "layoutRelationDataList" : [ ]
+}

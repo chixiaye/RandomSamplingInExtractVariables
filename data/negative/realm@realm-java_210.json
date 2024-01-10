@@ -1,87 +1,100 @@
 {
   "id" : 210,
-  "expression" : "new Token(value,identity,path,expiresSec,permissions,isAdmin)",
+  "expression" : "createRemoteData(userWithDataConfig)",
   "projectName" : "realm@realm-java",
-  "commitID" : "9da3b229a46407f73e2003fb40857cadf062086b",
-  "filePath" : "/realm/realm-library/src/objectServer/java/io/realm/internal/objectserver/Token.java",
+  "commitID" : "d090c7f487279bf8d97571c7491cf602033905b9",
+  "filePath" : "realm/realm-library/src/syncIntegrationTest/java/io/realm/objectserver/ProgressListenerTests.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "new Token(value,identity,path,expiresSec,permissions,isAdmin)",
-    "nodeType" : "ClassInstanceCreation",
+    "nodeContext" : "createRemoteData(userWithDataConfig)",
+    "nodeType" : "MethodInvocation",
     "nodePosition" : {
-      "charLength" : 66,
-      "startLineNumber" : 70,
-      "startColumnNumber" : 15,
-      "endLineNumber" : 70,
-      "endColumnNumber" : 81
+      "charLength" : 36,
+      "startLineNumber" : 139,
+      "startColumnNumber" : 24,
+      "endLineNumber" : 139,
+      "endColumnNumber" : 60
     },
-    "astNodeNumber" : 9,
-    "astHeight" : 3,
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
     "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 48,
+        "startLineNumber" : 139,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 139,
+        "endColumnNumber" : 60
+      },
+      "nodeContext" : "serverUrl=createRemoteData(userWithDataConfig)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 74,
-        "startLineNumber" : 70,
+        "charLength" : 53,
+        "startLineNumber" : 139,
         "startColumnNumber" : 8,
-        "endLineNumber" : 70,
-        "endColumnNumber" : 82
+        "endLineNumber" : 139,
+        "endColumnNumber" : 61
       },
-      "nodeContext" : "return new Token(value,identity,path,expiresSec,permissions,isAdmin);\n",
-      "nodeType" : "ReturnStatement",
-      "astNodeNumber" : 10,
+      "nodeContext" : "URI serverUrl=createRemoteData(userWithDataConfig);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 8,
       "astHeight" : 4
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 1002,
-        "startLineNumber" : 48,
-        "startColumnNumber" : 68,
-        "endLineNumber" : 71,
+        "charLength" : 1236,
+        "startLineNumber" : 134,
+        "startColumnNumber" : 55,
+        "endLineNumber" : 157,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  String value=token.getString(KEY_TOKEN);\n  JSONObject tokenData=token.getJSONObject(KEY_TOKEN_DATA);\n  String identity=tokenData.getString(KEY_IDENTITY);\n  String path=tokenData.optString(KEY_PATH);\n  long expiresSec=tokenData.getLong(KEY_EXPIRES);\n  Permission[] permissions;\n  JSONArray access=tokenData.getJSONArray(KEY_ACCESS);\n  if (access != null) {\n    permissions=new Permission[access.length()];\n    for (int i=0; i < access.length(); i++) {\n      try {\n        permissions[i]=Permission.valueOf(access.getString(i));\n      }\n catch (      IllegalArgumentException e) {\n        permissions[i]=Permission.UNKNOWN;\n      }\n    }\n  }\n else {\n    permissions=new Permission[0];\n  }\n  boolean isAdmin=tokenData.optBoolean(KEY_IS_ADMIN);\n  return new Token(value,identity,path,expiresSec,permissions,isAdmin);\n}\n",
+      "nodeContext" : "{\n  final CountDownLatch allChangesDownloaded=new CountDownLatch(1);\n  SyncUser userWithData=UserFactory.createUniqueUser(Constants.AUTH_URL);\n  SyncConfiguration userWithDataConfig=configFactory.createSyncConfigurationBuilder(userWithData,Constants.USER_REALM).build();\n  URI serverUrl=createRemoteData(userWithDataConfig);\n  SyncUser adminUser=UserFactory.createAdminUser(Constants.AUTH_URL);\n  final SyncConfiguration config=configFactory.createSyncConfigurationBuilder(adminUser,serverUrl.toString()).build();\n  Realm realm=Realm.getInstance(config);\n  SyncSession session=SyncManager.getSession(config);\n  session.addDownloadProgressListener(ProgressMode.CURRENT_CHANGES,new ProgressListener(){\n    @Override public void onChange(    Progress progress){\n      if (progress.isTransferComplete()) {\n        assertTransferComplete(progress,true);\n        assertEquals(TEST_SIZE,getStoreTestDataSize(config));\n        allChangesDownloaded.countDown();\n      }\n    }\n  }\n);\n  TestHelper.awaitOrFail(allChangesDownloaded);\n  realm.close();\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 147,
-      "astHeight" : 12
+      "astNodeNumber" : 140,
+      "astHeight" : 13
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 1066,
-        "startLineNumber" : 48,
+        "charLength" : 1297,
+        "startLineNumber" : 133,
         "startColumnNumber" : 4,
-        "endLineNumber" : 71,
+        "endLineNumber" : 157,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "public static Token from(JSONObject token) throws JSONException {\n  String value=token.getString(KEY_TOKEN);\n  JSONObject tokenData=token.getJSONObject(KEY_TOKEN_DATA);\n  String identity=tokenData.getString(KEY_IDENTITY);\n  String path=tokenData.optString(KEY_PATH);\n  long expiresSec=tokenData.getLong(KEY_EXPIRES);\n  Permission[] permissions;\n  JSONArray access=tokenData.getJSONArray(KEY_ACCESS);\n  if (access != null) {\n    permissions=new Permission[access.length()];\n    for (int i=0; i < access.length(); i++) {\n      try {\n        permissions[i]=Permission.valueOf(access.getString(i));\n      }\n catch (      IllegalArgumentException e) {\n        permissions[i]=Permission.UNKNOWN;\n      }\n    }\n  }\n else {\n    permissions=new Permission[0];\n  }\n  boolean isAdmin=tokenData.optBoolean(KEY_IS_ADMIN);\n  return new Token(value,identity,path,expiresSec,permissions,isAdmin);\n}\n",
+      "nodeContext" : "@Test public void downloadProgressListener_changesOnly(){\n  final CountDownLatch allChangesDownloaded=new CountDownLatch(1);\n  SyncUser userWithData=UserFactory.createUniqueUser(Constants.AUTH_URL);\n  SyncConfiguration userWithDataConfig=configFactory.createSyncConfigurationBuilder(userWithData,Constants.USER_REALM).build();\n  URI serverUrl=createRemoteData(userWithDataConfig);\n  SyncUser adminUser=UserFactory.createAdminUser(Constants.AUTH_URL);\n  final SyncConfiguration config=configFactory.createSyncConfigurationBuilder(adminUser,serverUrl.toString()).build();\n  Realm realm=Realm.getInstance(config);\n  SyncSession session=SyncManager.getSession(config);\n  session.addDownloadProgressListener(ProgressMode.CURRENT_CHANGES,new ProgressListener(){\n    @Override public void onChange(    Progress progress){\n      if (progress.isTransferComplete()) {\n        assertTransferComplete(progress,true);\n        assertEquals(TEST_SIZE,getStoreTestDataSize(config));\n        allChangesDownloaded.countDown();\n      }\n    }\n  }\n);\n  TestHelper.awaitOrFail(allChangesDownloaded);\n  realm.close();\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 159,
-      "astHeight" : 13
+      "astNodeNumber" : 146,
+      "astHeight" : 14
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 74,
-        "startLineNumber" : 70,
+        "charLength" : 53,
+        "startLineNumber" : 139,
         "startColumnNumber" : 8,
-        "endLineNumber" : 70,
-        "endColumnNumber" : 82
+        "endLineNumber" : 139,
+        "endColumnNumber" : 61
       },
-      "nodeContext" : "return new Token(value,identity,path,expiresSec,permissions,isAdmin);\n",
-      "nodeType" : "ReturnStatement",
-      "astNodeNumber" : 10,
+      "nodeContext" : "URI serverUrl=createRemoteData(userWithDataConfig);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 8,
       "astHeight" : 4
     },
-    "tokenLength" : 7,
-    "type" : "io.realm.internal.objectserver.Token"
+    "tokenLength" : 2,
+    "type" : "java.net.URI"
   } ],
   "positionList" : [ {
-    "charLength" : 66,
-    "startLineNumber" : 70,
-    "startColumnNumber" : 15,
-    "endLineNumber" : 70,
-    "endColumnNumber" : 81
+    "charLength" : 36,
+    "startLineNumber" : 139,
+    "startColumnNumber" : 24,
+    "endLineNumber" : 139,
+    "endColumnNumber" : 60
   } ],
   "layoutRelationDataList" : [ ]
 }

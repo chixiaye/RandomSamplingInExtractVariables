@@ -1,100 +1,113 @@
 {
   "id" : 18,
-  "expression" : "consumer",
+  "expression" : "Awaitility",
   "projectName" : "apache@pulsar",
-  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
-  "filePath" : "/pulsar-broker/src/test/java/org/apache/pulsar/client/api/ConsumerCleanupTest.java",
+  "commitID" : "b5d219add8857a51be0a88fac6f957d0144d949c",
+  "filePath" : "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/RackAwareTest.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "consumer",
+    "nodeContext" : "Awaitility",
     "nodeType" : "SimpleName",
     "nodePosition" : {
-      "charLength" : 8,
-      "startLineNumber" : 64,
+      "charLength" : 10,
+      "startLineNumber" : 115,
       "startColumnNumber" : 8,
-      "endLineNumber" : 64,
-      "endColumnNumber" : 16
+      "endLineNumber" : 115,
+      "endColumnNumber" : 18
     },
     "astNodeNumber" : 1,
     "astHeight" : 1,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
       "nodePosition" : {
-        "charLength" : 16,
-        "startLineNumber" : 64,
+        "charLength" : 18,
+        "startLineNumber" : 115,
         "startColumnNumber" : 8,
-        "endLineNumber" : 64,
-        "endColumnNumber" : 24
+        "endLineNumber" : 115,
+        "endColumnNumber" : 26
       },
-      "nodeContext" : "consumer.close()",
+      "nodeContext" : "Awaitility.await()",
       "nodeType" : "MethodInvocation",
       "astNodeNumber" : 3,
       "astHeight" : 2
     }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 747,
+        "startLineNumber" : 115,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 126,
+        "endColumnNumber" : 10
+      },
+      "nodeContext" : "Awaitility.await().untilAsserted(() -> {\n  byte[] data=bkEnsemble.getZkClient().getData(ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH,false,null);\n  TreeMap<String,Map<String,Map<String,String>>> rackInfoMap=new Gson().fromJson(new String(data),TreeMap.class);\n  assertTrue(rackInfoMap.get(group).size() == NUM_BOOKIES);\n  Set<String> racks=rackInfoMap.values().stream().map(Map::values).flatMap(bookieId -> bookieId.stream().map(rackInfo -> rackInfo.get(\"rack\"))).collect(Collectors.toSet());\n  assertTrue(racks.containsAll(Lists.newArrayList(\"rack-1\",\"rack-2\")));\n}\n)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 117,
+      "astHeight" : 12
+    }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 17,
-        "startLineNumber" : 64,
+        "charLength" : 748,
+        "startLineNumber" : 115,
         "startColumnNumber" : 8,
-        "endLineNumber" : 64,
-        "endColumnNumber" : 25
+        "endLineNumber" : 126,
+        "endColumnNumber" : 11
       },
-      "nodeContext" : "consumer.close();\n",
+      "nodeContext" : "Awaitility.await().untilAsserted(() -> {\n  byte[] data=bkEnsemble.getZkClient().getData(ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH,false,null);\n  TreeMap<String,Map<String,Map<String,String>>> rackInfoMap=new Gson().fromJson(new String(data),TreeMap.class);\n  assertTrue(rackInfoMap.get(group).size() == NUM_BOOKIES);\n  Set<String> racks=rackInfoMap.values().stream().map(Map::values).flatMap(bookieId -> bookieId.stream().map(rackInfo -> rackInfo.get(\"rack\"))).collect(Collectors.toSet());\n  assertTrue(racks.containsAll(Lists.newArrayList(\"rack-1\",\"rack-2\")));\n}\n);\n",
       "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 4,
-      "astHeight" : 3
+      "astNodeNumber" : 118,
+      "astHeight" : 13
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 585,
-        "startLineNumber" : 56,
-        "startColumnNumber" : 63,
-        "endLineNumber" : 68,
+        "charLength" : 2060,
+        "startLineNumber" : 99,
+        "startColumnNumber" : 49,
+        "endLineNumber" : 139,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  @Cleanup PulsarClient pulsarClient=newPulsarClient(lookupUrl.toString(),1);\n  Consumer<byte[]> consumer=pulsarClient.newConsumer().topic(\"persistent://public/default/\" + UUID.randomUUID().toString()).subscriptionName(\"test\").isAckReceiptEnabled(ackReceiptEnabled).subscribe();\n  consumer.close();\n  Thread.sleep(2000);\n  HashedWheelTimer timer=(HashedWheelTimer)((PulsarClientImpl)pulsarClient).timer();\n  Assert.assertEquals(timer.pendingTimeouts(),0);\n}\n",
+      "nodeContext" : "{\n  final String group=\"default\";\n  for (int i=0; i < NUM_BOOKIES; i++) {\n    String bookie=bookies.get(i).getLocalAddress().toString();\n    int rackId=i == 0 ? 1 : 2;\n    BookieInfo bi=BookieInfo.builder().rack(\"rack-\" + rackId).hostname(\"bookie-\" + (i + 1)).build();\n    log.info(\"setting rack for bookie at {} -- {}\",bookie,bi);\n    admin.bookies().updateBookieRackInfo(bookie,group,bi);\n  }\n  Awaitility.await().untilAsserted(() -> {\n    byte[] data=bkEnsemble.getZkClient().getData(ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH,false,null);\n    TreeMap<String,Map<String,Map<String,String>>> rackInfoMap=new Gson().fromJson(new String(data),TreeMap.class);\n    assertTrue(rackInfoMap.get(group).size() == NUM_BOOKIES);\n    Set<String> racks=rackInfoMap.values().stream().map(Map::values).flatMap(bookieId -> bookieId.stream().map(rackInfo -> rackInfo.get(\"rack\"))).collect(Collectors.toSet());\n    assertTrue(racks.containsAll(Lists.newArrayList(\"rack-1\",\"rack-2\")));\n  }\n);\n  BookKeeper bkc=this.pulsar.getBookKeeperClient();\n  BookieId firstBookie=bookies.get(0).getBookieId();\n  for (int i=0; i < 100; i++) {\n    LedgerHandle lh=bkc.createLedger(2,2,DigestType.DUMMY,new byte[0]);\n    log.info(\"Ledger: {} -- Ensemble: {}\",i,lh.getLedgerMetadata().getEnsembleAt(0));\n    assertTrue(lh.getLedgerMetadata().getEnsembleAt(0).contains(firstBookie),\"first bookie in rack 0 not included in ensemble\");\n    lh.close();\n  }\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 75,
-      "astHeight" : 11
+      "astNodeNumber" : 280,
+      "astHeight" : 14
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 783,
-        "startLineNumber" : 54,
+        "charLength" : 2115,
+        "startLineNumber" : 98,
         "startColumnNumber" : 4,
-        "endLineNumber" : 68,
+        "endLineNumber" : 139,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "@Test(dataProvider=\"ackReceiptEnabled\") public void testAllTimerTaskShouldCanceledAfterConsumerClosed(boolean ackReceiptEnabled) throws PulsarClientException, InterruptedException {\n  @Cleanup PulsarClient pulsarClient=newPulsarClient(lookupUrl.toString(),1);\n  Consumer<byte[]> consumer=pulsarClient.newConsumer().topic(\"persistent://public/default/\" + UUID.randomUUID().toString()).subscriptionName(\"test\").isAckReceiptEnabled(ackReceiptEnabled).subscribe();\n  consumer.close();\n  Thread.sleep(2000);\n  HashedWheelTimer timer=(HashedWheelTimer)((PulsarClientImpl)pulsarClient).timer();\n  Assert.assertEquals(timer.pendingTimeouts(),0);\n}\n",
+      "nodeContext" : "@Test public void testPlacement() throws Exception {\n  final String group=\"default\";\n  for (int i=0; i < NUM_BOOKIES; i++) {\n    String bookie=bookies.get(i).getLocalAddress().toString();\n    int rackId=i == 0 ? 1 : 2;\n    BookieInfo bi=BookieInfo.builder().rack(\"rack-\" + rackId).hostname(\"bookie-\" + (i + 1)).build();\n    log.info(\"setting rack for bookie at {} -- {}\",bookie,bi);\n    admin.bookies().updateBookieRackInfo(bookie,group,bi);\n  }\n  Awaitility.await().untilAsserted(() -> {\n    byte[] data=bkEnsemble.getZkClient().getData(ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH,false,null);\n    TreeMap<String,Map<String,Map<String,String>>> rackInfoMap=new Gson().fromJson(new String(data),TreeMap.class);\n    assertTrue(rackInfoMap.get(group).size() == NUM_BOOKIES);\n    Set<String> racks=rackInfoMap.values().stream().map(Map::values).flatMap(bookieId -> bookieId.stream().map(rackInfo -> rackInfo.get(\"rack\"))).collect(Collectors.toSet());\n    assertTrue(racks.containsAll(Lists.newArrayList(\"rack-1\",\"rack-2\")));\n  }\n);\n  BookKeeper bkc=this.pulsar.getBookKeeperClient();\n  BookieId firstBookie=bookies.get(0).getBookieId();\n  for (int i=0; i < 100; i++) {\n    LedgerHandle lh=bkc.createLedger(2,2,DigestType.DUMMY,new byte[0]);\n    log.info(\"Ledger: {} -- Ensemble: {}\",i,lh.getLedgerMetadata().getEnsembleAt(0));\n    assertTrue(lh.getLedgerMetadata().getEnsembleAt(0).contains(firstBookie),\"first bookie in rack 0 not included in ensemble\");\n    lh.close();\n  }\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 91,
-      "astHeight" : 12
+      "astNodeNumber" : 288,
+      "astHeight" : 15
     } ],
     "currentLineData" : {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
       "nodePosition" : {
-        "charLength" : 17,
-        "startLineNumber" : 64,
+        "charLength" : 18,
+        "startLineNumber" : 115,
         "startColumnNumber" : 8,
-        "endLineNumber" : 64,
-        "endColumnNumber" : 25
+        "endLineNumber" : 115,
+        "endColumnNumber" : 26
       },
-      "nodeContext" : "consumer.close();\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 4,
-      "astHeight" : 3
+      "nodeContext" : "Awaitility.await()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
     },
     "tokenLength" : 1,
     "type" : null
   } ],
   "positionList" : [ {
-    "charLength" : 8,
-    "startLineNumber" : 64,
+    "charLength" : 10,
+    "startLineNumber" : 115,
     "startColumnNumber" : 8,
-    "endLineNumber" : 64,
-    "endColumnNumber" : 16
+    "endLineNumber" : 115,
+    "endColumnNumber" : 18
   } ],
   "layoutRelationDataList" : [ ]
 }

@@ -1,113 +1,100 @@
 {
   "id" : 286,
-  "expression" : "listOfLists.stream().flatMap(List::stream)",
+  "expression" : "os != OS.DARWIN",
   "projectName" : "bazelbuild@bazel",
-  "commitID" : "302971e1b3d803069ac949c0085c0d2a3916c8ab",
-  "filePath" : "/src/main/java/com/google/devtools/build/lib/bazel/rules/ninja/file/ParallelFileProcessing.java",
+  "commitID" : "40c9b756d7f8bac20801e2a54e3d83b2112c80c6",
+  "filePath" : "src/main/java/com/google/devtools/build/lib/worker/WorkerSpawnRunner.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "listOfLists.stream().flatMap(List::stream)",
-    "nodeType" : "MethodInvocation",
+    "nodeContext" : "os != OS.DARWIN",
+    "nodeType" : "InfixExpression",
     "nodePosition" : {
-      "charLength" : 42,
-      "startLineNumber" : 118,
-      "startColumnNumber" : 8,
-      "endLineNumber" : 118,
-      "endColumnNumber" : 50
+      "charLength" : 15,
+      "startLineNumber" : 564,
+      "startColumnNumber" : 26,
+      "endLineNumber" : 564,
+      "endColumnNumber" : 41
     },
-    "astNodeNumber" : 8,
+    "astNodeNumber" : 5,
     "astHeight" : 3,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
       "nodePosition" : {
-        "charLength" : 71,
-        "startLineNumber" : 118,
+        "charLength" : 33,
+        "startLineNumber" : 564,
         "startColumnNumber" : 8,
-        "endLineNumber" : 118,
-        "endColumnNumber" : 79
+        "endLineNumber" : 564,
+        "endColumnNumber" : 41
       },
-      "nodeContext" : "listOfLists.stream().flatMap(List::stream).collect(Collectors.toList())",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 13,
+      "nodeContext" : "os != OS.LINUX && os != OS.DARWIN",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 11,
       "astHeight" : 4
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
-      "nodePosition" : {
-        "charLength" : 91,
-        "startLineNumber" : 117,
-        "startColumnNumber" : 23,
-        "endLineNumber" : 118,
-        "endColumnNumber" : 79
-      },
-      "nodeContext" : "fragments=listOfLists.stream().flatMap(List::stream).collect(Collectors.toList())",
-      "nodeType" : "VariableDeclarationFragment",
-      "astNodeNumber" : 15,
-      "astHeight" : 5
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 111,
-        "startLineNumber" : 117,
+        "charLength" : 71,
+        "startLineNumber" : 564,
         "startColumnNumber" : 4,
-        "endLineNumber" : 118,
-        "endColumnNumber" : 80
+        "endLineNumber" : 566,
+        "endColumnNumber" : 5
       },
-      "nodeContext" : "List<FileFragment> fragments=listOfLists.stream().flatMap(List::stream).collect(Collectors.toList());\n",
-      "nodeType" : "VariableDeclarationStatement",
-      "astNodeNumber" : 21,
-      "astHeight" : 6
+      "nodeContext" : "if (os != OS.LINUX && os != OS.DARWIN) {\n  return pidResults;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 954,
-        "startLineNumber" : 95,
-        "startColumnNumber" : 99,
-        "endLineNumber" : 121,
+        "charLength" : 1875,
+        "startLineNumber" : 561,
+        "startColumnNumber" : 87,
+        "endLineNumber" : 615,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "{\n  if (parameters.readBlockSize == 0) {\n    return;\n  }\n  DeclarationAssembler assembler=new DeclarationAssembler(tokenConsumerFactory.get());\n  CollectingListFuture<List<FileFragment>,GenericParsingException> future=new CollectingListFuture<>(GenericParsingException.class);\n  List<List<FileFragment>> listOfLists;\n  long offset=0;\n  boolean keepReading=true;\n  while (keepReading) {\n    ByteBuffer bb=ByteBuffer.allocateDirect(parameters.getReadBlockSize());\n    keepReading=readFromChannel(channel,bb);\n    if (bb.position() > 0) {\n      bb.flip();\n      tokenizeFragments(bb.asReadOnlyBuffer(),offset,future);\n      offset+=bb.limit();\n    }\n  }\n  listOfLists=future.getResult();\n  List<FileFragment> fragments=listOfLists.stream().flatMap(List::stream).collect(Collectors.toList());\n  assembler.wrapUp(fragments);\n}\n",
+      "nodeContext" : "{\n  Map<Long,WorkerMetric.WorkerStat> pidResults=new HashMap<>();\n  if (os != OS.LINUX && os != OS.DARWIN) {\n    return pidResults;\n  }\n  List<Long> filteredProcessIds=processIds.stream().filter(p -> p > 0).collect(Collectors.toList());\n  String pids=Joiner.on(\",\").join(filteredProcessIds);\n  BufferedReader psOutput;\n  try {\n    String command=\"ps -o pid,rss -p \" + pids;\n    psOutput=new BufferedReader(new InputStreamReader(runtime.exec(new String[]{\"bash\",\"-c\",command}).getInputStream(),\"UTF-8\"));\n  }\n catch (  IOException e) {\n    logger.atWarning().withCause(e).log(\"Error while executing command for pids: %s\",pids);\n    return pidResults;\n  }\n  try {\n    Instant now=Instant.now();\n    String output=null;\n    boolean isFirst=true;\n    while ((output=psOutput.readLine()) != null) {\n      if (isFirst) {\n        isFirst=false;\n        continue;\n      }\n      List<String> line=Splitter.on(\" \").trimResults().omitEmptyStrings().splitToList(output);\n      if (line.size() != 2) {\n        logger.atWarning().log(\"Unexpected length of split line %s %d\",output,line.size());\n        continue;\n      }\n      long pid=Long.parseLong(line.get(0));\n      int memoryInKb=Integer.parseInt(line.get(1)) / 1000;\n      pidResults.put(pid,new WorkerMetric.WorkerStat(memoryInKb,now));\n    }\n  }\n catch (  IllegalArgumentException|IOException e) {\n    logger.atWarning().withCause(e).log(\"Error while parsing psOutput: %s\",psOutput);\n  }\n  return pidResults;\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 139,
-      "astHeight" : 9
+      "astNodeNumber" : 261,
+      "astHeight" : 13
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 1051,
-        "startLineNumber" : 95,
+        "charLength" : 1981,
+        "startLineNumber" : 560,
         "startColumnNumber" : 2,
-        "endLineNumber" : 121,
+        "endLineNumber" : 615,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "private void processFileImpl() throws InterruptedException, IOException, GenericParsingException {\n  if (parameters.readBlockSize == 0) {\n    return;\n  }\n  DeclarationAssembler assembler=new DeclarationAssembler(tokenConsumerFactory.get());\n  CollectingListFuture<List<FileFragment>,GenericParsingException> future=new CollectingListFuture<>(GenericParsingException.class);\n  List<List<FileFragment>> listOfLists;\n  long offset=0;\n  boolean keepReading=true;\n  while (keepReading) {\n    ByteBuffer bb=ByteBuffer.allocateDirect(parameters.getReadBlockSize());\n    keepReading=readFromChannel(channel,bb);\n    if (bb.position() > 0) {\n      bb.flip();\n      tokenizeFragments(bb.asReadOnlyBuffer(),offset,future);\n      offset+=bb.limit();\n    }\n  }\n  listOfLists=future.getResult();\n  List<FileFragment> fragments=listOfLists.stream().flatMap(List::stream).collect(Collectors.toList());\n  assembler.wrapUp(fragments);\n}\n",
+      "nodeContext" : "@VisibleForTesting public Map<Long,WorkerMetric.WorkerStat> collectStats(OS os,List<Long> processIds){\n  Map<Long,WorkerMetric.WorkerStat> pidResults=new HashMap<>();\n  if (os != OS.LINUX && os != OS.DARWIN) {\n    return pidResults;\n  }\n  List<Long> filteredProcessIds=processIds.stream().filter(p -> p > 0).collect(Collectors.toList());\n  String pids=Joiner.on(\",\").join(filteredProcessIds);\n  BufferedReader psOutput;\n  try {\n    String command=\"ps -o pid,rss -p \" + pids;\n    psOutput=new BufferedReader(new InputStreamReader(runtime.exec(new String[]{\"bash\",\"-c\",command}).getInputStream(),\"UTF-8\"));\n  }\n catch (  IOException e) {\n    logger.atWarning().withCause(e).log(\"Error while executing command for pids: %s\",pids);\n    return pidResults;\n  }\n  try {\n    Instant now=Instant.now();\n    String output=null;\n    boolean isFirst=true;\n    while ((output=psOutput.readLine()) != null) {\n      if (isFirst) {\n        isFirst=false;\n        continue;\n      }\n      List<String> line=Splitter.on(\" \").trimResults().omitEmptyStrings().splitToList(output);\n      if (line.size() != 2) {\n        logger.atWarning().log(\"Unexpected length of split line %s %d\",output,line.size());\n        continue;\n      }\n      long pid=Long.parseLong(line.get(0));\n      int memoryInKb=Integer.parseInt(line.get(1)) / 1000;\n      pidResults.put(pid,new WorkerMetric.WorkerStat(memoryInKb,now));\n    }\n  }\n catch (  IllegalArgumentException|IOException e) {\n    logger.atWarning().withCause(e).log(\"Error while parsing psOutput: %s\",psOutput);\n  }\n  return pidResults;\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 149,
-      "astHeight" : 10
+      "astNodeNumber" : 286,
+      "astHeight" : 14
     } ],
     "currentLineData" : {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
       "nodePosition" : {
-        "charLength" : 71,
-        "startLineNumber" : 118,
+        "charLength" : 33,
+        "startLineNumber" : 564,
         "startColumnNumber" : 8,
-        "endLineNumber" : 118,
-        "endColumnNumber" : 79
+        "endLineNumber" : 564,
+        "endColumnNumber" : 41
       },
-      "nodeContext" : "listOfLists.stream().flatMap(List::stream).collect(Collectors.toList())",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 13,
+      "nodeContext" : "os != OS.LINUX && os != OS.DARWIN",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 11,
       "astHeight" : 4
     },
-    "tokenLength" : 5,
-    "type" : "java.util.stream.Stream<com.google.devtools.build.lib.bazel.rules.ninja.file.FileFragment>"
+    "tokenLength" : 4,
+    "type" : "boolean"
   } ],
   "positionList" : [ {
-    "charLength" : 42,
-    "startLineNumber" : 118,
-    "startColumnNumber" : 8,
-    "endLineNumber" : 118,
-    "endColumnNumber" : 50
+    "charLength" : 15,
+    "startLineNumber" : 564,
+    "startColumnNumber" : 26,
+    "endLineNumber" : 564,
+    "endColumnNumber" : 41
   } ],
   "layoutRelationDataList" : [ ]
 }

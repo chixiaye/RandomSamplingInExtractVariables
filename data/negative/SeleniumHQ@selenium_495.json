@@ -1,448 +1,286 @@
 {
   "id" : 495,
-  "expression" : "devtools",
+  "expression" : "maxSessionCount",
   "projectName" : "SeleniumHQ@selenium",
-  "commitID" : "c146621f39dbec94114835aa1f6af6a0e1fa4cd0",
-  "filePath" : "/java/client/src/org/openqa/selenium/devtools/v88/V88Domains.java",
-  "occurrences" : 4,
+  "commitID" : "738dd0ee18a142d3fe69fc5f16889ac770188c93",
+  "filePath" : "java/server/src/org/openqa/selenium/grid/node/local/LocalNode.java",
+  "occurrences" : 2,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "devtools",
+    "nodeContext" : "maxSessionCount",
     "nodeType" : "SimpleName",
     "nodePosition" : {
-      "charLength" : 8,
-      "startLineNumber" : 38,
-      "startColumnNumber" : 32,
-      "endLineNumber" : 38,
-      "endColumnNumber" : 40
+      "charLength" : 15,
+      "startLineNumber" : 193,
+      "startColumnNumber" : 38,
+      "endLineNumber" : 193,
+      "endColumnNumber" : 53
     },
     "astNodeNumber" : 1,
     "astHeight" : 1,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
       "nodePosition" : {
-        "charLength" : 37,
-        "startLineNumber" : 38,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 38,
-        "endColumnNumber" : 41
+        "charLength" : 43,
+        "startLineNumber" : 193,
+        "startColumnNumber" : 10,
+        "endLineNumber" : 193,
+        "endColumnNumber" : 53
       },
-      "nodeContext" : "Require.nonNull(\"DevTools\",devtools)",
+      "nodeContext" : "getCurrentSessionCount() >= maxSessionCount",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 4,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 339,
+        "startLineNumber" : 193,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 199,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "if (getCurrentSessionCount() >= maxSessionCount) {\n  span.setAttribute(\"error\",true);\n  span.setStatus(Status.RESOURCE_EXHAUSTED);\n  attributeMap.put(\"max.session.count\",EventAttribute.setValue(maxSessionCount));\n  span.addEvent(\"Max session count reached\",attributeMap);\n  return Optional.empty();\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 38,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 3752,
+        "startLineNumber" : 180,
+        "startColumnNumber" : 80,
+        "endLineNumber" : 260,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  Map<String,EventAttributeValue> attributeMap=new HashMap<>();\n  attributeMap.put(AttributeKey.LOGGER_CLASS.getKey(),EventAttribute.setValue(getClass().getName()));\n  LOG.fine(\"Creating new session using span: \" + span);\n  attributeMap.put(\"session.request.capabilities\",EventAttribute.setValue(sessionRequest.getCapabilities().toString()));\n  attributeMap.put(\"session.request.downstreamdialect\",EventAttribute.setValue(sessionRequest.getDownstreamDialects().toString()));\n  int currentSessionCount=getCurrentSessionCount();\n  span.setAttribute(\"current.session.count\",currentSessionCount);\n  attributeMap.put(\"current.session.count\",EventAttribute.setValue(currentSessionCount));\n  if (getCurrentSessionCount() >= maxSessionCount) {\n    span.setAttribute(\"error\",true);\n    span.setStatus(Status.RESOURCE_EXHAUSTED);\n    attributeMap.put(\"max.session.count\",EventAttribute.setValue(maxSessionCount));\n    span.addEvent(\"Max session count reached\",attributeMap);\n    return Optional.empty();\n  }\n  SessionSlot slotToUse=null;\nsynchronized (factories) {\n    for (    SessionSlot factory : factories) {\n      if (!factory.isAvailable() || !factory.test(sessionRequest.getCapabilities())) {\n        continue;\n      }\n      factory.reserve();\n      slotToUse=factory;\n      break;\n    }\n  }\n  if (slotToUse == null) {\n    span.setAttribute(\"error\",true);\n    span.setStatus(Status.NOT_FOUND);\n    span.addEvent(\"No slot matched capabilities \",attributeMap);\n    return Optional.empty();\n  }\n  Optional<ActiveSession> possibleSession=slotToUse.apply(sessionRequest);\n  if (!possibleSession.isPresent()) {\n    slotToUse.release();\n    span.setAttribute(\"error\",true);\n    span.setStatus(Status.NOT_FOUND);\n    span.addEvent(\"No slots available for capabilities \",attributeMap);\n    return Optional.empty();\n  }\n  ActiveSession session=possibleSession.get();\n  currentSessions.put(session.getId(),slotToUse);\n  SessionId sessionId=session.getId();\n  Capabilities caps=session.getCapabilities();\n  SESSION_ID.accept(span,sessionId);\n  CAPABILITIES.accept(span,caps);\n  SESSION_ID_EVENT.accept(attributeMap,sessionId);\n  CAPABILITIES_EVENT.accept(attributeMap,caps);\n  String downstream=session.getDownstreamDialect().toString();\n  String upstream=session.getUpstreamDialect().toString();\n  String sessionUri=session.getUri().toString();\n  span.setAttribute(AttributeKey.DOWNSTREAM_DIALECT.getKey(),downstream);\n  span.setAttribute(AttributeKey.UPSTREAM_DIALECT.getKey(),upstream);\n  span.setAttribute(AttributeKey.SESSION_URI.getKey(),sessionUri);\n  attributeMap.put(AttributeKey.DOWNSTREAM_DIALECT.getKey(),EventAttribute.setValue(downstream));\n  attributeMap.put(AttributeKey.UPSTREAM_DIALECT.getKey(),EventAttribute.setValue(upstream));\n  attributeMap.put(AttributeKey.SESSION_URI.getKey(),EventAttribute.setValue(sessionUri));\n  span.addEvent(\"Session created by node\",attributeMap);\n  Session externalSession=createExternalSession(session,externalUri);\n  return Optional.of(new CreateSessionResponse(externalSession,getEncoder(session.getDownstreamDialect()).apply(externalSession)));\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 422,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 3828,
+        "startLineNumber" : 180,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 260,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "try (Span span=tracer.getCurrentContext().createSpan(\"node.new_session\")){\n  Map<String,EventAttributeValue> attributeMap=new HashMap<>();\n  attributeMap.put(AttributeKey.LOGGER_CLASS.getKey(),EventAttribute.setValue(getClass().getName()));\n  LOG.fine(\"Creating new session using span: \" + span);\n  attributeMap.put(\"session.request.capabilities\",EventAttribute.setValue(sessionRequest.getCapabilities().toString()));\n  attributeMap.put(\"session.request.downstreamdialect\",EventAttribute.setValue(sessionRequest.getDownstreamDialects().toString()));\n  int currentSessionCount=getCurrentSessionCount();\n  span.setAttribute(\"current.session.count\",currentSessionCount);\n  attributeMap.put(\"current.session.count\",EventAttribute.setValue(currentSessionCount));\n  if (getCurrentSessionCount() >= maxSessionCount) {\n    span.setAttribute(\"error\",true);\n    span.setStatus(Status.RESOURCE_EXHAUSTED);\n    attributeMap.put(\"max.session.count\",EventAttribute.setValue(maxSessionCount));\n    span.addEvent(\"Max session count reached\",attributeMap);\n    return Optional.empty();\n  }\n  SessionSlot slotToUse=null;\nsynchronized (factories) {\n    for (    SessionSlot factory : factories) {\n      if (!factory.isAvailable() || !factory.test(sessionRequest.getCapabilities())) {\n        continue;\n      }\n      factory.reserve();\n      slotToUse=factory;\n      break;\n    }\n  }\n  if (slotToUse == null) {\n    span.setAttribute(\"error\",true);\n    span.setStatus(Status.NOT_FOUND);\n    span.addEvent(\"No slot matched capabilities \",attributeMap);\n    return Optional.empty();\n  }\n  Optional<ActiveSession> possibleSession=slotToUse.apply(sessionRequest);\n  if (!possibleSession.isPresent()) {\n    slotToUse.release();\n    span.setAttribute(\"error\",true);\n    span.setStatus(Status.NOT_FOUND);\n    span.addEvent(\"No slots available for capabilities \",attributeMap);\n    return Optional.empty();\n  }\n  ActiveSession session=possibleSession.get();\n  currentSessions.put(session.getId(),slotToUse);\n  SessionId sessionId=session.getId();\n  Capabilities caps=session.getCapabilities();\n  SESSION_ID.accept(span,sessionId);\n  CAPABILITIES.accept(span,caps);\n  SESSION_ID_EVENT.accept(attributeMap,sessionId);\n  CAPABILITIES_EVENT.accept(attributeMap,caps);\n  String downstream=session.getDownstreamDialect().toString();\n  String upstream=session.getUpstreamDialect().toString();\n  String sessionUri=session.getUri().toString();\n  span.setAttribute(AttributeKey.DOWNSTREAM_DIALECT.getKey(),downstream);\n  span.setAttribute(AttributeKey.UPSTREAM_DIALECT.getKey(),upstream);\n  span.setAttribute(AttributeKey.SESSION_URI.getKey(),sessionUri);\n  attributeMap.put(AttributeKey.DOWNSTREAM_DIALECT.getKey(),EventAttribute.setValue(downstream));\n  attributeMap.put(AttributeKey.UPSTREAM_DIALECT.getKey(),EventAttribute.setValue(upstream));\n  attributeMap.put(AttributeKey.SESSION_URI.getKey(),EventAttribute.setValue(sessionUri));\n  span.addEvent(\"Session created by node\",attributeMap);\n  Session externalSession=createExternalSession(session,externalUri);\n  return Optional.of(new CreateSessionResponse(externalSession,getEncoder(session.getDownstreamDialect()).apply(externalSession)));\n}\n ",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 434,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3895,
+        "startLineNumber" : 177,
+        "startColumnNumber" : 89,
+        "endLineNumber" : 261,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  Require.nonNull(\"Session request\",sessionRequest);\n  try (Span span=tracer.getCurrentContext().createSpan(\"node.new_session\")){\n    Map<String,EventAttributeValue> attributeMap=new HashMap<>();\n    attributeMap.put(AttributeKey.LOGGER_CLASS.getKey(),EventAttribute.setValue(getClass().getName()));\n    LOG.fine(\"Creating new session using span: \" + span);\n    attributeMap.put(\"session.request.capabilities\",EventAttribute.setValue(sessionRequest.getCapabilities().toString()));\n    attributeMap.put(\"session.request.downstreamdialect\",EventAttribute.setValue(sessionRequest.getDownstreamDialects().toString()));\n    int currentSessionCount=getCurrentSessionCount();\n    span.setAttribute(\"current.session.count\",currentSessionCount);\n    attributeMap.put(\"current.session.count\",EventAttribute.setValue(currentSessionCount));\n    if (getCurrentSessionCount() >= maxSessionCount) {\n      span.setAttribute(\"error\",true);\n      span.setStatus(Status.RESOURCE_EXHAUSTED);\n      attributeMap.put(\"max.session.count\",EventAttribute.setValue(maxSessionCount));\n      span.addEvent(\"Max session count reached\",attributeMap);\n      return Optional.empty();\n    }\n    SessionSlot slotToUse=null;\nsynchronized (factories) {\n      for (      SessionSlot factory : factories) {\n        if (!factory.isAvailable() || !factory.test(sessionRequest.getCapabilities())) {\n          continue;\n        }\n        factory.reserve();\n        slotToUse=factory;\n        break;\n      }\n    }\n    if (slotToUse == null) {\n      span.setAttribute(\"error\",true);\n      span.setStatus(Status.NOT_FOUND);\n      span.addEvent(\"No slot matched capabilities \",attributeMap);\n      return Optional.empty();\n    }\n    Optional<ActiveSession> possibleSession=slotToUse.apply(sessionRequest);\n    if (!possibleSession.isPresent()) {\n      slotToUse.release();\n      span.setAttribute(\"error\",true);\n      span.setStatus(Status.NOT_FOUND);\n      span.addEvent(\"No slots available for capabilities \",attributeMap);\n      return Optional.empty();\n    }\n    ActiveSession session=possibleSession.get();\n    currentSessions.put(session.getId(),slotToUse);\n    SessionId sessionId=session.getId();\n    Capabilities caps=session.getCapabilities();\n    SESSION_ID.accept(span,sessionId);\n    CAPABILITIES.accept(span,caps);\n    SESSION_ID_EVENT.accept(attributeMap,sessionId);\n    CAPABILITIES_EVENT.accept(attributeMap,caps);\n    String downstream=session.getDownstreamDialect().toString();\n    String upstream=session.getUpstreamDialect().toString();\n    String sessionUri=session.getUri().toString();\n    span.setAttribute(AttributeKey.DOWNSTREAM_DIALECT.getKey(),downstream);\n    span.setAttribute(AttributeKey.UPSTREAM_DIALECT.getKey(),upstream);\n    span.setAttribute(AttributeKey.SESSION_URI.getKey(),sessionUri);\n    attributeMap.put(AttributeKey.DOWNSTREAM_DIALECT.getKey(),EventAttribute.setValue(downstream));\n    attributeMap.put(AttributeKey.UPSTREAM_DIALECT.getKey(),EventAttribute.setValue(upstream));\n    attributeMap.put(AttributeKey.SESSION_URI.getKey(),EventAttribute.setValue(sessionUri));\n    span.addEvent(\"Session created by node\",attributeMap);\n    Session externalSession=createExternalSession(session,externalUri);\n    return Optional.of(new CreateSessionResponse(externalSession,getEncoder(session.getDownstreamDialect()).apply(externalSession)));\n  }\n }\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 441,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3994,
+        "startLineNumber" : 176,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 261,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "@Override public Optional<CreateSessionResponse> newSession(CreateSessionRequest sessionRequest){\n  Require.nonNull(\"Session request\",sessionRequest);\n  try (Span span=tracer.getCurrentContext().createSpan(\"node.new_session\")){\n    Map<String,EventAttributeValue> attributeMap=new HashMap<>();\n    attributeMap.put(AttributeKey.LOGGER_CLASS.getKey(),EventAttribute.setValue(getClass().getName()));\n    LOG.fine(\"Creating new session using span: \" + span);\n    attributeMap.put(\"session.request.capabilities\",EventAttribute.setValue(sessionRequest.getCapabilities().toString()));\n    attributeMap.put(\"session.request.downstreamdialect\",EventAttribute.setValue(sessionRequest.getDownstreamDialects().toString()));\n    int currentSessionCount=getCurrentSessionCount();\n    span.setAttribute(\"current.session.count\",currentSessionCount);\n    attributeMap.put(\"current.session.count\",EventAttribute.setValue(currentSessionCount));\n    if (getCurrentSessionCount() >= maxSessionCount) {\n      span.setAttribute(\"error\",true);\n      span.setStatus(Status.RESOURCE_EXHAUSTED);\n      attributeMap.put(\"max.session.count\",EventAttribute.setValue(maxSessionCount));\n      span.addEvent(\"Max session count reached\",attributeMap);\n      return Optional.empty();\n    }\n    SessionSlot slotToUse=null;\nsynchronized (factories) {\n      for (      SessionSlot factory : factories) {\n        if (!factory.isAvailable() || !factory.test(sessionRequest.getCapabilities())) {\n          continue;\n        }\n        factory.reserve();\n        slotToUse=factory;\n        break;\n      }\n    }\n    if (slotToUse == null) {\n      span.setAttribute(\"error\",true);\n      span.setStatus(Status.NOT_FOUND);\n      span.addEvent(\"No slot matched capabilities \",attributeMap);\n      return Optional.empty();\n    }\n    Optional<ActiveSession> possibleSession=slotToUse.apply(sessionRequest);\n    if (!possibleSession.isPresent()) {\n      slotToUse.release();\n      span.setAttribute(\"error\",true);\n      span.setStatus(Status.NOT_FOUND);\n      span.addEvent(\"No slots available for capabilities \",attributeMap);\n      return Optional.empty();\n    }\n    ActiveSession session=possibleSession.get();\n    currentSessions.put(session.getId(),slotToUse);\n    SessionId sessionId=session.getId();\n    Capabilities caps=session.getCapabilities();\n    SESSION_ID.accept(span,sessionId);\n    CAPABILITIES.accept(span,caps);\n    SESSION_ID_EVENT.accept(attributeMap,sessionId);\n    CAPABILITIES_EVENT.accept(attributeMap,caps);\n    String downstream=session.getDownstreamDialect().toString();\n    String upstream=session.getUpstreamDialect().toString();\n    String sessionUri=session.getUri().toString();\n    span.setAttribute(AttributeKey.DOWNSTREAM_DIALECT.getKey(),downstream);\n    span.setAttribute(AttributeKey.UPSTREAM_DIALECT.getKey(),upstream);\n    span.setAttribute(AttributeKey.SESSION_URI.getKey(),sessionUri);\n    attributeMap.put(AttributeKey.DOWNSTREAM_DIALECT.getKey(),EventAttribute.setValue(downstream));\n    attributeMap.put(AttributeKey.UPSTREAM_DIALECT.getKey(),EventAttribute.setValue(upstream));\n    attributeMap.put(AttributeKey.SESSION_URI.getKey(),EventAttribute.setValue(sessionUri));\n    span.addEvent(\"Session created by node\",attributeMap);\n    Session externalSession=createExternalSession(session,externalUri);\n    return Optional.of(new CreateSessionResponse(externalSession,getEncoder(session.getDownstreamDialect()).apply(externalSession)));\n  }\n }\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 455,
+      "astHeight" : 14
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 43,
+        "startLineNumber" : 193,
+        "startColumnNumber" : 10,
+        "endLineNumber" : 193,
+        "endColumnNumber" : 53
+      },
+      "nodeContext" : "getCurrentSessionCount() >= maxSessionCount",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 4,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "int"
+  }, {
+    "nodeContext" : "maxSessionCount",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 196,
+      "startColumnNumber" : 70,
+      "endLineNumber" : 196,
+      "endColumnNumber" : 85
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 40,
+        "startLineNumber" : 196,
+        "startColumnNumber" : 46,
+        "endLineNumber" : 196,
+        "endColumnNumber" : 86
+      },
+      "nodeContext" : "EventAttribute.setValue(maxSessionCount)",
       "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 5,
+      "astNodeNumber" : 4,
       "astHeight" : 2
     }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 38,
-        "startLineNumber" : 38,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 38,
-        "endColumnNumber" : 42
-      },
-      "nodeContext" : "Require.nonNull(\"DevTools\",devtools);\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 6,
-      "astHeight" : 3
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
-      "nodePosition" : {
-        "charLength" : 218,
-        "startLineNumber" : 37,
-        "startColumnNumber" : 39,
-        "endLineNumber" : 44,
-        "endColumnNumber" : 3
-      },
-      "nodeContext" : "{\n  Require.nonNull(\"DevTools\",devtools);\n  events=new V88Events(devtools);\n  js=new V88Javascript(devtools);\n  log=new V88Log();\n  network=new V88Network(devtools);\n  target=new V88Target();\n}\n",
-      "nodeType" : "Block",
-      "astNodeNumber" : 40,
-      "astHeight" : 6
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
-      "nodePosition" : {
-        "charLength" : 255,
-        "startLineNumber" : 37,
-        "startColumnNumber" : 2,
-        "endLineNumber" : 44,
-        "endColumnNumber" : 3
-      },
-      "nodeContext" : "public V88Domains(DevTools devtools){\n  Require.nonNull(\"DevTools\",devtools);\n  events=new V88Events(devtools);\n  js=new V88Javascript(devtools);\n  log=new V88Log();\n  network=new V88Network(devtools);\n  target=new V88Target();\n}\n",
-      "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 47,
-      "astHeight" : 7
-    } ],
-    "currentLineData" : {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 38,
-        "startLineNumber" : 38,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 38,
-        "endColumnNumber" : 42
-      },
-      "nodeContext" : "Require.nonNull(\"DevTools\",devtools);\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 6,
-      "astHeight" : 3
-    },
-    "tokenLength" : 1,
-    "type" : "org.openqa.selenium.devtools.DevTools"
-  }, {
-    "nodeContext" : "devtools",
-    "nodeType" : "SimpleName",
-    "nodePosition" : {
-      "charLength" : 8,
-      "startLineNumber" : 39,
-      "startColumnNumber" : 27,
-      "endLineNumber" : 39,
-      "endColumnNumber" : 35
-    },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
-    "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
-      "nodePosition" : {
-        "charLength" : 23,
-        "startLineNumber" : 39,
-        "startColumnNumber" : 13,
-        "endLineNumber" : 39,
-        "endColumnNumber" : 36
-      },
-      "nodeContext" : "new V88Events(devtools)",
-      "nodeType" : "ClassInstanceCreation",
-      "astNodeNumber" : 4,
-      "astHeight" : 3
-    }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
       "nodePosition" : {
-        "charLength" : 32,
-        "startLineNumber" : 39,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 39,
-        "endColumnNumber" : 36
+        "charLength" : 79,
+        "startLineNumber" : 196,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 196,
+        "endColumnNumber" : 87
       },
-      "nodeContext" : "events=new V88Events(devtools)",
-      "nodeType" : "Assignment",
-      "astNodeNumber" : 6,
-      "astHeight" : 4
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 33,
-        "startLineNumber" : 39,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 39,
-        "endColumnNumber" : 37
-      },
-      "nodeContext" : "events=new V88Events(devtools);\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 7,
-      "astHeight" : 5
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
-      "nodePosition" : {
-        "charLength" : 218,
-        "startLineNumber" : 37,
-        "startColumnNumber" : 39,
-        "endLineNumber" : 44,
-        "endColumnNumber" : 3
-      },
-      "nodeContext" : "{\n  Require.nonNull(\"DevTools\",devtools);\n  events=new V88Events(devtools);\n  js=new V88Javascript(devtools);\n  log=new V88Log();\n  network=new V88Network(devtools);\n  target=new V88Target();\n}\n",
-      "nodeType" : "Block",
-      "astNodeNumber" : 40,
-      "astHeight" : 6
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
-      "nodePosition" : {
-        "charLength" : 255,
-        "startLineNumber" : 37,
-        "startColumnNumber" : 2,
-        "endLineNumber" : 44,
-        "endColumnNumber" : 3
-      },
-      "nodeContext" : "public V88Domains(DevTools devtools){\n  Require.nonNull(\"DevTools\",devtools);\n  events=new V88Events(devtools);\n  js=new V88Javascript(devtools);\n  log=new V88Log();\n  network=new V88Network(devtools);\n  target=new V88Target();\n}\n",
-      "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 47,
-      "astHeight" : 7
-    } ],
-    "currentLineData" : {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 33,
-        "startLineNumber" : 39,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 39,
-        "endColumnNumber" : 37
-      },
-      "nodeContext" : "events=new V88Events(devtools);\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 7,
-      "astHeight" : 5
-    },
-    "tokenLength" : 1,
-    "type" : "org.openqa.selenium.devtools.DevTools"
-  }, {
-    "nodeContext" : "devtools",
-    "nodeType" : "SimpleName",
-    "nodePosition" : {
-      "charLength" : 8,
-      "startLineNumber" : 40,
-      "startColumnNumber" : 27,
-      "endLineNumber" : 40,
-      "endColumnNumber" : 35
-    },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
-    "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
-      "nodePosition" : {
-        "charLength" : 27,
-        "startLineNumber" : 40,
-        "startColumnNumber" : 9,
-        "endLineNumber" : 40,
-        "endColumnNumber" : 36
-      },
-      "nodeContext" : "new V88Javascript(devtools)",
-      "nodeType" : "ClassInstanceCreation",
-      "astNodeNumber" : 4,
+      "nodeContext" : "attributeMap.put(\"max.session.count\",EventAttribute.setValue(maxSessionCount))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 8,
       "astHeight" : 3
     }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 32,
-        "startLineNumber" : 40,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 40,
-        "endColumnNumber" : 36
+        "charLength" : 80,
+        "startLineNumber" : 196,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 196,
+        "endColumnNumber" : 88
       },
-      "nodeContext" : "js=new V88Javascript(devtools)",
-      "nodeType" : "Assignment",
-      "astNodeNumber" : 6,
+      "nodeContext" : "attributeMap.put(\"max.session.count\",EventAttribute.setValue(maxSessionCount));\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 9,
       "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 290,
+        "startLineNumber" : 193,
+        "startColumnNumber" : 55,
+        "endLineNumber" : 199,
+        "endColumnNumber" : 7
+      },
+      "nodeContext" : "{\n  span.setAttribute(\"error\",true);\n  span.setStatus(Status.RESOURCE_EXHAUSTED);\n  attributeMap.put(\"max.session.count\",EventAttribute.setValue(maxSessionCount));\n  span.addEvent(\"Max session count reached\",attributeMap);\n  return Optional.empty();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 33,
+      "astHeight" : 5
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 33,
-        "startLineNumber" : 40,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 40,
-        "endColumnNumber" : 37
+        "charLength" : 339,
+        "startLineNumber" : 193,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 199,
+        "endColumnNumber" : 7
       },
-      "nodeContext" : "js=new V88Javascript(devtools);\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 7,
-      "astHeight" : 5
+      "nodeContext" : "if (getCurrentSessionCount() >= maxSessionCount) {\n  span.setAttribute(\"error\",true);\n  span.setStatus(Status.RESOURCE_EXHAUSTED);\n  attributeMap.put(\"max.session.count\",EventAttribute.setValue(maxSessionCount));\n  span.addEvent(\"Max session count reached\",attributeMap);\n  return Optional.empty();\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 38,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 3752,
+        "startLineNumber" : 180,
+        "startColumnNumber" : 80,
+        "endLineNumber" : 260,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  Map<String,EventAttributeValue> attributeMap=new HashMap<>();\n  attributeMap.put(AttributeKey.LOGGER_CLASS.getKey(),EventAttribute.setValue(getClass().getName()));\n  LOG.fine(\"Creating new session using span: \" + span);\n  attributeMap.put(\"session.request.capabilities\",EventAttribute.setValue(sessionRequest.getCapabilities().toString()));\n  attributeMap.put(\"session.request.downstreamdialect\",EventAttribute.setValue(sessionRequest.getDownstreamDialects().toString()));\n  int currentSessionCount=getCurrentSessionCount();\n  span.setAttribute(\"current.session.count\",currentSessionCount);\n  attributeMap.put(\"current.session.count\",EventAttribute.setValue(currentSessionCount));\n  if (getCurrentSessionCount() >= maxSessionCount) {\n    span.setAttribute(\"error\",true);\n    span.setStatus(Status.RESOURCE_EXHAUSTED);\n    attributeMap.put(\"max.session.count\",EventAttribute.setValue(maxSessionCount));\n    span.addEvent(\"Max session count reached\",attributeMap);\n    return Optional.empty();\n  }\n  SessionSlot slotToUse=null;\nsynchronized (factories) {\n    for (    SessionSlot factory : factories) {\n      if (!factory.isAvailable() || !factory.test(sessionRequest.getCapabilities())) {\n        continue;\n      }\n      factory.reserve();\n      slotToUse=factory;\n      break;\n    }\n  }\n  if (slotToUse == null) {\n    span.setAttribute(\"error\",true);\n    span.setStatus(Status.NOT_FOUND);\n    span.addEvent(\"No slot matched capabilities \",attributeMap);\n    return Optional.empty();\n  }\n  Optional<ActiveSession> possibleSession=slotToUse.apply(sessionRequest);\n  if (!possibleSession.isPresent()) {\n    slotToUse.release();\n    span.setAttribute(\"error\",true);\n    span.setStatus(Status.NOT_FOUND);\n    span.addEvent(\"No slots available for capabilities \",attributeMap);\n    return Optional.empty();\n  }\n  ActiveSession session=possibleSession.get();\n  currentSessions.put(session.getId(),slotToUse);\n  SessionId sessionId=session.getId();\n  Capabilities caps=session.getCapabilities();\n  SESSION_ID.accept(span,sessionId);\n  CAPABILITIES.accept(span,caps);\n  SESSION_ID_EVENT.accept(attributeMap,sessionId);\n  CAPABILITIES_EVENT.accept(attributeMap,caps);\n  String downstream=session.getDownstreamDialect().toString();\n  String upstream=session.getUpstreamDialect().toString();\n  String sessionUri=session.getUri().toString();\n  span.setAttribute(AttributeKey.DOWNSTREAM_DIALECT.getKey(),downstream);\n  span.setAttribute(AttributeKey.UPSTREAM_DIALECT.getKey(),upstream);\n  span.setAttribute(AttributeKey.SESSION_URI.getKey(),sessionUri);\n  attributeMap.put(AttributeKey.DOWNSTREAM_DIALECT.getKey(),EventAttribute.setValue(downstream));\n  attributeMap.put(AttributeKey.UPSTREAM_DIALECT.getKey(),EventAttribute.setValue(upstream));\n  attributeMap.put(AttributeKey.SESSION_URI.getKey(),EventAttribute.setValue(sessionUri));\n  span.addEvent(\"Session created by node\",attributeMap);\n  Session externalSession=createExternalSession(session,externalUri);\n  return Optional.of(new CreateSessionResponse(externalSession,getEncoder(session.getDownstreamDialect()).apply(externalSession)));\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 422,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 3828,
+        "startLineNumber" : 180,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 260,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "try (Span span=tracer.getCurrentContext().createSpan(\"node.new_session\")){\n  Map<String,EventAttributeValue> attributeMap=new HashMap<>();\n  attributeMap.put(AttributeKey.LOGGER_CLASS.getKey(),EventAttribute.setValue(getClass().getName()));\n  LOG.fine(\"Creating new session using span: \" + span);\n  attributeMap.put(\"session.request.capabilities\",EventAttribute.setValue(sessionRequest.getCapabilities().toString()));\n  attributeMap.put(\"session.request.downstreamdialect\",EventAttribute.setValue(sessionRequest.getDownstreamDialects().toString()));\n  int currentSessionCount=getCurrentSessionCount();\n  span.setAttribute(\"current.session.count\",currentSessionCount);\n  attributeMap.put(\"current.session.count\",EventAttribute.setValue(currentSessionCount));\n  if (getCurrentSessionCount() >= maxSessionCount) {\n    span.setAttribute(\"error\",true);\n    span.setStatus(Status.RESOURCE_EXHAUSTED);\n    attributeMap.put(\"max.session.count\",EventAttribute.setValue(maxSessionCount));\n    span.addEvent(\"Max session count reached\",attributeMap);\n    return Optional.empty();\n  }\n  SessionSlot slotToUse=null;\nsynchronized (factories) {\n    for (    SessionSlot factory : factories) {\n      if (!factory.isAvailable() || !factory.test(sessionRequest.getCapabilities())) {\n        continue;\n      }\n      factory.reserve();\n      slotToUse=factory;\n      break;\n    }\n  }\n  if (slotToUse == null) {\n    span.setAttribute(\"error\",true);\n    span.setStatus(Status.NOT_FOUND);\n    span.addEvent(\"No slot matched capabilities \",attributeMap);\n    return Optional.empty();\n  }\n  Optional<ActiveSession> possibleSession=slotToUse.apply(sessionRequest);\n  if (!possibleSession.isPresent()) {\n    slotToUse.release();\n    span.setAttribute(\"error\",true);\n    span.setStatus(Status.NOT_FOUND);\n    span.addEvent(\"No slots available for capabilities \",attributeMap);\n    return Optional.empty();\n  }\n  ActiveSession session=possibleSession.get();\n  currentSessions.put(session.getId(),slotToUse);\n  SessionId sessionId=session.getId();\n  Capabilities caps=session.getCapabilities();\n  SESSION_ID.accept(span,sessionId);\n  CAPABILITIES.accept(span,caps);\n  SESSION_ID_EVENT.accept(attributeMap,sessionId);\n  CAPABILITIES_EVENT.accept(attributeMap,caps);\n  String downstream=session.getDownstreamDialect().toString();\n  String upstream=session.getUpstreamDialect().toString();\n  String sessionUri=session.getUri().toString();\n  span.setAttribute(AttributeKey.DOWNSTREAM_DIALECT.getKey(),downstream);\n  span.setAttribute(AttributeKey.UPSTREAM_DIALECT.getKey(),upstream);\n  span.setAttribute(AttributeKey.SESSION_URI.getKey(),sessionUri);\n  attributeMap.put(AttributeKey.DOWNSTREAM_DIALECT.getKey(),EventAttribute.setValue(downstream));\n  attributeMap.put(AttributeKey.UPSTREAM_DIALECT.getKey(),EventAttribute.setValue(upstream));\n  attributeMap.put(AttributeKey.SESSION_URI.getKey(),EventAttribute.setValue(sessionUri));\n  span.addEvent(\"Session created by node\",attributeMap);\n  Session externalSession=createExternalSession(session,externalUri);\n  return Optional.of(new CreateSessionResponse(externalSession,getEncoder(session.getDownstreamDialect()).apply(externalSession)));\n}\n ",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 434,
+      "astHeight" : 12
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 218,
-        "startLineNumber" : 37,
-        "startColumnNumber" : 39,
-        "endLineNumber" : 44,
+        "charLength" : 3895,
+        "startLineNumber" : 177,
+        "startColumnNumber" : 89,
+        "endLineNumber" : 261,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "{\n  Require.nonNull(\"DevTools\",devtools);\n  events=new V88Events(devtools);\n  js=new V88Javascript(devtools);\n  log=new V88Log();\n  network=new V88Network(devtools);\n  target=new V88Target();\n}\n",
+      "nodeContext" : "{\n  Require.nonNull(\"Session request\",sessionRequest);\n  try (Span span=tracer.getCurrentContext().createSpan(\"node.new_session\")){\n    Map<String,EventAttributeValue> attributeMap=new HashMap<>();\n    attributeMap.put(AttributeKey.LOGGER_CLASS.getKey(),EventAttribute.setValue(getClass().getName()));\n    LOG.fine(\"Creating new session using span: \" + span);\n    attributeMap.put(\"session.request.capabilities\",EventAttribute.setValue(sessionRequest.getCapabilities().toString()));\n    attributeMap.put(\"session.request.downstreamdialect\",EventAttribute.setValue(sessionRequest.getDownstreamDialects().toString()));\n    int currentSessionCount=getCurrentSessionCount();\n    span.setAttribute(\"current.session.count\",currentSessionCount);\n    attributeMap.put(\"current.session.count\",EventAttribute.setValue(currentSessionCount));\n    if (getCurrentSessionCount() >= maxSessionCount) {\n      span.setAttribute(\"error\",true);\n      span.setStatus(Status.RESOURCE_EXHAUSTED);\n      attributeMap.put(\"max.session.count\",EventAttribute.setValue(maxSessionCount));\n      span.addEvent(\"Max session count reached\",attributeMap);\n      return Optional.empty();\n    }\n    SessionSlot slotToUse=null;\nsynchronized (factories) {\n      for (      SessionSlot factory : factories) {\n        if (!factory.isAvailable() || !factory.test(sessionRequest.getCapabilities())) {\n          continue;\n        }\n        factory.reserve();\n        slotToUse=factory;\n        break;\n      }\n    }\n    if (slotToUse == null) {\n      span.setAttribute(\"error\",true);\n      span.setStatus(Status.NOT_FOUND);\n      span.addEvent(\"No slot matched capabilities \",attributeMap);\n      return Optional.empty();\n    }\n    Optional<ActiveSession> possibleSession=slotToUse.apply(sessionRequest);\n    if (!possibleSession.isPresent()) {\n      slotToUse.release();\n      span.setAttribute(\"error\",true);\n      span.setStatus(Status.NOT_FOUND);\n      span.addEvent(\"No slots available for capabilities \",attributeMap);\n      return Optional.empty();\n    }\n    ActiveSession session=possibleSession.get();\n    currentSessions.put(session.getId(),slotToUse);\n    SessionId sessionId=session.getId();\n    Capabilities caps=session.getCapabilities();\n    SESSION_ID.accept(span,sessionId);\n    CAPABILITIES.accept(span,caps);\n    SESSION_ID_EVENT.accept(attributeMap,sessionId);\n    CAPABILITIES_EVENT.accept(attributeMap,caps);\n    String downstream=session.getDownstreamDialect().toString();\n    String upstream=session.getUpstreamDialect().toString();\n    String sessionUri=session.getUri().toString();\n    span.setAttribute(AttributeKey.DOWNSTREAM_DIALECT.getKey(),downstream);\n    span.setAttribute(AttributeKey.UPSTREAM_DIALECT.getKey(),upstream);\n    span.setAttribute(AttributeKey.SESSION_URI.getKey(),sessionUri);\n    attributeMap.put(AttributeKey.DOWNSTREAM_DIALECT.getKey(),EventAttribute.setValue(downstream));\n    attributeMap.put(AttributeKey.UPSTREAM_DIALECT.getKey(),EventAttribute.setValue(upstream));\n    attributeMap.put(AttributeKey.SESSION_URI.getKey(),EventAttribute.setValue(sessionUri));\n    span.addEvent(\"Session created by node\",attributeMap);\n    Session externalSession=createExternalSession(session,externalUri);\n    return Optional.of(new CreateSessionResponse(externalSession,getEncoder(session.getDownstreamDialect()).apply(externalSession)));\n  }\n }\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 40,
-      "astHeight" : 6
+      "astNodeNumber" : 441,
+      "astHeight" : 13
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 255,
-        "startLineNumber" : 37,
+        "charLength" : 3994,
+        "startLineNumber" : 176,
         "startColumnNumber" : 2,
-        "endLineNumber" : 44,
+        "endLineNumber" : 261,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "public V88Domains(DevTools devtools){\n  Require.nonNull(\"DevTools\",devtools);\n  events=new V88Events(devtools);\n  js=new V88Javascript(devtools);\n  log=new V88Log();\n  network=new V88Network(devtools);\n  target=new V88Target();\n}\n",
+      "nodeContext" : "@Override public Optional<CreateSessionResponse> newSession(CreateSessionRequest sessionRequest){\n  Require.nonNull(\"Session request\",sessionRequest);\n  try (Span span=tracer.getCurrentContext().createSpan(\"node.new_session\")){\n    Map<String,EventAttributeValue> attributeMap=new HashMap<>();\n    attributeMap.put(AttributeKey.LOGGER_CLASS.getKey(),EventAttribute.setValue(getClass().getName()));\n    LOG.fine(\"Creating new session using span: \" + span);\n    attributeMap.put(\"session.request.capabilities\",EventAttribute.setValue(sessionRequest.getCapabilities().toString()));\n    attributeMap.put(\"session.request.downstreamdialect\",EventAttribute.setValue(sessionRequest.getDownstreamDialects().toString()));\n    int currentSessionCount=getCurrentSessionCount();\n    span.setAttribute(\"current.session.count\",currentSessionCount);\n    attributeMap.put(\"current.session.count\",EventAttribute.setValue(currentSessionCount));\n    if (getCurrentSessionCount() >= maxSessionCount) {\n      span.setAttribute(\"error\",true);\n      span.setStatus(Status.RESOURCE_EXHAUSTED);\n      attributeMap.put(\"max.session.count\",EventAttribute.setValue(maxSessionCount));\n      span.addEvent(\"Max session count reached\",attributeMap);\n      return Optional.empty();\n    }\n    SessionSlot slotToUse=null;\nsynchronized (factories) {\n      for (      SessionSlot factory : factories) {\n        if (!factory.isAvailable() || !factory.test(sessionRequest.getCapabilities())) {\n          continue;\n        }\n        factory.reserve();\n        slotToUse=factory;\n        break;\n      }\n    }\n    if (slotToUse == null) {\n      span.setAttribute(\"error\",true);\n      span.setStatus(Status.NOT_FOUND);\n      span.addEvent(\"No slot matched capabilities \",attributeMap);\n      return Optional.empty();\n    }\n    Optional<ActiveSession> possibleSession=slotToUse.apply(sessionRequest);\n    if (!possibleSession.isPresent()) {\n      slotToUse.release();\n      span.setAttribute(\"error\",true);\n      span.setStatus(Status.NOT_FOUND);\n      span.addEvent(\"No slots available for capabilities \",attributeMap);\n      return Optional.empty();\n    }\n    ActiveSession session=possibleSession.get();\n    currentSessions.put(session.getId(),slotToUse);\n    SessionId sessionId=session.getId();\n    Capabilities caps=session.getCapabilities();\n    SESSION_ID.accept(span,sessionId);\n    CAPABILITIES.accept(span,caps);\n    SESSION_ID_EVENT.accept(attributeMap,sessionId);\n    CAPABILITIES_EVENT.accept(attributeMap,caps);\n    String downstream=session.getDownstreamDialect().toString();\n    String upstream=session.getUpstreamDialect().toString();\n    String sessionUri=session.getUri().toString();\n    span.setAttribute(AttributeKey.DOWNSTREAM_DIALECT.getKey(),downstream);\n    span.setAttribute(AttributeKey.UPSTREAM_DIALECT.getKey(),upstream);\n    span.setAttribute(AttributeKey.SESSION_URI.getKey(),sessionUri);\n    attributeMap.put(AttributeKey.DOWNSTREAM_DIALECT.getKey(),EventAttribute.setValue(downstream));\n    attributeMap.put(AttributeKey.UPSTREAM_DIALECT.getKey(),EventAttribute.setValue(upstream));\n    attributeMap.put(AttributeKey.SESSION_URI.getKey(),EventAttribute.setValue(sessionUri));\n    span.addEvent(\"Session created by node\",attributeMap);\n    Session externalSession=createExternalSession(session,externalUri);\n    return Optional.of(new CreateSessionResponse(externalSession,getEncoder(session.getDownstreamDialect()).apply(externalSession)));\n  }\n }\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 47,
-      "astHeight" : 7
+      "astNodeNumber" : 455,
+      "astHeight" : 14
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 33,
-        "startLineNumber" : 40,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 40,
-        "endColumnNumber" : 37
+        "charLength" : 80,
+        "startLineNumber" : 196,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 196,
+        "endColumnNumber" : 88
       },
-      "nodeContext" : "js=new V88Javascript(devtools);\n",
+      "nodeContext" : "attributeMap.put(\"max.session.count\",EventAttribute.setValue(maxSessionCount));\n",
       "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 7,
-      "astHeight" : 5
-    },
-    "tokenLength" : 1,
-    "type" : "org.openqa.selenium.devtools.DevTools"
-  }, {
-    "nodeContext" : "devtools",
-    "nodeType" : "SimpleName",
-    "nodePosition" : {
-      "charLength" : 8,
-      "startLineNumber" : 42,
-      "startColumnNumber" : 29,
-      "endLineNumber" : 42,
-      "endColumnNumber" : 37
-    },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
-    "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
-      "nodePosition" : {
-        "charLength" : 24,
-        "startLineNumber" : 42,
-        "startColumnNumber" : 14,
-        "endLineNumber" : 42,
-        "endColumnNumber" : 38
-      },
-      "nodeContext" : "new V88Network(devtools)",
-      "nodeType" : "ClassInstanceCreation",
-      "astNodeNumber" : 4,
-      "astHeight" : 3
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
-      "nodePosition" : {
-        "charLength" : 34,
-        "startLineNumber" : 42,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 42,
-        "endColumnNumber" : 38
-      },
-      "nodeContext" : "network=new V88Network(devtools)",
-      "nodeType" : "Assignment",
-      "astNodeNumber" : 6,
+      "astNodeNumber" : 9,
       "astHeight" : 4
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 35,
-        "startLineNumber" : 42,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 42,
-        "endColumnNumber" : 39
-      },
-      "nodeContext" : "network=new V88Network(devtools);\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 7,
-      "astHeight" : 5
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
-      "nodePosition" : {
-        "charLength" : 218,
-        "startLineNumber" : 37,
-        "startColumnNumber" : 39,
-        "endLineNumber" : 44,
-        "endColumnNumber" : 3
-      },
-      "nodeContext" : "{\n  Require.nonNull(\"DevTools\",devtools);\n  events=new V88Events(devtools);\n  js=new V88Javascript(devtools);\n  log=new V88Log();\n  network=new V88Network(devtools);\n  target=new V88Target();\n}\n",
-      "nodeType" : "Block",
-      "astNodeNumber" : 40,
-      "astHeight" : 6
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
-      "nodePosition" : {
-        "charLength" : 255,
-        "startLineNumber" : 37,
-        "startColumnNumber" : 2,
-        "endLineNumber" : 44,
-        "endColumnNumber" : 3
-      },
-      "nodeContext" : "public V88Domains(DevTools devtools){\n  Require.nonNull(\"DevTools\",devtools);\n  events=new V88Events(devtools);\n  js=new V88Javascript(devtools);\n  log=new V88Log();\n  network=new V88Network(devtools);\n  target=new V88Target();\n}\n",
-      "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 47,
-      "astHeight" : 7
-    } ],
-    "currentLineData" : {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 35,
-        "startLineNumber" : 42,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 42,
-        "endColumnNumber" : 39
-      },
-      "nodeContext" : "network=new V88Network(devtools);\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 7,
-      "astHeight" : 5
     },
     "tokenLength" : 1,
-    "type" : "org.openqa.selenium.devtools.DevTools"
+    "type" : "int"
   } ],
   "positionList" : [ {
-    "charLength" : 8,
-    "startLineNumber" : 38,
-    "startColumnNumber" : 32,
-    "endLineNumber" : 38,
-    "endColumnNumber" : 40
+    "charLength" : 15,
+    "startLineNumber" : 193,
+    "startColumnNumber" : 38,
+    "endLineNumber" : 193,
+    "endColumnNumber" : 53
   }, {
-    "charLength" : 8,
-    "startLineNumber" : 39,
-    "startColumnNumber" : 27,
-    "endLineNumber" : 39,
-    "endColumnNumber" : 35
-  }, {
-    "charLength" : 8,
-    "startLineNumber" : 40,
-    "startColumnNumber" : 27,
-    "endLineNumber" : 40,
-    "endColumnNumber" : 35
-  }, {
-    "charLength" : 8,
-    "startLineNumber" : 42,
-    "startColumnNumber" : 29,
-    "endLineNumber" : 42,
-    "endColumnNumber" : 37
+    "charLength" : 15,
+    "startLineNumber" : 196,
+    "startColumnNumber" : 70,
+    "endLineNumber" : 196,
+    "endColumnNumber" : 85
   } ],
   "layoutRelationDataList" : [ {
     "firstKey" : 0,
     "secondKey" : 1,
-    "layout" : 2
-  }, {
-    "firstKey" : 0,
-    "secondKey" : 2,
-    "layout" : 2
-  }, {
-    "firstKey" : 0,
-    "secondKey" : 3,
-    "layout" : 2
+    "layout" : 1
   }, {
     "firstKey" : 1,
     "secondKey" : 0,
-    "layout" : 3
-  }, {
-    "firstKey" : 1,
-    "secondKey" : 2,
-    "layout" : 3
-  }, {
-    "firstKey" : 1,
-    "secondKey" : 3,
-    "layout" : 3
-  }, {
-    "firstKey" : 2,
-    "secondKey" : 0,
-    "layout" : 3
-  }, {
-    "firstKey" : 2,
-    "secondKey" : 1,
-    "layout" : 3
-  }, {
-    "firstKey" : 2,
-    "secondKey" : 3,
-    "layout" : 3
-  }, {
-    "firstKey" : 3,
-    "secondKey" : 0,
-    "layout" : 3
-  }, {
-    "firstKey" : 3,
-    "secondKey" : 1,
-    "layout" : 3
-  }, {
-    "firstKey" : 3,
-    "secondKey" : 2,
-    "layout" : 3
+    "layout" : 4
   } ]
 }

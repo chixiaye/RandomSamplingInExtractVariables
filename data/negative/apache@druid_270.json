@@ -1,100 +1,100 @@
 {
   "id" : 270,
-  "expression" : "postAggVisitor.getPostAggs()",
+  "expression" : "pair.rhs",
   "projectName" : "apache@druid",
-  "commitID" : "f6662b4893a9b8cc8a0ebb77e63daddde882148d",
-  "filePath" : "/sql/src/main/java/org/apache/druid/sql/calcite/rel/Projection.java",
+  "commitID" : "b7b0ee83627dd7887392e8f9d6fb5cb29465c28c",
+  "filePath" : "indexing-service/src/main/java/org/apache/druid/indexing/common/task/CompactionTask.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "postAggVisitor.getPostAggs()",
-    "nodeType" : "MethodInvocation",
+    "nodeContext" : "pair.rhs",
+    "nodeType" : "QualifiedName",
     "nodePosition" : {
-      "charLength" : 28,
-      "startLineNumber" : 228,
-      "startColumnNumber" : 8,
-      "endLineNumber" : 228,
-      "endColumnNumber" : 36
+      "charLength" : 8,
+      "startLineNumber" : 488,
+      "startColumnNumber" : 77,
+      "endLineNumber" : 488,
+      "endColumnNumber" : 85
     },
     "astNodeNumber" : 3,
     "astHeight" : 2,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ReturnStatement,expression]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
       "nodePosition" : {
-        "charLength" : 143,
-        "startLineNumber" : 227,
-        "startColumnNumber" : 11,
-        "endLineNumber" : 231,
-        "endColumnNumber" : 5
+        "charLength" : 27,
+        "startLineNumber" : 488,
+        "startColumnNumber" : 58,
+        "endLineNumber" : 488,
+        "endColumnNumber" : 85
       },
-      "nodeContext" : "new Projection(postAggVisitor.getPostAggs(),null,RowSignatures.fromRelDataType(rowOrder,project.getRowType()))",
-      "nodeType" : "ClassInstanceCreation",
-      "astNodeNumber" : 14,
-      "astHeight" : 4
+      "nodeContext" : "timelineSegments=pair.rhs",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 151,
-        "startLineNumber" : 227,
+        "charLength" : 82,
+        "startLineNumber" : 488,
         "startColumnNumber" : 4,
-        "endLineNumber" : 231,
-        "endColumnNumber" : 6
+        "endLineNumber" : 488,
+        "endColumnNumber" : 86
       },
-      "nodeContext" : "return new Projection(postAggVisitor.getPostAggs(),null,RowSignatures.fromRelDataType(rowOrder,project.getRowType()));\n",
-      "nodeType" : "ReturnStatement",
-      "astNodeNumber" : 15,
+      "nodeContext" : "final List<TimelineObjectHolder<String,DataSegment>> timelineSegments=pair.rhs;\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 17,
       "astHeight" : 5
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 1091,
-        "startLineNumber" : 200,
+        "charLength" : 4513,
+        "startLineNumber" : 481,
         "startColumnNumber" : 2,
-        "endLineNumber" : 232,
+        "endLineNumber" : 592,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "{\n  final List<String> rowOrder=new ArrayList<>();\n  final String outputNamePrefix=Calcites.findUnusedPrefixForDigits(basePrefix,inputRowSignature.getColumnNames());\n  final PostAggregatorVisitor postAggVisitor=new PostAggregatorVisitor(outputNamePrefix);\n  for (  final RexNode postAggregatorRexNode : project.getChildExps()) {\n    if (postAggregatorRexNode.getKind() == SqlKind.INPUT_REF || postAggregatorRexNode.getKind() == SqlKind.LITERAL) {\n      postAggregationHandleInputRefOrLiteral(project,plannerContext,inputRowSignature,postAggregatorRexNode,rowOrder,postAggVisitor);\n    }\n else {\n      postAggregationHandleOtherKinds(project,plannerContext,inputRowSignature,postAggregatorRexNode,rowOrder,postAggVisitor);\n    }\n  }\n  return new Projection(postAggVisitor.getPostAggs(),null,RowSignatures.fromRelDataType(rowOrder,project.getRowType()));\n}\n",
+      "nodeContext" : "{\n  NonnullPair<Map<DataSegment,File>,List<TimelineObjectHolder<String,DataSegment>>> pair=prepareSegments(toolbox,segmentProvider,lockGranularityInUse);\n  final Map<DataSegment,File> segmentFileMap=pair.lhs;\n  final List<TimelineObjectHolder<String,DataSegment>> timelineSegments=pair.rhs;\n  if (timelineSegments.size() == 0) {\n    return Collections.emptyList();\n  }\n  final List<NonnullPair<QueryableIndex,DataSegment>> queryableIndexAndSegments=loadSegments(timelineSegments,segmentFileMap,toolbox.getIndexIO());\n  final ParallelIndexTuningConfig compactionTuningConfig=partitionConfigurationManager.computeTuningConfig();\n  if (granularitySpec == null || granularitySpec.getSegmentGranularity() == null) {\n    final Map<Interval,List<NonnullPair<QueryableIndex,DataSegment>>> intervalToSegments=new TreeMap<>(Comparators.intervalsByStartThenEnd());\n    queryableIndexAndSegments.forEach(p -> intervalToSegments.computeIfAbsent(p.rhs.getInterval(),k -> new ArrayList<>()).add(p));\n    List<NonnullPair<Interval,List<NonnullPair<QueryableIndex,DataSegment>>>> intervalToSegmentsUnified=new ArrayList<>();\n    Interval union=null;\n    List<NonnullPair<QueryableIndex,DataSegment>> segments=new ArrayList<>();\n    for (    Entry<Interval,List<NonnullPair<QueryableIndex,DataSegment>>> entry : intervalToSegments.entrySet()) {\n      Interval cur=entry.getKey();\n      if (union == null) {\n        union=cur;\n        segments.addAll(entry.getValue());\n      }\n else       if (union.overlaps(cur)) {\n        union=Intervals.utc(union.getStartMillis(),Math.max(union.getEndMillis(),cur.getEndMillis()));\n        segments.addAll(entry.getValue());\n      }\n else {\n        intervalToSegmentsUnified.add(new NonnullPair<>(union,segments));\n        union=cur;\n        segments=new ArrayList<>(entry.getValue());\n      }\n    }\n    intervalToSegmentsUnified.add(new NonnullPair<>(union,segments));\n    final List<ParallelIndexIngestionSpec> specs=new ArrayList<>(intervalToSegmentsUnified.size());\n    for (    NonnullPair<Interval,List<NonnullPair<QueryableIndex,DataSegment>>> entry : intervalToSegmentsUnified) {\n      final Interval interval=entry.lhs;\n      final List<NonnullPair<QueryableIndex,DataSegment>> segmentsToCompact=entry.rhs;\n      Granularity segmentGranularityToUse=GranularityType.fromPeriod(interval.toPeriod()).getDefaultGranularity();\n      final DataSchema dataSchema=createDataSchema(segmentProvider.dataSource,segmentsToCompact,dimensionsSpec,metricsSpec,granularitySpec == null ? new ClientCompactionTaskGranularitySpec(segmentGranularityToUse,null) : granularitySpec.withSegmentGranularity(segmentGranularityToUse));\n      specs.add(new ParallelIndexIngestionSpec(dataSchema,createIoConfig(toolbox,dataSchema,interval,coordinatorClient,segmentLoaderFactory,retryPolicyFactory),compactionTuningConfig));\n    }\n    return specs;\n  }\n else {\n    final DataSchema dataSchema=createDataSchema(segmentProvider.dataSource,queryableIndexAndSegments,dimensionsSpec,metricsSpec,granularitySpec);\n    return Collections.singletonList(new ParallelIndexIngestionSpec(dataSchema,createIoConfig(toolbox,dataSchema,segmentProvider.interval,coordinatorClient,segmentLoaderFactory,retryPolicyFactory),compactionTuningConfig));\n  }\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 98,
-      "astHeight" : 8
+      "astNodeNumber" : 479,
+      "astHeight" : 14
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 1285,
-        "startLineNumber" : 194,
+        "charLength" : 5368,
+        "startLineNumber" : 463,
         "startColumnNumber" : 2,
-        "endLineNumber" : 232,
+        "endLineNumber" : 592,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "public static Projection postAggregation(final Project project,final PlannerContext plannerContext,final RowSignature inputRowSignature,final String basePrefix){\n  final List<String> rowOrder=new ArrayList<>();\n  final String outputNamePrefix=Calcites.findUnusedPrefixForDigits(basePrefix,inputRowSignature.getColumnNames());\n  final PostAggregatorVisitor postAggVisitor=new PostAggregatorVisitor(outputNamePrefix);\n  for (  final RexNode postAggregatorRexNode : project.getChildExps()) {\n    if (postAggregatorRexNode.getKind() == SqlKind.INPUT_REF || postAggregatorRexNode.getKind() == SqlKind.LITERAL) {\n      postAggregationHandleInputRefOrLiteral(project,plannerContext,inputRowSignature,postAggregatorRexNode,rowOrder,postAggVisitor);\n    }\n else {\n      postAggregationHandleOtherKinds(project,plannerContext,inputRowSignature,postAggregatorRexNode,rowOrder,postAggVisitor);\n    }\n  }\n  return new Projection(postAggVisitor.getPostAggs(),null,RowSignatures.fromRelDataType(rowOrder,project.getRowType()));\n}\n",
+      "nodeContext" : "/** \n * Generate  {@link ParallelIndexIngestionSpec} from input segments.\n * @return an empty list if input segments don't exist. Otherwise, a generated ingestionSpec.\n */\n@VisibleForTesting static List<ParallelIndexIngestionSpec> createIngestionSchema(final TaskToolbox toolbox,final LockGranularity lockGranularityInUse,final SegmentProvider segmentProvider,final PartitionConfigurationManager partitionConfigurationManager,@Nullable final DimensionsSpec dimensionsSpec,@Nullable final AggregatorFactory[] metricsSpec,@Nullable final ClientCompactionTaskGranularitySpec granularitySpec,final CoordinatorClient coordinatorClient,final SegmentLoaderFactory segmentLoaderFactory,final RetryPolicyFactory retryPolicyFactory) throws IOException, SegmentLoadingException {\n  NonnullPair<Map<DataSegment,File>,List<TimelineObjectHolder<String,DataSegment>>> pair=prepareSegments(toolbox,segmentProvider,lockGranularityInUse);\n  final Map<DataSegment,File> segmentFileMap=pair.lhs;\n  final List<TimelineObjectHolder<String,DataSegment>> timelineSegments=pair.rhs;\n  if (timelineSegments.size() == 0) {\n    return Collections.emptyList();\n  }\n  final List<NonnullPair<QueryableIndex,DataSegment>> queryableIndexAndSegments=loadSegments(timelineSegments,segmentFileMap,toolbox.getIndexIO());\n  final ParallelIndexTuningConfig compactionTuningConfig=partitionConfigurationManager.computeTuningConfig();\n  if (granularitySpec == null || granularitySpec.getSegmentGranularity() == null) {\n    final Map<Interval,List<NonnullPair<QueryableIndex,DataSegment>>> intervalToSegments=new TreeMap<>(Comparators.intervalsByStartThenEnd());\n    queryableIndexAndSegments.forEach(p -> intervalToSegments.computeIfAbsent(p.rhs.getInterval(),k -> new ArrayList<>()).add(p));\n    List<NonnullPair<Interval,List<NonnullPair<QueryableIndex,DataSegment>>>> intervalToSegmentsUnified=new ArrayList<>();\n    Interval union=null;\n    List<NonnullPair<QueryableIndex,DataSegment>> segments=new ArrayList<>();\n    for (    Entry<Interval,List<NonnullPair<QueryableIndex,DataSegment>>> entry : intervalToSegments.entrySet()) {\n      Interval cur=entry.getKey();\n      if (union == null) {\n        union=cur;\n        segments.addAll(entry.getValue());\n      }\n else       if (union.overlaps(cur)) {\n        union=Intervals.utc(union.getStartMillis(),Math.max(union.getEndMillis(),cur.getEndMillis()));\n        segments.addAll(entry.getValue());\n      }\n else {\n        intervalToSegmentsUnified.add(new NonnullPair<>(union,segments));\n        union=cur;\n        segments=new ArrayList<>(entry.getValue());\n      }\n    }\n    intervalToSegmentsUnified.add(new NonnullPair<>(union,segments));\n    final List<ParallelIndexIngestionSpec> specs=new ArrayList<>(intervalToSegmentsUnified.size());\n    for (    NonnullPair<Interval,List<NonnullPair<QueryableIndex,DataSegment>>> entry : intervalToSegmentsUnified) {\n      final Interval interval=entry.lhs;\n      final List<NonnullPair<QueryableIndex,DataSegment>> segmentsToCompact=entry.rhs;\n      Granularity segmentGranularityToUse=GranularityType.fromPeriod(interval.toPeriod()).getDefaultGranularity();\n      final DataSchema dataSchema=createDataSchema(segmentProvider.dataSource,segmentsToCompact,dimensionsSpec,metricsSpec,granularitySpec == null ? new ClientCompactionTaskGranularitySpec(segmentGranularityToUse,null) : granularitySpec.withSegmentGranularity(segmentGranularityToUse));\n      specs.add(new ParallelIndexIngestionSpec(dataSchema,createIoConfig(toolbox,dataSchema,interval,coordinatorClient,segmentLoaderFactory,retryPolicyFactory),compactionTuningConfig));\n    }\n    return specs;\n  }\n else {\n    final DataSchema dataSchema=createDataSchema(segmentProvider.dataSource,queryableIndexAndSegments,dimensionsSpec,metricsSpec,granularitySpec);\n    return Collections.singletonList(new ParallelIndexIngestionSpec(dataSchema,createIoConfig(toolbox,dataSchema,segmentProvider.interval,coordinatorClient,segmentLoaderFactory,retryPolicyFactory),compactionTuningConfig));\n  }\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 124,
-      "astHeight" : 9
+      "astNodeNumber" : 552,
+      "astHeight" : 15
     } ],
     "currentLineData" : {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ReturnStatement,expression]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 143,
-        "startLineNumber" : 227,
-        "startColumnNumber" : 11,
-        "endLineNumber" : 231,
-        "endColumnNumber" : 5
+        "charLength" : 82,
+        "startLineNumber" : 488,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 488,
+        "endColumnNumber" : 86
       },
-      "nodeContext" : "new Projection(postAggVisitor.getPostAggs(),null,RowSignatures.fromRelDataType(rowOrder,project.getRowType()))",
-      "nodeType" : "ClassInstanceCreation",
-      "astNodeNumber" : 14,
-      "astHeight" : 4
+      "nodeContext" : "final List<TimelineObjectHolder<String,DataSegment>> timelineSegments=pair.rhs;\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 17,
+      "astHeight" : 5
     },
     "tokenLength" : 2,
-    "type" : "java.util.List<org.apache.druid.query.aggregation.PostAggregator>"
+    "type" : "java.util.List<org.apache.druid.timeline.TimelineObjectHolder<java.lang.String,org.apache.druid.timeline.DataSegment>>"
   } ],
   "positionList" : [ {
-    "charLength" : 28,
-    "startLineNumber" : 228,
-    "startColumnNumber" : 8,
-    "endLineNumber" : 228,
-    "endColumnNumber" : 36
+    "charLength" : 8,
+    "startLineNumber" : 488,
+    "startColumnNumber" : 77,
+    "endLineNumber" : 488,
+    "endColumnNumber" : 85
   } ],
   "layoutRelationDataList" : [ ]
 }

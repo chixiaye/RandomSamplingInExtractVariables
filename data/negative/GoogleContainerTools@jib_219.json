@@ -1,113 +1,126 @@
 {
   "id" : 219,
-  "expression" : "outputStream",
+  "expression" : "buildImageFutureFuture",
   "projectName" : "GoogleContainerTools@jib",
-  "commitID" : "a0742fd277b5490a0965dba4443f5864f1250199",
-  "filePath" : "/jib-core/src/main/java/com/google/cloud/tools/jib/blob/WriterBlob.java",
+  "commitID" : "50ad775a54876e393d027d194603991aa0407876",
+  "filePath" : "jib-core/src/main/java/com/google/cloud/tools/jib/builder/BuildTarballAndLoadDockerStep.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "outputStream",
+    "nodeContext" : "buildImageFutureFuture",
     "nodeType" : "SimpleName",
     "nodePosition" : {
-      "charLength" : 12,
-      "startLineNumber" : 35,
-      "startColumnNumber" : 39,
-      "endLineNumber" : 35,
-      "endColumnNumber" : 51
+      "charLength" : 22,
+      "startLineNumber" : 85,
+      "startColumnNumber" : 64,
+      "endLineNumber" : 85,
+      "endColumnNumber" : 86
     },
     "astNodeNumber" : 1,
     "astHeight" : 1,
     "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 46,
+        "startLineNumber" : 85,
+        "startColumnNumber" : 41,
+        "endLineNumber" : 85,
+        "endColumnNumber" : 87
+      },
+      "nodeContext" : "NonBlockingFutures.get(buildImageFutureFuture)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
       "nodePosition" : {
-        "charLength" : 44,
-        "startLineNumber" : 35,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 35,
-        "endColumnNumber" : 52
+        "charLength" : 70,
+        "startLineNumber" : 85,
+        "startColumnNumber" : 18,
+        "endLineNumber" : 85,
+        "endColumnNumber" : 88
       },
-      "nodeContext" : "new CountingDigestOutputStream(outputStream)",
-      "nodeType" : "ClassInstanceCreation",
-      "astNodeNumber" : 4,
+      "nodeContext" : "NonBlockingFutures.get(NonBlockingFutures.get(buildImageFutureFuture))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
       "astHeight" : 3
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
       "nodePosition" : {
-        "charLength" : 81,
-        "startLineNumber" : 34,
-        "startColumnNumber" : 31,
-        "endLineNumber" : 35,
-        "endColumnNumber" : 52
+        "charLength" : 78,
+        "startLineNumber" : 85,
+        "startColumnNumber" : 10,
+        "endLineNumber" : 85,
+        "endColumnNumber" : 88
       },
-      "nodeContext" : "countingDigestOutputStream=new CountingDigestOutputStream(outputStream)",
+      "nodeContext" : "image=NonBlockingFutures.get(NonBlockingFutures.get(buildImageFutureFuture))",
       "nodeType" : "VariableDeclarationFragment",
-      "astNodeNumber" : 6,
+      "astNodeNumber" : 9,
       "astHeight" : 4
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 109,
-        "startLineNumber" : 34,
+        "charLength" : 85,
+        "startLineNumber" : 85,
         "startColumnNumber" : 4,
-        "endLineNumber" : 35,
-        "endColumnNumber" : 53
+        "endLineNumber" : 85,
+        "endColumnNumber" : 89
       },
-      "nodeContext" : "CountingDigestOutputStream countingDigestOutputStream=new CountingDigestOutputStream(outputStream);\n",
+      "nodeContext" : "Image image=NonBlockingFutures.get(NonBlockingFutures.get(buildImageFutureFuture));\n",
       "nodeType" : "VariableDeclarationStatement",
-      "astNodeNumber" : 9,
+      "astNodeNumber" : 12,
       "astHeight" : 5
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 265,
-        "startLineNumber" : 33,
-        "startColumnNumber" : 78,
-        "endLineNumber" : 39,
+        "charLength" : 1335,
+        "startLineNumber" : 83,
+        "startColumnNumber" : 99,
+        "endLineNumber" : 112,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "{\n  CountingDigestOutputStream countingDigestOutputStream=new CountingDigestOutputStream(outputStream);\n  writer.writeTo(countingDigestOutputStream);\n  countingDigestOutputStream.flush();\n  return countingDigestOutputStream.toBlobDescriptor();\n}\n",
+      "nodeContext" : "{\n  Image image=NonBlockingFutures.get(NonBlockingFutures.get(buildImageFutureFuture));\n  TarStreamBuilder tarStreamBuilder=new TarStreamBuilder();\n  DockerLoadManifestTemplate manifestTemplate=new DockerLoadManifestTemplate();\n  for (  Layer layer : image.getLayers()) {\n    Path cachedFile=((CachedLayer)layer).getContentFile();\n    String layerName=cachedFile.getFileName().toString();\n    tarStreamBuilder.addEntry(new TarArchiveEntry(cachedFile.toFile(),layerName));\n    manifestTemplate.addLayerFile(layerName);\n  }\n  Blob containerConfigurationBlob=new ImageToJsonTranslator(image).getContainerConfigurationBlob();\n  tarStreamBuilder.addEntry(Blobs.writeToString(containerConfigurationBlob),\"config.json\");\n  manifestTemplate.setRepoTags(buildConfiguration.getTargetImageReference().toStringWithTag());\n  tarStreamBuilder.addEntry(Blobs.writeToString(JsonTemplateMapper.toBlob(manifestTemplate)),\"manifest.json\");\n  new Command(\"docker\",\"load\").run(Blobs.writeToByteArray(tarStreamBuilder.toBlob()));\n  return null;\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 23,
-      "astHeight" : 6
+      "astNodeNumber" : 133,
+      "astHeight" : 10
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 353,
-        "startLineNumber" : 32,
+        "charLength" : 1660,
+        "startLineNumber" : 76,
         "startColumnNumber" : 2,
-        "endLineNumber" : 39,
+        "endLineNumber" : 112,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "@Override public BlobDescriptor writeTo(OutputStream outputStream) throws IOException {\n  CountingDigestOutputStream countingDigestOutputStream=new CountingDigestOutputStream(outputStream);\n  writer.writeTo(countingDigestOutputStream);\n  countingDigestOutputStream.flush();\n  return countingDigestOutputStream.toBlobDescriptor();\n}\n",
+      "nodeContext" : "/** \n * Depends on  {@code pullBaseImageLayerFuturesFuture.get()} and (@codebuildImageFutureFuture.get()}. <p>TODO: Refactor into testable components\n */\nprivate Void afterPushBaseImageLayerFuturesFuture() throws ExecutionException, InterruptedException, IOException, LayerPropertyNotFoundException {\n  Image image=NonBlockingFutures.get(NonBlockingFutures.get(buildImageFutureFuture));\n  TarStreamBuilder tarStreamBuilder=new TarStreamBuilder();\n  DockerLoadManifestTemplate manifestTemplate=new DockerLoadManifestTemplate();\n  for (  Layer layer : image.getLayers()) {\n    Path cachedFile=((CachedLayer)layer).getContentFile();\n    String layerName=cachedFile.getFileName().toString();\n    tarStreamBuilder.addEntry(new TarArchiveEntry(cachedFile.toFile(),layerName));\n    manifestTemplate.addLayerFile(layerName);\n  }\n  Blob containerConfigurationBlob=new ImageToJsonTranslator(image).getContainerConfigurationBlob();\n  tarStreamBuilder.addEntry(Blobs.writeToString(containerConfigurationBlob),\"config.json\");\n  manifestTemplate.setRepoTags(buildConfiguration.getTargetImageReference().toStringWithTag());\n  tarStreamBuilder.addEntry(Blobs.writeToString(JsonTemplateMapper.toBlob(manifestTemplate)),\"manifest.json\");\n  new Command(\"docker\",\"load\").run(Blobs.writeToByteArray(tarStreamBuilder.toBlob()));\n  return null;\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 36,
-      "astHeight" : 7
+      "astNodeNumber" : 147,
+      "astHeight" : 11
     } ],
     "currentLineData" : {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 44,
-        "startLineNumber" : 35,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 35,
-        "endColumnNumber" : 52
+        "charLength" : 85,
+        "startLineNumber" : 85,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 85,
+        "endColumnNumber" : 89
       },
-      "nodeContext" : "new CountingDigestOutputStream(outputStream)",
-      "nodeType" : "ClassInstanceCreation",
-      "astNodeNumber" : 4,
-      "astHeight" : 3
+      "nodeContext" : "Image image=NonBlockingFutures.get(NonBlockingFutures.get(buildImageFutureFuture));\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 12,
+      "astHeight" : 5
     },
     "tokenLength" : 1,
-    "type" : "java.io.OutputStream"
+    "type" : "com.google.cloud.tools.jib.builder.ListenableFuture<com.google.cloud.tools.jib.builder.ListenableFuture<com.google.cloud.tools.jib.image.Image>>"
   } ],
   "positionList" : [ {
-    "charLength" : 12,
-    "startLineNumber" : 35,
-    "startColumnNumber" : 39,
-    "endLineNumber" : 35,
-    "endColumnNumber" : 51
+    "charLength" : 22,
+    "startLineNumber" : 85,
+    "startColumnNumber" : 64,
+    "endLineNumber" : 85,
+    "endColumnNumber" : 86
   } ],
   "layoutRelationDataList" : [ ]
 }

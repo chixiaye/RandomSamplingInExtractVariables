@@ -1,139 +1,619 @@
 {
   "id" : 144,
-  "expression" : "metadata",
+  "expression" : "admin.topics().getSubscriptions(partitionedTopicName)",
   "projectName" : "apache@pulsar",
-  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
-  "filePath" : "/pulsar-client/src/main/java/org/apache/pulsar/client/impl/SinglePartitionMessageRouterImpl.java",
-  "occurrences" : 1,
+  "commitID" : "403b57a8bc56e1715b08d974847c82242729bb34",
+  "filePath" : "pulsar-broker/src/test/java/org/apache/pulsar/broker/admin/AdminApiTest.java",
+  "occurrences" : 5,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "metadata",
-    "nodeType" : "SimpleName",
+    "nodeContext" : "admin.topics().getSubscriptions(partitionedTopicName)",
+    "nodeType" : "MethodInvocation",
     "nodePosition" : {
-      "charLength" : 8,
-      "startLineNumber" : 42,
-      "startColumnNumber" : 60,
-      "endLineNumber" : 42,
-      "endColumnNumber" : 68
+      "charLength" : 53,
+      "startLineNumber" : 924,
+      "startColumnNumber" : 37,
+      "endLineNumber" : 924,
+      "endColumnNumber" : 90
     },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
+    "astNodeNumber" : 6,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 69,
+        "startLineNumber" : 924,
+        "startColumnNumber" : 21,
+        "endLineNumber" : 924,
+        "endColumnNumber" : 90
+      },
+      "nodeContext" : "subscriptions=admin.topics().getSubscriptions(partitionedTopicName)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 83,
+        "startLineNumber" : 924,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 924,
+        "endColumnNumber" : 91
+      },
+      "nodeContext" : "List<String> subscriptions=admin.topics().getSubscriptions(partitionedTopicName);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 14,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 9359,
+        "startLineNumber" : 883,
+        "startColumnNumber" : 87,
+        "endLineNumber" : 1082,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final String namespace=\"prop-xyz/ns1\";\n  final String partitionedTopicName=topicType + \"://\" + namespace+ \"/\"+ topicName;\n  final String anotherTopic=topicType + \"://\" + namespace+ \"/ds2\";\n  final boolean isPersistent=topicType.equals(TopicDomain.persistent.value());\n  assertEquals(admin.topics().getPartitionedTopicList(namespace),Lists.newArrayList());\n  try {\n    admin.topics().getPartitionedTopicMetadata(partitionedTopicName);\n    fail(\"getPartitionedTopicMetadata of \" + partitionedTopicName + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  admin.topics().createPartitionedTopic(partitionedTopicName,4);\n  assertEquals(admin.topics().getPartitionedTopicList(namespace),Lists.newArrayList(partitionedTopicName));\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,4);\n  List<String> topics;\n  if (isPersistent) {\n    topics=admin.topics().getList(namespace);\n    assertEquals(topics.size(),4);\n  }\n  try {\n    admin.topics().getPartitionedTopicMetadata(anotherTopic);\n    fail(\"getPartitionedTopicMetadata of \" + anotherTopic + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,admin.topics().getPartitionedStats(partitionedTopicName,false).metadata.partitions);\n  assertEquals(admin.topics().getPartitionedStats(partitionedTopicName,false).partitions.size(),0);\n  List<String> subscriptions=admin.topics().getSubscriptions(partitionedTopicName);\n  assertEquals(subscriptions.size(),0);\n  @Cleanup PulsarClient client=PulsarClient.builder().serviceUrl(pulsar.getWebServiceAddress()).statsInterval(0,TimeUnit.SECONDS).build();\n  Consumer<byte[]> consumer=client.newConsumer().topic(partitionedTopicName).subscriptionName(\"my-sub\").subscriptionType(SubscriptionType.Exclusive).subscribe();\n  assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n  try {\n    if (isPersistent) {\n      admin.topics().deleteSubscription(partitionedTopicName,\"my-sub\");\n      fail(\"should have failed\");\n    }\n  }\n catch (  PulsarAdminException.PreconditionFailedException e) {\n  }\ncatch (  Exception e) {\n    fail(e.getMessage());\n  }\n  Consumer<byte[]> consumer1=client.newConsumer().topic(partitionedTopicName).subscriptionName(\"my-sub-1\").subscribe();\n  if (isPersistent) {\n    assertEquals(Sets.newHashSet(admin.topics().getSubscriptions(partitionedTopicName)),Sets.newHashSet(\"my-sub\",\"my-sub-1\"));\n  }\n  consumer1.close();\n  if (isPersistent) {\n    admin.topics().deleteSubscription(partitionedTopicName,\"my-sub-1\");\n    assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n  }\n  Producer<byte[]> producer=client.newProducer(Schema.BYTES).topic(partitionedTopicName).enableBatching(false).messageRoutingMode(MessageRoutingMode.RoundRobinPartition).create();\n  for (int i=0; i < 10; i++) {\n    String message=\"message-\" + i;\n    producer.send(message.getBytes());\n  }\n  assertEquals(Sets.newHashSet(admin.topics().getList(namespace)),Sets.newHashSet(partitionedTopicName + \"-partition-0\",partitionedTopicName + \"-partition-1\",partitionedTopicName + \"-partition-2\",partitionedTopicName + \"-partition-3\"));\n  PartitionedTopicStats topicStats=admin.topics().getPartitionedStats(partitionedTopicName,false);\n  if (isPersistent) {\n    assertEquals(topicStats.subscriptions.keySet(),Sets.newTreeSet(Lists.newArrayList(\"my-sub\")));\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").consumers.size(),1);\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").msgBacklog,10);\n  }\n  assertEquals(topicStats.publishers.size(),1);\n  assertEquals(topicStats.partitions,Maps.newHashMap());\n  topicStats=admin.topics().getPartitionedStats(partitionedTopicName,true);\n  assertEquals(topicStats.metadata.partitions,4);\n  assertEquals(topicStats.partitions.keySet(),Sets.newHashSet(partitionedTopicName + \"-partition-0\",partitionedTopicName + \"-partition-1\",partitionedTopicName + \"-partition-2\",partitionedTopicName + \"-partition-3\"));\n  TopicStats partitionStats=topicStats.partitions.get(partitionedTopicName + \"-partition-0\");\n  assertEquals(partitionStats.publishers.size(),1);\n  if (isPersistent) {\n    assertEquals(partitionStats.subscriptions.get(\"my-sub\").consumers.size(),1);\n    assertEquals(partitionStats.subscriptions.get(\"my-sub\").msgBacklog,3,1);\n  }\n  try {\n    admin.topics().skipMessages(partitionedTopicName,\"my-sub\",5);\n    fail(\"skip messages for partitioned topics should fail\");\n  }\n catch (  Exception e) {\n  }\n  if (isPersistent) {\n    admin.topics().skipAllMessages(partitionedTopicName,\"my-sub\");\n    topicStats=admin.topics().getPartitionedStats(partitionedTopicName,false);\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").msgBacklog,0);\n  }\n  producer.close();\n  consumer.close();\n  if (isPersistent) {\n    admin.topics().deleteSubscription(partitionedTopicName,\"my-sub\");\n    assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList());\n  }\n  try {\n    admin.topics().createPartitionedTopic(partitionedTopicName,32);\n    fail(\"Should have failed as the partitioned topic already exists\");\n  }\n catch (  ConflictException ignore) {\n  }\n  producer=client.newProducer(Schema.BYTES).topic(partitionedTopicName).enableBatching(false).messageRoutingMode(MessageRoutingMode.SinglePartition).create();\n  if (isPersistent) {\n    topics=admin.topics().getList(namespace);\n    assertEquals(topics.size(),4);\n  }\n  try {\n    admin.topics().deletePartitionedTopic(partitionedTopicName);\n    fail(\"The topic is busy\");\n  }\n catch (  PreconditionFailedException pfe) {\n  }\n  producer.close();\n  client.close();\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n  try {\n    admin.topics().getPartitionedTopicMetadata(partitionedTopicName);\n    fail(\"getPartitionedTopicMetadata of \" + partitionedTopicName + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  admin.topics().createPartitionedTopic(partitionedTopicName,32);\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,32);\n  try {\n    admin.topics().deletePartitionedTopic(anotherTopic);\n    fail(\"Should have failed as the partitioned topic was not created\");\n  }\n catch (  NotFoundException nfe) {\n  }\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n  admin.topics().createPartitionedTopic(partitionedTopicName,4);\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 897,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 9492,
+        "startLineNumber" : 882,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1082,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test(dataProvider=\"topicNamesForAllTypes\") public void partitionedTopics(String topicType,String topicName) throws Exception {\n  final String namespace=\"prop-xyz/ns1\";\n  final String partitionedTopicName=topicType + \"://\" + namespace+ \"/\"+ topicName;\n  final String anotherTopic=topicType + \"://\" + namespace+ \"/ds2\";\n  final boolean isPersistent=topicType.equals(TopicDomain.persistent.value());\n  assertEquals(admin.topics().getPartitionedTopicList(namespace),Lists.newArrayList());\n  try {\n    admin.topics().getPartitionedTopicMetadata(partitionedTopicName);\n    fail(\"getPartitionedTopicMetadata of \" + partitionedTopicName + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  admin.topics().createPartitionedTopic(partitionedTopicName,4);\n  assertEquals(admin.topics().getPartitionedTopicList(namespace),Lists.newArrayList(partitionedTopicName));\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,4);\n  List<String> topics;\n  if (isPersistent) {\n    topics=admin.topics().getList(namespace);\n    assertEquals(topics.size(),4);\n  }\n  try {\n    admin.topics().getPartitionedTopicMetadata(anotherTopic);\n    fail(\"getPartitionedTopicMetadata of \" + anotherTopic + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,admin.topics().getPartitionedStats(partitionedTopicName,false).metadata.partitions);\n  assertEquals(admin.topics().getPartitionedStats(partitionedTopicName,false).partitions.size(),0);\n  List<String> subscriptions=admin.topics().getSubscriptions(partitionedTopicName);\n  assertEquals(subscriptions.size(),0);\n  @Cleanup PulsarClient client=PulsarClient.builder().serviceUrl(pulsar.getWebServiceAddress()).statsInterval(0,TimeUnit.SECONDS).build();\n  Consumer<byte[]> consumer=client.newConsumer().topic(partitionedTopicName).subscriptionName(\"my-sub\").subscriptionType(SubscriptionType.Exclusive).subscribe();\n  assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n  try {\n    if (isPersistent) {\n      admin.topics().deleteSubscription(partitionedTopicName,\"my-sub\");\n      fail(\"should have failed\");\n    }\n  }\n catch (  PulsarAdminException.PreconditionFailedException e) {\n  }\ncatch (  Exception e) {\n    fail(e.getMessage());\n  }\n  Consumer<byte[]> consumer1=client.newConsumer().topic(partitionedTopicName).subscriptionName(\"my-sub-1\").subscribe();\n  if (isPersistent) {\n    assertEquals(Sets.newHashSet(admin.topics().getSubscriptions(partitionedTopicName)),Sets.newHashSet(\"my-sub\",\"my-sub-1\"));\n  }\n  consumer1.close();\n  if (isPersistent) {\n    admin.topics().deleteSubscription(partitionedTopicName,\"my-sub-1\");\n    assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n  }\n  Producer<byte[]> producer=client.newProducer(Schema.BYTES).topic(partitionedTopicName).enableBatching(false).messageRoutingMode(MessageRoutingMode.RoundRobinPartition).create();\n  for (int i=0; i < 10; i++) {\n    String message=\"message-\" + i;\n    producer.send(message.getBytes());\n  }\n  assertEquals(Sets.newHashSet(admin.topics().getList(namespace)),Sets.newHashSet(partitionedTopicName + \"-partition-0\",partitionedTopicName + \"-partition-1\",partitionedTopicName + \"-partition-2\",partitionedTopicName + \"-partition-3\"));\n  PartitionedTopicStats topicStats=admin.topics().getPartitionedStats(partitionedTopicName,false);\n  if (isPersistent) {\n    assertEquals(topicStats.subscriptions.keySet(),Sets.newTreeSet(Lists.newArrayList(\"my-sub\")));\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").consumers.size(),1);\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").msgBacklog,10);\n  }\n  assertEquals(topicStats.publishers.size(),1);\n  assertEquals(topicStats.partitions,Maps.newHashMap());\n  topicStats=admin.topics().getPartitionedStats(partitionedTopicName,true);\n  assertEquals(topicStats.metadata.partitions,4);\n  assertEquals(topicStats.partitions.keySet(),Sets.newHashSet(partitionedTopicName + \"-partition-0\",partitionedTopicName + \"-partition-1\",partitionedTopicName + \"-partition-2\",partitionedTopicName + \"-partition-3\"));\n  TopicStats partitionStats=topicStats.partitions.get(partitionedTopicName + \"-partition-0\");\n  assertEquals(partitionStats.publishers.size(),1);\n  if (isPersistent) {\n    assertEquals(partitionStats.subscriptions.get(\"my-sub\").consumers.size(),1);\n    assertEquals(partitionStats.subscriptions.get(\"my-sub\").msgBacklog,3,1);\n  }\n  try {\n    admin.topics().skipMessages(partitionedTopicName,\"my-sub\",5);\n    fail(\"skip messages for partitioned topics should fail\");\n  }\n catch (  Exception e) {\n  }\n  if (isPersistent) {\n    admin.topics().skipAllMessages(partitionedTopicName,\"my-sub\");\n    topicStats=admin.topics().getPartitionedStats(partitionedTopicName,false);\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").msgBacklog,0);\n  }\n  producer.close();\n  consumer.close();\n  if (isPersistent) {\n    admin.topics().deleteSubscription(partitionedTopicName,\"my-sub\");\n    assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList());\n  }\n  try {\n    admin.topics().createPartitionedTopic(partitionedTopicName,32);\n    fail(\"Should have failed as the partitioned topic already exists\");\n  }\n catch (  ConflictException ignore) {\n  }\n  producer=client.newProducer(Schema.BYTES).topic(partitionedTopicName).enableBatching(false).messageRoutingMode(MessageRoutingMode.SinglePartition).create();\n  if (isPersistent) {\n    topics=admin.topics().getList(namespace);\n    assertEquals(topics.size(),4);\n  }\n  try {\n    admin.topics().deletePartitionedTopic(partitionedTopicName);\n    fail(\"The topic is busy\");\n  }\n catch (  PreconditionFailedException pfe) {\n  }\n  producer.close();\n  client.close();\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n  try {\n    admin.topics().getPartitionedTopicMetadata(partitionedTopicName);\n    fail(\"getPartitionedTopicMetadata of \" + partitionedTopicName + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  admin.topics().createPartitionedTopic(partitionedTopicName,32);\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,32);\n  try {\n    admin.topics().deletePartitionedTopic(anotherTopic);\n    fail(\"Should have failed as the partitioned topic was not created\");\n  }\n catch (  NotFoundException nfe) {\n  }\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n  admin.topics().createPartitionedTopic(partitionedTopicName,4);\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 916,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 83,
+        "startLineNumber" : 924,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 924,
+        "endColumnNumber" : 91
+      },
+      "nodeContext" : "List<String> subscriptions=admin.topics().getSubscriptions(partitionedTopicName);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 14,
+      "astHeight" : 5
+    },
+    "tokenLength" : 4,
+    "type" : "java.util.List<java.lang.String>"
+  }, {
+    "nodeContext" : "admin.topics().getSubscriptions(partitionedTopicName)",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 53,
+      "startLineNumber" : 936,
+      "startColumnNumber" : 21,
+      "endLineNumber" : 936,
+      "endColumnNumber" : 74
+    },
+    "astNodeNumber" : 6,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 97,
+        "startLineNumber" : 936,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 936,
+        "endColumnNumber" : 105
+      },
+      "nodeContext" : "assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 12,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 98,
+        "startLineNumber" : 936,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 936,
+        "endColumnNumber" : 106
+      },
+      "nodeContext" : "assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 13,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 9359,
+        "startLineNumber" : 883,
+        "startColumnNumber" : 87,
+        "endLineNumber" : 1082,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final String namespace=\"prop-xyz/ns1\";\n  final String partitionedTopicName=topicType + \"://\" + namespace+ \"/\"+ topicName;\n  final String anotherTopic=topicType + \"://\" + namespace+ \"/ds2\";\n  final boolean isPersistent=topicType.equals(TopicDomain.persistent.value());\n  assertEquals(admin.topics().getPartitionedTopicList(namespace),Lists.newArrayList());\n  try {\n    admin.topics().getPartitionedTopicMetadata(partitionedTopicName);\n    fail(\"getPartitionedTopicMetadata of \" + partitionedTopicName + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  admin.topics().createPartitionedTopic(partitionedTopicName,4);\n  assertEquals(admin.topics().getPartitionedTopicList(namespace),Lists.newArrayList(partitionedTopicName));\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,4);\n  List<String> topics;\n  if (isPersistent) {\n    topics=admin.topics().getList(namespace);\n    assertEquals(topics.size(),4);\n  }\n  try {\n    admin.topics().getPartitionedTopicMetadata(anotherTopic);\n    fail(\"getPartitionedTopicMetadata of \" + anotherTopic + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,admin.topics().getPartitionedStats(partitionedTopicName,false).metadata.partitions);\n  assertEquals(admin.topics().getPartitionedStats(partitionedTopicName,false).partitions.size(),0);\n  List<String> subscriptions=admin.topics().getSubscriptions(partitionedTopicName);\n  assertEquals(subscriptions.size(),0);\n  @Cleanup PulsarClient client=PulsarClient.builder().serviceUrl(pulsar.getWebServiceAddress()).statsInterval(0,TimeUnit.SECONDS).build();\n  Consumer<byte[]> consumer=client.newConsumer().topic(partitionedTopicName).subscriptionName(\"my-sub\").subscriptionType(SubscriptionType.Exclusive).subscribe();\n  assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n  try {\n    if (isPersistent) {\n      admin.topics().deleteSubscription(partitionedTopicName,\"my-sub\");\n      fail(\"should have failed\");\n    }\n  }\n catch (  PulsarAdminException.PreconditionFailedException e) {\n  }\ncatch (  Exception e) {\n    fail(e.getMessage());\n  }\n  Consumer<byte[]> consumer1=client.newConsumer().topic(partitionedTopicName).subscriptionName(\"my-sub-1\").subscribe();\n  if (isPersistent) {\n    assertEquals(Sets.newHashSet(admin.topics().getSubscriptions(partitionedTopicName)),Sets.newHashSet(\"my-sub\",\"my-sub-1\"));\n  }\n  consumer1.close();\n  if (isPersistent) {\n    admin.topics().deleteSubscription(partitionedTopicName,\"my-sub-1\");\n    assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n  }\n  Producer<byte[]> producer=client.newProducer(Schema.BYTES).topic(partitionedTopicName).enableBatching(false).messageRoutingMode(MessageRoutingMode.RoundRobinPartition).create();\n  for (int i=0; i < 10; i++) {\n    String message=\"message-\" + i;\n    producer.send(message.getBytes());\n  }\n  assertEquals(Sets.newHashSet(admin.topics().getList(namespace)),Sets.newHashSet(partitionedTopicName + \"-partition-0\",partitionedTopicName + \"-partition-1\",partitionedTopicName + \"-partition-2\",partitionedTopicName + \"-partition-3\"));\n  PartitionedTopicStats topicStats=admin.topics().getPartitionedStats(partitionedTopicName,false);\n  if (isPersistent) {\n    assertEquals(topicStats.subscriptions.keySet(),Sets.newTreeSet(Lists.newArrayList(\"my-sub\")));\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").consumers.size(),1);\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").msgBacklog,10);\n  }\n  assertEquals(topicStats.publishers.size(),1);\n  assertEquals(topicStats.partitions,Maps.newHashMap());\n  topicStats=admin.topics().getPartitionedStats(partitionedTopicName,true);\n  assertEquals(topicStats.metadata.partitions,4);\n  assertEquals(topicStats.partitions.keySet(),Sets.newHashSet(partitionedTopicName + \"-partition-0\",partitionedTopicName + \"-partition-1\",partitionedTopicName + \"-partition-2\",partitionedTopicName + \"-partition-3\"));\n  TopicStats partitionStats=topicStats.partitions.get(partitionedTopicName + \"-partition-0\");\n  assertEquals(partitionStats.publishers.size(),1);\n  if (isPersistent) {\n    assertEquals(partitionStats.subscriptions.get(\"my-sub\").consumers.size(),1);\n    assertEquals(partitionStats.subscriptions.get(\"my-sub\").msgBacklog,3,1);\n  }\n  try {\n    admin.topics().skipMessages(partitionedTopicName,\"my-sub\",5);\n    fail(\"skip messages for partitioned topics should fail\");\n  }\n catch (  Exception e) {\n  }\n  if (isPersistent) {\n    admin.topics().skipAllMessages(partitionedTopicName,\"my-sub\");\n    topicStats=admin.topics().getPartitionedStats(partitionedTopicName,false);\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").msgBacklog,0);\n  }\n  producer.close();\n  consumer.close();\n  if (isPersistent) {\n    admin.topics().deleteSubscription(partitionedTopicName,\"my-sub\");\n    assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList());\n  }\n  try {\n    admin.topics().createPartitionedTopic(partitionedTopicName,32);\n    fail(\"Should have failed as the partitioned topic already exists\");\n  }\n catch (  ConflictException ignore) {\n  }\n  producer=client.newProducer(Schema.BYTES).topic(partitionedTopicName).enableBatching(false).messageRoutingMode(MessageRoutingMode.SinglePartition).create();\n  if (isPersistent) {\n    topics=admin.topics().getList(namespace);\n    assertEquals(topics.size(),4);\n  }\n  try {\n    admin.topics().deletePartitionedTopic(partitionedTopicName);\n    fail(\"The topic is busy\");\n  }\n catch (  PreconditionFailedException pfe) {\n  }\n  producer.close();\n  client.close();\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n  try {\n    admin.topics().getPartitionedTopicMetadata(partitionedTopicName);\n    fail(\"getPartitionedTopicMetadata of \" + partitionedTopicName + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  admin.topics().createPartitionedTopic(partitionedTopicName,32);\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,32);\n  try {\n    admin.topics().deletePartitionedTopic(anotherTopic);\n    fail(\"Should have failed as the partitioned topic was not created\");\n  }\n catch (  NotFoundException nfe) {\n  }\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n  admin.topics().createPartitionedTopic(partitionedTopicName,4);\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 897,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 9492,
+        "startLineNumber" : 882,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1082,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test(dataProvider=\"topicNamesForAllTypes\") public void partitionedTopics(String topicType,String topicName) throws Exception {\n  final String namespace=\"prop-xyz/ns1\";\n  final String partitionedTopicName=topicType + \"://\" + namespace+ \"/\"+ topicName;\n  final String anotherTopic=topicType + \"://\" + namespace+ \"/ds2\";\n  final boolean isPersistent=topicType.equals(TopicDomain.persistent.value());\n  assertEquals(admin.topics().getPartitionedTopicList(namespace),Lists.newArrayList());\n  try {\n    admin.topics().getPartitionedTopicMetadata(partitionedTopicName);\n    fail(\"getPartitionedTopicMetadata of \" + partitionedTopicName + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  admin.topics().createPartitionedTopic(partitionedTopicName,4);\n  assertEquals(admin.topics().getPartitionedTopicList(namespace),Lists.newArrayList(partitionedTopicName));\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,4);\n  List<String> topics;\n  if (isPersistent) {\n    topics=admin.topics().getList(namespace);\n    assertEquals(topics.size(),4);\n  }\n  try {\n    admin.topics().getPartitionedTopicMetadata(anotherTopic);\n    fail(\"getPartitionedTopicMetadata of \" + anotherTopic + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,admin.topics().getPartitionedStats(partitionedTopicName,false).metadata.partitions);\n  assertEquals(admin.topics().getPartitionedStats(partitionedTopicName,false).partitions.size(),0);\n  List<String> subscriptions=admin.topics().getSubscriptions(partitionedTopicName);\n  assertEquals(subscriptions.size(),0);\n  @Cleanup PulsarClient client=PulsarClient.builder().serviceUrl(pulsar.getWebServiceAddress()).statsInterval(0,TimeUnit.SECONDS).build();\n  Consumer<byte[]> consumer=client.newConsumer().topic(partitionedTopicName).subscriptionName(\"my-sub\").subscriptionType(SubscriptionType.Exclusive).subscribe();\n  assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n  try {\n    if (isPersistent) {\n      admin.topics().deleteSubscription(partitionedTopicName,\"my-sub\");\n      fail(\"should have failed\");\n    }\n  }\n catch (  PulsarAdminException.PreconditionFailedException e) {\n  }\ncatch (  Exception e) {\n    fail(e.getMessage());\n  }\n  Consumer<byte[]> consumer1=client.newConsumer().topic(partitionedTopicName).subscriptionName(\"my-sub-1\").subscribe();\n  if (isPersistent) {\n    assertEquals(Sets.newHashSet(admin.topics().getSubscriptions(partitionedTopicName)),Sets.newHashSet(\"my-sub\",\"my-sub-1\"));\n  }\n  consumer1.close();\n  if (isPersistent) {\n    admin.topics().deleteSubscription(partitionedTopicName,\"my-sub-1\");\n    assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n  }\n  Producer<byte[]> producer=client.newProducer(Schema.BYTES).topic(partitionedTopicName).enableBatching(false).messageRoutingMode(MessageRoutingMode.RoundRobinPartition).create();\n  for (int i=0; i < 10; i++) {\n    String message=\"message-\" + i;\n    producer.send(message.getBytes());\n  }\n  assertEquals(Sets.newHashSet(admin.topics().getList(namespace)),Sets.newHashSet(partitionedTopicName + \"-partition-0\",partitionedTopicName + \"-partition-1\",partitionedTopicName + \"-partition-2\",partitionedTopicName + \"-partition-3\"));\n  PartitionedTopicStats topicStats=admin.topics().getPartitionedStats(partitionedTopicName,false);\n  if (isPersistent) {\n    assertEquals(topicStats.subscriptions.keySet(),Sets.newTreeSet(Lists.newArrayList(\"my-sub\")));\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").consumers.size(),1);\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").msgBacklog,10);\n  }\n  assertEquals(topicStats.publishers.size(),1);\n  assertEquals(topicStats.partitions,Maps.newHashMap());\n  topicStats=admin.topics().getPartitionedStats(partitionedTopicName,true);\n  assertEquals(topicStats.metadata.partitions,4);\n  assertEquals(topicStats.partitions.keySet(),Sets.newHashSet(partitionedTopicName + \"-partition-0\",partitionedTopicName + \"-partition-1\",partitionedTopicName + \"-partition-2\",partitionedTopicName + \"-partition-3\"));\n  TopicStats partitionStats=topicStats.partitions.get(partitionedTopicName + \"-partition-0\");\n  assertEquals(partitionStats.publishers.size(),1);\n  if (isPersistent) {\n    assertEquals(partitionStats.subscriptions.get(\"my-sub\").consumers.size(),1);\n    assertEquals(partitionStats.subscriptions.get(\"my-sub\").msgBacklog,3,1);\n  }\n  try {\n    admin.topics().skipMessages(partitionedTopicName,\"my-sub\",5);\n    fail(\"skip messages for partitioned topics should fail\");\n  }\n catch (  Exception e) {\n  }\n  if (isPersistent) {\n    admin.topics().skipAllMessages(partitionedTopicName,\"my-sub\");\n    topicStats=admin.topics().getPartitionedStats(partitionedTopicName,false);\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").msgBacklog,0);\n  }\n  producer.close();\n  consumer.close();\n  if (isPersistent) {\n    admin.topics().deleteSubscription(partitionedTopicName,\"my-sub\");\n    assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList());\n  }\n  try {\n    admin.topics().createPartitionedTopic(partitionedTopicName,32);\n    fail(\"Should have failed as the partitioned topic already exists\");\n  }\n catch (  ConflictException ignore) {\n  }\n  producer=client.newProducer(Schema.BYTES).topic(partitionedTopicName).enableBatching(false).messageRoutingMode(MessageRoutingMode.SinglePartition).create();\n  if (isPersistent) {\n    topics=admin.topics().getList(namespace);\n    assertEquals(topics.size(),4);\n  }\n  try {\n    admin.topics().deletePartitionedTopic(partitionedTopicName);\n    fail(\"The topic is busy\");\n  }\n catch (  PreconditionFailedException pfe) {\n  }\n  producer.close();\n  client.close();\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n  try {\n    admin.topics().getPartitionedTopicMetadata(partitionedTopicName);\n    fail(\"getPartitionedTopicMetadata of \" + partitionedTopicName + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  admin.topics().createPartitionedTopic(partitionedTopicName,32);\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,32);\n  try {\n    admin.topics().deletePartitionedTopic(anotherTopic);\n    fail(\"Should have failed as the partitioned topic was not created\");\n  }\n catch (  NotFoundException nfe) {\n  }\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n  admin.topics().createPartitionedTopic(partitionedTopicName,4);\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 916,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 98,
+        "startLineNumber" : 936,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 936,
+        "endColumnNumber" : 106
+      },
+      "nodeContext" : "assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 13,
+      "astHeight" : 5
+    },
+    "tokenLength" : 4,
+    "type" : "java.util.List<java.lang.String>"
+  }, {
+    "nodeContext" : "admin.topics().getSubscriptions(partitionedTopicName)",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 53,
+      "startLineNumber" : 956,
+      "startColumnNumber" : 41,
+      "endLineNumber" : 956,
+      "endColumnNumber" : 94
+    },
+    "astNodeNumber" : 6,
+    "astHeight" : 3,
     "parentDataList" : [ {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
       "nodePosition" : {
-        "charLength" : 24,
-        "startLineNumber" : 42,
-        "startColumnNumber" : 60,
-        "endLineNumber" : 42,
-        "endColumnNumber" : 84
+        "charLength" : 70,
+        "startLineNumber" : 956,
+        "startColumnNumber" : 25,
+        "endLineNumber" : 956,
+        "endColumnNumber" : 95
       },
-      "nodeContext" : "metadata.numPartitions()",
+      "nodeContext" : "Sets.newHashSet(admin.topics().getSubscriptions(partitionedTopicName))",
       "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 3,
-      "astHeight" : 2
+      "astNodeNumber" : 9,
+      "astHeight" : 4
     }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ReturnStatement,expression]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
       "nodePosition" : {
-        "charLength" : 66,
-        "startLineNumber" : 42,
-        "startColumnNumber" : 19,
-        "endLineNumber" : 42,
-        "endColumnNumber" : 85
+        "charLength" : 143,
+        "startLineNumber" : 956,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 957,
+        "endColumnNumber" : 58
       },
-      "nodeContext" : "signSafeMod(hash.makeHash(msg.getKey()),metadata.numPartitions())",
+      "nodeContext" : "assertEquals(Sets.newHashSet(admin.topics().getSubscriptions(partitionedTopicName)),Sets.newHashSet(\"my-sub\",\"my-sub-1\"))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 16,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 144,
+        "startLineNumber" : 956,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 957,
+        "endColumnNumber" : 59
+      },
+      "nodeContext" : "assertEquals(Sets.newHashSet(admin.topics().getSubscriptions(partitionedTopicName)),Sets.newHashSet(\"my-sub\",\"my-sub-1\"));\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 17,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 257,
+        "startLineNumber" : 954,
+        "startColumnNumber" : 26,
+        "endLineNumber" : 958,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  assertEquals(Sets.newHashSet(admin.topics().getSubscriptions(partitionedTopicName)),Sets.newHashSet(\"my-sub\",\"my-sub-1\"));\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 18,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 275,
+        "startLineNumber" : 954,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 958,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (isPersistent) {\n  assertEquals(Sets.newHashSet(admin.topics().getSubscriptions(partitionedTopicName)),Sets.newHashSet(\"my-sub\",\"my-sub-1\"));\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 20,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 9359,
+        "startLineNumber" : 883,
+        "startColumnNumber" : 87,
+        "endLineNumber" : 1082,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final String namespace=\"prop-xyz/ns1\";\n  final String partitionedTopicName=topicType + \"://\" + namespace+ \"/\"+ topicName;\n  final String anotherTopic=topicType + \"://\" + namespace+ \"/ds2\";\n  final boolean isPersistent=topicType.equals(TopicDomain.persistent.value());\n  assertEquals(admin.topics().getPartitionedTopicList(namespace),Lists.newArrayList());\n  try {\n    admin.topics().getPartitionedTopicMetadata(partitionedTopicName);\n    fail(\"getPartitionedTopicMetadata of \" + partitionedTopicName + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  admin.topics().createPartitionedTopic(partitionedTopicName,4);\n  assertEquals(admin.topics().getPartitionedTopicList(namespace),Lists.newArrayList(partitionedTopicName));\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,4);\n  List<String> topics;\n  if (isPersistent) {\n    topics=admin.topics().getList(namespace);\n    assertEquals(topics.size(),4);\n  }\n  try {\n    admin.topics().getPartitionedTopicMetadata(anotherTopic);\n    fail(\"getPartitionedTopicMetadata of \" + anotherTopic + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,admin.topics().getPartitionedStats(partitionedTopicName,false).metadata.partitions);\n  assertEquals(admin.topics().getPartitionedStats(partitionedTopicName,false).partitions.size(),0);\n  List<String> subscriptions=admin.topics().getSubscriptions(partitionedTopicName);\n  assertEquals(subscriptions.size(),0);\n  @Cleanup PulsarClient client=PulsarClient.builder().serviceUrl(pulsar.getWebServiceAddress()).statsInterval(0,TimeUnit.SECONDS).build();\n  Consumer<byte[]> consumer=client.newConsumer().topic(partitionedTopicName).subscriptionName(\"my-sub\").subscriptionType(SubscriptionType.Exclusive).subscribe();\n  assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n  try {\n    if (isPersistent) {\n      admin.topics().deleteSubscription(partitionedTopicName,\"my-sub\");\n      fail(\"should have failed\");\n    }\n  }\n catch (  PulsarAdminException.PreconditionFailedException e) {\n  }\ncatch (  Exception e) {\n    fail(e.getMessage());\n  }\n  Consumer<byte[]> consumer1=client.newConsumer().topic(partitionedTopicName).subscriptionName(\"my-sub-1\").subscribe();\n  if (isPersistent) {\n    assertEquals(Sets.newHashSet(admin.topics().getSubscriptions(partitionedTopicName)),Sets.newHashSet(\"my-sub\",\"my-sub-1\"));\n  }\n  consumer1.close();\n  if (isPersistent) {\n    admin.topics().deleteSubscription(partitionedTopicName,\"my-sub-1\");\n    assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n  }\n  Producer<byte[]> producer=client.newProducer(Schema.BYTES).topic(partitionedTopicName).enableBatching(false).messageRoutingMode(MessageRoutingMode.RoundRobinPartition).create();\n  for (int i=0; i < 10; i++) {\n    String message=\"message-\" + i;\n    producer.send(message.getBytes());\n  }\n  assertEquals(Sets.newHashSet(admin.topics().getList(namespace)),Sets.newHashSet(partitionedTopicName + \"-partition-0\",partitionedTopicName + \"-partition-1\",partitionedTopicName + \"-partition-2\",partitionedTopicName + \"-partition-3\"));\n  PartitionedTopicStats topicStats=admin.topics().getPartitionedStats(partitionedTopicName,false);\n  if (isPersistent) {\n    assertEquals(topicStats.subscriptions.keySet(),Sets.newTreeSet(Lists.newArrayList(\"my-sub\")));\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").consumers.size(),1);\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").msgBacklog,10);\n  }\n  assertEquals(topicStats.publishers.size(),1);\n  assertEquals(topicStats.partitions,Maps.newHashMap());\n  topicStats=admin.topics().getPartitionedStats(partitionedTopicName,true);\n  assertEquals(topicStats.metadata.partitions,4);\n  assertEquals(topicStats.partitions.keySet(),Sets.newHashSet(partitionedTopicName + \"-partition-0\",partitionedTopicName + \"-partition-1\",partitionedTopicName + \"-partition-2\",partitionedTopicName + \"-partition-3\"));\n  TopicStats partitionStats=topicStats.partitions.get(partitionedTopicName + \"-partition-0\");\n  assertEquals(partitionStats.publishers.size(),1);\n  if (isPersistent) {\n    assertEquals(partitionStats.subscriptions.get(\"my-sub\").consumers.size(),1);\n    assertEquals(partitionStats.subscriptions.get(\"my-sub\").msgBacklog,3,1);\n  }\n  try {\n    admin.topics().skipMessages(partitionedTopicName,\"my-sub\",5);\n    fail(\"skip messages for partitioned topics should fail\");\n  }\n catch (  Exception e) {\n  }\n  if (isPersistent) {\n    admin.topics().skipAllMessages(partitionedTopicName,\"my-sub\");\n    topicStats=admin.topics().getPartitionedStats(partitionedTopicName,false);\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").msgBacklog,0);\n  }\n  producer.close();\n  consumer.close();\n  if (isPersistent) {\n    admin.topics().deleteSubscription(partitionedTopicName,\"my-sub\");\n    assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList());\n  }\n  try {\n    admin.topics().createPartitionedTopic(partitionedTopicName,32);\n    fail(\"Should have failed as the partitioned topic already exists\");\n  }\n catch (  ConflictException ignore) {\n  }\n  producer=client.newProducer(Schema.BYTES).topic(partitionedTopicName).enableBatching(false).messageRoutingMode(MessageRoutingMode.SinglePartition).create();\n  if (isPersistent) {\n    topics=admin.topics().getList(namespace);\n    assertEquals(topics.size(),4);\n  }\n  try {\n    admin.topics().deletePartitionedTopic(partitionedTopicName);\n    fail(\"The topic is busy\");\n  }\n catch (  PreconditionFailedException pfe) {\n  }\n  producer.close();\n  client.close();\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n  try {\n    admin.topics().getPartitionedTopicMetadata(partitionedTopicName);\n    fail(\"getPartitionedTopicMetadata of \" + partitionedTopicName + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  admin.topics().createPartitionedTopic(partitionedTopicName,32);\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,32);\n  try {\n    admin.topics().deletePartitionedTopic(anotherTopic);\n    fail(\"Should have failed as the partitioned topic was not created\");\n  }\n catch (  NotFoundException nfe) {\n  }\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n  admin.topics().createPartitionedTopic(partitionedTopicName,4);\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 897,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 9492,
+        "startLineNumber" : 882,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1082,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test(dataProvider=\"topicNamesForAllTypes\") public void partitionedTopics(String topicType,String topicName) throws Exception {\n  final String namespace=\"prop-xyz/ns1\";\n  final String partitionedTopicName=topicType + \"://\" + namespace+ \"/\"+ topicName;\n  final String anotherTopic=topicType + \"://\" + namespace+ \"/ds2\";\n  final boolean isPersistent=topicType.equals(TopicDomain.persistent.value());\n  assertEquals(admin.topics().getPartitionedTopicList(namespace),Lists.newArrayList());\n  try {\n    admin.topics().getPartitionedTopicMetadata(partitionedTopicName);\n    fail(\"getPartitionedTopicMetadata of \" + partitionedTopicName + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  admin.topics().createPartitionedTopic(partitionedTopicName,4);\n  assertEquals(admin.topics().getPartitionedTopicList(namespace),Lists.newArrayList(partitionedTopicName));\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,4);\n  List<String> topics;\n  if (isPersistent) {\n    topics=admin.topics().getList(namespace);\n    assertEquals(topics.size(),4);\n  }\n  try {\n    admin.topics().getPartitionedTopicMetadata(anotherTopic);\n    fail(\"getPartitionedTopicMetadata of \" + anotherTopic + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,admin.topics().getPartitionedStats(partitionedTopicName,false).metadata.partitions);\n  assertEquals(admin.topics().getPartitionedStats(partitionedTopicName,false).partitions.size(),0);\n  List<String> subscriptions=admin.topics().getSubscriptions(partitionedTopicName);\n  assertEquals(subscriptions.size(),0);\n  @Cleanup PulsarClient client=PulsarClient.builder().serviceUrl(pulsar.getWebServiceAddress()).statsInterval(0,TimeUnit.SECONDS).build();\n  Consumer<byte[]> consumer=client.newConsumer().topic(partitionedTopicName).subscriptionName(\"my-sub\").subscriptionType(SubscriptionType.Exclusive).subscribe();\n  assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n  try {\n    if (isPersistent) {\n      admin.topics().deleteSubscription(partitionedTopicName,\"my-sub\");\n      fail(\"should have failed\");\n    }\n  }\n catch (  PulsarAdminException.PreconditionFailedException e) {\n  }\ncatch (  Exception e) {\n    fail(e.getMessage());\n  }\n  Consumer<byte[]> consumer1=client.newConsumer().topic(partitionedTopicName).subscriptionName(\"my-sub-1\").subscribe();\n  if (isPersistent) {\n    assertEquals(Sets.newHashSet(admin.topics().getSubscriptions(partitionedTopicName)),Sets.newHashSet(\"my-sub\",\"my-sub-1\"));\n  }\n  consumer1.close();\n  if (isPersistent) {\n    admin.topics().deleteSubscription(partitionedTopicName,\"my-sub-1\");\n    assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n  }\n  Producer<byte[]> producer=client.newProducer(Schema.BYTES).topic(partitionedTopicName).enableBatching(false).messageRoutingMode(MessageRoutingMode.RoundRobinPartition).create();\n  for (int i=0; i < 10; i++) {\n    String message=\"message-\" + i;\n    producer.send(message.getBytes());\n  }\n  assertEquals(Sets.newHashSet(admin.topics().getList(namespace)),Sets.newHashSet(partitionedTopicName + \"-partition-0\",partitionedTopicName + \"-partition-1\",partitionedTopicName + \"-partition-2\",partitionedTopicName + \"-partition-3\"));\n  PartitionedTopicStats topicStats=admin.topics().getPartitionedStats(partitionedTopicName,false);\n  if (isPersistent) {\n    assertEquals(topicStats.subscriptions.keySet(),Sets.newTreeSet(Lists.newArrayList(\"my-sub\")));\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").consumers.size(),1);\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").msgBacklog,10);\n  }\n  assertEquals(topicStats.publishers.size(),1);\n  assertEquals(topicStats.partitions,Maps.newHashMap());\n  topicStats=admin.topics().getPartitionedStats(partitionedTopicName,true);\n  assertEquals(topicStats.metadata.partitions,4);\n  assertEquals(topicStats.partitions.keySet(),Sets.newHashSet(partitionedTopicName + \"-partition-0\",partitionedTopicName + \"-partition-1\",partitionedTopicName + \"-partition-2\",partitionedTopicName + \"-partition-3\"));\n  TopicStats partitionStats=topicStats.partitions.get(partitionedTopicName + \"-partition-0\");\n  assertEquals(partitionStats.publishers.size(),1);\n  if (isPersistent) {\n    assertEquals(partitionStats.subscriptions.get(\"my-sub\").consumers.size(),1);\n    assertEquals(partitionStats.subscriptions.get(\"my-sub\").msgBacklog,3,1);\n  }\n  try {\n    admin.topics().skipMessages(partitionedTopicName,\"my-sub\",5);\n    fail(\"skip messages for partitioned topics should fail\");\n  }\n catch (  Exception e) {\n  }\n  if (isPersistent) {\n    admin.topics().skipAllMessages(partitionedTopicName,\"my-sub\");\n    topicStats=admin.topics().getPartitionedStats(partitionedTopicName,false);\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").msgBacklog,0);\n  }\n  producer.close();\n  consumer.close();\n  if (isPersistent) {\n    admin.topics().deleteSubscription(partitionedTopicName,\"my-sub\");\n    assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList());\n  }\n  try {\n    admin.topics().createPartitionedTopic(partitionedTopicName,32);\n    fail(\"Should have failed as the partitioned topic already exists\");\n  }\n catch (  ConflictException ignore) {\n  }\n  producer=client.newProducer(Schema.BYTES).topic(partitionedTopicName).enableBatching(false).messageRoutingMode(MessageRoutingMode.SinglePartition).create();\n  if (isPersistent) {\n    topics=admin.topics().getList(namespace);\n    assertEquals(topics.size(),4);\n  }\n  try {\n    admin.topics().deletePartitionedTopic(partitionedTopicName);\n    fail(\"The topic is busy\");\n  }\n catch (  PreconditionFailedException pfe) {\n  }\n  producer.close();\n  client.close();\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n  try {\n    admin.topics().getPartitionedTopicMetadata(partitionedTopicName);\n    fail(\"getPartitionedTopicMetadata of \" + partitionedTopicName + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  admin.topics().createPartitionedTopic(partitionedTopicName,32);\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,32);\n  try {\n    admin.topics().deletePartitionedTopic(anotherTopic);\n    fail(\"Should have failed as the partitioned topic was not created\");\n  }\n catch (  NotFoundException nfe) {\n  }\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n  admin.topics().createPartitionedTopic(partitionedTopicName,4);\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 916,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 70,
+        "startLineNumber" : 956,
+        "startColumnNumber" : 25,
+        "endLineNumber" : 956,
+        "endColumnNumber" : 95
+      },
+      "nodeContext" : "Sets.newHashSet(admin.topics().getSubscriptions(partitionedTopicName))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    },
+    "tokenLength" : 4,
+    "type" : "java.util.List<java.lang.String>"
+  }, {
+    "nodeContext" : "admin.topics().getSubscriptions(partitionedTopicName)",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 53,
+      "startLineNumber" : 965,
+      "startColumnNumber" : 25,
+      "endLineNumber" : 965,
+      "endColumnNumber" : 78
+    },
+    "astNodeNumber" : 6,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 97,
+        "startLineNumber" : 965,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 965,
+        "endColumnNumber" : 109
+      },
+      "nodeContext" : "assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 12,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 98,
+        "startLineNumber" : 965,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 965,
+        "endColumnNumber" : 110
+      },
+      "nodeContext" : "assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 13,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 389,
+        "startLineNumber" : 961,
+        "startColumnNumber" : 26,
+        "endLineNumber" : 966,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  admin.topics().deleteSubscription(partitionedTopicName,\"my-sub-1\");\n  assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 22,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 407,
+        "startLineNumber" : 961,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 966,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (isPersistent) {\n  admin.topics().deleteSubscription(partitionedTopicName,\"my-sub-1\");\n  assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 24,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 9359,
+        "startLineNumber" : 883,
+        "startColumnNumber" : 87,
+        "endLineNumber" : 1082,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  final String namespace=\"prop-xyz/ns1\";\n  final String partitionedTopicName=topicType + \"://\" + namespace+ \"/\"+ topicName;\n  final String anotherTopic=topicType + \"://\" + namespace+ \"/ds2\";\n  final boolean isPersistent=topicType.equals(TopicDomain.persistent.value());\n  assertEquals(admin.topics().getPartitionedTopicList(namespace),Lists.newArrayList());\n  try {\n    admin.topics().getPartitionedTopicMetadata(partitionedTopicName);\n    fail(\"getPartitionedTopicMetadata of \" + partitionedTopicName + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  admin.topics().createPartitionedTopic(partitionedTopicName,4);\n  assertEquals(admin.topics().getPartitionedTopicList(namespace),Lists.newArrayList(partitionedTopicName));\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,4);\n  List<String> topics;\n  if (isPersistent) {\n    topics=admin.topics().getList(namespace);\n    assertEquals(topics.size(),4);\n  }\n  try {\n    admin.topics().getPartitionedTopicMetadata(anotherTopic);\n    fail(\"getPartitionedTopicMetadata of \" + anotherTopic + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,admin.topics().getPartitionedStats(partitionedTopicName,false).metadata.partitions);\n  assertEquals(admin.topics().getPartitionedStats(partitionedTopicName,false).partitions.size(),0);\n  List<String> subscriptions=admin.topics().getSubscriptions(partitionedTopicName);\n  assertEquals(subscriptions.size(),0);\n  @Cleanup PulsarClient client=PulsarClient.builder().serviceUrl(pulsar.getWebServiceAddress()).statsInterval(0,TimeUnit.SECONDS).build();\n  Consumer<byte[]> consumer=client.newConsumer().topic(partitionedTopicName).subscriptionName(\"my-sub\").subscriptionType(SubscriptionType.Exclusive).subscribe();\n  assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n  try {\n    if (isPersistent) {\n      admin.topics().deleteSubscription(partitionedTopicName,\"my-sub\");\n      fail(\"should have failed\");\n    }\n  }\n catch (  PulsarAdminException.PreconditionFailedException e) {\n  }\ncatch (  Exception e) {\n    fail(e.getMessage());\n  }\n  Consumer<byte[]> consumer1=client.newConsumer().topic(partitionedTopicName).subscriptionName(\"my-sub-1\").subscribe();\n  if (isPersistent) {\n    assertEquals(Sets.newHashSet(admin.topics().getSubscriptions(partitionedTopicName)),Sets.newHashSet(\"my-sub\",\"my-sub-1\"));\n  }\n  consumer1.close();\n  if (isPersistent) {\n    admin.topics().deleteSubscription(partitionedTopicName,\"my-sub-1\");\n    assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n  }\n  Producer<byte[]> producer=client.newProducer(Schema.BYTES).topic(partitionedTopicName).enableBatching(false).messageRoutingMode(MessageRoutingMode.RoundRobinPartition).create();\n  for (int i=0; i < 10; i++) {\n    String message=\"message-\" + i;\n    producer.send(message.getBytes());\n  }\n  assertEquals(Sets.newHashSet(admin.topics().getList(namespace)),Sets.newHashSet(partitionedTopicName + \"-partition-0\",partitionedTopicName + \"-partition-1\",partitionedTopicName + \"-partition-2\",partitionedTopicName + \"-partition-3\"));\n  PartitionedTopicStats topicStats=admin.topics().getPartitionedStats(partitionedTopicName,false);\n  if (isPersistent) {\n    assertEquals(topicStats.subscriptions.keySet(),Sets.newTreeSet(Lists.newArrayList(\"my-sub\")));\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").consumers.size(),1);\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").msgBacklog,10);\n  }\n  assertEquals(topicStats.publishers.size(),1);\n  assertEquals(topicStats.partitions,Maps.newHashMap());\n  topicStats=admin.topics().getPartitionedStats(partitionedTopicName,true);\n  assertEquals(topicStats.metadata.partitions,4);\n  assertEquals(topicStats.partitions.keySet(),Sets.newHashSet(partitionedTopicName + \"-partition-0\",partitionedTopicName + \"-partition-1\",partitionedTopicName + \"-partition-2\",partitionedTopicName + \"-partition-3\"));\n  TopicStats partitionStats=topicStats.partitions.get(partitionedTopicName + \"-partition-0\");\n  assertEquals(partitionStats.publishers.size(),1);\n  if (isPersistent) {\n    assertEquals(partitionStats.subscriptions.get(\"my-sub\").consumers.size(),1);\n    assertEquals(partitionStats.subscriptions.get(\"my-sub\").msgBacklog,3,1);\n  }\n  try {\n    admin.topics().skipMessages(partitionedTopicName,\"my-sub\",5);\n    fail(\"skip messages for partitioned topics should fail\");\n  }\n catch (  Exception e) {\n  }\n  if (isPersistent) {\n    admin.topics().skipAllMessages(partitionedTopicName,\"my-sub\");\n    topicStats=admin.topics().getPartitionedStats(partitionedTopicName,false);\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").msgBacklog,0);\n  }\n  producer.close();\n  consumer.close();\n  if (isPersistent) {\n    admin.topics().deleteSubscription(partitionedTopicName,\"my-sub\");\n    assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList());\n  }\n  try {\n    admin.topics().createPartitionedTopic(partitionedTopicName,32);\n    fail(\"Should have failed as the partitioned topic already exists\");\n  }\n catch (  ConflictException ignore) {\n  }\n  producer=client.newProducer(Schema.BYTES).topic(partitionedTopicName).enableBatching(false).messageRoutingMode(MessageRoutingMode.SinglePartition).create();\n  if (isPersistent) {\n    topics=admin.topics().getList(namespace);\n    assertEquals(topics.size(),4);\n  }\n  try {\n    admin.topics().deletePartitionedTopic(partitionedTopicName);\n    fail(\"The topic is busy\");\n  }\n catch (  PreconditionFailedException pfe) {\n  }\n  producer.close();\n  client.close();\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n  try {\n    admin.topics().getPartitionedTopicMetadata(partitionedTopicName);\n    fail(\"getPartitionedTopicMetadata of \" + partitionedTopicName + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  admin.topics().createPartitionedTopic(partitionedTopicName,32);\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,32);\n  try {\n    admin.topics().deletePartitionedTopic(anotherTopic);\n    fail(\"Should have failed as the partitioned topic was not created\");\n  }\n catch (  NotFoundException nfe) {\n  }\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n  admin.topics().createPartitionedTopic(partitionedTopicName,4);\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 897,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 9492,
+        "startLineNumber" : 882,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1082,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Test(dataProvider=\"topicNamesForAllTypes\") public void partitionedTopics(String topicType,String topicName) throws Exception {\n  final String namespace=\"prop-xyz/ns1\";\n  final String partitionedTopicName=topicType + \"://\" + namespace+ \"/\"+ topicName;\n  final String anotherTopic=topicType + \"://\" + namespace+ \"/ds2\";\n  final boolean isPersistent=topicType.equals(TopicDomain.persistent.value());\n  assertEquals(admin.topics().getPartitionedTopicList(namespace),Lists.newArrayList());\n  try {\n    admin.topics().getPartitionedTopicMetadata(partitionedTopicName);\n    fail(\"getPartitionedTopicMetadata of \" + partitionedTopicName + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  admin.topics().createPartitionedTopic(partitionedTopicName,4);\n  assertEquals(admin.topics().getPartitionedTopicList(namespace),Lists.newArrayList(partitionedTopicName));\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,4);\n  List<String> topics;\n  if (isPersistent) {\n    topics=admin.topics().getList(namespace);\n    assertEquals(topics.size(),4);\n  }\n  try {\n    admin.topics().getPartitionedTopicMetadata(anotherTopic);\n    fail(\"getPartitionedTopicMetadata of \" + anotherTopic + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,admin.topics().getPartitionedStats(partitionedTopicName,false).metadata.partitions);\n  assertEquals(admin.topics().getPartitionedStats(partitionedTopicName,false).partitions.size(),0);\n  List<String> subscriptions=admin.topics().getSubscriptions(partitionedTopicName);\n  assertEquals(subscriptions.size(),0);\n  @Cleanup PulsarClient client=PulsarClient.builder().serviceUrl(pulsar.getWebServiceAddress()).statsInterval(0,TimeUnit.SECONDS).build();\n  Consumer<byte[]> consumer=client.newConsumer().topic(partitionedTopicName).subscriptionName(\"my-sub\").subscriptionType(SubscriptionType.Exclusive).subscribe();\n  assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n  try {\n    if (isPersistent) {\n      admin.topics().deleteSubscription(partitionedTopicName,\"my-sub\");\n      fail(\"should have failed\");\n    }\n  }\n catch (  PulsarAdminException.PreconditionFailedException e) {\n  }\ncatch (  Exception e) {\n    fail(e.getMessage());\n  }\n  Consumer<byte[]> consumer1=client.newConsumer().topic(partitionedTopicName).subscriptionName(\"my-sub-1\").subscribe();\n  if (isPersistent) {\n    assertEquals(Sets.newHashSet(admin.topics().getSubscriptions(partitionedTopicName)),Sets.newHashSet(\"my-sub\",\"my-sub-1\"));\n  }\n  consumer1.close();\n  if (isPersistent) {\n    admin.topics().deleteSubscription(partitionedTopicName,\"my-sub-1\");\n    assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n  }\n  Producer<byte[]> producer=client.newProducer(Schema.BYTES).topic(partitionedTopicName).enableBatching(false).messageRoutingMode(MessageRoutingMode.RoundRobinPartition).create();\n  for (int i=0; i < 10; i++) {\n    String message=\"message-\" + i;\n    producer.send(message.getBytes());\n  }\n  assertEquals(Sets.newHashSet(admin.topics().getList(namespace)),Sets.newHashSet(partitionedTopicName + \"-partition-0\",partitionedTopicName + \"-partition-1\",partitionedTopicName + \"-partition-2\",partitionedTopicName + \"-partition-3\"));\n  PartitionedTopicStats topicStats=admin.topics().getPartitionedStats(partitionedTopicName,false);\n  if (isPersistent) {\n    assertEquals(topicStats.subscriptions.keySet(),Sets.newTreeSet(Lists.newArrayList(\"my-sub\")));\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").consumers.size(),1);\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").msgBacklog,10);\n  }\n  assertEquals(topicStats.publishers.size(),1);\n  assertEquals(topicStats.partitions,Maps.newHashMap());\n  topicStats=admin.topics().getPartitionedStats(partitionedTopicName,true);\n  assertEquals(topicStats.metadata.partitions,4);\n  assertEquals(topicStats.partitions.keySet(),Sets.newHashSet(partitionedTopicName + \"-partition-0\",partitionedTopicName + \"-partition-1\",partitionedTopicName + \"-partition-2\",partitionedTopicName + \"-partition-3\"));\n  TopicStats partitionStats=topicStats.partitions.get(partitionedTopicName + \"-partition-0\");\n  assertEquals(partitionStats.publishers.size(),1);\n  if (isPersistent) {\n    assertEquals(partitionStats.subscriptions.get(\"my-sub\").consumers.size(),1);\n    assertEquals(partitionStats.subscriptions.get(\"my-sub\").msgBacklog,3,1);\n  }\n  try {\n    admin.topics().skipMessages(partitionedTopicName,\"my-sub\",5);\n    fail(\"skip messages for partitioned topics should fail\");\n  }\n catch (  Exception e) {\n  }\n  if (isPersistent) {\n    admin.topics().skipAllMessages(partitionedTopicName,\"my-sub\");\n    topicStats=admin.topics().getPartitionedStats(partitionedTopicName,false);\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").msgBacklog,0);\n  }\n  producer.close();\n  consumer.close();\n  if (isPersistent) {\n    admin.topics().deleteSubscription(partitionedTopicName,\"my-sub\");\n    assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList());\n  }\n  try {\n    admin.topics().createPartitionedTopic(partitionedTopicName,32);\n    fail(\"Should have failed as the partitioned topic already exists\");\n  }\n catch (  ConflictException ignore) {\n  }\n  producer=client.newProducer(Schema.BYTES).topic(partitionedTopicName).enableBatching(false).messageRoutingMode(MessageRoutingMode.SinglePartition).create();\n  if (isPersistent) {\n    topics=admin.topics().getList(namespace);\n    assertEquals(topics.size(),4);\n  }\n  try {\n    admin.topics().deletePartitionedTopic(partitionedTopicName);\n    fail(\"The topic is busy\");\n  }\n catch (  PreconditionFailedException pfe) {\n  }\n  producer.close();\n  client.close();\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n  try {\n    admin.topics().getPartitionedTopicMetadata(partitionedTopicName);\n    fail(\"getPartitionedTopicMetadata of \" + partitionedTopicName + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  admin.topics().createPartitionedTopic(partitionedTopicName,32);\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,32);\n  try {\n    admin.topics().deletePartitionedTopic(anotherTopic);\n    fail(\"Should have failed as the partitioned topic was not created\");\n  }\n catch (  NotFoundException nfe) {\n  }\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n  admin.topics().createPartitionedTopic(partitionedTopicName,4);\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 916,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 98,
+        "startLineNumber" : 965,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 965,
+        "endColumnNumber" : 110
+      },
+      "nodeContext" : "assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 13,
+      "astHeight" : 5
+    },
+    "tokenLength" : 4,
+    "type" : "java.util.List<java.lang.String>"
+  }, {
+    "nodeContext" : "admin.topics().getSubscriptions(partitionedTopicName)",
+    "nodeType" : "MethodInvocation",
+    "nodePosition" : {
+      "charLength" : 53,
+      "startLineNumber" : 1028,
+      "startColumnNumber" : 25,
+      "endLineNumber" : 1028,
+      "endColumnNumber" : 78
+    },
+    "astNodeNumber" : 6,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 89,
+        "startLineNumber" : 1028,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 1028,
+        "endColumnNumber" : 101
+      },
+      "nodeContext" : "assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList())",
       "nodeType" : "MethodInvocation",
       "astNodeNumber" : 11,
       "astHeight" : 4
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 74,
-        "startLineNumber" : 42,
+        "charLength" : 90,
+        "startLineNumber" : 1028,
         "startColumnNumber" : 12,
-        "endLineNumber" : 42,
-        "endColumnNumber" : 86
+        "endLineNumber" : 1028,
+        "endColumnNumber" : 102
       },
-      "nodeContext" : "return signSafeMod(hash.makeHash(msg.getKey()),metadata.numPartitions());\n",
-      "nodeType" : "ReturnStatement",
+      "nodeContext" : "assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList());\n",
+      "nodeType" : "ExpressionStatement",
       "astNodeNumber" : 12,
       "astHeight" : 5
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
       "nodePosition" : {
-        "charLength" : 98,
-        "startLineNumber" : 41,
+        "charLength" : 290,
+        "startLineNumber" : 1025,
         "startColumnNumber" : 26,
-        "endLineNumber" : 43,
+        "endLineNumber" : 1029,
         "endColumnNumber" : 9
       },
-      "nodeContext" : "{\n  return signSafeMod(hash.makeHash(msg.getKey()),metadata.numPartitions());\n}\n",
+      "nodeContext" : "{\n  admin.topics().deleteSubscription(partitionedTopicName,\"my-sub\");\n  assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList());\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 13,
+      "astNodeNumber" : 21,
       "astHeight" : 6
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 116,
-        "startLineNumber" : 41,
+        "charLength" : 308,
+        "startLineNumber" : 1025,
         "startColumnNumber" : 8,
-        "endLineNumber" : 43,
+        "endLineNumber" : 1029,
         "endColumnNumber" : 9
       },
-      "nodeContext" : "if (msg.hasKey()) {\n  return signSafeMod(hash.makeHash(msg.getKey()),metadata.numPartitions());\n}\n",
+      "nodeContext" : "if (isPersistent) {\n  admin.topics().deleteSubscription(partitionedTopicName,\"my-sub\");\n  assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList());\n}\n",
       "nodeType" : "IfStatement",
-      "astNodeNumber" : 17,
+      "astNodeNumber" : 23,
       "astHeight" : 7
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 251,
-        "startLineNumber" : 39,
-        "startColumnNumber" : 71,
-        "endLineNumber" : 46,
+        "charLength" : 9359,
+        "startLineNumber" : 883,
+        "startColumnNumber" : 87,
+        "endLineNumber" : 1082,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  if (msg.hasKey()) {\n    return signSafeMod(hash.makeHash(msg.getKey()),metadata.numPartitions());\n  }\n  return partitionIndex;\n}\n",
+      "nodeContext" : "{\n  final String namespace=\"prop-xyz/ns1\";\n  final String partitionedTopicName=topicType + \"://\" + namespace+ \"/\"+ topicName;\n  final String anotherTopic=topicType + \"://\" + namespace+ \"/ds2\";\n  final boolean isPersistent=topicType.equals(TopicDomain.persistent.value());\n  assertEquals(admin.topics().getPartitionedTopicList(namespace),Lists.newArrayList());\n  try {\n    admin.topics().getPartitionedTopicMetadata(partitionedTopicName);\n    fail(\"getPartitionedTopicMetadata of \" + partitionedTopicName + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  admin.topics().createPartitionedTopic(partitionedTopicName,4);\n  assertEquals(admin.topics().getPartitionedTopicList(namespace),Lists.newArrayList(partitionedTopicName));\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,4);\n  List<String> topics;\n  if (isPersistent) {\n    topics=admin.topics().getList(namespace);\n    assertEquals(topics.size(),4);\n  }\n  try {\n    admin.topics().getPartitionedTopicMetadata(anotherTopic);\n    fail(\"getPartitionedTopicMetadata of \" + anotherTopic + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,admin.topics().getPartitionedStats(partitionedTopicName,false).metadata.partitions);\n  assertEquals(admin.topics().getPartitionedStats(partitionedTopicName,false).partitions.size(),0);\n  List<String> subscriptions=admin.topics().getSubscriptions(partitionedTopicName);\n  assertEquals(subscriptions.size(),0);\n  @Cleanup PulsarClient client=PulsarClient.builder().serviceUrl(pulsar.getWebServiceAddress()).statsInterval(0,TimeUnit.SECONDS).build();\n  Consumer<byte[]> consumer=client.newConsumer().topic(partitionedTopicName).subscriptionName(\"my-sub\").subscriptionType(SubscriptionType.Exclusive).subscribe();\n  assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n  try {\n    if (isPersistent) {\n      admin.topics().deleteSubscription(partitionedTopicName,\"my-sub\");\n      fail(\"should have failed\");\n    }\n  }\n catch (  PulsarAdminException.PreconditionFailedException e) {\n  }\ncatch (  Exception e) {\n    fail(e.getMessage());\n  }\n  Consumer<byte[]> consumer1=client.newConsumer().topic(partitionedTopicName).subscriptionName(\"my-sub-1\").subscribe();\n  if (isPersistent) {\n    assertEquals(Sets.newHashSet(admin.topics().getSubscriptions(partitionedTopicName)),Sets.newHashSet(\"my-sub\",\"my-sub-1\"));\n  }\n  consumer1.close();\n  if (isPersistent) {\n    admin.topics().deleteSubscription(partitionedTopicName,\"my-sub-1\");\n    assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n  }\n  Producer<byte[]> producer=client.newProducer(Schema.BYTES).topic(partitionedTopicName).enableBatching(false).messageRoutingMode(MessageRoutingMode.RoundRobinPartition).create();\n  for (int i=0; i < 10; i++) {\n    String message=\"message-\" + i;\n    producer.send(message.getBytes());\n  }\n  assertEquals(Sets.newHashSet(admin.topics().getList(namespace)),Sets.newHashSet(partitionedTopicName + \"-partition-0\",partitionedTopicName + \"-partition-1\",partitionedTopicName + \"-partition-2\",partitionedTopicName + \"-partition-3\"));\n  PartitionedTopicStats topicStats=admin.topics().getPartitionedStats(partitionedTopicName,false);\n  if (isPersistent) {\n    assertEquals(topicStats.subscriptions.keySet(),Sets.newTreeSet(Lists.newArrayList(\"my-sub\")));\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").consumers.size(),1);\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").msgBacklog,10);\n  }\n  assertEquals(topicStats.publishers.size(),1);\n  assertEquals(topicStats.partitions,Maps.newHashMap());\n  topicStats=admin.topics().getPartitionedStats(partitionedTopicName,true);\n  assertEquals(topicStats.metadata.partitions,4);\n  assertEquals(topicStats.partitions.keySet(),Sets.newHashSet(partitionedTopicName + \"-partition-0\",partitionedTopicName + \"-partition-1\",partitionedTopicName + \"-partition-2\",partitionedTopicName + \"-partition-3\"));\n  TopicStats partitionStats=topicStats.partitions.get(partitionedTopicName + \"-partition-0\");\n  assertEquals(partitionStats.publishers.size(),1);\n  if (isPersistent) {\n    assertEquals(partitionStats.subscriptions.get(\"my-sub\").consumers.size(),1);\n    assertEquals(partitionStats.subscriptions.get(\"my-sub\").msgBacklog,3,1);\n  }\n  try {\n    admin.topics().skipMessages(partitionedTopicName,\"my-sub\",5);\n    fail(\"skip messages for partitioned topics should fail\");\n  }\n catch (  Exception e) {\n  }\n  if (isPersistent) {\n    admin.topics().skipAllMessages(partitionedTopicName,\"my-sub\");\n    topicStats=admin.topics().getPartitionedStats(partitionedTopicName,false);\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").msgBacklog,0);\n  }\n  producer.close();\n  consumer.close();\n  if (isPersistent) {\n    admin.topics().deleteSubscription(partitionedTopicName,\"my-sub\");\n    assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList());\n  }\n  try {\n    admin.topics().createPartitionedTopic(partitionedTopicName,32);\n    fail(\"Should have failed as the partitioned topic already exists\");\n  }\n catch (  ConflictException ignore) {\n  }\n  producer=client.newProducer(Schema.BYTES).topic(partitionedTopicName).enableBatching(false).messageRoutingMode(MessageRoutingMode.SinglePartition).create();\n  if (isPersistent) {\n    topics=admin.topics().getList(namespace);\n    assertEquals(topics.size(),4);\n  }\n  try {\n    admin.topics().deletePartitionedTopic(partitionedTopicName);\n    fail(\"The topic is busy\");\n  }\n catch (  PreconditionFailedException pfe) {\n  }\n  producer.close();\n  client.close();\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n  try {\n    admin.topics().getPartitionedTopicMetadata(partitionedTopicName);\n    fail(\"getPartitionedTopicMetadata of \" + partitionedTopicName + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  admin.topics().createPartitionedTopic(partitionedTopicName,32);\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,32);\n  try {\n    admin.topics().deletePartitionedTopic(anotherTopic);\n    fail(\"Should have failed as the partitioned topic was not created\");\n  }\n catch (  NotFoundException nfe) {\n  }\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n  admin.topics().createPartitionedTopic(partitionedTopicName,4);\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 20,
-      "astHeight" : 8
+      "astNodeNumber" : 897,
+      "astHeight" : 10
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 332,
-        "startLineNumber" : 38,
+        "charLength" : 9492,
+        "startLineNumber" : 882,
         "startColumnNumber" : 4,
-        "endLineNumber" : 46,
+        "endLineNumber" : 1082,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "@Override public int choosePartition(Message<?> msg,TopicMetadata metadata){\n  if (msg.hasKey()) {\n    return signSafeMod(hash.makeHash(msg.getKey()),metadata.numPartitions());\n  }\n  return partitionIndex;\n}\n",
+      "nodeContext" : "@Test(dataProvider=\"topicNamesForAllTypes\") public void partitionedTopics(String topicType,String topicName) throws Exception {\n  final String namespace=\"prop-xyz/ns1\";\n  final String partitionedTopicName=topicType + \"://\" + namespace+ \"/\"+ topicName;\n  final String anotherTopic=topicType + \"://\" + namespace+ \"/ds2\";\n  final boolean isPersistent=topicType.equals(TopicDomain.persistent.value());\n  assertEquals(admin.topics().getPartitionedTopicList(namespace),Lists.newArrayList());\n  try {\n    admin.topics().getPartitionedTopicMetadata(partitionedTopicName);\n    fail(\"getPartitionedTopicMetadata of \" + partitionedTopicName + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  admin.topics().createPartitionedTopic(partitionedTopicName,4);\n  assertEquals(admin.topics().getPartitionedTopicList(namespace),Lists.newArrayList(partitionedTopicName));\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,4);\n  List<String> topics;\n  if (isPersistent) {\n    topics=admin.topics().getList(namespace);\n    assertEquals(topics.size(),4);\n  }\n  try {\n    admin.topics().getPartitionedTopicMetadata(anotherTopic);\n    fail(\"getPartitionedTopicMetadata of \" + anotherTopic + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,admin.topics().getPartitionedStats(partitionedTopicName,false).metadata.partitions);\n  assertEquals(admin.topics().getPartitionedStats(partitionedTopicName,false).partitions.size(),0);\n  List<String> subscriptions=admin.topics().getSubscriptions(partitionedTopicName);\n  assertEquals(subscriptions.size(),0);\n  @Cleanup PulsarClient client=PulsarClient.builder().serviceUrl(pulsar.getWebServiceAddress()).statsInterval(0,TimeUnit.SECONDS).build();\n  Consumer<byte[]> consumer=client.newConsumer().topic(partitionedTopicName).subscriptionName(\"my-sub\").subscriptionType(SubscriptionType.Exclusive).subscribe();\n  assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n  try {\n    if (isPersistent) {\n      admin.topics().deleteSubscription(partitionedTopicName,\"my-sub\");\n      fail(\"should have failed\");\n    }\n  }\n catch (  PulsarAdminException.PreconditionFailedException e) {\n  }\ncatch (  Exception e) {\n    fail(e.getMessage());\n  }\n  Consumer<byte[]> consumer1=client.newConsumer().topic(partitionedTopicName).subscriptionName(\"my-sub-1\").subscribe();\n  if (isPersistent) {\n    assertEquals(Sets.newHashSet(admin.topics().getSubscriptions(partitionedTopicName)),Sets.newHashSet(\"my-sub\",\"my-sub-1\"));\n  }\n  consumer1.close();\n  if (isPersistent) {\n    admin.topics().deleteSubscription(partitionedTopicName,\"my-sub-1\");\n    assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList(\"my-sub\"));\n  }\n  Producer<byte[]> producer=client.newProducer(Schema.BYTES).topic(partitionedTopicName).enableBatching(false).messageRoutingMode(MessageRoutingMode.RoundRobinPartition).create();\n  for (int i=0; i < 10; i++) {\n    String message=\"message-\" + i;\n    producer.send(message.getBytes());\n  }\n  assertEquals(Sets.newHashSet(admin.topics().getList(namespace)),Sets.newHashSet(partitionedTopicName + \"-partition-0\",partitionedTopicName + \"-partition-1\",partitionedTopicName + \"-partition-2\",partitionedTopicName + \"-partition-3\"));\n  PartitionedTopicStats topicStats=admin.topics().getPartitionedStats(partitionedTopicName,false);\n  if (isPersistent) {\n    assertEquals(topicStats.subscriptions.keySet(),Sets.newTreeSet(Lists.newArrayList(\"my-sub\")));\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").consumers.size(),1);\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").msgBacklog,10);\n  }\n  assertEquals(topicStats.publishers.size(),1);\n  assertEquals(topicStats.partitions,Maps.newHashMap());\n  topicStats=admin.topics().getPartitionedStats(partitionedTopicName,true);\n  assertEquals(topicStats.metadata.partitions,4);\n  assertEquals(topicStats.partitions.keySet(),Sets.newHashSet(partitionedTopicName + \"-partition-0\",partitionedTopicName + \"-partition-1\",partitionedTopicName + \"-partition-2\",partitionedTopicName + \"-partition-3\"));\n  TopicStats partitionStats=topicStats.partitions.get(partitionedTopicName + \"-partition-0\");\n  assertEquals(partitionStats.publishers.size(),1);\n  if (isPersistent) {\n    assertEquals(partitionStats.subscriptions.get(\"my-sub\").consumers.size(),1);\n    assertEquals(partitionStats.subscriptions.get(\"my-sub\").msgBacklog,3,1);\n  }\n  try {\n    admin.topics().skipMessages(partitionedTopicName,\"my-sub\",5);\n    fail(\"skip messages for partitioned topics should fail\");\n  }\n catch (  Exception e) {\n  }\n  if (isPersistent) {\n    admin.topics().skipAllMessages(partitionedTopicName,\"my-sub\");\n    topicStats=admin.topics().getPartitionedStats(partitionedTopicName,false);\n    assertEquals(topicStats.subscriptions.get(\"my-sub\").msgBacklog,0);\n  }\n  producer.close();\n  consumer.close();\n  if (isPersistent) {\n    admin.topics().deleteSubscription(partitionedTopicName,\"my-sub\");\n    assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList());\n  }\n  try {\n    admin.topics().createPartitionedTopic(partitionedTopicName,32);\n    fail(\"Should have failed as the partitioned topic already exists\");\n  }\n catch (  ConflictException ignore) {\n  }\n  producer=client.newProducer(Schema.BYTES).topic(partitionedTopicName).enableBatching(false).messageRoutingMode(MessageRoutingMode.SinglePartition).create();\n  if (isPersistent) {\n    topics=admin.topics().getList(namespace);\n    assertEquals(topics.size(),4);\n  }\n  try {\n    admin.topics().deletePartitionedTopic(partitionedTopicName);\n    fail(\"The topic is busy\");\n  }\n catch (  PreconditionFailedException pfe) {\n  }\n  producer.close();\n  client.close();\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n  try {\n    admin.topics().getPartitionedTopicMetadata(partitionedTopicName);\n    fail(\"getPartitionedTopicMetadata of \" + partitionedTopicName + \" should not succeed\");\n  }\n catch (  NotFoundException expected) {\n  }\n  admin.topics().createPartitionedTopic(partitionedTopicName,32);\n  assertEquals(admin.topics().getPartitionedTopicMetadata(partitionedTopicName).partitions,32);\n  try {\n    admin.topics().deletePartitionedTopic(anotherTopic);\n    fail(\"Should have failed as the partitioned topic was not created\");\n  }\n catch (  NotFoundException nfe) {\n  }\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n  admin.topics().createPartitionedTopic(partitionedTopicName,4);\n  admin.topics().deletePartitionedTopic(partitionedTopicName);\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 36,
-      "astHeight" : 9
+      "astNodeNumber" : 916,
+      "astHeight" : 11
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 74,
-        "startLineNumber" : 42,
+        "charLength" : 90,
+        "startLineNumber" : 1028,
         "startColumnNumber" : 12,
-        "endLineNumber" : 42,
-        "endColumnNumber" : 86
+        "endLineNumber" : 1028,
+        "endColumnNumber" : 102
       },
-      "nodeContext" : "return signSafeMod(hash.makeHash(msg.getKey()),metadata.numPartitions());\n",
-      "nodeType" : "ReturnStatement",
+      "nodeContext" : "assertEquals(admin.topics().getSubscriptions(partitionedTopicName),Lists.newArrayList());\n",
+      "nodeType" : "ExpressionStatement",
       "astNodeNumber" : 12,
       "astHeight" : 5
     },
-    "tokenLength" : 1,
-    "type" : "org.apache.pulsar.client.api.TopicMetadata"
+    "tokenLength" : 4,
+    "type" : "java.util.List<java.lang.String>"
   } ],
   "positionList" : [ {
-    "charLength" : 8,
-    "startLineNumber" : 42,
-    "startColumnNumber" : 60,
-    "endLineNumber" : 42,
-    "endColumnNumber" : 68
+    "charLength" : 53,
+    "startLineNumber" : 924,
+    "startColumnNumber" : 37,
+    "endLineNumber" : 924,
+    "endColumnNumber" : 90
+  }, {
+    "charLength" : 53,
+    "startLineNumber" : 936,
+    "startColumnNumber" : 21,
+    "endLineNumber" : 936,
+    "endColumnNumber" : 74
+  }, {
+    "charLength" : 53,
+    "startLineNumber" : 956,
+    "startColumnNumber" : 41,
+    "endLineNumber" : 956,
+    "endColumnNumber" : 94
+  }, {
+    "charLength" : 53,
+    "startLineNumber" : 965,
+    "startColumnNumber" : 25,
+    "endLineNumber" : 965,
+    "endColumnNumber" : 78
+  }, {
+    "charLength" : 53,
+    "startLineNumber" : 1028,
+    "startColumnNumber" : 25,
+    "endLineNumber" : 1028,
+    "endColumnNumber" : 78
   } ],
-  "layoutRelationDataList" : [ ]
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 4,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 4,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 3,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 4,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 3,
+    "layout" : 4
+  } ]
 }

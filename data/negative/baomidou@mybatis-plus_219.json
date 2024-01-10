@@ -1,100 +1,87 @@
 {
   "id" : 219,
-  "expression" : "parameterObject",
+  "expression" : "target instanceof StatementHandler",
   "projectName" : "baomidou@mybatis-plus",
-  "commitID" : "7815611a659da4cc8d5443f5ef4c10ca0d937582",
-  "filePath" : "/mybatis-plus-core/src/main/java/com/baomidou/mybatisplus/MybatisXMLLanguageDriver.java",
+  "commitID" : "8bb7e11aaf24cfe861856fb838150a1c2088bee0",
+  "filePath" : "mybatis-plus-core/src/main/java/com/baomidou/mybatisplus/plugins/PaginationInterceptor.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "parameterObject",
-    "nodeType" : "SimpleName",
+    "nodeContext" : "target instanceof StatementHandler",
+    "nodeType" : "InstanceofExpression",
     "nodePosition" : {
-      "charLength" : 15,
-      "startLineNumber" : 37,
-      "startColumnNumber" : 67,
-      "endLineNumber" : 37,
-      "endColumnNumber" : 82
+      "charLength" : 34,
+      "startLineNumber" : 98,
+      "startColumnNumber" : 12,
+      "endLineNumber" : 98,
+      "endColumnNumber" : 46
     },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
+    "astNodeNumber" : 4,
+    "astHeight" : 3,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ReturnStatement,expression]",
-      "nodePosition" : {
-        "charLength" : 78,
-        "startLineNumber" : 37,
-        "startColumnNumber" : 15,
-        "endLineNumber" : 37,
-        "endColumnNumber" : 93
-      },
-      "nodeContext" : "new MybatisDefaultParameterHandler(mappedStatement,parameterObject,boundSql)",
-      "nodeType" : "ClassInstanceCreation",
-      "astNodeNumber" : 6,
-      "astHeight" : 3
-    }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 86,
-        "startLineNumber" : 37,
+        "charLength" : 4740,
+        "startLineNumber" : 98,
         "startColumnNumber" : 8,
-        "endLineNumber" : 37,
-        "endColumnNumber" : 94
+        "endLineNumber" : 190,
+        "endColumnNumber" : 9
       },
-      "nodeContext" : "return new MybatisDefaultParameterHandler(mappedStatement,parameterObject,boundSql);\n",
-      "nodeType" : "ReturnStatement",
-      "astNodeNumber" : 7,
-      "astHeight" : 4
+      "nodeContext" : "if (target instanceof StatementHandler) {\n  StatementHandler statementHandler=(StatementHandler)PluginUtils.realTarget(invocation.getTarget());\n  MetaObject metaObject=SystemMetaObject.forObject(statementHandler);\n  this.sqlParser(metaObject);\n  return invocation.proceed();\n}\n else if (target instanceof Executor) {\n  Object[] args=invocation.getArgs();\n  MappedStatement mappedStatement=(MappedStatement)args[0];\n  if (!SqlCommandType.SELECT.equals(mappedStatement.getSqlCommandType())) {\n    return invocation.proceed();\n  }\n  RowBounds rowBounds=(RowBounds)args[2];\n  if (rowBounds == null || rowBounds == RowBounds.DEFAULT) {\n    if (localPage) {\n      rowBounds=PageHelper.getPagination();\n      if (rowBounds == null) {\n        return invocation.proceed();\n      }\n    }\n else {\n      return invocation.proceed();\n    }\n  }\n  Object parameter=args[1];\n  ResultHandler resultHandler=(ResultHandler)args[3];\n  Executor executor=(Executor)invocation.getTarget();\n  CacheKey cacheKey;\n  BoundSql boundSql;\n  if (args.length == 4) {\n    boundSql=mappedStatement.getBoundSql(parameter);\n    cacheKey=executor.createCacheKey(mappedStatement,parameter,rowBounds,boundSql);\n  }\n else {\n    cacheKey=(CacheKey)args[4];\n    boundSql=(BoundSql)args[5];\n  }\n  String originalSql=boundSql.getSql();\n  Connection connection=executor.getTransaction().getConnection();\n  DBType dbType=StringUtils.isNotEmpty(dialectType) ? DBType.getDBType(dialectType) : JdbcUtils.getDbType(connection.getMetaData().getURL());\n  Configuration configuration=mappedStatement.getConfiguration();\n  if (rowBounds instanceof Pagination) {\n    Pagination page=(Pagination)rowBounds;\n    boolean orderBy=true;\n    if (page.isSearchCount()) {\n      SqlInfo sqlInfo=SqlUtils.getOptimizeCountSql(page.isOptimizeCountSql(),sqlParser,originalSql);\n      orderBy=sqlInfo.isOrderBy();\n      BoundSql countBoundSql=new BoundSql(configuration,sqlInfo.getSql(),boundSql.getParameterMappings(),parameter);\n      CacheKey countCacheKey=executor.createCacheKey(mappedStatement,parameter,RowBounds.DEFAULT,countBoundSql);\n      Object countObject=executor.query(mappedStatement,parameter,RowBounds.DEFAULT,resultHandler,countCacheKey,countBoundSql);\n      page.setTotal(6);\n      long pages=page.getPages();\n      if (overflowCurrent && (page.getCurrent() > pages)) {\n        page.setCurrent(1);\n      }\n      if (page.getTotal() <= 0L) {\n        return invocation.proceed();\n      }\n    }\n    String buildSql=SqlUtils.concatOrderBy(originalSql,page,orderBy);\n    originalSql=DialectFactory.buildPaginationSql(page,buildSql,dbType,dialectClazz);\n  }\n else {\n    originalSql=DialectFactory.buildPaginationSql(rowBounds,originalSql,dbType,dialectClazz);\n  }\n  BoundSql pageBoundSql=new BoundSql(configuration,originalSql,boundSql.getParameterMappings(),parameter);\n  List records=executor.query(mappedStatement,parameter,RowBounds.DEFAULT,resultHandler,cacheKey,pageBoundSql);\n  if (rowBounds instanceof Page) {\n    Page page=(Page)rowBounds;\n    page.setRecords(records);\n  }\n  return records;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 468,
+      "astHeight" : 13
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 139,
-        "startLineNumber" : 35,
-        "startColumnNumber" : 70,
-        "endLineNumber" : 38,
+        "charLength" : 4841,
+        "startLineNumber" : 96,
+        "startColumnNumber" : 68,
+        "endLineNumber" : 192,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  return new MybatisDefaultParameterHandler(mappedStatement,parameterObject,boundSql);\n}\n",
+      "nodeContext" : "{\n  Object target=invocation.getTarget();\n  if (target instanceof StatementHandler) {\n    StatementHandler statementHandler=(StatementHandler)PluginUtils.realTarget(invocation.getTarget());\n    MetaObject metaObject=SystemMetaObject.forObject(statementHandler);\n    this.sqlParser(metaObject);\n    return invocation.proceed();\n  }\n else   if (target instanceof Executor) {\n    Object[] args=invocation.getArgs();\n    MappedStatement mappedStatement=(MappedStatement)args[0];\n    if (!SqlCommandType.SELECT.equals(mappedStatement.getSqlCommandType())) {\n      return invocation.proceed();\n    }\n    RowBounds rowBounds=(RowBounds)args[2];\n    if (rowBounds == null || rowBounds == RowBounds.DEFAULT) {\n      if (localPage) {\n        rowBounds=PageHelper.getPagination();\n        if (rowBounds == null) {\n          return invocation.proceed();\n        }\n      }\n else {\n        return invocation.proceed();\n      }\n    }\n    Object parameter=args[1];\n    ResultHandler resultHandler=(ResultHandler)args[3];\n    Executor executor=(Executor)invocation.getTarget();\n    CacheKey cacheKey;\n    BoundSql boundSql;\n    if (args.length == 4) {\n      boundSql=mappedStatement.getBoundSql(parameter);\n      cacheKey=executor.createCacheKey(mappedStatement,parameter,rowBounds,boundSql);\n    }\n else {\n      cacheKey=(CacheKey)args[4];\n      boundSql=(BoundSql)args[5];\n    }\n    String originalSql=boundSql.getSql();\n    Connection connection=executor.getTransaction().getConnection();\n    DBType dbType=StringUtils.isNotEmpty(dialectType) ? DBType.getDBType(dialectType) : JdbcUtils.getDbType(connection.getMetaData().getURL());\n    Configuration configuration=mappedStatement.getConfiguration();\n    if (rowBounds instanceof Pagination) {\n      Pagination page=(Pagination)rowBounds;\n      boolean orderBy=true;\n      if (page.isSearchCount()) {\n        SqlInfo sqlInfo=SqlUtils.getOptimizeCountSql(page.isOptimizeCountSql(),sqlParser,originalSql);\n        orderBy=sqlInfo.isOrderBy();\n        BoundSql countBoundSql=new BoundSql(configuration,sqlInfo.getSql(),boundSql.getParameterMappings(),parameter);\n        CacheKey countCacheKey=executor.createCacheKey(mappedStatement,parameter,RowBounds.DEFAULT,countBoundSql);\n        Object countObject=executor.query(mappedStatement,parameter,RowBounds.DEFAULT,resultHandler,countCacheKey,countBoundSql);\n        page.setTotal(6);\n        long pages=page.getPages();\n        if (overflowCurrent && (page.getCurrent() > pages)) {\n          page.setCurrent(1);\n        }\n        if (page.getTotal() <= 0L) {\n          return invocation.proceed();\n        }\n      }\n      String buildSql=SqlUtils.concatOrderBy(originalSql,page,orderBy);\n      originalSql=DialectFactory.buildPaginationSql(page,buildSql,dbType,dialectClazz);\n    }\n else {\n      originalSql=DialectFactory.buildPaginationSql(rowBounds,originalSql,dbType,dialectClazz);\n    }\n    BoundSql pageBoundSql=new BoundSql(configuration,originalSql,boundSql.getParameterMappings(),parameter);\n    List records=executor.query(mappedStatement,parameter,RowBounds.DEFAULT,resultHandler,cacheKey,pageBoundSql);\n    if (rowBounds instanceof Page) {\n      Page page=(Page)rowBounds;\n      page.setRecords(records);\n    }\n    return records;\n  }\n  return invocation.proceed();\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 8,
-      "astHeight" : 5
+      "astNodeNumber" : 481,
+      "astHeight" : 14
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 327,
-        "startLineNumber" : 33,
+        "charLength" : 5027,
+        "startLineNumber" : 92,
         "startColumnNumber" : 4,
-        "endLineNumber" : 38,
+        "endLineNumber" : 192,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "@Override public ParameterHandler createParameterHandler(MappedStatement mappedStatement,Object parameterObject,BoundSql boundSql){\n  return new MybatisDefaultParameterHandler(mappedStatement,parameterObject,boundSql);\n}\n",
+      "nodeContext" : "/** \n * Physical Pagination Interceptor for all the queries with parameter  {@link RowBounds}\n */\n@Override public Object intercept(Invocation invocation) throws Throwable {\n  Object target=invocation.getTarget();\n  if (target instanceof StatementHandler) {\n    StatementHandler statementHandler=(StatementHandler)PluginUtils.realTarget(invocation.getTarget());\n    MetaObject metaObject=SystemMetaObject.forObject(statementHandler);\n    this.sqlParser(metaObject);\n    return invocation.proceed();\n  }\n else   if (target instanceof Executor) {\n    Object[] args=invocation.getArgs();\n    MappedStatement mappedStatement=(MappedStatement)args[0];\n    if (!SqlCommandType.SELECT.equals(mappedStatement.getSqlCommandType())) {\n      return invocation.proceed();\n    }\n    RowBounds rowBounds=(RowBounds)args[2];\n    if (rowBounds == null || rowBounds == RowBounds.DEFAULT) {\n      if (localPage) {\n        rowBounds=PageHelper.getPagination();\n        if (rowBounds == null) {\n          return invocation.proceed();\n        }\n      }\n else {\n        return invocation.proceed();\n      }\n    }\n    Object parameter=args[1];\n    ResultHandler resultHandler=(ResultHandler)args[3];\n    Executor executor=(Executor)invocation.getTarget();\n    CacheKey cacheKey;\n    BoundSql boundSql;\n    if (args.length == 4) {\n      boundSql=mappedStatement.getBoundSql(parameter);\n      cacheKey=executor.createCacheKey(mappedStatement,parameter,rowBounds,boundSql);\n    }\n else {\n      cacheKey=(CacheKey)args[4];\n      boundSql=(BoundSql)args[5];\n    }\n    String originalSql=boundSql.getSql();\n    Connection connection=executor.getTransaction().getConnection();\n    DBType dbType=StringUtils.isNotEmpty(dialectType) ? DBType.getDBType(dialectType) : JdbcUtils.getDbType(connection.getMetaData().getURL());\n    Configuration configuration=mappedStatement.getConfiguration();\n    if (rowBounds instanceof Pagination) {\n      Pagination page=(Pagination)rowBounds;\n      boolean orderBy=true;\n      if (page.isSearchCount()) {\n        SqlInfo sqlInfo=SqlUtils.getOptimizeCountSql(page.isOptimizeCountSql(),sqlParser,originalSql);\n        orderBy=sqlInfo.isOrderBy();\n        BoundSql countBoundSql=new BoundSql(configuration,sqlInfo.getSql(),boundSql.getParameterMappings(),parameter);\n        CacheKey countCacheKey=executor.createCacheKey(mappedStatement,parameter,RowBounds.DEFAULT,countBoundSql);\n        Object countObject=executor.query(mappedStatement,parameter,RowBounds.DEFAULT,resultHandler,countCacheKey,countBoundSql);\n        page.setTotal(6);\n        long pages=page.getPages();\n        if (overflowCurrent && (page.getCurrent() > pages)) {\n          page.setCurrent(1);\n        }\n        if (page.getTotal() <= 0L) {\n          return invocation.proceed();\n        }\n      }\n      String buildSql=SqlUtils.concatOrderBy(originalSql,page,orderBy);\n      originalSql=DialectFactory.buildPaginationSql(page,buildSql,dbType,dialectClazz);\n    }\n else {\n      originalSql=DialectFactory.buildPaginationSql(rowBounds,originalSql,dbType,dialectClazz);\n    }\n    BoundSql pageBoundSql=new BoundSql(configuration,originalSql,boundSql.getParameterMappings(),parameter);\n    List records=executor.query(mappedStatement,parameter,RowBounds.DEFAULT,resultHandler,cacheKey,pageBoundSql);\n    if (rowBounds instanceof Page) {\n      Page page=(Page)rowBounds;\n      page.setRecords(records);\n    }\n    return records;\n  }\n  return invocation.proceed();\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 27,
-      "astHeight" : 6
+      "astNodeNumber" : 495,
+      "astHeight" : 15
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 86,
-        "startLineNumber" : 37,
+        "charLength" : 4740,
+        "startLineNumber" : 98,
         "startColumnNumber" : 8,
-        "endLineNumber" : 37,
-        "endColumnNumber" : 94
+        "endLineNumber" : 190,
+        "endColumnNumber" : 9
       },
-      "nodeContext" : "return new MybatisDefaultParameterHandler(mappedStatement,parameterObject,boundSql);\n",
-      "nodeType" : "ReturnStatement",
-      "astNodeNumber" : 7,
-      "astHeight" : 4
+      "nodeContext" : "if (target instanceof StatementHandler) {\n  StatementHandler statementHandler=(StatementHandler)PluginUtils.realTarget(invocation.getTarget());\n  MetaObject metaObject=SystemMetaObject.forObject(statementHandler);\n  this.sqlParser(metaObject);\n  return invocation.proceed();\n}\n else if (target instanceof Executor) {\n  Object[] args=invocation.getArgs();\n  MappedStatement mappedStatement=(MappedStatement)args[0];\n  if (!SqlCommandType.SELECT.equals(mappedStatement.getSqlCommandType())) {\n    return invocation.proceed();\n  }\n  RowBounds rowBounds=(RowBounds)args[2];\n  if (rowBounds == null || rowBounds == RowBounds.DEFAULT) {\n    if (localPage) {\n      rowBounds=PageHelper.getPagination();\n      if (rowBounds == null) {\n        return invocation.proceed();\n      }\n    }\n else {\n      return invocation.proceed();\n    }\n  }\n  Object parameter=args[1];\n  ResultHandler resultHandler=(ResultHandler)args[3];\n  Executor executor=(Executor)invocation.getTarget();\n  CacheKey cacheKey;\n  BoundSql boundSql;\n  if (args.length == 4) {\n    boundSql=mappedStatement.getBoundSql(parameter);\n    cacheKey=executor.createCacheKey(mappedStatement,parameter,rowBounds,boundSql);\n  }\n else {\n    cacheKey=(CacheKey)args[4];\n    boundSql=(BoundSql)args[5];\n  }\n  String originalSql=boundSql.getSql();\n  Connection connection=executor.getTransaction().getConnection();\n  DBType dbType=StringUtils.isNotEmpty(dialectType) ? DBType.getDBType(dialectType) : JdbcUtils.getDbType(connection.getMetaData().getURL());\n  Configuration configuration=mappedStatement.getConfiguration();\n  if (rowBounds instanceof Pagination) {\n    Pagination page=(Pagination)rowBounds;\n    boolean orderBy=true;\n    if (page.isSearchCount()) {\n      SqlInfo sqlInfo=SqlUtils.getOptimizeCountSql(page.isOptimizeCountSql(),sqlParser,originalSql);\n      orderBy=sqlInfo.isOrderBy();\n      BoundSql countBoundSql=new BoundSql(configuration,sqlInfo.getSql(),boundSql.getParameterMappings(),parameter);\n      CacheKey countCacheKey=executor.createCacheKey(mappedStatement,parameter,RowBounds.DEFAULT,countBoundSql);\n      Object countObject=executor.query(mappedStatement,parameter,RowBounds.DEFAULT,resultHandler,countCacheKey,countBoundSql);\n      page.setTotal(6);\n      long pages=page.getPages();\n      if (overflowCurrent && (page.getCurrent() > pages)) {\n        page.setCurrent(1);\n      }\n      if (page.getTotal() <= 0L) {\n        return invocation.proceed();\n      }\n    }\n    String buildSql=SqlUtils.concatOrderBy(originalSql,page,orderBy);\n    originalSql=DialectFactory.buildPaginationSql(page,buildSql,dbType,dialectClazz);\n  }\n else {\n    originalSql=DialectFactory.buildPaginationSql(rowBounds,originalSql,dbType,dialectClazz);\n  }\n  BoundSql pageBoundSql=new BoundSql(configuration,originalSql,boundSql.getParameterMappings(),parameter);\n  List records=executor.query(mappedStatement,parameter,RowBounds.DEFAULT,resultHandler,cacheKey,pageBoundSql);\n  if (rowBounds instanceof Page) {\n    Page page=(Page)rowBounds;\n    page.setRecords(records);\n  }\n  return records;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 468,
+      "astHeight" : 13
     },
-    "tokenLength" : 1,
-    "type" : "java.lang.Object"
+    "tokenLength" : 2,
+    "type" : "boolean"
   } ],
   "positionList" : [ {
-    "charLength" : 15,
-    "startLineNumber" : 37,
-    "startColumnNumber" : 67,
-    "endLineNumber" : 37,
-    "endColumnNumber" : 82
+    "charLength" : 34,
+    "startLineNumber" : 98,
+    "startColumnNumber" : 12,
+    "endLineNumber" : 98,
+    "endColumnNumber" : 46
   } ],
   "layoutRelationDataList" : [ ]
 }

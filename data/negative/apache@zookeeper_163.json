@@ -1,87 +1,100 @@
 {
   "id" : 163,
-  "expression" : "\"byte\"",
+  "expression" : "new ReplyHeader(request.cxid,request.zxid,err)",
   "projectName" : "apache@zookeeper",
-  "commitID" : "c6639c9842973a7954c8baa412d6825cb833d51f",
-  "filePath" : "/src/java/main/org/apache/jute/compiler/JByte.java",
+  "commitID" : "344a30792bb30430a5949fa20ae69872c42394e0",
+  "filePath" : "zookeeper/java/src/com/yahoo/zookeeper/server/FinalRequestProcessor.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "\"byte\"",
-    "nodeType" : "StringLiteral",
+    "nodeContext" : "new ReplyHeader(request.cxid,request.zxid,err)",
+    "nodeType" : "ClassInstanceCreation",
     "nodePosition" : {
-      "charLength" : 6,
-      "startLineNumber" : 29,
-      "startColumnNumber" : 32,
-      "endLineNumber" : 29,
-      "endColumnNumber" : 38
+      "charLength" : 48,
+      "startLineNumber" : 231,
+      "startColumnNumber" : 26,
+      "endLineNumber" : 231,
+      "endColumnNumber" : 74
     },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
+    "astNodeNumber" : 10,
+    "astHeight" : 3,
     "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 54,
+        "startLineNumber" : 231,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 231,
+        "endColumnNumber" : 74
+      },
+      "nodeContext" : "hdr=new ReplyHeader(request.cxid,request.zxid,err)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 12,
+      "astHeight" : 4
+    }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 58,
-        "startLineNumber" : 29,
+        "charLength" : 67,
+        "startLineNumber" : 231,
         "startColumnNumber" : 8,
-        "endLineNumber" : 29,
-        "endColumnNumber" : 66
+        "endLineNumber" : 231,
+        "endColumnNumber" : 75
       },
-      "nodeContext" : "super(\"char\",\"int8_t\",\"byte\",\"Byte\",\"Byte\",\"toByte\");\n",
-      "nodeType" : "SuperConstructorInvocation",
-      "astNodeNumber" : 7,
-      "astHeight" : 2
+      "nodeContext" : "ReplyHeader hdr=new ReplyHeader(request.cxid,request.zxid,err);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 74,
-        "startLineNumber" : 28,
-        "startColumnNumber" : 19,
-        "endLineNumber" : 30,
+        "charLength" : 7626,
+        "startLineNumber" : 69,
+        "startColumnNumber" : 48,
+        "endLineNumber" : 241,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  super(\"char\",\"int8_t\",\"byte\",\"Byte\",\"Byte\",\"toByte\");\n}\n",
+      "nodeContext" : "{\n  long traceMask=ZooLog.CLIENT_REQUEST_TRACE_MASK;\n  if (request.type == OpCode.ping) {\n    traceMask=ZooLog.SERVER_PING_TRACE_MASK;\n  }\n  ZooLog.logRequest('E',request,\"\",traceMask);\n  ProcessTxnResult rc=null;\nsynchronized (zks.outstandingChanges) {\n    while (!zks.outstandingChanges.isEmpty() && zks.outstandingChanges.get(0).zxid <= request.zxid) {\n      if (zks.outstandingChanges.get(0).zxid < request.zxid) {\n        ZooLog.logError(\"Zxid outstanding \" + zks.outstandingChanges.get(0).zxid + \" is less than current \"+ request.zxid);\n      }\n      zks.outstandingChanges.remove(0);\n    }\n    if (request.hdr != null) {\n      rc=zks.dataTree.processTxn(request.hdr,request.txn);\n      if (request.type == OpCode.createSession) {\n        if (request.txn instanceof CreateSessionTxn) {\n          CreateSessionTxn cst=(CreateSessionTxn)request.txn;\n          zks.sessionTracker.addSession(request.sessionId,cst.getTimeOut());\n        }\n else {\n          ZooLog.logWarn(\"*****>>>>> Got \" + request.txn.getClass() + \" \"+ request.txn.toString());\n        }\n      }\n else       if (request.type == OpCode.closeSession) {\n        zks.sessionTracker.removeSession(request.sessionId);\n      }\n    }\n    if (Request.isQuorum(request.type)) {\n      zks.addCommittedProposal(request);\n    }\n  }\n  if (request.hdr != null && request.hdr.getType() == OpCode.closeSession) {\n    Factory scxn=zks.getServerCnxnFactory();\n    if (scxn != null) {\n      scxn.closeSession(request.sessionId);\n    }\n  }\n  if (request.cnxn == null) {\n    return;\n  }\n  zks.decInProcess();\n  int err=0;\n  Record rsp=null;\n  try {\n    if (request.hdr != null && request.hdr.getType() == OpCode.error) {\n      throw new KeeperException(((ErrorTxn)request.txn).getErr());\n    }\nswitch (request.type) {\ncase OpCode.ping:      request.cnxn.sendResponse(new ReplyHeader(-2,zks.dataTree.lastProcessedZxid,0),null,\"response\");\n    return;\ncase OpCode.createSession:  request.cnxn.finishSessionInit(true);\nreturn;\ncase OpCode.create:rsp=new CreateResponse(rc.path);\nerr=rc.err;\nbreak;\ncase OpCode.delete:err=rc.err;\nbreak;\ncase OpCode.setData:rsp=new SetDataResponse(rc.stat);\nerr=rc.err;\nbreak;\ncase OpCode.setACL:rsp=new SetACLResponse(rc.stat);\nerr=rc.err;\nbreak;\ncase OpCode.closeSession:err=rc.err;\nbreak;\ncase OpCode.sync:SyncRequest syncRequest=new SyncRequest();\nZooKeeperServer.byteBuffer2Record(request.request,syncRequest);\nrsp=new SyncResponse(syncRequest.getPath());\nbreak;\ncase OpCode.exists:ExistsRequest existsRequest=new ExistsRequest();\nZooKeeperServer.byteBuffer2Record(request.request,existsRequest);\nString path=existsRequest.getPath();\nif (path.indexOf('\\0') != -1) {\nthrow new KeeperException(Code.BadArguments);\n}\nStat stat=zks.dataTree.statNode(path,existsRequest.getWatch() ? request.cnxn : null);\nrsp=new ExistsResponse(stat);\nbreak;\ncase OpCode.getData:GetDataRequest getDataRequest=new GetDataRequest();\nZooKeeperServer.byteBuffer2Record(request.request,getDataRequest);\nDataNode n=zks.dataTree.getNode(getDataRequest.getPath());\nif (n == null) {\nthrow new KeeperException(Code.NoNode);\n}\nPrepRequestProcessor.checkACL(zks,n.acl,ZooDefs.Perms.READ,request.authInfo);\nstat=new Stat();\nbyte b[]=zks.dataTree.getData(getDataRequest.getPath(),stat,getDataRequest.getWatch() ? request.cnxn : null);\nrsp=new GetDataResponse(b,stat);\nbreak;\ncase OpCode.getACL:GetACLRequest getACLRequest=new GetACLRequest();\nZooKeeperServer.byteBuffer2Record(request.request,getACLRequest);\nstat=new Stat();\nArrayList<ACL> acl=zks.dataTree.getACL(getACLRequest.getPath(),stat);\nrsp=new GetACLResponse(acl,stat);\nbreak;\ncase OpCode.getChildren:GetChildrenRequest getChildrenRequest=new GetChildrenRequest();\nZooKeeperServer.byteBuffer2Record(request.request,getChildrenRequest);\nstat=new Stat();\nn=zks.dataTree.getNode(getChildrenRequest.getPath());\nif (n == null) {\nthrow new KeeperException(Code.NoNode);\n}\nPrepRequestProcessor.checkACL(zks,n.acl,ZooDefs.Perms.READ,request.authInfo);\nArrayList<String> children=zks.dataTree.getChildren(getChildrenRequest.getPath(),stat,getChildrenRequest.getWatch() ? request.cnxn : null);\nrsp=new GetChildrenResponse(children);\nbreak;\n}\n}\n catch (KeeperException e) {\nerr=e.getCode();\n}\ncatch (Exception e) {\nZooLog.logWarn(\"****************************** \" + request);\nStringBuffer sb=new StringBuffer();\nByteBuffer bb=request.request;\nbb.rewind();\nwhile (bb.hasRemaining()) {\nsb.append(Integer.toHexString(bb.get() & 0xff));\n}\nZooLog.logWarn(sb.toString());\nZooLog.logException(e);\nerr=Code.MarshallingError;\n}\nReplyHeader hdr=new ReplyHeader(request.cxid,request.zxid,err);\nlong latency=System.currentTimeMillis() - request.createTime;\ncount++;\navg+=latency;\nrequest.cnxn.setStats(latency,(avg / count));\ntry {\nrequest.cnxn.sendResponse(hdr,rsp,\"response\");\n}\n catch (IOException e) {\nZooLog.logException(e);\n}\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 8,
-      "astHeight" : 3
+      "astNodeNumber" : 921,
+      "astHeight" : 15
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 132,
-        "startLineNumber" : 27,
+        "charLength" : 7670,
+        "startLineNumber" : 69,
         "startColumnNumber" : 4,
-        "endLineNumber" : 30,
+        "endLineNumber" : 241,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "/** \n * Creates a new instance of JByte \n */\npublic JByte(){\n  super(\"char\",\"int8_t\",\"byte\",\"Byte\",\"Byte\",\"toByte\");\n}\n",
+      "nodeContext" : "public void processRequest(Request request){\n  long traceMask=ZooLog.CLIENT_REQUEST_TRACE_MASK;\n  if (request.type == OpCode.ping) {\n    traceMask=ZooLog.SERVER_PING_TRACE_MASK;\n  }\n  ZooLog.logRequest('E',request,\"\",traceMask);\n  ProcessTxnResult rc=null;\nsynchronized (zks.outstandingChanges) {\n    while (!zks.outstandingChanges.isEmpty() && zks.outstandingChanges.get(0).zxid <= request.zxid) {\n      if (zks.outstandingChanges.get(0).zxid < request.zxid) {\n        ZooLog.logError(\"Zxid outstanding \" + zks.outstandingChanges.get(0).zxid + \" is less than current \"+ request.zxid);\n      }\n      zks.outstandingChanges.remove(0);\n    }\n    if (request.hdr != null) {\n      rc=zks.dataTree.processTxn(request.hdr,request.txn);\n      if (request.type == OpCode.createSession) {\n        if (request.txn instanceof CreateSessionTxn) {\n          CreateSessionTxn cst=(CreateSessionTxn)request.txn;\n          zks.sessionTracker.addSession(request.sessionId,cst.getTimeOut());\n        }\n else {\n          ZooLog.logWarn(\"*****>>>>> Got \" + request.txn.getClass() + \" \"+ request.txn.toString());\n        }\n      }\n else       if (request.type == OpCode.closeSession) {\n        zks.sessionTracker.removeSession(request.sessionId);\n      }\n    }\n    if (Request.isQuorum(request.type)) {\n      zks.addCommittedProposal(request);\n    }\n  }\n  if (request.hdr != null && request.hdr.getType() == OpCode.closeSession) {\n    Factory scxn=zks.getServerCnxnFactory();\n    if (scxn != null) {\n      scxn.closeSession(request.sessionId);\n    }\n  }\n  if (request.cnxn == null) {\n    return;\n  }\n  zks.decInProcess();\n  int err=0;\n  Record rsp=null;\n  try {\n    if (request.hdr != null && request.hdr.getType() == OpCode.error) {\n      throw new KeeperException(((ErrorTxn)request.txn).getErr());\n    }\nswitch (request.type) {\ncase OpCode.ping:      request.cnxn.sendResponse(new ReplyHeader(-2,zks.dataTree.lastProcessedZxid,0),null,\"response\");\n    return;\ncase OpCode.createSession:  request.cnxn.finishSessionInit(true);\nreturn;\ncase OpCode.create:rsp=new CreateResponse(rc.path);\nerr=rc.err;\nbreak;\ncase OpCode.delete:err=rc.err;\nbreak;\ncase OpCode.setData:rsp=new SetDataResponse(rc.stat);\nerr=rc.err;\nbreak;\ncase OpCode.setACL:rsp=new SetACLResponse(rc.stat);\nerr=rc.err;\nbreak;\ncase OpCode.closeSession:err=rc.err;\nbreak;\ncase OpCode.sync:SyncRequest syncRequest=new SyncRequest();\nZooKeeperServer.byteBuffer2Record(request.request,syncRequest);\nrsp=new SyncResponse(syncRequest.getPath());\nbreak;\ncase OpCode.exists:ExistsRequest existsRequest=new ExistsRequest();\nZooKeeperServer.byteBuffer2Record(request.request,existsRequest);\nString path=existsRequest.getPath();\nif (path.indexOf('\\0') != -1) {\nthrow new KeeperException(Code.BadArguments);\n}\nStat stat=zks.dataTree.statNode(path,existsRequest.getWatch() ? request.cnxn : null);\nrsp=new ExistsResponse(stat);\nbreak;\ncase OpCode.getData:GetDataRequest getDataRequest=new GetDataRequest();\nZooKeeperServer.byteBuffer2Record(request.request,getDataRequest);\nDataNode n=zks.dataTree.getNode(getDataRequest.getPath());\nif (n == null) {\nthrow new KeeperException(Code.NoNode);\n}\nPrepRequestProcessor.checkACL(zks,n.acl,ZooDefs.Perms.READ,request.authInfo);\nstat=new Stat();\nbyte b[]=zks.dataTree.getData(getDataRequest.getPath(),stat,getDataRequest.getWatch() ? request.cnxn : null);\nrsp=new GetDataResponse(b,stat);\nbreak;\ncase OpCode.getACL:GetACLRequest getACLRequest=new GetACLRequest();\nZooKeeperServer.byteBuffer2Record(request.request,getACLRequest);\nstat=new Stat();\nArrayList<ACL> acl=zks.dataTree.getACL(getACLRequest.getPath(),stat);\nrsp=new GetACLResponse(acl,stat);\nbreak;\ncase OpCode.getChildren:GetChildrenRequest getChildrenRequest=new GetChildrenRequest();\nZooKeeperServer.byteBuffer2Record(request.request,getChildrenRequest);\nstat=new Stat();\nn=zks.dataTree.getNode(getChildrenRequest.getPath());\nif (n == null) {\nthrow new KeeperException(Code.NoNode);\n}\nPrepRequestProcessor.checkACL(zks,n.acl,ZooDefs.Perms.READ,request.authInfo);\nArrayList<String> children=zks.dataTree.getChildren(getChildrenRequest.getPath(),stat,getChildrenRequest.getWatch() ? request.cnxn : null);\nrsp=new GetChildrenResponse(children);\nbreak;\n}\n}\n catch (KeeperException e) {\nerr=e.getCode();\n}\ncatch (Exception e) {\nZooLog.logWarn(\"****************************** \" + request);\nStringBuffer sb=new StringBuffer();\nByteBuffer bb=request.request;\nbb.rewind();\nwhile (bb.hasRemaining()) {\nsb.append(Integer.toHexString(bb.get() & 0xff));\n}\nZooLog.logWarn(sb.toString());\nZooLog.logException(e);\nerr=Code.MarshallingError;\n}\nReplyHeader hdr=new ReplyHeader(request.cxid,request.zxid,err);\nlong latency=System.currentTimeMillis() - request.createTime;\ncount++;\navg+=latency;\nrequest.cnxn.setStats(latency,(avg / count));\ntry {\nrequest.cnxn.sendResponse(hdr,rsp,\"response\");\n}\n catch (IOException e) {\nZooLog.logException(e);\n}\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 12,
-      "astHeight" : 4
+      "astNodeNumber" : 929,
+      "astHeight" : 16
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 58,
-        "startLineNumber" : 29,
+        "charLength" : 67,
+        "startLineNumber" : 231,
         "startColumnNumber" : 8,
-        "endLineNumber" : 29,
-        "endColumnNumber" : 66
+        "endLineNumber" : 231,
+        "endColumnNumber" : 75
       },
-      "nodeContext" : "super(\"char\",\"int8_t\",\"byte\",\"Byte\",\"Byte\",\"toByte\");\n",
-      "nodeType" : "SuperConstructorInvocation",
-      "astNodeNumber" : 7,
-      "astHeight" : 2
+      "nodeContext" : "ReplyHeader hdr=new ReplyHeader(request.cxid,request.zxid,err);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
     },
-    "tokenLength" : 1,
-    "type" : "java.lang.String"
+    "tokenLength" : 6,
+    "type" : "com.yahoo.zookeeper.server.ReplyHeader"
   } ],
   "positionList" : [ {
-    "charLength" : 6,
-    "startLineNumber" : 29,
-    "startColumnNumber" : 32,
-    "endLineNumber" : 29,
-    "endColumnNumber" : 38
+    "charLength" : 48,
+    "startLineNumber" : 231,
+    "startColumnNumber" : 26,
+    "endLineNumber" : 231,
+    "endColumnNumber" : 74
   } ],
   "layoutRelationDataList" : [ ]
 }

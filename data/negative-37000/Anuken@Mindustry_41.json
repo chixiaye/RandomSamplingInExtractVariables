@@ -1,0 +1,113 @@
+{
+  "id" : 41,
+  "expression" : "lastActive != null && buildAlpha <= 0.01f",
+  "projectName" : "Anuken@Mindustry",
+  "commitID" : "a7188c48845dd423fc9b58bc6bcf6797f6d25b46",
+  "filePath" : "/core/src/mindustry/entities/comp/BuilderComp.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "lastActive != null && buildAlpha <= 0.01f",
+    "nodeType" : "InfixExpression",
+    "nodePosition" : {
+      "charLength" : 41,
+      "startLineNumber" : 51,
+      "startColumnNumber" : 15,
+      "endLineNumber" : 51,
+      "endColumnNumber" : 56
+    },
+    "astNodeNumber" : 7,
+    "astHeight" : 3,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 95,
+        "startLineNumber" : 51,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 53,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "if (lastActive != null && buildAlpha <= 0.01f) {\n  lastActive=null;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 13,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 248,
+        "startLineNumber" : 49,
+        "startColumnNumber" : 21,
+        "endLineNumber" : 56,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  if (lastActive != null && buildAlpha <= 0.01f) {\n    lastActive=null;\n  }\n  buildAlpha=Mathf.lerpDelta(buildAlpha,activelyBuilding() ? 1f : 0f,0.15f);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 27,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 261,
+        "startLineNumber" : 49,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 56,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (!headless) {\n  if (lastActive != null && buildAlpha <= 0.01f) {\n    lastActive=null;\n  }\n  buildAlpha=Mathf.lerpDelta(buildAlpha,activelyBuilding() ? 1f : 0f,0.15f);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 30,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3659,
+        "startLineNumber" : 48,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 136,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (!headless) {\n    if (lastActive != null && buildAlpha <= 0.01f) {\n      lastActive=null;\n    }\n    buildAlpha=Mathf.lerpDelta(buildAlpha,activelyBuilding() ? 1f : 0f,0.15f);\n  }\n  if (!updateBuilding || !canBuild())   return;\n  float finalPlaceDst=state.rules.infiniteResources ? Float.MAX_VALUE : buildingRange;\n  boolean infinite=state.rules.infiniteResources || team().rules().infiniteResources;\n  Iterator<BuildPlan> it=plans.iterator();\n  while (it.hasNext()) {\n    BuildPlan req=it.next();\n    Tile tile=world.tile(req.x,req.y);\n    if (tile == null || (req.breaking && tile.block() == Blocks.air) || (!req.breaking && ((tile.build != null && tile.build.rotation == req.rotation) || !req.block.rotate) && tile.block() == req.block)) {\n      it.remove();\n    }\n  }\n  Building core=core();\n  if (buildPlan() == null)   return;\n  if (plans.size > 1) {\n    int total=0;\n    BuildPlan req;\n    while ((!within((req=buildPlan()).tile(),finalPlaceDst) || shouldSkip(req,core)) && total < plans.size) {\n      plans.removeFirst();\n      plans.addLast(req);\n      total++;\n    }\n  }\n  BuildPlan current=buildPlan();\n  Tile tile=current.tile();\n  lastActive=current;\n  buildAlpha=1f;\n  if (current.breaking)   lastSize=tile.block().size;\n  if (!within(tile,finalPlaceDst))   return;\n  if (!(tile.build instanceof   ConstructBuild cb)) {\n    if (!current.initialized && !current.breaking && Build.validPlace(current.block,team,current.x,current.y,current.rotation)) {\n      boolean hasAll=infinite || current.isRotation(team) || !Structs.contains(current.block.requirements,i -> core != null && !core.items.has(i.item));\n      if (hasAll) {\n        Call.beginPlace(self(),current.block,team,current.x,current.y,current.rotation);\n      }\n else {\n        current.stuck=true;\n      }\n    }\n else     if (!current.initialized && current.breaking && Build.validBreak(team,current.x,current.y)) {\n      Call.beginBreak(self(),team,current.x,current.y);\n    }\n else {\n      plans.removeFirst();\n      return;\n    }\n  }\n else   if ((tile.team() != team && tile.team() != Team.derelict) || (!current.breaking && (cb.cblock != current.block || cb.tile != current.tile()))) {\n    plans.removeFirst();\n    return;\n  }\n  if (tile.build instanceof ConstructBuild && !current.initialized) {\n    Core.app.post(() -> Events.fire(new BuildSelectEvent(tile,team,self(),current.breaking)));\n    current.initialized=true;\n  }\n  if ((core == null && !infinite) || !(tile.build instanceof   ConstructBuild entity)) {\n    return;\n  }\n  if (current.breaking) {\n    entity.deconstruct(self(),core,1f / entity.buildCost * Time.delta * type.buildSpeed * state.rules.buildSpeedMultiplier);\n  }\n else {\n    entity.construct(self(),core,1f / entity.buildCost * Time.delta * type.buildSpeed * state.rules.buildSpeedMultiplier,current.config);\n  }\n  current.stuck=Mathf.equal(current.progress,entity.progress);\n  current.progress=entity.progress;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 605,
+      "astHeight" : 16
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3693,
+        "startLineNumber" : 47,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 136,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public void update(){\n  if (!headless) {\n    if (lastActive != null && buildAlpha <= 0.01f) {\n      lastActive=null;\n    }\n    buildAlpha=Mathf.lerpDelta(buildAlpha,activelyBuilding() ? 1f : 0f,0.15f);\n  }\n  if (!updateBuilding || !canBuild())   return;\n  float finalPlaceDst=state.rules.infiniteResources ? Float.MAX_VALUE : buildingRange;\n  boolean infinite=state.rules.infiniteResources || team().rules().infiniteResources;\n  Iterator<BuildPlan> it=plans.iterator();\n  while (it.hasNext()) {\n    BuildPlan req=it.next();\n    Tile tile=world.tile(req.x,req.y);\n    if (tile == null || (req.breaking && tile.block() == Blocks.air) || (!req.breaking && ((tile.build != null && tile.build.rotation == req.rotation) || !req.block.rotate) && tile.block() == req.block)) {\n      it.remove();\n    }\n  }\n  Building core=core();\n  if (buildPlan() == null)   return;\n  if (plans.size > 1) {\n    int total=0;\n    BuildPlan req;\n    while ((!within((req=buildPlan()).tile(),finalPlaceDst) || shouldSkip(req,core)) && total < plans.size) {\n      plans.removeFirst();\n      plans.addLast(req);\n      total++;\n    }\n  }\n  BuildPlan current=buildPlan();\n  Tile tile=current.tile();\n  lastActive=current;\n  buildAlpha=1f;\n  if (current.breaking)   lastSize=tile.block().size;\n  if (!within(tile,finalPlaceDst))   return;\n  if (!(tile.build instanceof   ConstructBuild cb)) {\n    if (!current.initialized && !current.breaking && Build.validPlace(current.block,team,current.x,current.y,current.rotation)) {\n      boolean hasAll=infinite || current.isRotation(team) || !Structs.contains(current.block.requirements,i -> core != null && !core.items.has(i.item));\n      if (hasAll) {\n        Call.beginPlace(self(),current.block,team,current.x,current.y,current.rotation);\n      }\n else {\n        current.stuck=true;\n      }\n    }\n else     if (!current.initialized && current.breaking && Build.validBreak(team,current.x,current.y)) {\n      Call.beginBreak(self(),team,current.x,current.y);\n    }\n else {\n      plans.removeFirst();\n      return;\n    }\n  }\n else   if ((tile.team() != team && tile.team() != Team.derelict) || (!current.breaking && (cb.cblock != current.block || cb.tile != current.tile()))) {\n    plans.removeFirst();\n    return;\n  }\n  if (tile.build instanceof ConstructBuild && !current.initialized) {\n    Core.app.post(() -> Events.fire(new BuildSelectEvent(tile,team,self(),current.breaking)));\n    current.initialized=true;\n  }\n  if ((core == null && !infinite) || !(tile.build instanceof   ConstructBuild entity)) {\n    return;\n  }\n  if (current.breaking) {\n    entity.deconstruct(self(),core,1f / entity.buildCost * Time.delta * type.buildSpeed * state.rules.buildSpeedMultiplier);\n  }\n else {\n    entity.construct(self(),core,1f / entity.buildCost * Time.delta * type.buildSpeed * state.rules.buildSpeedMultiplier,current.config);\n  }\n  current.stuck=Mathf.equal(current.progress,entity.progress);\n  current.progress=entity.progress;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 611,
+      "astHeight" : 17
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 95,
+        "startLineNumber" : 51,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 53,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "if (lastActive != null && buildAlpha <= 0.01f) {\n  lastActive=null;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 13,
+      "astHeight" : 5
+    },
+    "tokenLength" : 8,
+    "type" : "boolean"
+  } ],
+  "positionList" : [ {
+    "charLength" : 41,
+    "startLineNumber" : 51,
+    "startColumnNumber" : 15,
+    "endLineNumber" : 51,
+    "endColumnNumber" : 56
+  } ],
+  "layoutRelationDataList" : [ ]
+}

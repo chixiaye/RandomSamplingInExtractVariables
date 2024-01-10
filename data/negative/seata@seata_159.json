@@ -1,87 +1,1258 @@
 {
   "id" : 159,
-  "expression" : "thread.getPriority() != Thread.NORM_PRIORITY",
+  "expression" : "statementProxy",
   "projectName" : "seata@seata",
-  "commitID" : "42d41623178ab076b11b27a0f049ac3ed7f1a9dc",
-  "filePath" : "/common/src/main/java/io/seata/common/thread/NamedThreadFactory.java",
-  "occurrences" : 1,
+  "commitID" : "f35b292094e873c4112423fe51a1102ee4f8f917",
+  "filePath" : "rm-datasource/src/main/java/com/alibaba/fescar/rm/datasource/exec/SelectForUpdateExecutor.java",
+  "occurrences" : 7,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "thread.getPriority() != Thread.NORM_PRIORITY",
-    "nodeType" : "InfixExpression",
+    "nodeContext" : "statementProxy",
+    "nodeType" : "SimpleName",
     "nodePosition" : {
-      "charLength" : 44,
-      "startLineNumber" : 67,
-      "startColumnNumber" : 12,
-      "endLineNumber" : 67,
-      "endColumnNumber" : 56
+      "charLength" : 14,
+      "startLineNumber" : 55,
+      "startColumnNumber" : 26,
+      "endLineNumber" : 55,
+      "endColumnNumber" : 40
     },
-    "astNodeNumber" : 7,
-    "astHeight" : 3,
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
     "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 55,
+        "startColumnNumber" : 26,
+        "endLineNumber" : 55,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "statementProxy.getConnection()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 37,
+        "startLineNumber" : 55,
+        "startColumnNumber" : 19,
+        "endLineNumber" : 55,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "conn=statementProxy.getConnection()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 115,
-        "startLineNumber" : 67,
+        "charLength" : 49,
+        "startLineNumber" : 55,
         "startColumnNumber" : 8,
-        "endLineNumber" : 69,
-        "endColumnNumber" : 9
+        "endLineNumber" : 55,
+        "endColumnNumber" : 57
       },
-      "nodeContext" : "if (thread.getPriority() != Thread.NORM_PRIORITY) {\n  thread.setPriority(Thread.NORM_PRIORITY);\n}\n",
-      "nodeType" : "IfStatement",
-      "astNodeNumber" : 16,
-      "astHeight" : 6
+      "nodeContext" : "Connection conn=statementProxy.getConnection();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 394,
-        "startLineNumber" : 59,
-        "startColumnNumber" : 40,
-        "endLineNumber" : 71,
+        "charLength" : 3197,
+        "startLineNumber" : 52,
+        "startColumnNumber" : 61,
+        "endLineNumber" : 132,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  String name=prefix + \"_\" + counter.incrementAndGet();\n  if (totalSize > 1) {\n    name+=\"_\" + totalSize;\n  }\n  Thread thread=new FastThreadLocalThread(r,name);\n  thread.setDaemon(makeDaemons);\n  if (thread.getPriority() != Thread.NORM_PRIORITY) {\n    thread.setPriority(Thread.NORM_PRIORITY);\n  }\n  return thread;\n}\n",
+      "nodeContext" : "{\n  SQLSelectRecognizer recognizer=(SQLSelectRecognizer)sqlRecognizer;\n  Connection conn=statementProxy.getConnection();\n  ResultSet rs=null;\n  Savepoint sp=null;\n  LockRetryController lockRetryController=new LockRetryController();\n  boolean originalAutoCommit=conn.getAutoCommit();\n  StringBuffer selectSQLAppender=new StringBuffer(\"SELECT \");\n  selectSQLAppender.append(getColumnNameInSQL(getTableMeta().getPkName()));\n  selectSQLAppender.append(\" FROM \" + getFromTableInSQL());\n  String whereCondition=null;\n  ArrayList<Object> paramAppender=new ArrayList<>();\n  if (statementProxy instanceof ParametersHolder) {\n    whereCondition=recognizer.getWhereCondition((ParametersHolder)statementProxy,paramAppender);\n  }\n else {\n    whereCondition=recognizer.getWhereCondition();\n  }\n  if (!StringUtils.isEmpty(whereCondition)) {\n    selectSQLAppender.append(\" WHERE \" + whereCondition);\n  }\n  selectSQLAppender.append(\" FOR UPDATE\");\n  String selectPKSQL=selectSQLAppender.toString();\n  try {\n    if (originalAutoCommit) {\n      conn.setAutoCommit(false);\n    }\n    sp=conn.setSavepoint();\n    rs=statementCallback.execute(statementProxy.getTargetStatement(),args);\n    while (true) {\n      Statement stPK=null;\n      PreparedStatement pstPK=null;\n      ResultSet rsPK=null;\n      try {\n        if (paramAppender.isEmpty()) {\n          stPK=statementProxy.getConnection().createStatement();\n          rsPK=stPK.executeQuery(selectPKSQL);\n        }\n else {\n          pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n          for (int i=0; i < paramAppender.size(); i++) {\n            pstPK.setObject(i + 1,paramAppender.get(i));\n          }\n          rsPK=pstPK.executeQuery();\n        }\n        TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n        String lockKeys=buildLockKey(selectPKRows);\n        statementProxy.getConnectionProxy().checkLock(lockKeys);\n        break;\n      }\n catch (      LockConflictException lce) {\n        conn.rollback(sp);\n        lockRetryController.sleep(lce);\n      }\n finally {\n        if (rsPK != null) {\n          rsPK.close();\n        }\n        if (stPK != null) {\n          stPK.close();\n        }\n        if (pstPK != null) {\n          pstPK.close();\n        }\n      }\n    }\n  }\n  finally {\n    if (sp != null) {\n      conn.releaseSavepoint(sp);\n    }\n    if (originalAutoCommit) {\n      conn.setAutoCommit(true);\n    }\n  }\n  return rs;\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 56,
-      "astHeight" : 7
+      "astNodeNumber" : 343,
+      "astHeight" : 15
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 444,
-        "startLineNumber" : 58,
+        "charLength" : 3268,
+        "startLineNumber" : 51,
         "startColumnNumber" : 4,
-        "endLineNumber" : 71,
+        "endLineNumber" : 132,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "@Override public Thread newThread(Runnable r){\n  String name=prefix + \"_\" + counter.incrementAndGet();\n  if (totalSize > 1) {\n    name+=\"_\" + totalSize;\n  }\n  Thread thread=new FastThreadLocalThread(r,name);\n  thread.setDaemon(makeDaemons);\n  if (thread.getPriority() != Thread.NORM_PRIORITY) {\n    thread.setPriority(Thread.NORM_PRIORITY);\n  }\n  return thread;\n}\n",
+      "nodeContext" : "@Override public Object doExecute(Object... args) throws Throwable {\n  SQLSelectRecognizer recognizer=(SQLSelectRecognizer)sqlRecognizer;\n  Connection conn=statementProxy.getConnection();\n  ResultSet rs=null;\n  Savepoint sp=null;\n  LockRetryController lockRetryController=new LockRetryController();\n  boolean originalAutoCommit=conn.getAutoCommit();\n  StringBuffer selectSQLAppender=new StringBuffer(\"SELECT \");\n  selectSQLAppender.append(getColumnNameInSQL(getTableMeta().getPkName()));\n  selectSQLAppender.append(\" FROM \" + getFromTableInSQL());\n  String whereCondition=null;\n  ArrayList<Object> paramAppender=new ArrayList<>();\n  if (statementProxy instanceof ParametersHolder) {\n    whereCondition=recognizer.getWhereCondition((ParametersHolder)statementProxy,paramAppender);\n  }\n else {\n    whereCondition=recognizer.getWhereCondition();\n  }\n  if (!StringUtils.isEmpty(whereCondition)) {\n    selectSQLAppender.append(\" WHERE \" + whereCondition);\n  }\n  selectSQLAppender.append(\" FOR UPDATE\");\n  String selectPKSQL=selectSQLAppender.toString();\n  try {\n    if (originalAutoCommit) {\n      conn.setAutoCommit(false);\n    }\n    sp=conn.setSavepoint();\n    rs=statementCallback.execute(statementProxy.getTargetStatement(),args);\n    while (true) {\n      Statement stPK=null;\n      PreparedStatement pstPK=null;\n      ResultSet rsPK=null;\n      try {\n        if (paramAppender.isEmpty()) {\n          stPK=statementProxy.getConnection().createStatement();\n          rsPK=stPK.executeQuery(selectPKSQL);\n        }\n else {\n          pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n          for (int i=0; i < paramAppender.size(); i++) {\n            pstPK.setObject(i + 1,paramAppender.get(i));\n          }\n          rsPK=pstPK.executeQuery();\n        }\n        TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n        String lockKeys=buildLockKey(selectPKRows);\n        statementProxy.getConnectionProxy().checkLock(lockKeys);\n        break;\n      }\n catch (      LockConflictException lce) {\n        conn.rollback(sp);\n        lockRetryController.sleep(lce);\n      }\n finally {\n        if (rsPK != null) {\n          rsPK.close();\n        }\n        if (stPK != null) {\n          stPK.close();\n        }\n        if (pstPK != null) {\n          pstPK.close();\n        }\n      }\n    }\n  }\n  finally {\n    if (sp != null) {\n      conn.releaseSavepoint(sp);\n    }\n    if (originalAutoCommit) {\n      conn.setAutoCommit(true);\n    }\n  }\n  return rs;\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 67,
-      "astHeight" : 8
+      "astNodeNumber" : 356,
+      "astHeight" : 16
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 115,
-        "startLineNumber" : 67,
+        "charLength" : 49,
+        "startLineNumber" : 55,
         "startColumnNumber" : 8,
-        "endLineNumber" : 69,
+        "endLineNumber" : 55,
+        "endColumnNumber" : 57
+      },
+      "nodeContext" : "Connection conn=statementProxy.getConnection();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "com.alibaba.fescar.rm.datasource.StatementProxy<S>"
+  }, {
+    "nodeContext" : "statementProxy",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 14,
+      "startLineNumber" : 66,
+      "startColumnNumber" : 12,
+      "endLineNumber" : 66,
+      "endColumnNumber" : 26
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 42,
+        "startLineNumber" : 66,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 66,
+        "endColumnNumber" : 54
+      },
+      "nodeContext" : "statementProxy instanceof ParametersHolder",
+      "nodeType" : "InstanceofExpression",
+      "astNodeNumber" : 4,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 246,
+        "startLineNumber" : 66,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 70,
         "endColumnNumber" : 9
       },
-      "nodeContext" : "if (thread.getPriority() != Thread.NORM_PRIORITY) {\n  thread.setPriority(Thread.NORM_PRIORITY);\n}\n",
+      "nodeContext" : "if (statementProxy instanceof ParametersHolder) {\n  whereCondition=recognizer.getWhereCondition((ParametersHolder)statementProxy,paramAppender);\n}\n else {\n  whereCondition=recognizer.getWhereCondition();\n}\n",
       "nodeType" : "IfStatement",
-      "astNodeNumber" : 16,
+      "astNodeNumber" : 24,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3197,
+        "startLineNumber" : 52,
+        "startColumnNumber" : 61,
+        "endLineNumber" : 132,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  SQLSelectRecognizer recognizer=(SQLSelectRecognizer)sqlRecognizer;\n  Connection conn=statementProxy.getConnection();\n  ResultSet rs=null;\n  Savepoint sp=null;\n  LockRetryController lockRetryController=new LockRetryController();\n  boolean originalAutoCommit=conn.getAutoCommit();\n  StringBuffer selectSQLAppender=new StringBuffer(\"SELECT \");\n  selectSQLAppender.append(getColumnNameInSQL(getTableMeta().getPkName()));\n  selectSQLAppender.append(\" FROM \" + getFromTableInSQL());\n  String whereCondition=null;\n  ArrayList<Object> paramAppender=new ArrayList<>();\n  if (statementProxy instanceof ParametersHolder) {\n    whereCondition=recognizer.getWhereCondition((ParametersHolder)statementProxy,paramAppender);\n  }\n else {\n    whereCondition=recognizer.getWhereCondition();\n  }\n  if (!StringUtils.isEmpty(whereCondition)) {\n    selectSQLAppender.append(\" WHERE \" + whereCondition);\n  }\n  selectSQLAppender.append(\" FOR UPDATE\");\n  String selectPKSQL=selectSQLAppender.toString();\n  try {\n    if (originalAutoCommit) {\n      conn.setAutoCommit(false);\n    }\n    sp=conn.setSavepoint();\n    rs=statementCallback.execute(statementProxy.getTargetStatement(),args);\n    while (true) {\n      Statement stPK=null;\n      PreparedStatement pstPK=null;\n      ResultSet rsPK=null;\n      try {\n        if (paramAppender.isEmpty()) {\n          stPK=statementProxy.getConnection().createStatement();\n          rsPK=stPK.executeQuery(selectPKSQL);\n        }\n else {\n          pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n          for (int i=0; i < paramAppender.size(); i++) {\n            pstPK.setObject(i + 1,paramAppender.get(i));\n          }\n          rsPK=pstPK.executeQuery();\n        }\n        TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n        String lockKeys=buildLockKey(selectPKRows);\n        statementProxy.getConnectionProxy().checkLock(lockKeys);\n        break;\n      }\n catch (      LockConflictException lce) {\n        conn.rollback(sp);\n        lockRetryController.sleep(lce);\n      }\n finally {\n        if (rsPK != null) {\n          rsPK.close();\n        }\n        if (stPK != null) {\n          stPK.close();\n        }\n        if (pstPK != null) {\n          pstPK.close();\n        }\n      }\n    }\n  }\n  finally {\n    if (sp != null) {\n      conn.releaseSavepoint(sp);\n    }\n    if (originalAutoCommit) {\n      conn.setAutoCommit(true);\n    }\n  }\n  return rs;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 343,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3268,
+        "startLineNumber" : 51,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 132,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public Object doExecute(Object... args) throws Throwable {\n  SQLSelectRecognizer recognizer=(SQLSelectRecognizer)sqlRecognizer;\n  Connection conn=statementProxy.getConnection();\n  ResultSet rs=null;\n  Savepoint sp=null;\n  LockRetryController lockRetryController=new LockRetryController();\n  boolean originalAutoCommit=conn.getAutoCommit();\n  StringBuffer selectSQLAppender=new StringBuffer(\"SELECT \");\n  selectSQLAppender.append(getColumnNameInSQL(getTableMeta().getPkName()));\n  selectSQLAppender.append(\" FROM \" + getFromTableInSQL());\n  String whereCondition=null;\n  ArrayList<Object> paramAppender=new ArrayList<>();\n  if (statementProxy instanceof ParametersHolder) {\n    whereCondition=recognizer.getWhereCondition((ParametersHolder)statementProxy,paramAppender);\n  }\n else {\n    whereCondition=recognizer.getWhereCondition();\n  }\n  if (!StringUtils.isEmpty(whereCondition)) {\n    selectSQLAppender.append(\" WHERE \" + whereCondition);\n  }\n  selectSQLAppender.append(\" FOR UPDATE\");\n  String selectPKSQL=selectSQLAppender.toString();\n  try {\n    if (originalAutoCommit) {\n      conn.setAutoCommit(false);\n    }\n    sp=conn.setSavepoint();\n    rs=statementCallback.execute(statementProxy.getTargetStatement(),args);\n    while (true) {\n      Statement stPK=null;\n      PreparedStatement pstPK=null;\n      ResultSet rsPK=null;\n      try {\n        if (paramAppender.isEmpty()) {\n          stPK=statementProxy.getConnection().createStatement();\n          rsPK=stPK.executeQuery(selectPKSQL);\n        }\n else {\n          pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n          for (int i=0; i < paramAppender.size(); i++) {\n            pstPK.setObject(i + 1,paramAppender.get(i));\n          }\n          rsPK=pstPK.executeQuery();\n        }\n        TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n        String lockKeys=buildLockKey(selectPKRows);\n        statementProxy.getConnectionProxy().checkLock(lockKeys);\n        break;\n      }\n catch (      LockConflictException lce) {\n        conn.rollback(sp);\n        lockRetryController.sleep(lce);\n      }\n finally {\n        if (rsPK != null) {\n          rsPK.close();\n        }\n        if (stPK != null) {\n          stPK.close();\n        }\n        if (pstPK != null) {\n          pstPK.close();\n        }\n      }\n    }\n  }\n  finally {\n    if (sp != null) {\n      conn.releaseSavepoint(sp);\n    }\n    if (originalAutoCommit) {\n      conn.setAutoCommit(true);\n    }\n  }\n  return rs;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 356,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 42,
+        "startLineNumber" : 66,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 66,
+        "endColumnNumber" : 54
+      },
+      "nodeContext" : "statementProxy instanceof ParametersHolder",
+      "nodeType" : "InstanceofExpression",
+      "astNodeNumber" : 4,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "com.alibaba.fescar.rm.datasource.StatementProxy<S>"
+  }, {
+    "nodeContext" : "statementProxy",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 14,
+      "startLineNumber" : 67,
+      "startColumnNumber" : 77,
+      "endLineNumber" : 67,
+      "endColumnNumber" : 91
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 33,
+        "startLineNumber" : 67,
+        "startColumnNumber" : 58,
+        "endLineNumber" : 67,
+        "endColumnNumber" : 91
+      },
+      "nodeContext" : "(ParametersHolder)statementProxy",
+      "nodeType" : "CastExpression",
+      "astNodeNumber" : 4,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
+      "nodePosition" : {
+        "charLength" : 78,
+        "startLineNumber" : 67,
+        "startColumnNumber" : 29,
+        "endLineNumber" : 67,
+        "endColumnNumber" : 107
+      },
+      "nodeContext" : "recognizer.getWhereCondition((ParametersHolder)statementProxy,paramAppender)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 95,
+        "startLineNumber" : 67,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 67,
+        "endColumnNumber" : 107
+      },
+      "nodeContext" : "whereCondition=recognizer.getWhereCondition((ParametersHolder)statementProxy,paramAppender)",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 96,
+        "startLineNumber" : 67,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 67,
+        "endColumnNumber" : 108
+      },
+      "nodeContext" : "whereCondition=recognizer.getWhereCondition((ParametersHolder)statementProxy,paramAppender);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 120,
+        "startLineNumber" : 66,
+        "startColumnNumber" : 56,
+        "endLineNumber" : 68,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  whereCondition=recognizer.getWhereCondition((ParametersHolder)statementProxy,paramAppender);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 12,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 246,
+        "startLineNumber" : 66,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 70,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (statementProxy instanceof ParametersHolder) {\n  whereCondition=recognizer.getWhereCondition((ParametersHolder)statementProxy,paramAppender);\n}\n else {\n  whereCondition=recognizer.getWhereCondition();\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 24,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3197,
+        "startLineNumber" : 52,
+        "startColumnNumber" : 61,
+        "endLineNumber" : 132,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  SQLSelectRecognizer recognizer=(SQLSelectRecognizer)sqlRecognizer;\n  Connection conn=statementProxy.getConnection();\n  ResultSet rs=null;\n  Savepoint sp=null;\n  LockRetryController lockRetryController=new LockRetryController();\n  boolean originalAutoCommit=conn.getAutoCommit();\n  StringBuffer selectSQLAppender=new StringBuffer(\"SELECT \");\n  selectSQLAppender.append(getColumnNameInSQL(getTableMeta().getPkName()));\n  selectSQLAppender.append(\" FROM \" + getFromTableInSQL());\n  String whereCondition=null;\n  ArrayList<Object> paramAppender=new ArrayList<>();\n  if (statementProxy instanceof ParametersHolder) {\n    whereCondition=recognizer.getWhereCondition((ParametersHolder)statementProxy,paramAppender);\n  }\n else {\n    whereCondition=recognizer.getWhereCondition();\n  }\n  if (!StringUtils.isEmpty(whereCondition)) {\n    selectSQLAppender.append(\" WHERE \" + whereCondition);\n  }\n  selectSQLAppender.append(\" FOR UPDATE\");\n  String selectPKSQL=selectSQLAppender.toString();\n  try {\n    if (originalAutoCommit) {\n      conn.setAutoCommit(false);\n    }\n    sp=conn.setSavepoint();\n    rs=statementCallback.execute(statementProxy.getTargetStatement(),args);\n    while (true) {\n      Statement stPK=null;\n      PreparedStatement pstPK=null;\n      ResultSet rsPK=null;\n      try {\n        if (paramAppender.isEmpty()) {\n          stPK=statementProxy.getConnection().createStatement();\n          rsPK=stPK.executeQuery(selectPKSQL);\n        }\n else {\n          pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n          for (int i=0; i < paramAppender.size(); i++) {\n            pstPK.setObject(i + 1,paramAppender.get(i));\n          }\n          rsPK=pstPK.executeQuery();\n        }\n        TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n        String lockKeys=buildLockKey(selectPKRows);\n        statementProxy.getConnectionProxy().checkLock(lockKeys);\n        break;\n      }\n catch (      LockConflictException lce) {\n        conn.rollback(sp);\n        lockRetryController.sleep(lce);\n      }\n finally {\n        if (rsPK != null) {\n          rsPK.close();\n        }\n        if (stPK != null) {\n          stPK.close();\n        }\n        if (pstPK != null) {\n          pstPK.close();\n        }\n      }\n    }\n  }\n  finally {\n    if (sp != null) {\n      conn.releaseSavepoint(sp);\n    }\n    if (originalAutoCommit) {\n      conn.setAutoCommit(true);\n    }\n  }\n  return rs;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 343,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3268,
+        "startLineNumber" : 51,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 132,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public Object doExecute(Object... args) throws Throwable {\n  SQLSelectRecognizer recognizer=(SQLSelectRecognizer)sqlRecognizer;\n  Connection conn=statementProxy.getConnection();\n  ResultSet rs=null;\n  Savepoint sp=null;\n  LockRetryController lockRetryController=new LockRetryController();\n  boolean originalAutoCommit=conn.getAutoCommit();\n  StringBuffer selectSQLAppender=new StringBuffer(\"SELECT \");\n  selectSQLAppender.append(getColumnNameInSQL(getTableMeta().getPkName()));\n  selectSQLAppender.append(\" FROM \" + getFromTableInSQL());\n  String whereCondition=null;\n  ArrayList<Object> paramAppender=new ArrayList<>();\n  if (statementProxy instanceof ParametersHolder) {\n    whereCondition=recognizer.getWhereCondition((ParametersHolder)statementProxy,paramAppender);\n  }\n else {\n    whereCondition=recognizer.getWhereCondition();\n  }\n  if (!StringUtils.isEmpty(whereCondition)) {\n    selectSQLAppender.append(\" WHERE \" + whereCondition);\n  }\n  selectSQLAppender.append(\" FOR UPDATE\");\n  String selectPKSQL=selectSQLAppender.toString();\n  try {\n    if (originalAutoCommit) {\n      conn.setAutoCommit(false);\n    }\n    sp=conn.setSavepoint();\n    rs=statementCallback.execute(statementProxy.getTargetStatement(),args);\n    while (true) {\n      Statement stPK=null;\n      PreparedStatement pstPK=null;\n      ResultSet rsPK=null;\n      try {\n        if (paramAppender.isEmpty()) {\n          stPK=statementProxy.getConnection().createStatement();\n          rsPK=stPK.executeQuery(selectPKSQL);\n        }\n else {\n          pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n          for (int i=0; i < paramAppender.size(); i++) {\n            pstPK.setObject(i + 1,paramAppender.get(i));\n          }\n          rsPK=pstPK.executeQuery();\n        }\n        TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n        String lockKeys=buildLockKey(selectPKRows);\n        statementProxy.getConnectionProxy().checkLock(lockKeys);\n        break;\n      }\n catch (      LockConflictException lce) {\n        conn.rollback(sp);\n        lockRetryController.sleep(lce);\n      }\n finally {\n        if (rsPK != null) {\n          rsPK.close();\n        }\n        if (stPK != null) {\n          stPK.close();\n        }\n        if (pstPK != null) {\n          pstPK.close();\n        }\n      }\n    }\n  }\n  finally {\n    if (sp != null) {\n      conn.releaseSavepoint(sp);\n    }\n    if (originalAutoCommit) {\n      conn.setAutoCommit(true);\n    }\n  }\n  return rs;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 356,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 96,
+        "startLineNumber" : 67,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 67,
+        "endColumnNumber" : 108
+      },
+      "nodeContext" : "whereCondition=recognizer.getWhereCondition((ParametersHolder)statementProxy,paramAppender);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 11,
       "astHeight" : 6
     },
-    "tokenLength" : 6,
-    "type" : "boolean"
+    "tokenLength" : 1,
+    "type" : "com.alibaba.fescar.rm.datasource.StatementProxy<S>"
+  }, {
+    "nodeContext" : "statementProxy",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 14,
+      "startLineNumber" : 82,
+      "startColumnNumber" : 43,
+      "endLineNumber" : 82,
+      "endColumnNumber" : 57
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 35,
+        "startLineNumber" : 82,
+        "startColumnNumber" : 43,
+        "endLineNumber" : 82,
+        "endColumnNumber" : 78
+      },
+      "nodeContext" : "statementProxy.getTargetStatement()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
+      "nodePosition" : {
+        "charLength" : 68,
+        "startLineNumber" : 82,
+        "startColumnNumber" : 17,
+        "endLineNumber" : 82,
+        "endColumnNumber" : 85
+      },
+      "nodeContext" : "statementCallback.execute(statementProxy.getTargetStatement(),args)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 73,
+        "startLineNumber" : 82,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 82,
+        "endColumnNumber" : 85
+      },
+      "nodeContext" : "rs=statementCallback.execute(statementProxy.getTargetStatement(),args)",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 74,
+        "startLineNumber" : 82,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 82,
+        "endColumnNumber" : 86
+      },
+      "nodeContext" : "rs=statementCallback.execute(statementProxy.getTargetStatement(),args);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 1816,
+        "startLineNumber" : 77,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  if (originalAutoCommit) {\n    conn.setAutoCommit(false);\n  }\n  sp=conn.setSavepoint();\n  rs=statementCallback.execute(statementProxy.getTargetStatement(),args);\n  while (true) {\n    Statement stPK=null;\n    PreparedStatement pstPK=null;\n    ResultSet rsPK=null;\n    try {\n      if (paramAppender.isEmpty()) {\n        stPK=statementProxy.getConnection().createStatement();\n        rsPK=stPK.executeQuery(selectPKSQL);\n      }\n else {\n        pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n        for (int i=0; i < paramAppender.size(); i++) {\n          pstPK.setObject(i + 1,paramAppender.get(i));\n        }\n        rsPK=pstPK.executeQuery();\n      }\n      TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n      String lockKeys=buildLockKey(selectPKRows);\n      statementProxy.getConnectionProxy().checkLock(lockKeys);\n      break;\n    }\n catch (    LockConflictException lce) {\n      conn.rollback(sp);\n      lockRetryController.sleep(lce);\n    }\n finally {\n      if (rsPK != null) {\n        rsPK.close();\n      }\n      if (stPK != null) {\n        stPK.close();\n      }\n      if (pstPK != null) {\n        pstPK.close();\n      }\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 180,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 2021,
+        "startLineNumber" : 77,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 130,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "try {\n  if (originalAutoCommit) {\n    conn.setAutoCommit(false);\n  }\n  sp=conn.setSavepoint();\n  rs=statementCallback.execute(statementProxy.getTargetStatement(),args);\n  while (true) {\n    Statement stPK=null;\n    PreparedStatement pstPK=null;\n    ResultSet rsPK=null;\n    try {\n      if (paramAppender.isEmpty()) {\n        stPK=statementProxy.getConnection().createStatement();\n        rsPK=stPK.executeQuery(selectPKSQL);\n      }\n else {\n        pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n        for (int i=0; i < paramAppender.size(); i++) {\n          pstPK.setObject(i + 1,paramAppender.get(i));\n        }\n        rsPK=pstPK.executeQuery();\n      }\n      TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n      String lockKeys=buildLockKey(selectPKRows);\n      statementProxy.getConnectionProxy().checkLock(lockKeys);\n      break;\n    }\n catch (    LockConflictException lce) {\n      conn.rollback(sp);\n      lockRetryController.sleep(lce);\n    }\n finally {\n      if (rsPK != null) {\n        rsPK.close();\n      }\n      if (stPK != null) {\n        stPK.close();\n      }\n      if (pstPK != null) {\n        pstPK.close();\n      }\n    }\n  }\n}\n  finally {\n  if (sp != null) {\n    conn.releaseSavepoint(sp);\n  }\n  if (originalAutoCommit) {\n    conn.setAutoCommit(true);\n  }\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 200,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3197,
+        "startLineNumber" : 52,
+        "startColumnNumber" : 61,
+        "endLineNumber" : 132,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  SQLSelectRecognizer recognizer=(SQLSelectRecognizer)sqlRecognizer;\n  Connection conn=statementProxy.getConnection();\n  ResultSet rs=null;\n  Savepoint sp=null;\n  LockRetryController lockRetryController=new LockRetryController();\n  boolean originalAutoCommit=conn.getAutoCommit();\n  StringBuffer selectSQLAppender=new StringBuffer(\"SELECT \");\n  selectSQLAppender.append(getColumnNameInSQL(getTableMeta().getPkName()));\n  selectSQLAppender.append(\" FROM \" + getFromTableInSQL());\n  String whereCondition=null;\n  ArrayList<Object> paramAppender=new ArrayList<>();\n  if (statementProxy instanceof ParametersHolder) {\n    whereCondition=recognizer.getWhereCondition((ParametersHolder)statementProxy,paramAppender);\n  }\n else {\n    whereCondition=recognizer.getWhereCondition();\n  }\n  if (!StringUtils.isEmpty(whereCondition)) {\n    selectSQLAppender.append(\" WHERE \" + whereCondition);\n  }\n  selectSQLAppender.append(\" FOR UPDATE\");\n  String selectPKSQL=selectSQLAppender.toString();\n  try {\n    if (originalAutoCommit) {\n      conn.setAutoCommit(false);\n    }\n    sp=conn.setSavepoint();\n    rs=statementCallback.execute(statementProxy.getTargetStatement(),args);\n    while (true) {\n      Statement stPK=null;\n      PreparedStatement pstPK=null;\n      ResultSet rsPK=null;\n      try {\n        if (paramAppender.isEmpty()) {\n          stPK=statementProxy.getConnection().createStatement();\n          rsPK=stPK.executeQuery(selectPKSQL);\n        }\n else {\n          pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n          for (int i=0; i < paramAppender.size(); i++) {\n            pstPK.setObject(i + 1,paramAppender.get(i));\n          }\n          rsPK=pstPK.executeQuery();\n        }\n        TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n        String lockKeys=buildLockKey(selectPKRows);\n        statementProxy.getConnectionProxy().checkLock(lockKeys);\n        break;\n      }\n catch (      LockConflictException lce) {\n        conn.rollback(sp);\n        lockRetryController.sleep(lce);\n      }\n finally {\n        if (rsPK != null) {\n          rsPK.close();\n        }\n        if (stPK != null) {\n          stPK.close();\n        }\n        if (pstPK != null) {\n          pstPK.close();\n        }\n      }\n    }\n  }\n  finally {\n    if (sp != null) {\n      conn.releaseSavepoint(sp);\n    }\n    if (originalAutoCommit) {\n      conn.setAutoCommit(true);\n    }\n  }\n  return rs;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 343,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3268,
+        "startLineNumber" : 51,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 132,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public Object doExecute(Object... args) throws Throwable {\n  SQLSelectRecognizer recognizer=(SQLSelectRecognizer)sqlRecognizer;\n  Connection conn=statementProxy.getConnection();\n  ResultSet rs=null;\n  Savepoint sp=null;\n  LockRetryController lockRetryController=new LockRetryController();\n  boolean originalAutoCommit=conn.getAutoCommit();\n  StringBuffer selectSQLAppender=new StringBuffer(\"SELECT \");\n  selectSQLAppender.append(getColumnNameInSQL(getTableMeta().getPkName()));\n  selectSQLAppender.append(\" FROM \" + getFromTableInSQL());\n  String whereCondition=null;\n  ArrayList<Object> paramAppender=new ArrayList<>();\n  if (statementProxy instanceof ParametersHolder) {\n    whereCondition=recognizer.getWhereCondition((ParametersHolder)statementProxy,paramAppender);\n  }\n else {\n    whereCondition=recognizer.getWhereCondition();\n  }\n  if (!StringUtils.isEmpty(whereCondition)) {\n    selectSQLAppender.append(\" WHERE \" + whereCondition);\n  }\n  selectSQLAppender.append(\" FOR UPDATE\");\n  String selectPKSQL=selectSQLAppender.toString();\n  try {\n    if (originalAutoCommit) {\n      conn.setAutoCommit(false);\n    }\n    sp=conn.setSavepoint();\n    rs=statementCallback.execute(statementProxy.getTargetStatement(),args);\n    while (true) {\n      Statement stPK=null;\n      PreparedStatement pstPK=null;\n      ResultSet rsPK=null;\n      try {\n        if (paramAppender.isEmpty()) {\n          stPK=statementProxy.getConnection().createStatement();\n          rsPK=stPK.executeQuery(selectPKSQL);\n        }\n else {\n          pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n          for (int i=0; i < paramAppender.size(); i++) {\n            pstPK.setObject(i + 1,paramAppender.get(i));\n          }\n          rsPK=pstPK.executeQuery();\n        }\n        TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n        String lockKeys=buildLockKey(selectPKRows);\n        statementProxy.getConnectionProxy().checkLock(lockKeys);\n        break;\n      }\n catch (      LockConflictException lce) {\n        conn.rollback(sp);\n        lockRetryController.sleep(lce);\n      }\n finally {\n        if (rsPK != null) {\n          rsPK.close();\n        }\n        if (stPK != null) {\n          stPK.close();\n        }\n        if (pstPK != null) {\n          pstPK.close();\n        }\n      }\n    }\n  }\n  finally {\n    if (sp != null) {\n      conn.releaseSavepoint(sp);\n    }\n    if (originalAutoCommit) {\n      conn.setAutoCommit(true);\n    }\n  }\n  return rs;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 356,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 74,
+        "startLineNumber" : 82,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 82,
+        "endColumnNumber" : 86
+      },
+      "nodeContext" : "rs=statementCallback.execute(statementProxy.getTargetStatement(),args);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "com.alibaba.fescar.rm.datasource.StatementProxy<S>"
+  }, {
+    "nodeContext" : "statementProxy",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 14,
+      "startLineNumber" : 91,
+      "startColumnNumber" : 31,
+      "endLineNumber" : 91,
+      "endColumnNumber" : 45
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 91,
+        "startColumnNumber" : 31,
+        "endLineNumber" : 91,
+        "endColumnNumber" : 61
+      },
+      "nodeContext" : "statementProxy.getConnection()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
+      "nodePosition" : {
+        "charLength" : 48,
+        "startLineNumber" : 91,
+        "startColumnNumber" : 31,
+        "endLineNumber" : 91,
+        "endColumnNumber" : 79
+      },
+      "nodeContext" : "statementProxy.getConnection().createStatement()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 55,
+        "startLineNumber" : 91,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 91,
+        "endColumnNumber" : 79
+      },
+      "nodeContext" : "stPK=statementProxy.getConnection().createStatement()",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 56,
+        "startLineNumber" : 91,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 91,
+        "endColumnNumber" : 80
+      },
+      "nodeContext" : "stPK=statementProxy.getConnection().createStatement();\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 167,
+        "startLineNumber" : 90,
+        "startColumnNumber" : 49,
+        "endLineNumber" : 93,
+        "endColumnNumber" : 21
+      },
+      "nodeContext" : "{\n  stPK=statementProxy.getConnection().createStatement();\n  rsPK=stPK.executeQuery(selectPKSQL);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 16,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 545,
+        "startLineNumber" : 90,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 99,
+        "endColumnNumber" : 21
+      },
+      "nodeContext" : "if (paramAppender.isEmpty()) {\n  stPK=statementProxy.getConnection().createStatement();\n  rsPK=stPK.executeQuery(selectPKSQL);\n}\n else {\n  pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n  for (int i=0; i < paramAppender.size(); i++) {\n    pstPK.setObject(i + 1,paramAppender.get(i));\n  }\n  rsPK=pstPK.executeQuery();\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 61,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 854,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 106,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "{\n  if (paramAppender.isEmpty()) {\n    stPK=statementProxy.getConnection().createStatement();\n    rsPK=stPK.executeQuery(selectPKSQL);\n  }\n else {\n    pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n    for (int i=0; i < paramAppender.size(); i++) {\n      pstPK.setObject(i + 1,paramAppender.get(i));\n    }\n    rsPK=pstPK.executeQuery();\n  }\n  TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n  String lockKeys=buildLockKey(selectPKRows);\n  statementProxy.getConnectionProxy().checkLock(lockKeys);\n  break;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 89,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1334,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 120,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "try {\n  if (paramAppender.isEmpty()) {\n    stPK=statementProxy.getConnection().createStatement();\n    rsPK=stPK.executeQuery(selectPKSQL);\n  }\n else {\n    pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n    for (int i=0; i < paramAppender.size(); i++) {\n      pstPK.setObject(i + 1,paramAppender.get(i));\n    }\n    rsPK=pstPK.executeQuery();\n  }\n  TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n  String lockKeys=buildLockKey(selectPKRows);\n  statementProxy.getConnectionProxy().checkLock(lockKeys);\n  break;\n}\n catch (LockConflictException lce) {\n  conn.rollback(sp);\n  lockRetryController.sleep(lce);\n}\n finally {\n  if (rsPK != null) {\n    rsPK.close();\n  }\n  if (stPK != null) {\n    stPK.close();\n  }\n  if (pstPK != null) {\n    pstPK.close();\n  }\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 134,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.WhileStatement,body]",
+      "nodePosition" : {
+        "charLength" : 1557,
+        "startLineNumber" : 84,
+        "startColumnNumber" : 25,
+        "endLineNumber" : 121,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  Statement stPK=null;\n  PreparedStatement pstPK=null;\n  ResultSet rsPK=null;\n  try {\n    if (paramAppender.isEmpty()) {\n      stPK=statementProxy.getConnection().createStatement();\n      rsPK=stPK.executeQuery(selectPKSQL);\n    }\n else {\n      pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n      for (int i=0; i < paramAppender.size(); i++) {\n        pstPK.setObject(i + 1,paramAppender.get(i));\n      }\n      rsPK=pstPK.executeQuery();\n    }\n    TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n    String lockKeys=buildLockKey(selectPKRows);\n    statementProxy.getConnectionProxy().checkLock(lockKeys);\n    break;\n  }\n catch (  LockConflictException lce) {\n    conn.rollback(sp);\n    lockRetryController.sleep(lce);\n  }\n finally {\n    if (rsPK != null) {\n      rsPK.close();\n    }\n    if (stPK != null) {\n      stPK.close();\n    }\n    if (pstPK != null) {\n      pstPK.close();\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 153,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1570,
+        "startLineNumber" : 84,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 121,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "while (true) {\n  Statement stPK=null;\n  PreparedStatement pstPK=null;\n  ResultSet rsPK=null;\n  try {\n    if (paramAppender.isEmpty()) {\n      stPK=statementProxy.getConnection().createStatement();\n      rsPK=stPK.executeQuery(selectPKSQL);\n    }\n else {\n      pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n      for (int i=0; i < paramAppender.size(); i++) {\n        pstPK.setObject(i + 1,paramAppender.get(i));\n      }\n      rsPK=pstPK.executeQuery();\n    }\n    TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n    String lockKeys=buildLockKey(selectPKRows);\n    statementProxy.getConnectionProxy().checkLock(lockKeys);\n    break;\n  }\n catch (  LockConflictException lce) {\n    conn.rollback(sp);\n    lockRetryController.sleep(lce);\n  }\n finally {\n    if (rsPK != null) {\n      rsPK.close();\n    }\n    if (stPK != null) {\n      stPK.close();\n    }\n    if (pstPK != null) {\n      pstPK.close();\n    }\n  }\n}\n",
+      "nodeType" : "WhileStatement",
+      "astNodeNumber" : 155,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 1816,
+        "startLineNumber" : 77,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  if (originalAutoCommit) {\n    conn.setAutoCommit(false);\n  }\n  sp=conn.setSavepoint();\n  rs=statementCallback.execute(statementProxy.getTargetStatement(),args);\n  while (true) {\n    Statement stPK=null;\n    PreparedStatement pstPK=null;\n    ResultSet rsPK=null;\n    try {\n      if (paramAppender.isEmpty()) {\n        stPK=statementProxy.getConnection().createStatement();\n        rsPK=stPK.executeQuery(selectPKSQL);\n      }\n else {\n        pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n        for (int i=0; i < paramAppender.size(); i++) {\n          pstPK.setObject(i + 1,paramAppender.get(i));\n        }\n        rsPK=pstPK.executeQuery();\n      }\n      TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n      String lockKeys=buildLockKey(selectPKRows);\n      statementProxy.getConnectionProxy().checkLock(lockKeys);\n      break;\n    }\n catch (    LockConflictException lce) {\n      conn.rollback(sp);\n      lockRetryController.sleep(lce);\n    }\n finally {\n      if (rsPK != null) {\n        rsPK.close();\n      }\n      if (stPK != null) {\n        stPK.close();\n      }\n      if (pstPK != null) {\n        pstPK.close();\n      }\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 180,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 2021,
+        "startLineNumber" : 77,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 130,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "try {\n  if (originalAutoCommit) {\n    conn.setAutoCommit(false);\n  }\n  sp=conn.setSavepoint();\n  rs=statementCallback.execute(statementProxy.getTargetStatement(),args);\n  while (true) {\n    Statement stPK=null;\n    PreparedStatement pstPK=null;\n    ResultSet rsPK=null;\n    try {\n      if (paramAppender.isEmpty()) {\n        stPK=statementProxy.getConnection().createStatement();\n        rsPK=stPK.executeQuery(selectPKSQL);\n      }\n else {\n        pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n        for (int i=0; i < paramAppender.size(); i++) {\n          pstPK.setObject(i + 1,paramAppender.get(i));\n        }\n        rsPK=pstPK.executeQuery();\n      }\n      TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n      String lockKeys=buildLockKey(selectPKRows);\n      statementProxy.getConnectionProxy().checkLock(lockKeys);\n      break;\n    }\n catch (    LockConflictException lce) {\n      conn.rollback(sp);\n      lockRetryController.sleep(lce);\n    }\n finally {\n      if (rsPK != null) {\n        rsPK.close();\n      }\n      if (stPK != null) {\n        stPK.close();\n      }\n      if (pstPK != null) {\n        pstPK.close();\n      }\n    }\n  }\n}\n  finally {\n  if (sp != null) {\n    conn.releaseSavepoint(sp);\n  }\n  if (originalAutoCommit) {\n    conn.setAutoCommit(true);\n  }\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 200,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3197,
+        "startLineNumber" : 52,
+        "startColumnNumber" : 61,
+        "endLineNumber" : 132,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  SQLSelectRecognizer recognizer=(SQLSelectRecognizer)sqlRecognizer;\n  Connection conn=statementProxy.getConnection();\n  ResultSet rs=null;\n  Savepoint sp=null;\n  LockRetryController lockRetryController=new LockRetryController();\n  boolean originalAutoCommit=conn.getAutoCommit();\n  StringBuffer selectSQLAppender=new StringBuffer(\"SELECT \");\n  selectSQLAppender.append(getColumnNameInSQL(getTableMeta().getPkName()));\n  selectSQLAppender.append(\" FROM \" + getFromTableInSQL());\n  String whereCondition=null;\n  ArrayList<Object> paramAppender=new ArrayList<>();\n  if (statementProxy instanceof ParametersHolder) {\n    whereCondition=recognizer.getWhereCondition((ParametersHolder)statementProxy,paramAppender);\n  }\n else {\n    whereCondition=recognizer.getWhereCondition();\n  }\n  if (!StringUtils.isEmpty(whereCondition)) {\n    selectSQLAppender.append(\" WHERE \" + whereCondition);\n  }\n  selectSQLAppender.append(\" FOR UPDATE\");\n  String selectPKSQL=selectSQLAppender.toString();\n  try {\n    if (originalAutoCommit) {\n      conn.setAutoCommit(false);\n    }\n    sp=conn.setSavepoint();\n    rs=statementCallback.execute(statementProxy.getTargetStatement(),args);\n    while (true) {\n      Statement stPK=null;\n      PreparedStatement pstPK=null;\n      ResultSet rsPK=null;\n      try {\n        if (paramAppender.isEmpty()) {\n          stPK=statementProxy.getConnection().createStatement();\n          rsPK=stPK.executeQuery(selectPKSQL);\n        }\n else {\n          pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n          for (int i=0; i < paramAppender.size(); i++) {\n            pstPK.setObject(i + 1,paramAppender.get(i));\n          }\n          rsPK=pstPK.executeQuery();\n        }\n        TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n        String lockKeys=buildLockKey(selectPKRows);\n        statementProxy.getConnectionProxy().checkLock(lockKeys);\n        break;\n      }\n catch (      LockConflictException lce) {\n        conn.rollback(sp);\n        lockRetryController.sleep(lce);\n      }\n finally {\n        if (rsPK != null) {\n          rsPK.close();\n        }\n        if (stPK != null) {\n          stPK.close();\n        }\n        if (pstPK != null) {\n          pstPK.close();\n        }\n      }\n    }\n  }\n  finally {\n    if (sp != null) {\n      conn.releaseSavepoint(sp);\n    }\n    if (originalAutoCommit) {\n      conn.setAutoCommit(true);\n    }\n  }\n  return rs;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 343,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3268,
+        "startLineNumber" : 51,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 132,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public Object doExecute(Object... args) throws Throwable {\n  SQLSelectRecognizer recognizer=(SQLSelectRecognizer)sqlRecognizer;\n  Connection conn=statementProxy.getConnection();\n  ResultSet rs=null;\n  Savepoint sp=null;\n  LockRetryController lockRetryController=new LockRetryController();\n  boolean originalAutoCommit=conn.getAutoCommit();\n  StringBuffer selectSQLAppender=new StringBuffer(\"SELECT \");\n  selectSQLAppender.append(getColumnNameInSQL(getTableMeta().getPkName()));\n  selectSQLAppender.append(\" FROM \" + getFromTableInSQL());\n  String whereCondition=null;\n  ArrayList<Object> paramAppender=new ArrayList<>();\n  if (statementProxy instanceof ParametersHolder) {\n    whereCondition=recognizer.getWhereCondition((ParametersHolder)statementProxy,paramAppender);\n  }\n else {\n    whereCondition=recognizer.getWhereCondition();\n  }\n  if (!StringUtils.isEmpty(whereCondition)) {\n    selectSQLAppender.append(\" WHERE \" + whereCondition);\n  }\n  selectSQLAppender.append(\" FOR UPDATE\");\n  String selectPKSQL=selectSQLAppender.toString();\n  try {\n    if (originalAutoCommit) {\n      conn.setAutoCommit(false);\n    }\n    sp=conn.setSavepoint();\n    rs=statementCallback.execute(statementProxy.getTargetStatement(),args);\n    while (true) {\n      Statement stPK=null;\n      PreparedStatement pstPK=null;\n      ResultSet rsPK=null;\n      try {\n        if (paramAppender.isEmpty()) {\n          stPK=statementProxy.getConnection().createStatement();\n          rsPK=stPK.executeQuery(selectPKSQL);\n        }\n else {\n          pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n          for (int i=0; i < paramAppender.size(); i++) {\n            pstPK.setObject(i + 1,paramAppender.get(i));\n          }\n          rsPK=pstPK.executeQuery();\n        }\n        TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n        String lockKeys=buildLockKey(selectPKRows);\n        statementProxy.getConnectionProxy().checkLock(lockKeys);\n        break;\n      }\n catch (      LockConflictException lce) {\n        conn.rollback(sp);\n        lockRetryController.sleep(lce);\n      }\n finally {\n        if (rsPK != null) {\n          rsPK.close();\n        }\n        if (stPK != null) {\n          stPK.close();\n        }\n        if (pstPK != null) {\n          pstPK.close();\n        }\n      }\n    }\n  }\n  finally {\n    if (sp != null) {\n      conn.releaseSavepoint(sp);\n    }\n    if (originalAutoCommit) {\n      conn.setAutoCommit(true);\n    }\n  }\n  return rs;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 356,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 56,
+        "startLineNumber" : 91,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 91,
+        "endColumnNumber" : 80
+      },
+      "nodeContext" : "stPK=statementProxy.getConnection().createStatement();\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "com.alibaba.fescar.rm.datasource.StatementProxy<S>"
+  }, {
+    "nodeContext" : "statementProxy",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 14,
+      "startLineNumber" : 94,
+      "startColumnNumber" : 32,
+      "endLineNumber" : 94,
+      "endColumnNumber" : 46
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 94,
+        "startColumnNumber" : 32,
+        "endLineNumber" : 94,
+        "endColumnNumber" : 62
+      },
+      "nodeContext" : "statementProxy.getConnection()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
+      "nodePosition" : {
+        "charLength" : 60,
+        "startLineNumber" : 94,
+        "startColumnNumber" : 32,
+        "endLineNumber" : 94,
+        "endColumnNumber" : 92
+      },
+      "nodeContext" : "statementProxy.getConnection().prepareStatement(selectPKSQL)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 68,
+        "startLineNumber" : 94,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 94,
+        "endColumnNumber" : 92
+      },
+      "nodeContext" : "pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL)",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 69,
+        "startLineNumber" : 94,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 94,
+        "endColumnNumber" : 93
+      },
+      "nodeContext" : "pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 343,
+        "startLineNumber" : 93,
+        "startColumnNumber" : 27,
+        "endLineNumber" : 99,
+        "endColumnNumber" : 21
+      },
+      "nodeContext" : "{\n  pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n  for (int i=0; i < paramAppender.size(); i++) {\n    pstPK.setObject(i + 1,paramAppender.get(i));\n  }\n  rsPK=pstPK.executeQuery();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 41,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 545,
+        "startLineNumber" : 90,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 99,
+        "endColumnNumber" : 21
+      },
+      "nodeContext" : "if (paramAppender.isEmpty()) {\n  stPK=statementProxy.getConnection().createStatement();\n  rsPK=stPK.executeQuery(selectPKSQL);\n}\n else {\n  pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n  for (int i=0; i < paramAppender.size(); i++) {\n    pstPK.setObject(i + 1,paramAppender.get(i));\n  }\n  rsPK=pstPK.executeQuery();\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 61,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 854,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 106,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "{\n  if (paramAppender.isEmpty()) {\n    stPK=statementProxy.getConnection().createStatement();\n    rsPK=stPK.executeQuery(selectPKSQL);\n  }\n else {\n    pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n    for (int i=0; i < paramAppender.size(); i++) {\n      pstPK.setObject(i + 1,paramAppender.get(i));\n    }\n    rsPK=pstPK.executeQuery();\n  }\n  TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n  String lockKeys=buildLockKey(selectPKRows);\n  statementProxy.getConnectionProxy().checkLock(lockKeys);\n  break;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 89,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1334,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 120,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "try {\n  if (paramAppender.isEmpty()) {\n    stPK=statementProxy.getConnection().createStatement();\n    rsPK=stPK.executeQuery(selectPKSQL);\n  }\n else {\n    pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n    for (int i=0; i < paramAppender.size(); i++) {\n      pstPK.setObject(i + 1,paramAppender.get(i));\n    }\n    rsPK=pstPK.executeQuery();\n  }\n  TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n  String lockKeys=buildLockKey(selectPKRows);\n  statementProxy.getConnectionProxy().checkLock(lockKeys);\n  break;\n}\n catch (LockConflictException lce) {\n  conn.rollback(sp);\n  lockRetryController.sleep(lce);\n}\n finally {\n  if (rsPK != null) {\n    rsPK.close();\n  }\n  if (stPK != null) {\n    stPK.close();\n  }\n  if (pstPK != null) {\n    pstPK.close();\n  }\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 134,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.WhileStatement,body]",
+      "nodePosition" : {
+        "charLength" : 1557,
+        "startLineNumber" : 84,
+        "startColumnNumber" : 25,
+        "endLineNumber" : 121,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  Statement stPK=null;\n  PreparedStatement pstPK=null;\n  ResultSet rsPK=null;\n  try {\n    if (paramAppender.isEmpty()) {\n      stPK=statementProxy.getConnection().createStatement();\n      rsPK=stPK.executeQuery(selectPKSQL);\n    }\n else {\n      pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n      for (int i=0; i < paramAppender.size(); i++) {\n        pstPK.setObject(i + 1,paramAppender.get(i));\n      }\n      rsPK=pstPK.executeQuery();\n    }\n    TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n    String lockKeys=buildLockKey(selectPKRows);\n    statementProxy.getConnectionProxy().checkLock(lockKeys);\n    break;\n  }\n catch (  LockConflictException lce) {\n    conn.rollback(sp);\n    lockRetryController.sleep(lce);\n  }\n finally {\n    if (rsPK != null) {\n      rsPK.close();\n    }\n    if (stPK != null) {\n      stPK.close();\n    }\n    if (pstPK != null) {\n      pstPK.close();\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 153,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1570,
+        "startLineNumber" : 84,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 121,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "while (true) {\n  Statement stPK=null;\n  PreparedStatement pstPK=null;\n  ResultSet rsPK=null;\n  try {\n    if (paramAppender.isEmpty()) {\n      stPK=statementProxy.getConnection().createStatement();\n      rsPK=stPK.executeQuery(selectPKSQL);\n    }\n else {\n      pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n      for (int i=0; i < paramAppender.size(); i++) {\n        pstPK.setObject(i + 1,paramAppender.get(i));\n      }\n      rsPK=pstPK.executeQuery();\n    }\n    TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n    String lockKeys=buildLockKey(selectPKRows);\n    statementProxy.getConnectionProxy().checkLock(lockKeys);\n    break;\n  }\n catch (  LockConflictException lce) {\n    conn.rollback(sp);\n    lockRetryController.sleep(lce);\n  }\n finally {\n    if (rsPK != null) {\n      rsPK.close();\n    }\n    if (stPK != null) {\n      stPK.close();\n    }\n    if (pstPK != null) {\n      pstPK.close();\n    }\n  }\n}\n",
+      "nodeType" : "WhileStatement",
+      "astNodeNumber" : 155,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 1816,
+        "startLineNumber" : 77,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  if (originalAutoCommit) {\n    conn.setAutoCommit(false);\n  }\n  sp=conn.setSavepoint();\n  rs=statementCallback.execute(statementProxy.getTargetStatement(),args);\n  while (true) {\n    Statement stPK=null;\n    PreparedStatement pstPK=null;\n    ResultSet rsPK=null;\n    try {\n      if (paramAppender.isEmpty()) {\n        stPK=statementProxy.getConnection().createStatement();\n        rsPK=stPK.executeQuery(selectPKSQL);\n      }\n else {\n        pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n        for (int i=0; i < paramAppender.size(); i++) {\n          pstPK.setObject(i + 1,paramAppender.get(i));\n        }\n        rsPK=pstPK.executeQuery();\n      }\n      TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n      String lockKeys=buildLockKey(selectPKRows);\n      statementProxy.getConnectionProxy().checkLock(lockKeys);\n      break;\n    }\n catch (    LockConflictException lce) {\n      conn.rollback(sp);\n      lockRetryController.sleep(lce);\n    }\n finally {\n      if (rsPK != null) {\n        rsPK.close();\n      }\n      if (stPK != null) {\n        stPK.close();\n      }\n      if (pstPK != null) {\n        pstPK.close();\n      }\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 180,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 2021,
+        "startLineNumber" : 77,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 130,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "try {\n  if (originalAutoCommit) {\n    conn.setAutoCommit(false);\n  }\n  sp=conn.setSavepoint();\n  rs=statementCallback.execute(statementProxy.getTargetStatement(),args);\n  while (true) {\n    Statement stPK=null;\n    PreparedStatement pstPK=null;\n    ResultSet rsPK=null;\n    try {\n      if (paramAppender.isEmpty()) {\n        stPK=statementProxy.getConnection().createStatement();\n        rsPK=stPK.executeQuery(selectPKSQL);\n      }\n else {\n        pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n        for (int i=0; i < paramAppender.size(); i++) {\n          pstPK.setObject(i + 1,paramAppender.get(i));\n        }\n        rsPK=pstPK.executeQuery();\n      }\n      TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n      String lockKeys=buildLockKey(selectPKRows);\n      statementProxy.getConnectionProxy().checkLock(lockKeys);\n      break;\n    }\n catch (    LockConflictException lce) {\n      conn.rollback(sp);\n      lockRetryController.sleep(lce);\n    }\n finally {\n      if (rsPK != null) {\n        rsPK.close();\n      }\n      if (stPK != null) {\n        stPK.close();\n      }\n      if (pstPK != null) {\n        pstPK.close();\n      }\n    }\n  }\n}\n  finally {\n  if (sp != null) {\n    conn.releaseSavepoint(sp);\n  }\n  if (originalAutoCommit) {\n    conn.setAutoCommit(true);\n  }\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 200,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3197,
+        "startLineNumber" : 52,
+        "startColumnNumber" : 61,
+        "endLineNumber" : 132,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  SQLSelectRecognizer recognizer=(SQLSelectRecognizer)sqlRecognizer;\n  Connection conn=statementProxy.getConnection();\n  ResultSet rs=null;\n  Savepoint sp=null;\n  LockRetryController lockRetryController=new LockRetryController();\n  boolean originalAutoCommit=conn.getAutoCommit();\n  StringBuffer selectSQLAppender=new StringBuffer(\"SELECT \");\n  selectSQLAppender.append(getColumnNameInSQL(getTableMeta().getPkName()));\n  selectSQLAppender.append(\" FROM \" + getFromTableInSQL());\n  String whereCondition=null;\n  ArrayList<Object> paramAppender=new ArrayList<>();\n  if (statementProxy instanceof ParametersHolder) {\n    whereCondition=recognizer.getWhereCondition((ParametersHolder)statementProxy,paramAppender);\n  }\n else {\n    whereCondition=recognizer.getWhereCondition();\n  }\n  if (!StringUtils.isEmpty(whereCondition)) {\n    selectSQLAppender.append(\" WHERE \" + whereCondition);\n  }\n  selectSQLAppender.append(\" FOR UPDATE\");\n  String selectPKSQL=selectSQLAppender.toString();\n  try {\n    if (originalAutoCommit) {\n      conn.setAutoCommit(false);\n    }\n    sp=conn.setSavepoint();\n    rs=statementCallback.execute(statementProxy.getTargetStatement(),args);\n    while (true) {\n      Statement stPK=null;\n      PreparedStatement pstPK=null;\n      ResultSet rsPK=null;\n      try {\n        if (paramAppender.isEmpty()) {\n          stPK=statementProxy.getConnection().createStatement();\n          rsPK=stPK.executeQuery(selectPKSQL);\n        }\n else {\n          pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n          for (int i=0; i < paramAppender.size(); i++) {\n            pstPK.setObject(i + 1,paramAppender.get(i));\n          }\n          rsPK=pstPK.executeQuery();\n        }\n        TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n        String lockKeys=buildLockKey(selectPKRows);\n        statementProxy.getConnectionProxy().checkLock(lockKeys);\n        break;\n      }\n catch (      LockConflictException lce) {\n        conn.rollback(sp);\n        lockRetryController.sleep(lce);\n      }\n finally {\n        if (rsPK != null) {\n          rsPK.close();\n        }\n        if (stPK != null) {\n          stPK.close();\n        }\n        if (pstPK != null) {\n          pstPK.close();\n        }\n      }\n    }\n  }\n  finally {\n    if (sp != null) {\n      conn.releaseSavepoint(sp);\n    }\n    if (originalAutoCommit) {\n      conn.setAutoCommit(true);\n    }\n  }\n  return rs;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 343,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3268,
+        "startLineNumber" : 51,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 132,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public Object doExecute(Object... args) throws Throwable {\n  SQLSelectRecognizer recognizer=(SQLSelectRecognizer)sqlRecognizer;\n  Connection conn=statementProxy.getConnection();\n  ResultSet rs=null;\n  Savepoint sp=null;\n  LockRetryController lockRetryController=new LockRetryController();\n  boolean originalAutoCommit=conn.getAutoCommit();\n  StringBuffer selectSQLAppender=new StringBuffer(\"SELECT \");\n  selectSQLAppender.append(getColumnNameInSQL(getTableMeta().getPkName()));\n  selectSQLAppender.append(\" FROM \" + getFromTableInSQL());\n  String whereCondition=null;\n  ArrayList<Object> paramAppender=new ArrayList<>();\n  if (statementProxy instanceof ParametersHolder) {\n    whereCondition=recognizer.getWhereCondition((ParametersHolder)statementProxy,paramAppender);\n  }\n else {\n    whereCondition=recognizer.getWhereCondition();\n  }\n  if (!StringUtils.isEmpty(whereCondition)) {\n    selectSQLAppender.append(\" WHERE \" + whereCondition);\n  }\n  selectSQLAppender.append(\" FOR UPDATE\");\n  String selectPKSQL=selectSQLAppender.toString();\n  try {\n    if (originalAutoCommit) {\n      conn.setAutoCommit(false);\n    }\n    sp=conn.setSavepoint();\n    rs=statementCallback.execute(statementProxy.getTargetStatement(),args);\n    while (true) {\n      Statement stPK=null;\n      PreparedStatement pstPK=null;\n      ResultSet rsPK=null;\n      try {\n        if (paramAppender.isEmpty()) {\n          stPK=statementProxy.getConnection().createStatement();\n          rsPK=stPK.executeQuery(selectPKSQL);\n        }\n else {\n          pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n          for (int i=0; i < paramAppender.size(); i++) {\n            pstPK.setObject(i + 1,paramAppender.get(i));\n          }\n          rsPK=pstPK.executeQuery();\n        }\n        TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n        String lockKeys=buildLockKey(selectPKRows);\n        statementProxy.getConnectionProxy().checkLock(lockKeys);\n        break;\n      }\n catch (      LockConflictException lce) {\n        conn.rollback(sp);\n        lockRetryController.sleep(lce);\n      }\n finally {\n        if (rsPK != null) {\n          rsPK.close();\n        }\n        if (stPK != null) {\n          stPK.close();\n        }\n        if (pstPK != null) {\n          pstPK.close();\n        }\n      }\n    }\n  }\n  finally {\n    if (sp != null) {\n      conn.releaseSavepoint(sp);\n    }\n    if (originalAutoCommit) {\n      conn.setAutoCommit(true);\n    }\n  }\n  return rs;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 356,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 69,
+        "startLineNumber" : 94,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 94,
+        "endColumnNumber" : 93
+      },
+      "nodeContext" : "pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "com.alibaba.fescar.rm.datasource.StatementProxy<S>"
+  }, {
+    "nodeContext" : "statementProxy",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 14,
+      "startLineNumber" : 103,
+      "startColumnNumber" : 20,
+      "endLineNumber" : 103,
+      "endColumnNumber" : 34
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 35,
+        "startLineNumber" : 103,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 103,
+        "endColumnNumber" : 55
+      },
+      "nodeContext" : "statementProxy.getConnectionProxy()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 55,
+        "startLineNumber" : 103,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 103,
+        "endColumnNumber" : 75
+      },
+      "nodeContext" : "statementProxy.getConnectionProxy().checkLock(lockKeys)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 56,
+        "startLineNumber" : 103,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 103,
+        "endColumnNumber" : 76
+      },
+      "nodeContext" : "statementProxy.getConnectionProxy().checkLock(lockKeys);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 854,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 106,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "{\n  if (paramAppender.isEmpty()) {\n    stPK=statementProxy.getConnection().createStatement();\n    rsPK=stPK.executeQuery(selectPKSQL);\n  }\n else {\n    pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n    for (int i=0; i < paramAppender.size(); i++) {\n      pstPK.setObject(i + 1,paramAppender.get(i));\n    }\n    rsPK=pstPK.executeQuery();\n  }\n  TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n  String lockKeys=buildLockKey(selectPKRows);\n  statementProxy.getConnectionProxy().checkLock(lockKeys);\n  break;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 89,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1334,
+        "startLineNumber" : 89,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 120,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "try {\n  if (paramAppender.isEmpty()) {\n    stPK=statementProxy.getConnection().createStatement();\n    rsPK=stPK.executeQuery(selectPKSQL);\n  }\n else {\n    pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n    for (int i=0; i < paramAppender.size(); i++) {\n      pstPK.setObject(i + 1,paramAppender.get(i));\n    }\n    rsPK=pstPK.executeQuery();\n  }\n  TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n  String lockKeys=buildLockKey(selectPKRows);\n  statementProxy.getConnectionProxy().checkLock(lockKeys);\n  break;\n}\n catch (LockConflictException lce) {\n  conn.rollback(sp);\n  lockRetryController.sleep(lce);\n}\n finally {\n  if (rsPK != null) {\n    rsPK.close();\n  }\n  if (stPK != null) {\n    stPK.close();\n  }\n  if (pstPK != null) {\n    pstPK.close();\n  }\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 134,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.WhileStatement,body]",
+      "nodePosition" : {
+        "charLength" : 1557,
+        "startLineNumber" : 84,
+        "startColumnNumber" : 25,
+        "endLineNumber" : 121,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  Statement stPK=null;\n  PreparedStatement pstPK=null;\n  ResultSet rsPK=null;\n  try {\n    if (paramAppender.isEmpty()) {\n      stPK=statementProxy.getConnection().createStatement();\n      rsPK=stPK.executeQuery(selectPKSQL);\n    }\n else {\n      pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n      for (int i=0; i < paramAppender.size(); i++) {\n        pstPK.setObject(i + 1,paramAppender.get(i));\n      }\n      rsPK=pstPK.executeQuery();\n    }\n    TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n    String lockKeys=buildLockKey(selectPKRows);\n    statementProxy.getConnectionProxy().checkLock(lockKeys);\n    break;\n  }\n catch (  LockConflictException lce) {\n    conn.rollback(sp);\n    lockRetryController.sleep(lce);\n  }\n finally {\n    if (rsPK != null) {\n      rsPK.close();\n    }\n    if (stPK != null) {\n      stPK.close();\n    }\n    if (pstPK != null) {\n      pstPK.close();\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 153,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1570,
+        "startLineNumber" : 84,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 121,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "while (true) {\n  Statement stPK=null;\n  PreparedStatement pstPK=null;\n  ResultSet rsPK=null;\n  try {\n    if (paramAppender.isEmpty()) {\n      stPK=statementProxy.getConnection().createStatement();\n      rsPK=stPK.executeQuery(selectPKSQL);\n    }\n else {\n      pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n      for (int i=0; i < paramAppender.size(); i++) {\n        pstPK.setObject(i + 1,paramAppender.get(i));\n      }\n      rsPK=pstPK.executeQuery();\n    }\n    TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n    String lockKeys=buildLockKey(selectPKRows);\n    statementProxy.getConnectionProxy().checkLock(lockKeys);\n    break;\n  }\n catch (  LockConflictException lce) {\n    conn.rollback(sp);\n    lockRetryController.sleep(lce);\n  }\n finally {\n    if (rsPK != null) {\n      rsPK.close();\n    }\n    if (stPK != null) {\n      stPK.close();\n    }\n    if (pstPK != null) {\n      pstPK.close();\n    }\n  }\n}\n",
+      "nodeType" : "WhileStatement",
+      "astNodeNumber" : 155,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 1816,
+        "startLineNumber" : 77,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  if (originalAutoCommit) {\n    conn.setAutoCommit(false);\n  }\n  sp=conn.setSavepoint();\n  rs=statementCallback.execute(statementProxy.getTargetStatement(),args);\n  while (true) {\n    Statement stPK=null;\n    PreparedStatement pstPK=null;\n    ResultSet rsPK=null;\n    try {\n      if (paramAppender.isEmpty()) {\n        stPK=statementProxy.getConnection().createStatement();\n        rsPK=stPK.executeQuery(selectPKSQL);\n      }\n else {\n        pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n        for (int i=0; i < paramAppender.size(); i++) {\n          pstPK.setObject(i + 1,paramAppender.get(i));\n        }\n        rsPK=pstPK.executeQuery();\n      }\n      TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n      String lockKeys=buildLockKey(selectPKRows);\n      statementProxy.getConnectionProxy().checkLock(lockKeys);\n      break;\n    }\n catch (    LockConflictException lce) {\n      conn.rollback(sp);\n      lockRetryController.sleep(lce);\n    }\n finally {\n      if (rsPK != null) {\n        rsPK.close();\n      }\n      if (stPK != null) {\n        stPK.close();\n      }\n      if (pstPK != null) {\n        pstPK.close();\n      }\n    }\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 180,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 2021,
+        "startLineNumber" : 77,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 130,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "try {\n  if (originalAutoCommit) {\n    conn.setAutoCommit(false);\n  }\n  sp=conn.setSavepoint();\n  rs=statementCallback.execute(statementProxy.getTargetStatement(),args);\n  while (true) {\n    Statement stPK=null;\n    PreparedStatement pstPK=null;\n    ResultSet rsPK=null;\n    try {\n      if (paramAppender.isEmpty()) {\n        stPK=statementProxy.getConnection().createStatement();\n        rsPK=stPK.executeQuery(selectPKSQL);\n      }\n else {\n        pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n        for (int i=0; i < paramAppender.size(); i++) {\n          pstPK.setObject(i + 1,paramAppender.get(i));\n        }\n        rsPK=pstPK.executeQuery();\n      }\n      TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n      String lockKeys=buildLockKey(selectPKRows);\n      statementProxy.getConnectionProxy().checkLock(lockKeys);\n      break;\n    }\n catch (    LockConflictException lce) {\n      conn.rollback(sp);\n      lockRetryController.sleep(lce);\n    }\n finally {\n      if (rsPK != null) {\n        rsPK.close();\n      }\n      if (stPK != null) {\n        stPK.close();\n      }\n      if (pstPK != null) {\n        pstPK.close();\n      }\n    }\n  }\n}\n  finally {\n  if (sp != null) {\n    conn.releaseSavepoint(sp);\n  }\n  if (originalAutoCommit) {\n    conn.setAutoCommit(true);\n  }\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 200,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3197,
+        "startLineNumber" : 52,
+        "startColumnNumber" : 61,
+        "endLineNumber" : 132,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  SQLSelectRecognizer recognizer=(SQLSelectRecognizer)sqlRecognizer;\n  Connection conn=statementProxy.getConnection();\n  ResultSet rs=null;\n  Savepoint sp=null;\n  LockRetryController lockRetryController=new LockRetryController();\n  boolean originalAutoCommit=conn.getAutoCommit();\n  StringBuffer selectSQLAppender=new StringBuffer(\"SELECT \");\n  selectSQLAppender.append(getColumnNameInSQL(getTableMeta().getPkName()));\n  selectSQLAppender.append(\" FROM \" + getFromTableInSQL());\n  String whereCondition=null;\n  ArrayList<Object> paramAppender=new ArrayList<>();\n  if (statementProxy instanceof ParametersHolder) {\n    whereCondition=recognizer.getWhereCondition((ParametersHolder)statementProxy,paramAppender);\n  }\n else {\n    whereCondition=recognizer.getWhereCondition();\n  }\n  if (!StringUtils.isEmpty(whereCondition)) {\n    selectSQLAppender.append(\" WHERE \" + whereCondition);\n  }\n  selectSQLAppender.append(\" FOR UPDATE\");\n  String selectPKSQL=selectSQLAppender.toString();\n  try {\n    if (originalAutoCommit) {\n      conn.setAutoCommit(false);\n    }\n    sp=conn.setSavepoint();\n    rs=statementCallback.execute(statementProxy.getTargetStatement(),args);\n    while (true) {\n      Statement stPK=null;\n      PreparedStatement pstPK=null;\n      ResultSet rsPK=null;\n      try {\n        if (paramAppender.isEmpty()) {\n          stPK=statementProxy.getConnection().createStatement();\n          rsPK=stPK.executeQuery(selectPKSQL);\n        }\n else {\n          pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n          for (int i=0; i < paramAppender.size(); i++) {\n            pstPK.setObject(i + 1,paramAppender.get(i));\n          }\n          rsPK=pstPK.executeQuery();\n        }\n        TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n        String lockKeys=buildLockKey(selectPKRows);\n        statementProxy.getConnectionProxy().checkLock(lockKeys);\n        break;\n      }\n catch (      LockConflictException lce) {\n        conn.rollback(sp);\n        lockRetryController.sleep(lce);\n      }\n finally {\n        if (rsPK != null) {\n          rsPK.close();\n        }\n        if (stPK != null) {\n          stPK.close();\n        }\n        if (pstPK != null) {\n          pstPK.close();\n        }\n      }\n    }\n  }\n  finally {\n    if (sp != null) {\n      conn.releaseSavepoint(sp);\n    }\n    if (originalAutoCommit) {\n      conn.setAutoCommit(true);\n    }\n  }\n  return rs;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 343,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3268,
+        "startLineNumber" : 51,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 132,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public Object doExecute(Object... args) throws Throwable {\n  SQLSelectRecognizer recognizer=(SQLSelectRecognizer)sqlRecognizer;\n  Connection conn=statementProxy.getConnection();\n  ResultSet rs=null;\n  Savepoint sp=null;\n  LockRetryController lockRetryController=new LockRetryController();\n  boolean originalAutoCommit=conn.getAutoCommit();\n  StringBuffer selectSQLAppender=new StringBuffer(\"SELECT \");\n  selectSQLAppender.append(getColumnNameInSQL(getTableMeta().getPkName()));\n  selectSQLAppender.append(\" FROM \" + getFromTableInSQL());\n  String whereCondition=null;\n  ArrayList<Object> paramAppender=new ArrayList<>();\n  if (statementProxy instanceof ParametersHolder) {\n    whereCondition=recognizer.getWhereCondition((ParametersHolder)statementProxy,paramAppender);\n  }\n else {\n    whereCondition=recognizer.getWhereCondition();\n  }\n  if (!StringUtils.isEmpty(whereCondition)) {\n    selectSQLAppender.append(\" WHERE \" + whereCondition);\n  }\n  selectSQLAppender.append(\" FOR UPDATE\");\n  String selectPKSQL=selectSQLAppender.toString();\n  try {\n    if (originalAutoCommit) {\n      conn.setAutoCommit(false);\n    }\n    sp=conn.setSavepoint();\n    rs=statementCallback.execute(statementProxy.getTargetStatement(),args);\n    while (true) {\n      Statement stPK=null;\n      PreparedStatement pstPK=null;\n      ResultSet rsPK=null;\n      try {\n        if (paramAppender.isEmpty()) {\n          stPK=statementProxy.getConnection().createStatement();\n          rsPK=stPK.executeQuery(selectPKSQL);\n        }\n else {\n          pstPK=statementProxy.getConnection().prepareStatement(selectPKSQL);\n          for (int i=0; i < paramAppender.size(); i++) {\n            pstPK.setObject(i + 1,paramAppender.get(i));\n          }\n          rsPK=pstPK.executeQuery();\n        }\n        TableRecords selectPKRows=TableRecords.buildRecords(getTableMeta(),rsPK);\n        String lockKeys=buildLockKey(selectPKRows);\n        statementProxy.getConnectionProxy().checkLock(lockKeys);\n        break;\n      }\n catch (      LockConflictException lce) {\n        conn.rollback(sp);\n        lockRetryController.sleep(lce);\n      }\n finally {\n        if (rsPK != null) {\n          rsPK.close();\n        }\n        if (stPK != null) {\n          stPK.close();\n        }\n        if (pstPK != null) {\n          pstPK.close();\n        }\n      }\n    }\n  }\n  finally {\n    if (sp != null) {\n      conn.releaseSavepoint(sp);\n    }\n    if (originalAutoCommit) {\n      conn.setAutoCommit(true);\n    }\n  }\n  return rs;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 356,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 56,
+        "startLineNumber" : 103,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 103,
+        "endColumnNumber" : 76
+      },
+      "nodeContext" : "statementProxy.getConnectionProxy().checkLock(lockKeys);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "com.alibaba.fescar.rm.datasource.StatementProxy<S>"
   } ],
   "positionList" : [ {
-    "charLength" : 44,
-    "startLineNumber" : 67,
+    "charLength" : 14,
+    "startLineNumber" : 55,
+    "startColumnNumber" : 26,
+    "endLineNumber" : 55,
+    "endColumnNumber" : 40
+  }, {
+    "charLength" : 14,
+    "startLineNumber" : 66,
     "startColumnNumber" : 12,
+    "endLineNumber" : 66,
+    "endColumnNumber" : 26
+  }, {
+    "charLength" : 14,
+    "startLineNumber" : 67,
+    "startColumnNumber" : 77,
     "endLineNumber" : 67,
-    "endColumnNumber" : 56
+    "endColumnNumber" : 91
+  }, {
+    "charLength" : 14,
+    "startLineNumber" : 82,
+    "startColumnNumber" : 43,
+    "endLineNumber" : 82,
+    "endColumnNumber" : 57
+  }, {
+    "charLength" : 14,
+    "startLineNumber" : 91,
+    "startColumnNumber" : 31,
+    "endLineNumber" : 91,
+    "endColumnNumber" : 45
+  }, {
+    "charLength" : 14,
+    "startLineNumber" : 94,
+    "startColumnNumber" : 32,
+    "endLineNumber" : 94,
+    "endColumnNumber" : 46
+  }, {
+    "charLength" : 14,
+    "startLineNumber" : 103,
+    "startColumnNumber" : 20,
+    "endLineNumber" : 103,
+    "endColumnNumber" : 34
   } ],
-  "layoutRelationDataList" : [ ]
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 1
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 4,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 5,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 6,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 6
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 3,
+    "layout" : 6
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 4,
+    "layout" : 6
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 5,
+    "layout" : 6
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 6,
+    "layout" : 6
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 0,
+    "layout" : 6
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 1,
+    "layout" : 6
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 2,
+    "layout" : 6
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 5,
+    "layout" : 4
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 6,
+    "layout" : 4
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 0,
+    "layout" : 12
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 1,
+    "layout" : 12
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 2,
+    "layout" : 12
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 3,
+    "layout" : 10
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 5,
+    "layout" : 5
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 6,
+    "layout" : 6
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 0,
+    "layout" : 12
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 1,
+    "layout" : 12
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 2,
+    "layout" : 12
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 3,
+    "layout" : 10
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 4,
+    "layout" : 5
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 6,
+    "layout" : 6
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 0,
+    "layout" : 9
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 1,
+    "layout" : 9
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 2,
+    "layout" : 9
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 3,
+    "layout" : 7
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 5,
+    "layout" : 3
+  } ]
 }

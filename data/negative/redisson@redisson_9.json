@@ -1,100 +1,100 @@
 {
   "id" : 9,
-  "expression" : "new LongConsumer(){\n  private long nextIterPos;\n  private RedisClient client;\n  private AtomicLong elementsRead=new AtomicLong();\n  private boolean finished;\n  private volatile boolean completed;\n  private AtomicLong readAmount=new AtomicLong();\n  @Override public void accept(  long value) throws Exception {\n    readAmount.addAndGet(value);\n    if (completed || elementsRead.get() == 0) {\n      nextValues();\n      completed=false;\n    }\n  }\n  protected void nextValues(){\n    map.scanIteratorAsync(map.getName(),client,nextIterPos,pattern,count).onComplete((res,e) -> {\n      if (e != null) {\n        p.onError(e);\n        return;\n      }\n      if (finished) {\n        client=null;\n        nextIterPos=0;\n        return;\n      }\n      client=res.getRedisClient();\n      nextIterPos=res.getPos();\n      for (      Entry<Object,Object> entry : res.getMap().entrySet()) {\n        M val=getValue(entry);\n        p.onNext(val);\n        elementsRead.incrementAndGet();\n      }\n      if (elementsRead.get() >= readAmount.get()) {\n        p.onComplete();\n        elementsRead.set(0);\n        completed=true;\n        return;\n      }\n      if (res.getPos() == 0 && !tryAgain()) {\n        finished=true;\n        p.onComplete();\n      }\n      if (finished || completed) {\n        return;\n      }\n      nextValues();\n    }\n);\n  }\n}\n",
+  "expression" : "encodeMapValue(value)",
   "projectName" : "redisson@redisson",
   "commitID" : "62b5e68c05b7475e1e0f98b4161aacb35d376b97",
-  "filePath" : "/redisson/src/main/java/org/redisson/rx/RedissonMapRxIterator.java",
+  "filePath" : "redisson/src/main/java/org/redisson/RedissonMap.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "new LongConsumer(){\n  private long nextIterPos;\n  private RedisClient client;\n  private AtomicLong elementsRead=new AtomicLong();\n  private boolean finished;\n  private volatile boolean completed;\n  private AtomicLong readAmount=new AtomicLong();\n  @Override public void accept(  long value) throws Exception {\n    readAmount.addAndGet(value);\n    if (completed || elementsRead.get() == 0) {\n      nextValues();\n      completed=false;\n    }\n  }\n  protected void nextValues(){\n    map.scanIteratorAsync(map.getName(),client,nextIterPos,pattern,count).onComplete((res,e) -> {\n      if (e != null) {\n        p.onError(e);\n        return;\n      }\n      if (finished) {\n        client=null;\n        nextIterPos=0;\n        return;\n      }\n      client=res.getRedisClient();\n      nextIterPos=res.getPos();\n      for (      Entry<Object,Object> entry : res.getMap().entrySet()) {\n        M val=getValue(entry);\n        p.onNext(val);\n        elementsRead.incrementAndGet();\n      }\n      if (elementsRead.get() >= readAmount.get()) {\n        p.onComplete();\n        elementsRead.set(0);\n        completed=true;\n        return;\n      }\n      if (res.getPos() == 0 && !tryAgain()) {\n        finished=true;\n        p.onComplete();\n      }\n      if (finished || completed) {\n        return;\n      }\n      nextValues();\n    }\n);\n  }\n}\n",
-    "nodeType" : "ClassInstanceCreation",
+    "nodeContext" : "encodeMapValue(value)",
+    "nodeType" : "MethodInvocation",
     "nodePosition" : {
-      "charLength" : 2117,
-      "startLineNumber" : 51,
-      "startColumnNumber" : 29,
-      "endLineNumber" : 110,
-      "endColumnNumber" : 9
+      "charLength" : 21,
+      "startLineNumber" : 710,
+      "startColumnNumber" : 64,
+      "endLineNumber" : 710,
+      "endColumnNumber" : 85
     },
-    "astNodeNumber" : 220,
-    "astHeight" : 14,
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
     "parentDataList" : [ {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ReturnStatement,expression]",
       "nodePosition" : {
-        "charLength" : 2132,
-        "startLineNumber" : 51,
+        "charLength" : 423,
+        "startLineNumber" : 703,
         "startColumnNumber" : 15,
-        "endLineNumber" : 110,
-        "endColumnNumber" : 10
+        "endLineNumber" : 710,
+        "endColumnNumber" : 86
       },
-      "nodeContext" : "p.doOnRequest(new LongConsumer(){\n  private long nextIterPos;\n  private RedisClient client;\n  private AtomicLong elementsRead=new AtomicLong();\n  private boolean finished;\n  private volatile boolean completed;\n  private AtomicLong readAmount=new AtomicLong();\n  @Override public void accept(  long value) throws Exception {\n    readAmount.addAndGet(value);\n    if (completed || elementsRead.get() == 0) {\n      nextValues();\n      completed=false;\n    }\n  }\n  protected void nextValues(){\n    map.scanIteratorAsync(map.getName(),client,nextIterPos,pattern,count).onComplete((res,e) -> {\n      if (e != null) {\n        p.onError(e);\n        return;\n      }\n      if (finished) {\n        client=null;\n        nextIterPos=0;\n        return;\n      }\n      client=res.getRedisClient();\n      nextIterPos=res.getPos();\n      for (      Entry<Object,Object> entry : res.getMap().entrySet()) {\n        M val=getValue(entry);\n        p.onNext(val);\n        elementsRead.incrementAndGet();\n      }\n      if (elementsRead.get() >= readAmount.get()) {\n        p.onComplete();\n        elementsRead.set(0);\n        completed=true;\n        return;\n      }\n      if (res.getPos() == 0 && !tryAgain()) {\n        finished=true;\n        p.onComplete();\n      }\n      if (finished || completed) {\n        return;\n      }\n      nextValues();\n    }\n);\n  }\n}\n)",
+      "nodeContext" : "commandExecutor.evalWriteAsync(name,codec,RedisCommands.EVAL_BOOLEAN,\"if redis.call('hexists', KEYS[1], ARGV[1]) == 1 then \" + \"redis.call('hset', KEYS[1], ARGV[1], ARGV[2]); \" + \"return 1; \"+ \"else \"+ \"return 0; \"+ \"end\",Collections.singletonList(name),encodeMapKey(key),encodeMapValue(value))",
       "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 223,
-      "astHeight" : 15
+      "astNodeNumber" : 25,
+      "astHeight" : 3
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 2140,
-        "startLineNumber" : 51,
+        "charLength" : 431,
+        "startLineNumber" : 703,
         "startColumnNumber" : 8,
-        "endLineNumber" : 110,
-        "endColumnNumber" : 11
+        "endLineNumber" : 710,
+        "endColumnNumber" : 87
       },
-      "nodeContext" : "return p.doOnRequest(new LongConsumer(){\n  private long nextIterPos;\n  private RedisClient client;\n  private AtomicLong elementsRead=new AtomicLong();\n  private boolean finished;\n  private volatile boolean completed;\n  private AtomicLong readAmount=new AtomicLong();\n  @Override public void accept(  long value) throws Exception {\n    readAmount.addAndGet(value);\n    if (completed || elementsRead.get() == 0) {\n      nextValues();\n      completed=false;\n    }\n  }\n  protected void nextValues(){\n    map.scanIteratorAsync(map.getName(),client,nextIterPos,pattern,count).onComplete((res,e) -> {\n      if (e != null) {\n        p.onError(e);\n        return;\n      }\n      if (finished) {\n        client=null;\n        nextIterPos=0;\n        return;\n      }\n      client=res.getRedisClient();\n      nextIterPos=res.getPos();\n      for (      Entry<Object,Object> entry : res.getMap().entrySet()) {\n        M val=getValue(entry);\n        p.onNext(val);\n        elementsRead.incrementAndGet();\n      }\n      if (elementsRead.get() >= readAmount.get()) {\n        p.onComplete();\n        elementsRead.set(0);\n        completed=true;\n        return;\n      }\n      if (res.getPos() == 0 && !tryAgain()) {\n        finished=true;\n        p.onComplete();\n      }\n      if (finished || completed) {\n        return;\n      }\n      nextValues();\n    }\n);\n  }\n}\n);\n",
+      "nodeContext" : "return commandExecutor.evalWriteAsync(name,codec,RedisCommands.EVAL_BOOLEAN,\"if redis.call('hexists', KEYS[1], ARGV[1]) == 1 then \" + \"redis.call('hset', KEYS[1], ARGV[1], ARGV[2]); \" + \"return 1; \"+ \"else \"+ \"return 0; \"+ \"end\",Collections.singletonList(name),encodeMapKey(key),encodeMapValue(value));\n",
       "nodeType" : "ReturnStatement",
-      "astNodeNumber" : 224,
-      "astHeight" : 16
+      "astNodeNumber" : 26,
+      "astHeight" : 4
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 2213,
-        "startLineNumber" : 49,
-        "startColumnNumber" : 32,
-        "endLineNumber" : 111,
+        "charLength" : 483,
+        "startLineNumber" : 701,
+        "startColumnNumber" : 73,
+        "endLineNumber" : 711,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  ReplayProcessor<M> p=ReplayProcessor.create();\n  return p.doOnRequest(new LongConsumer(){\n    private long nextIterPos;\n    private RedisClient client;\n    private AtomicLong elementsRead=new AtomicLong();\n    private boolean finished;\n    private volatile boolean completed;\n    private AtomicLong readAmount=new AtomicLong();\n    @Override public void accept(    long value) throws Exception {\n      readAmount.addAndGet(value);\n      if (completed || elementsRead.get() == 0) {\n        nextValues();\n        completed=false;\n      }\n    }\n    protected void nextValues(){\n      map.scanIteratorAsync(map.getName(),client,nextIterPos,pattern,count).onComplete((res,e) -> {\n        if (e != null) {\n          p.onError(e);\n          return;\n        }\n        if (finished) {\n          client=null;\n          nextIterPos=0;\n          return;\n        }\n        client=res.getRedisClient();\n        nextIterPos=res.getPos();\n        for (        Entry<Object,Object> entry : res.getMap().entrySet()) {\n          M val=getValue(entry);\n          p.onNext(val);\n          elementsRead.incrementAndGet();\n        }\n        if (elementsRead.get() >= readAmount.get()) {\n          p.onComplete();\n          elementsRead.set(0);\n          completed=true;\n          return;\n        }\n        if (res.getPos() == 0 && !tryAgain()) {\n          finished=true;\n          p.onComplete();\n        }\n        if (finished || completed) {\n          return;\n        }\n        nextValues();\n      }\n);\n    }\n  }\n);\n}\n",
+      "nodeContext" : "{\n  String name=getName(key);\n  return commandExecutor.evalWriteAsync(name,codec,RedisCommands.EVAL_BOOLEAN,\"if redis.call('hexists', KEYS[1], ARGV[1]) == 1 then \" + \"redis.call('hset', KEYS[1], ARGV[1], ARGV[2]); \" + \"return 1; \"+ \"else \"+ \"return 0; \"+ \"end\",Collections.singletonList(name),encodeMapKey(key),encodeMapValue(value));\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 236,
-      "astHeight" : 17
+      "astNodeNumber" : 35,
+      "astHeight" : 5
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 2241,
-        "startLineNumber" : 49,
+        "charLength" : 552,
+        "startLineNumber" : 701,
         "startColumnNumber" : 4,
-        "endLineNumber" : 111,
+        "endLineNumber" : 711,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "public Flowable<M> create(){\n  ReplayProcessor<M> p=ReplayProcessor.create();\n  return p.doOnRequest(new LongConsumer(){\n    private long nextIterPos;\n    private RedisClient client;\n    private AtomicLong elementsRead=new AtomicLong();\n    private boolean finished;\n    private volatile boolean completed;\n    private AtomicLong readAmount=new AtomicLong();\n    @Override public void accept(    long value) throws Exception {\n      readAmount.addAndGet(value);\n      if (completed || elementsRead.get() == 0) {\n        nextValues();\n        completed=false;\n      }\n    }\n    protected void nextValues(){\n      map.scanIteratorAsync(map.getName(),client,nextIterPos,pattern,count).onComplete((res,e) -> {\n        if (e != null) {\n          p.onError(e);\n          return;\n        }\n        if (finished) {\n          client=null;\n          nextIterPos=0;\n          return;\n        }\n        client=res.getRedisClient();\n        nextIterPos=res.getPos();\n        for (        Entry<Object,Object> entry : res.getMap().entrySet()) {\n          M val=getValue(entry);\n          p.onNext(val);\n          elementsRead.incrementAndGet();\n        }\n        if (elementsRead.get() >= readAmount.get()) {\n          p.onComplete();\n          elementsRead.set(0);\n          completed=true;\n          return;\n        }\n        if (res.getPos() == 0 && !tryAgain()) {\n          finished=true;\n          p.onComplete();\n        }\n        if (finished || completed) {\n          return;\n        }\n        nextValues();\n      }\n);\n    }\n  }\n);\n}\n",
+      "nodeContext" : "protected RFuture<Boolean> fastReplaceOperationAsync(K key,V value){\n  String name=getName(key);\n  return commandExecutor.evalWriteAsync(name,codec,RedisCommands.EVAL_BOOLEAN,\"if redis.call('hexists', KEYS[1], ARGV[1]) == 1 then \" + \"redis.call('hset', KEYS[1], ARGV[1], ARGV[2]); \" + \"return 1; \"+ \"else \"+ \"return 0; \"+ \"end\",Collections.singletonList(name),encodeMapKey(key),encodeMapValue(value));\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 244,
-      "astHeight" : 18
+      "astNodeNumber" : 51,
+      "astHeight" : 6
     } ],
     "currentLineData" : {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ReturnStatement,expression]",
       "nodePosition" : {
-        "charLength" : 2140,
-        "startLineNumber" : 51,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 110,
-        "endColumnNumber" : 11
+        "charLength" : 423,
+        "startLineNumber" : 703,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 710,
+        "endColumnNumber" : 86
       },
-      "nodeContext" : "return p.doOnRequest(new LongConsumer(){\n  private long nextIterPos;\n  private RedisClient client;\n  private AtomicLong elementsRead=new AtomicLong();\n  private boolean finished;\n  private volatile boolean completed;\n  private AtomicLong readAmount=new AtomicLong();\n  @Override public void accept(  long value) throws Exception {\n    readAmount.addAndGet(value);\n    if (completed || elementsRead.get() == 0) {\n      nextValues();\n      completed=false;\n    }\n  }\n  protected void nextValues(){\n    map.scanIteratorAsync(map.getName(),client,nextIterPos,pattern,count).onComplete((res,e) -> {\n      if (e != null) {\n        p.onError(e);\n        return;\n      }\n      if (finished) {\n        client=null;\n        nextIterPos=0;\n        return;\n      }\n      client=res.getRedisClient();\n      nextIterPos=res.getPos();\n      for (      Entry<Object,Object> entry : res.getMap().entrySet()) {\n        M val=getValue(entry);\n        p.onNext(val);\n        elementsRead.incrementAndGet();\n      }\n      if (elementsRead.get() >= readAmount.get()) {\n        p.onComplete();\n        elementsRead.set(0);\n        completed=true;\n        return;\n      }\n      if (res.getPos() == 0 && !tryAgain()) {\n        finished=true;\n        p.onComplete();\n      }\n      if (finished || completed) {\n        return;\n      }\n      nextValues();\n    }\n);\n  }\n}\n);\n",
-      "nodeType" : "ReturnStatement",
-      "astNodeNumber" : 224,
-      "astHeight" : 16
+      "nodeContext" : "commandExecutor.evalWriteAsync(name,codec,RedisCommands.EVAL_BOOLEAN,\"if redis.call('hexists', KEYS[1], ARGV[1]) == 1 then \" + \"redis.call('hset', KEYS[1], ARGV[1], ARGV[2]); \" + \"return 1; \"+ \"else \"+ \"return 0; \"+ \"end\",Collections.singletonList(name),encodeMapKey(key),encodeMapValue(value))",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 25,
+      "astHeight" : 3
     },
-    "tokenLength" : 91,
-    "type" : ""
+    "tokenLength" : 2,
+    "type" : "org.redisson.ByteBuf"
   } ],
   "positionList" : [ {
-    "charLength" : 2117,
-    "startLineNumber" : 51,
-    "startColumnNumber" : 29,
-    "endLineNumber" : 110,
-    "endColumnNumber" : 9
+    "charLength" : 21,
+    "startLineNumber" : 710,
+    "startColumnNumber" : 64,
+    "endLineNumber" : 710,
+    "endColumnNumber" : 85
   } ],
   "layoutRelationDataList" : [ ]
 }

@@ -1,100 +1,376 @@
 {
   "id" : 46,
-  "expression" : "getPrimaryKeyOnlyName()",
+  "expression" : "resourceId",
   "projectName" : "seata@seata",
-  "commitID" : "42d41623178ab076b11b27a0f049ac3ed7f1a9dc",
-  "filePath" : "/rm-datasource/src/main/java/io/seata/rm/datasource/sql/struct/TableMeta.java",
-  "occurrences" : 1,
+  "commitID" : "eb96fbe11f007662f891c7fc3d3de627179b2189",
+  "filePath" : "server/src/main/java/com/alibaba/fescar/server/lock/DefaultLockManagerImpl.java",
+  "occurrences" : 3,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "getPrimaryKeyOnlyName()",
-    "nodeType" : "MethodInvocation",
+    "nodeContext" : "resourceId",
+    "nodeType" : "SimpleName",
     "nodePosition" : {
-      "charLength" : 23,
-      "startLineNumber" : 148,
-      "startColumnNumber" : 15,
-      "endLineNumber" : 148,
-      "endColumnNumber" : 38
+      "charLength" : 10,
+      "startLineNumber" : 45,
+      "startColumnNumber" : 106,
+      "endLineNumber" : 45,
+      "endColumnNumber" : 116
     },
-    "astNodeNumber" : 2,
-    "astHeight" : 2,
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ReturnStatement,expression]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
       "nodePosition" : {
-        "charLength" : 30,
-        "startLineNumber" : 148,
-        "startColumnNumber" : 15,
-        "endLineNumber" : 148,
-        "endColumnNumber" : 45
+        "charLength" : 24,
+        "startLineNumber" : 45,
+        "startColumnNumber" : 93,
+        "endLineNumber" : 45,
+        "endColumnNumber" : 117
       },
-      "nodeContext" : "getPrimaryKeyOnlyName().get(0)",
+      "nodeContext" : "LOCK_MAP.get(resourceId)",
       "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 5,
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 36,
+        "startLineNumber" : 45,
+        "startColumnNumber" : 81,
+        "endLineNumber" : 45,
+        "endColumnNumber" : 117
+      },
+      "nodeContext" : "dbLockMap=LOCK_MAP.get(resourceId)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 6,
       "astHeight" : 3
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 38,
-        "startLineNumber" : 148,
+        "charLength" : 110,
+        "startLineNumber" : 45,
         "startColumnNumber" : 8,
-        "endLineNumber" : 148,
-        "endColumnNumber" : 46
+        "endLineNumber" : 45,
+        "endColumnNumber" : 118
       },
-      "nodeContext" : "return getPrimaryKeyOnlyName().get(0);\n",
-      "nodeType" : "ReturnStatement",
-      "astNodeNumber" : 6,
-      "astHeight" : 4
+      "nodeContext" : "ConcurrentHashMap<String,ConcurrentHashMap<Integer,Map<String,Long>>> dbLockMap=LOCK_MAP.get(resourceId);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 24,
+      "astHeight" : 6
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 54,
-        "startLineNumber" : 147,
-        "startColumnNumber" : 30,
-        "endLineNumber" : 149,
+        "charLength" : 3171,
+        "startLineNumber" : 42,
+        "startColumnNumber" : 88,
+        "endLineNumber" : 103,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  return getPrimaryKeyOnlyName().get(0);\n}\n",
+      "nodeContext" : "{\n  String resourceId=branchSession.getResourceId();\n  long transactionId=branchSession.getTransactionId();\n  ConcurrentHashMap<String,ConcurrentHashMap<Integer,Map<String,Long>>> dbLockMap=LOCK_MAP.get(resourceId);\n  if (dbLockMap == null) {\n    LOCK_MAP.putIfAbsent(resourceId,new ConcurrentHashMap<String,ConcurrentHashMap<Integer,Map<String,Long>>>());\n    dbLockMap=LOCK_MAP.get(resourceId);\n  }\n  ConcurrentHashMap<Map<String,Long>,Set<String>> bucketHolder=branchSession.getLockHolder();\n  String lockKey=branchSession.getLockKey();\n  if (StringUtils.isEmpty(lockKey)) {\n    return true;\n  }\n  String[] tableGroupedLockKeys=lockKey.split(\";\");\n  for (  String tableGroupedLockKey : tableGroupedLockKeys) {\n    int idx=tableGroupedLockKey.indexOf(\":\");\n    if (idx < 0) {\n      branchSession.unlock();\n      throw new ShouldNeverHappenException(\"Wrong format of LOCK KEYS: \" + branchSession.getLockKey());\n    }\n    String tableName=tableGroupedLockKey.substring(0,idx);\n    String mergedPKs=tableGroupedLockKey.substring(idx + 1);\n    ConcurrentHashMap<Integer,Map<String,Long>> tableLockMap=dbLockMap.get(tableName);\n    if (tableLockMap == null) {\n      dbLockMap.putIfAbsent(tableName,new ConcurrentHashMap<Integer,Map<String,Long>>());\n      tableLockMap=dbLockMap.get(tableName);\n    }\n    String[] pks=mergedPKs.split(\",\");\n    for (    String pk : pks) {\n      int bucketId=pk.hashCode() % BUCKET_PER_TABLE;\n      Map<String,Long> bucketLockMap=tableLockMap.get(bucketId);\n      if (bucketLockMap == null) {\n        tableLockMap.putIfAbsent(bucketId,new HashMap<String,Long>());\n        bucketLockMap=tableLockMap.get(bucketId);\n      }\nsynchronized (bucketLockMap) {\n        Long lockingTransactionId=bucketLockMap.get(pk);\n        if (lockingTransactionId == null) {\n          bucketLockMap.put(pk,transactionId);\n          Set<String> keysInHolder=bucketHolder.get(bucketLockMap);\n          if (keysInHolder == null) {\n            bucketHolder.putIfAbsent(bucketLockMap,new ConcurrentSet<String>());\n            keysInHolder=bucketHolder.get(bucketLockMap);\n          }\n          keysInHolder.add(pk);\n        }\n else         if (lockingTransactionId.longValue() == transactionId) {\n          continue;\n        }\n else {\n          LOGGER.info(\"Global lock on [\" + tableName + \":\"+ pk+ \"] is holding by \"+ lockingTransactionId);\n          branchSession.unlock();\n          return false;\n        }\n      }\n    }\n  }\n  return true;\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 7,
-      "astHeight" : 5
+      "astNodeNumber" : 383,
+      "astHeight" : 17
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 151,
-        "startLineNumber" : 142,
+        "charLength" : 3269,
+        "startLineNumber" : 41,
         "startColumnNumber" : 4,
-        "endLineNumber" : 149,
+        "endLineNumber" : 103,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "/** \n * Gets pk name.\n * @return the pk name\n */\npublic String getPkName(){\n  return getPrimaryKeyOnlyName().get(0);\n}\n",
+      "nodeContext" : "@Override public boolean acquireLock(BranchSession branchSession) throws TransactionException {\n  String resourceId=branchSession.getResourceId();\n  long transactionId=branchSession.getTransactionId();\n  ConcurrentHashMap<String,ConcurrentHashMap<Integer,Map<String,Long>>> dbLockMap=LOCK_MAP.get(resourceId);\n  if (dbLockMap == null) {\n    LOCK_MAP.putIfAbsent(resourceId,new ConcurrentHashMap<String,ConcurrentHashMap<Integer,Map<String,Long>>>());\n    dbLockMap=LOCK_MAP.get(resourceId);\n  }\n  ConcurrentHashMap<Map<String,Long>,Set<String>> bucketHolder=branchSession.getLockHolder();\n  String lockKey=branchSession.getLockKey();\n  if (StringUtils.isEmpty(lockKey)) {\n    return true;\n  }\n  String[] tableGroupedLockKeys=lockKey.split(\";\");\n  for (  String tableGroupedLockKey : tableGroupedLockKeys) {\n    int idx=tableGroupedLockKey.indexOf(\":\");\n    if (idx < 0) {\n      branchSession.unlock();\n      throw new ShouldNeverHappenException(\"Wrong format of LOCK KEYS: \" + branchSession.getLockKey());\n    }\n    String tableName=tableGroupedLockKey.substring(0,idx);\n    String mergedPKs=tableGroupedLockKey.substring(idx + 1);\n    ConcurrentHashMap<Integer,Map<String,Long>> tableLockMap=dbLockMap.get(tableName);\n    if (tableLockMap == null) {\n      dbLockMap.putIfAbsent(tableName,new ConcurrentHashMap<Integer,Map<String,Long>>());\n      tableLockMap=dbLockMap.get(tableName);\n    }\n    String[] pks=mergedPKs.split(\",\");\n    for (    String pk : pks) {\n      int bucketId=pk.hashCode() % BUCKET_PER_TABLE;\n      Map<String,Long> bucketLockMap=tableLockMap.get(bucketId);\n      if (bucketLockMap == null) {\n        tableLockMap.putIfAbsent(bucketId,new HashMap<String,Long>());\n        bucketLockMap=tableLockMap.get(bucketId);\n      }\nsynchronized (bucketLockMap) {\n        Long lockingTransactionId=bucketLockMap.get(pk);\n        if (lockingTransactionId == null) {\n          bucketLockMap.put(pk,transactionId);\n          Set<String> keysInHolder=bucketHolder.get(bucketLockMap);\n          if (keysInHolder == null) {\n            bucketHolder.putIfAbsent(bucketLockMap,new ConcurrentSet<String>());\n            keysInHolder=bucketHolder.get(bucketLockMap);\n          }\n          keysInHolder.add(pk);\n        }\n else         if (lockingTransactionId.longValue() == transactionId) {\n          continue;\n        }\n else {\n          LOGGER.info(\"Global lock on [\" + tableName + \":\"+ pk+ \"] is holding by \"+ lockingTransactionId);\n          branchSession.unlock();\n          return false;\n        }\n      }\n    }\n  }\n  return true;\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 13,
-      "astHeight" : 6
+      "astNodeNumber" : 395,
+      "astHeight" : 18
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 38,
-        "startLineNumber" : 148,
+        "charLength" : 110,
+        "startLineNumber" : 45,
         "startColumnNumber" : 8,
-        "endLineNumber" : 148,
-        "endColumnNumber" : 46
+        "endLineNumber" : 45,
+        "endColumnNumber" : 118
       },
-      "nodeContext" : "return getPrimaryKeyOnlyName().get(0);\n",
-      "nodeType" : "ReturnStatement",
+      "nodeContext" : "ConcurrentHashMap<String,ConcurrentHashMap<Integer,Map<String,Long>>> dbLockMap=LOCK_MAP.get(resourceId);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 24,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "java.lang.String"
+  }, {
+    "nodeContext" : "resourceId",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 10,
+      "startLineNumber" : 47,
+      "startColumnNumber" : 33,
+      "endLineNumber" : 47,
+      "endColumnNumber" : 43
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 112,
+        "startLineNumber" : 47,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 47,
+        "endColumnNumber" : 124
+      },
+      "nodeContext" : "LOCK_MAP.putIfAbsent(resourceId,new ConcurrentHashMap<String,ConcurrentHashMap<Integer,Map<String,Long>>>())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 22,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 113,
+        "startLineNumber" : 47,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 47,
+        "endColumnNumber" : 125
+      },
+      "nodeContext" : "LOCK_MAP.putIfAbsent(resourceId,new ConcurrentHashMap<String,ConcurrentHashMap<Integer,Map<String,Long>>>());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 23,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 187,
+        "startLineNumber" : 46,
+        "startColumnNumber" : 31,
+        "endLineNumber" : 49,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  LOCK_MAP.putIfAbsent(resourceId,new ConcurrentHashMap<String,ConcurrentHashMap<Integer,Map<String,Long>>>());\n  dbLockMap=LOCK_MAP.get(resourceId);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 31,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 210,
+        "startLineNumber" : 46,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 49,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (dbLockMap == null) {\n  LOCK_MAP.putIfAbsent(resourceId,new ConcurrentHashMap<String,ConcurrentHashMap<Integer,Map<String,Long>>>());\n  dbLockMap=LOCK_MAP.get(resourceId);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 35,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3171,
+        "startLineNumber" : 42,
+        "startColumnNumber" : 88,
+        "endLineNumber" : 103,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  String resourceId=branchSession.getResourceId();\n  long transactionId=branchSession.getTransactionId();\n  ConcurrentHashMap<String,ConcurrentHashMap<Integer,Map<String,Long>>> dbLockMap=LOCK_MAP.get(resourceId);\n  if (dbLockMap == null) {\n    LOCK_MAP.putIfAbsent(resourceId,new ConcurrentHashMap<String,ConcurrentHashMap<Integer,Map<String,Long>>>());\n    dbLockMap=LOCK_MAP.get(resourceId);\n  }\n  ConcurrentHashMap<Map<String,Long>,Set<String>> bucketHolder=branchSession.getLockHolder();\n  String lockKey=branchSession.getLockKey();\n  if (StringUtils.isEmpty(lockKey)) {\n    return true;\n  }\n  String[] tableGroupedLockKeys=lockKey.split(\";\");\n  for (  String tableGroupedLockKey : tableGroupedLockKeys) {\n    int idx=tableGroupedLockKey.indexOf(\":\");\n    if (idx < 0) {\n      branchSession.unlock();\n      throw new ShouldNeverHappenException(\"Wrong format of LOCK KEYS: \" + branchSession.getLockKey());\n    }\n    String tableName=tableGroupedLockKey.substring(0,idx);\n    String mergedPKs=tableGroupedLockKey.substring(idx + 1);\n    ConcurrentHashMap<Integer,Map<String,Long>> tableLockMap=dbLockMap.get(tableName);\n    if (tableLockMap == null) {\n      dbLockMap.putIfAbsent(tableName,new ConcurrentHashMap<Integer,Map<String,Long>>());\n      tableLockMap=dbLockMap.get(tableName);\n    }\n    String[] pks=mergedPKs.split(\",\");\n    for (    String pk : pks) {\n      int bucketId=pk.hashCode() % BUCKET_PER_TABLE;\n      Map<String,Long> bucketLockMap=tableLockMap.get(bucketId);\n      if (bucketLockMap == null) {\n        tableLockMap.putIfAbsent(bucketId,new HashMap<String,Long>());\n        bucketLockMap=tableLockMap.get(bucketId);\n      }\nsynchronized (bucketLockMap) {\n        Long lockingTransactionId=bucketLockMap.get(pk);\n        if (lockingTransactionId == null) {\n          bucketLockMap.put(pk,transactionId);\n          Set<String> keysInHolder=bucketHolder.get(bucketLockMap);\n          if (keysInHolder == null) {\n            bucketHolder.putIfAbsent(bucketLockMap,new ConcurrentSet<String>());\n            keysInHolder=bucketHolder.get(bucketLockMap);\n          }\n          keysInHolder.add(pk);\n        }\n else         if (lockingTransactionId.longValue() == transactionId) {\n          continue;\n        }\n else {\n          LOGGER.info(\"Global lock on [\" + tableName + \":\"+ pk+ \"] is holding by \"+ lockingTransactionId);\n          branchSession.unlock();\n          return false;\n        }\n      }\n    }\n  }\n  return true;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 383,
+      "astHeight" : 17
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3269,
+        "startLineNumber" : 41,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 103,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public boolean acquireLock(BranchSession branchSession) throws TransactionException {\n  String resourceId=branchSession.getResourceId();\n  long transactionId=branchSession.getTransactionId();\n  ConcurrentHashMap<String,ConcurrentHashMap<Integer,Map<String,Long>>> dbLockMap=LOCK_MAP.get(resourceId);\n  if (dbLockMap == null) {\n    LOCK_MAP.putIfAbsent(resourceId,new ConcurrentHashMap<String,ConcurrentHashMap<Integer,Map<String,Long>>>());\n    dbLockMap=LOCK_MAP.get(resourceId);\n  }\n  ConcurrentHashMap<Map<String,Long>,Set<String>> bucketHolder=branchSession.getLockHolder();\n  String lockKey=branchSession.getLockKey();\n  if (StringUtils.isEmpty(lockKey)) {\n    return true;\n  }\n  String[] tableGroupedLockKeys=lockKey.split(\";\");\n  for (  String tableGroupedLockKey : tableGroupedLockKeys) {\n    int idx=tableGroupedLockKey.indexOf(\":\");\n    if (idx < 0) {\n      branchSession.unlock();\n      throw new ShouldNeverHappenException(\"Wrong format of LOCK KEYS: \" + branchSession.getLockKey());\n    }\n    String tableName=tableGroupedLockKey.substring(0,idx);\n    String mergedPKs=tableGroupedLockKey.substring(idx + 1);\n    ConcurrentHashMap<Integer,Map<String,Long>> tableLockMap=dbLockMap.get(tableName);\n    if (tableLockMap == null) {\n      dbLockMap.putIfAbsent(tableName,new ConcurrentHashMap<Integer,Map<String,Long>>());\n      tableLockMap=dbLockMap.get(tableName);\n    }\n    String[] pks=mergedPKs.split(\",\");\n    for (    String pk : pks) {\n      int bucketId=pk.hashCode() % BUCKET_PER_TABLE;\n      Map<String,Long> bucketLockMap=tableLockMap.get(bucketId);\n      if (bucketLockMap == null) {\n        tableLockMap.putIfAbsent(bucketId,new HashMap<String,Long>());\n        bucketLockMap=tableLockMap.get(bucketId);\n      }\nsynchronized (bucketLockMap) {\n        Long lockingTransactionId=bucketLockMap.get(pk);\n        if (lockingTransactionId == null) {\n          bucketLockMap.put(pk,transactionId);\n          Set<String> keysInHolder=bucketHolder.get(bucketLockMap);\n          if (keysInHolder == null) {\n            bucketHolder.putIfAbsent(bucketLockMap,new ConcurrentSet<String>());\n            keysInHolder=bucketHolder.get(bucketLockMap);\n          }\n          keysInHolder.add(pk);\n        }\n else         if (lockingTransactionId.longValue() == transactionId) {\n          continue;\n        }\n else {\n          LOGGER.info(\"Global lock on [\" + tableName + \":\"+ pk+ \"] is holding by \"+ lockingTransactionId);\n          branchSession.unlock();\n          return false;\n        }\n      }\n    }\n  }\n  return true;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 395,
+      "astHeight" : 18
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 113,
+        "startLineNumber" : 47,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 47,
+        "endColumnNumber" : 125
+      },
+      "nodeContext" : "LOCK_MAP.putIfAbsent(resourceId,new ConcurrentHashMap<String,ConcurrentHashMap<Integer,Map<String,Long>>>());\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 23,
+      "astHeight" : 8
+    },
+    "tokenLength" : 1,
+    "type" : "java.lang.String"
+  }, {
+    "nodeContext" : "resourceId",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 10,
+      "startLineNumber" : 48,
+      "startColumnNumber" : 37,
+      "endLineNumber" : 48,
+      "endColumnNumber" : 47
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.Assignment,rightHandSide]",
+      "nodePosition" : {
+        "charLength" : 24,
+        "startLineNumber" : 48,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 48,
+        "endColumnNumber" : 48
+      },
+      "nodeContext" : "LOCK_MAP.get(resourceId)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 36,
+        "startLineNumber" : 48,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 48,
+        "endColumnNumber" : 48
+      },
+      "nodeContext" : "dbLockMap=LOCK_MAP.get(resourceId)",
+      "nodeType" : "Assignment",
       "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 37,
+        "startLineNumber" : 48,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 48,
+        "endColumnNumber" : 49
+      },
+      "nodeContext" : "dbLockMap=LOCK_MAP.get(resourceId);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 187,
+        "startLineNumber" : 46,
+        "startColumnNumber" : 31,
+        "endLineNumber" : 49,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  LOCK_MAP.putIfAbsent(resourceId,new ConcurrentHashMap<String,ConcurrentHashMap<Integer,Map<String,Long>>>());\n  dbLockMap=LOCK_MAP.get(resourceId);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 31,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 210,
+        "startLineNumber" : 46,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 49,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (dbLockMap == null) {\n  LOCK_MAP.putIfAbsent(resourceId,new ConcurrentHashMap<String,ConcurrentHashMap<Integer,Map<String,Long>>>());\n  dbLockMap=LOCK_MAP.get(resourceId);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 35,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3171,
+        "startLineNumber" : 42,
+        "startColumnNumber" : 88,
+        "endLineNumber" : 103,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  String resourceId=branchSession.getResourceId();\n  long transactionId=branchSession.getTransactionId();\n  ConcurrentHashMap<String,ConcurrentHashMap<Integer,Map<String,Long>>> dbLockMap=LOCK_MAP.get(resourceId);\n  if (dbLockMap == null) {\n    LOCK_MAP.putIfAbsent(resourceId,new ConcurrentHashMap<String,ConcurrentHashMap<Integer,Map<String,Long>>>());\n    dbLockMap=LOCK_MAP.get(resourceId);\n  }\n  ConcurrentHashMap<Map<String,Long>,Set<String>> bucketHolder=branchSession.getLockHolder();\n  String lockKey=branchSession.getLockKey();\n  if (StringUtils.isEmpty(lockKey)) {\n    return true;\n  }\n  String[] tableGroupedLockKeys=lockKey.split(\";\");\n  for (  String tableGroupedLockKey : tableGroupedLockKeys) {\n    int idx=tableGroupedLockKey.indexOf(\":\");\n    if (idx < 0) {\n      branchSession.unlock();\n      throw new ShouldNeverHappenException(\"Wrong format of LOCK KEYS: \" + branchSession.getLockKey());\n    }\n    String tableName=tableGroupedLockKey.substring(0,idx);\n    String mergedPKs=tableGroupedLockKey.substring(idx + 1);\n    ConcurrentHashMap<Integer,Map<String,Long>> tableLockMap=dbLockMap.get(tableName);\n    if (tableLockMap == null) {\n      dbLockMap.putIfAbsent(tableName,new ConcurrentHashMap<Integer,Map<String,Long>>());\n      tableLockMap=dbLockMap.get(tableName);\n    }\n    String[] pks=mergedPKs.split(\",\");\n    for (    String pk : pks) {\n      int bucketId=pk.hashCode() % BUCKET_PER_TABLE;\n      Map<String,Long> bucketLockMap=tableLockMap.get(bucketId);\n      if (bucketLockMap == null) {\n        tableLockMap.putIfAbsent(bucketId,new HashMap<String,Long>());\n        bucketLockMap=tableLockMap.get(bucketId);\n      }\nsynchronized (bucketLockMap) {\n        Long lockingTransactionId=bucketLockMap.get(pk);\n        if (lockingTransactionId == null) {\n          bucketLockMap.put(pk,transactionId);\n          Set<String> keysInHolder=bucketHolder.get(bucketLockMap);\n          if (keysInHolder == null) {\n            bucketHolder.putIfAbsent(bucketLockMap,new ConcurrentSet<String>());\n            keysInHolder=bucketHolder.get(bucketLockMap);\n          }\n          keysInHolder.add(pk);\n        }\n else         if (lockingTransactionId.longValue() == transactionId) {\n          continue;\n        }\n else {\n          LOGGER.info(\"Global lock on [\" + tableName + \":\"+ pk+ \"] is holding by \"+ lockingTransactionId);\n          branchSession.unlock();\n          return false;\n        }\n      }\n    }\n  }\n  return true;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 383,
+      "astHeight" : 17
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3269,
+        "startLineNumber" : 41,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 103,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public boolean acquireLock(BranchSession branchSession) throws TransactionException {\n  String resourceId=branchSession.getResourceId();\n  long transactionId=branchSession.getTransactionId();\n  ConcurrentHashMap<String,ConcurrentHashMap<Integer,Map<String,Long>>> dbLockMap=LOCK_MAP.get(resourceId);\n  if (dbLockMap == null) {\n    LOCK_MAP.putIfAbsent(resourceId,new ConcurrentHashMap<String,ConcurrentHashMap<Integer,Map<String,Long>>>());\n    dbLockMap=LOCK_MAP.get(resourceId);\n  }\n  ConcurrentHashMap<Map<String,Long>,Set<String>> bucketHolder=branchSession.getLockHolder();\n  String lockKey=branchSession.getLockKey();\n  if (StringUtils.isEmpty(lockKey)) {\n    return true;\n  }\n  String[] tableGroupedLockKeys=lockKey.split(\";\");\n  for (  String tableGroupedLockKey : tableGroupedLockKeys) {\n    int idx=tableGroupedLockKey.indexOf(\":\");\n    if (idx < 0) {\n      branchSession.unlock();\n      throw new ShouldNeverHappenException(\"Wrong format of LOCK KEYS: \" + branchSession.getLockKey());\n    }\n    String tableName=tableGroupedLockKey.substring(0,idx);\n    String mergedPKs=tableGroupedLockKey.substring(idx + 1);\n    ConcurrentHashMap<Integer,Map<String,Long>> tableLockMap=dbLockMap.get(tableName);\n    if (tableLockMap == null) {\n      dbLockMap.putIfAbsent(tableName,new ConcurrentHashMap<Integer,Map<String,Long>>());\n      tableLockMap=dbLockMap.get(tableName);\n    }\n    String[] pks=mergedPKs.split(\",\");\n    for (    String pk : pks) {\n      int bucketId=pk.hashCode() % BUCKET_PER_TABLE;\n      Map<String,Long> bucketLockMap=tableLockMap.get(bucketId);\n      if (bucketLockMap == null) {\n        tableLockMap.putIfAbsent(bucketId,new HashMap<String,Long>());\n        bucketLockMap=tableLockMap.get(bucketId);\n      }\nsynchronized (bucketLockMap) {\n        Long lockingTransactionId=bucketLockMap.get(pk);\n        if (lockingTransactionId == null) {\n          bucketLockMap.put(pk,transactionId);\n          Set<String> keysInHolder=bucketHolder.get(bucketLockMap);\n          if (keysInHolder == null) {\n            bucketHolder.putIfAbsent(bucketLockMap,new ConcurrentSet<String>());\n            keysInHolder=bucketHolder.get(bucketLockMap);\n          }\n          keysInHolder.add(pk);\n        }\n else         if (lockingTransactionId.longValue() == transactionId) {\n          continue;\n        }\n else {\n          LOGGER.info(\"Global lock on [\" + tableName + \":\"+ pk+ \"] is holding by \"+ lockingTransactionId);\n          branchSession.unlock();\n          return false;\n        }\n      }\n    }\n  }\n  return true;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 395,
+      "astHeight" : 18
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 37,
+        "startLineNumber" : 48,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 48,
+        "endColumnNumber" : 49
+      },
+      "nodeContext" : "dbLockMap=LOCK_MAP.get(resourceId);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
       "astHeight" : 4
     },
     "tokenLength" : 1,
-    "type" : "java.util.List<java.lang.String>"
+    "type" : "java.lang.String"
   } ],
   "positionList" : [ {
-    "charLength" : 23,
-    "startLineNumber" : 148,
-    "startColumnNumber" : 15,
-    "endLineNumber" : 148,
-    "endColumnNumber" : 38
+    "charLength" : 10,
+    "startLineNumber" : 45,
+    "startColumnNumber" : 106,
+    "endLineNumber" : 45,
+    "endColumnNumber" : 116
+  }, {
+    "charLength" : 10,
+    "startLineNumber" : 47,
+    "startColumnNumber" : 33,
+    "endLineNumber" : 47,
+    "endColumnNumber" : 43
+  }, {
+    "charLength" : 10,
+    "startLineNumber" : 48,
+    "startColumnNumber" : 37,
+    "endLineNumber" : 48,
+    "endColumnNumber" : 47
   } ],
-  "layoutRelationDataList" : [ ]
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 3
+  } ]
 }

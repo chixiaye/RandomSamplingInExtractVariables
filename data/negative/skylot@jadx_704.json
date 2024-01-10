@@ -1,0 +1,645 @@
+{
+  "id" : 704,
+  "expression" : "false",
+  "projectName" : "skylot@jadx",
+  "commitID" : "cbdc2496fc4b11655005472ad21505113b9071e2",
+  "filePath" : "jadx-core/src/main/java/jadx/core/dex/visitors/typeinference/TypeInferenceVisitor.java",
+  "occurrences" : 5,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "false",
+    "nodeType" : "BooleanLiteral",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 307,
+      "startColumnNumber" : 10,
+      "endLineNumber" : 307,
+      "endColumnNumber" : 15
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 13,
+        "startLineNumber" : 307,
+        "startColumnNumber" : 3,
+        "endLineNumber" : 307,
+        "endColumnNumber" : 16
+      },
+      "nodeContext" : "return false;\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 2,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 22,
+        "startLineNumber" : 306,
+        "startColumnNumber" : 49,
+        "endLineNumber" : 308,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  return false;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 3,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 69,
+        "startLineNumber" : 306,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 308,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "if (var.getTypeInfo().getType().isTypeKnown()) {\n  return false;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 1641,
+        "startLineNumber" : 305,
+        "startColumnNumber" : 69,
+        "endLineNumber" : 356,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  if (var.getTypeInfo().getType().isTypeKnown()) {\n    return false;\n  }\n  PhiInsn phiInsn=var.getUsedInPhi();\n  if (phiInsn == null) {\n    return false;\n  }\n  if (var.getUseCount() == 1) {\n    InsnNode assignInsn=var.getAssign().getAssignInsn();\n    if (assignInsn != null && assignInsn.getType() == InsnType.MOVE) {\n      return false;\n    }\n  }\n  for (  Map.Entry<RegisterArg,BlockNode> entry : phiInsn.getBlockBinds().entrySet()) {\n    RegisterArg reg=entry.getKey();\n    if (reg.getSVar() == var) {\n      BlockNode blockNode=entry.getValue();\n      InsnNode lastInsn=BlockUtils.getLastInsn(blockNode);\n      if (lastInsn != null && BlockSplitter.SEPARATE_INSNS.contains(lastInsn.getType())) {\n        if (Consts.DEBUG) {\n          LOG.warn(\"Can't insert move for PHI in block with separate insn: {}\",lastInsn);\n        }\n        return false;\n      }\n      int regNum=reg.getRegNum();\n      RegisterArg resultArg=reg.duplicate(regNum,null);\n      SSAVar newSsaVar=mth.makeNewSVar(regNum,resultArg);\n      RegisterArg arg=reg.duplicate(regNum,var);\n      InsnNode moveInsn=new InsnNode(InsnType.MOVE,1);\n      moveInsn.setResult(resultArg);\n      moveInsn.addArg(arg);\n      moveInsn.add(AFlag.SYNTHETIC);\n      blockNode.getInstructions().add(moveInsn);\n      phiInsn.replaceArg(reg,reg.duplicate(regNum,newSsaVar));\n      attachBounds(var);\n      for (      InsnArg phiArg : phiInsn.getArguments()) {\n        attachBounds(((RegisterArg)phiArg).getSVar());\n      }\n      for (      InsnArg phiArg : phiInsn.getArguments()) {\n        mergePhiBounds(((RegisterArg)phiArg).getSVar());\n      }\n      InitCodeVariables.initCodeVar(newSsaVar);\n      return true;\n    }\n  }\n  return false;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 270,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 1861,
+        "startLineNumber" : 301,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 356,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "/** \n * Add MOVE instruction before PHI in bound blocks to make 'soft' type link. This allows to use different types in blocks merged by PHI.\n */\nprivate boolean tryInsertAdditionalInsn(MethodNode mth,SSAVar var){\n  if (var.getTypeInfo().getType().isTypeKnown()) {\n    return false;\n  }\n  PhiInsn phiInsn=var.getUsedInPhi();\n  if (phiInsn == null) {\n    return false;\n  }\n  if (var.getUseCount() == 1) {\n    InsnNode assignInsn=var.getAssign().getAssignInsn();\n    if (assignInsn != null && assignInsn.getType() == InsnType.MOVE) {\n      return false;\n    }\n  }\n  for (  Map.Entry<RegisterArg,BlockNode> entry : phiInsn.getBlockBinds().entrySet()) {\n    RegisterArg reg=entry.getKey();\n    if (reg.getSVar() == var) {\n      BlockNode blockNode=entry.getValue();\n      InsnNode lastInsn=BlockUtils.getLastInsn(blockNode);\n      if (lastInsn != null && BlockSplitter.SEPARATE_INSNS.contains(lastInsn.getType())) {\n        if (Consts.DEBUG) {\n          LOG.warn(\"Can't insert move for PHI in block with separate insn: {}\",lastInsn);\n        }\n        return false;\n      }\n      int regNum=reg.getRegNum();\n      RegisterArg resultArg=reg.duplicate(regNum,null);\n      SSAVar newSsaVar=mth.makeNewSVar(regNum,resultArg);\n      RegisterArg arg=reg.duplicate(regNum,var);\n      InsnNode moveInsn=new InsnNode(InsnType.MOVE,1);\n      moveInsn.setResult(resultArg);\n      moveInsn.addArg(arg);\n      moveInsn.add(AFlag.SYNTHETIC);\n      blockNode.getInstructions().add(moveInsn);\n      phiInsn.replaceArg(reg,reg.duplicate(regNum,newSsaVar));\n      attachBounds(var);\n      for (      InsnArg phiArg : phiInsn.getArguments()) {\n        attachBounds(((RegisterArg)phiArg).getSVar());\n      }\n      for (      InsnArg phiArg : phiInsn.getArguments()) {\n        mergePhiBounds(((RegisterArg)phiArg).getSVar());\n      }\n      InitCodeVariables.initCodeVar(newSsaVar);\n      return true;\n    }\n  }\n  return false;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 283,
+      "astHeight" : 15
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 13,
+        "startLineNumber" : 307,
+        "startColumnNumber" : 3,
+        "endLineNumber" : 307,
+        "endColumnNumber" : 16
+      },
+      "nodeContext" : "return false;\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 2,
+      "astHeight" : 2
+    },
+    "tokenLength" : 1,
+    "type" : "boolean"
+  }, {
+    "nodeContext" : "false",
+    "nodeType" : "BooleanLiteral",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 311,
+      "startColumnNumber" : 10,
+      "endLineNumber" : 311,
+      "endColumnNumber" : 15
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 13,
+        "startLineNumber" : 311,
+        "startColumnNumber" : 3,
+        "endLineNumber" : 311,
+        "endColumnNumber" : 16
+      },
+      "nodeContext" : "return false;\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 2,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 22,
+        "startLineNumber" : 310,
+        "startColumnNumber" : 23,
+        "endLineNumber" : 312,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  return false;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 3,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 43,
+        "startLineNumber" : 310,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 312,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "if (phiInsn == null) {\n  return false;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 1641,
+        "startLineNumber" : 305,
+        "startColumnNumber" : 69,
+        "endLineNumber" : 356,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  if (var.getTypeInfo().getType().isTypeKnown()) {\n    return false;\n  }\n  PhiInsn phiInsn=var.getUsedInPhi();\n  if (phiInsn == null) {\n    return false;\n  }\n  if (var.getUseCount() == 1) {\n    InsnNode assignInsn=var.getAssign().getAssignInsn();\n    if (assignInsn != null && assignInsn.getType() == InsnType.MOVE) {\n      return false;\n    }\n  }\n  for (  Map.Entry<RegisterArg,BlockNode> entry : phiInsn.getBlockBinds().entrySet()) {\n    RegisterArg reg=entry.getKey();\n    if (reg.getSVar() == var) {\n      BlockNode blockNode=entry.getValue();\n      InsnNode lastInsn=BlockUtils.getLastInsn(blockNode);\n      if (lastInsn != null && BlockSplitter.SEPARATE_INSNS.contains(lastInsn.getType())) {\n        if (Consts.DEBUG) {\n          LOG.warn(\"Can't insert move for PHI in block with separate insn: {}\",lastInsn);\n        }\n        return false;\n      }\n      int regNum=reg.getRegNum();\n      RegisterArg resultArg=reg.duplicate(regNum,null);\n      SSAVar newSsaVar=mth.makeNewSVar(regNum,resultArg);\n      RegisterArg arg=reg.duplicate(regNum,var);\n      InsnNode moveInsn=new InsnNode(InsnType.MOVE,1);\n      moveInsn.setResult(resultArg);\n      moveInsn.addArg(arg);\n      moveInsn.add(AFlag.SYNTHETIC);\n      blockNode.getInstructions().add(moveInsn);\n      phiInsn.replaceArg(reg,reg.duplicate(regNum,newSsaVar));\n      attachBounds(var);\n      for (      InsnArg phiArg : phiInsn.getArguments()) {\n        attachBounds(((RegisterArg)phiArg).getSVar());\n      }\n      for (      InsnArg phiArg : phiInsn.getArguments()) {\n        mergePhiBounds(((RegisterArg)phiArg).getSVar());\n      }\n      InitCodeVariables.initCodeVar(newSsaVar);\n      return true;\n    }\n  }\n  return false;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 270,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 1861,
+        "startLineNumber" : 301,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 356,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "/** \n * Add MOVE instruction before PHI in bound blocks to make 'soft' type link. This allows to use different types in blocks merged by PHI.\n */\nprivate boolean tryInsertAdditionalInsn(MethodNode mth,SSAVar var){\n  if (var.getTypeInfo().getType().isTypeKnown()) {\n    return false;\n  }\n  PhiInsn phiInsn=var.getUsedInPhi();\n  if (phiInsn == null) {\n    return false;\n  }\n  if (var.getUseCount() == 1) {\n    InsnNode assignInsn=var.getAssign().getAssignInsn();\n    if (assignInsn != null && assignInsn.getType() == InsnType.MOVE) {\n      return false;\n    }\n  }\n  for (  Map.Entry<RegisterArg,BlockNode> entry : phiInsn.getBlockBinds().entrySet()) {\n    RegisterArg reg=entry.getKey();\n    if (reg.getSVar() == var) {\n      BlockNode blockNode=entry.getValue();\n      InsnNode lastInsn=BlockUtils.getLastInsn(blockNode);\n      if (lastInsn != null && BlockSplitter.SEPARATE_INSNS.contains(lastInsn.getType())) {\n        if (Consts.DEBUG) {\n          LOG.warn(\"Can't insert move for PHI in block with separate insn: {}\",lastInsn);\n        }\n        return false;\n      }\n      int regNum=reg.getRegNum();\n      RegisterArg resultArg=reg.duplicate(regNum,null);\n      SSAVar newSsaVar=mth.makeNewSVar(regNum,resultArg);\n      RegisterArg arg=reg.duplicate(regNum,var);\n      InsnNode moveInsn=new InsnNode(InsnType.MOVE,1);\n      moveInsn.setResult(resultArg);\n      moveInsn.addArg(arg);\n      moveInsn.add(AFlag.SYNTHETIC);\n      blockNode.getInstructions().add(moveInsn);\n      phiInsn.replaceArg(reg,reg.duplicate(regNum,newSsaVar));\n      attachBounds(var);\n      for (      InsnArg phiArg : phiInsn.getArguments()) {\n        attachBounds(((RegisterArg)phiArg).getSVar());\n      }\n      for (      InsnArg phiArg : phiInsn.getArguments()) {\n        mergePhiBounds(((RegisterArg)phiArg).getSVar());\n      }\n      InitCodeVariables.initCodeVar(newSsaVar);\n      return true;\n    }\n  }\n  return false;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 283,
+      "astHeight" : 15
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 13,
+        "startLineNumber" : 311,
+        "startColumnNumber" : 3,
+        "endLineNumber" : 311,
+        "endColumnNumber" : 16
+      },
+      "nodeContext" : "return false;\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 2,
+      "astHeight" : 2
+    },
+    "tokenLength" : 1,
+    "type" : "boolean"
+  }, {
+    "nodeContext" : "false",
+    "nodeType" : "BooleanLiteral",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 316,
+      "startColumnNumber" : 11,
+      "endLineNumber" : 316,
+      "endColumnNumber" : 16
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 13,
+        "startLineNumber" : 316,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 316,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "return false;\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 2,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 24,
+        "startLineNumber" : 315,
+        "startColumnNumber" : 68,
+        "endLineNumber" : 317,
+        "endColumnNumber" : 4
+      },
+      "nodeContext" : "{\n  return false;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 3,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 89,
+        "startLineNumber" : 315,
+        "startColumnNumber" : 3,
+        "endLineNumber" : 317,
+        "endColumnNumber" : 4
+      },
+      "nodeContext" : "if (assignInsn != null && assignInsn.getType() == InsnType.MOVE) {\n  return false;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 156,
+        "startLineNumber" : 313,
+        "startColumnNumber" : 30,
+        "endLineNumber" : 318,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  InsnNode assignInsn=var.getAssign().getAssignInsn();\n  if (assignInsn != null && assignInsn.getType() == InsnType.MOVE) {\n    return false;\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 26,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 184,
+        "startLineNumber" : 313,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 318,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "if (var.getUseCount() == 1) {\n  InsnNode assignInsn=var.getAssign().getAssignInsn();\n  if (assignInsn != null && assignInsn.getType() == InsnType.MOVE) {\n    return false;\n  }\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 32,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 1641,
+        "startLineNumber" : 305,
+        "startColumnNumber" : 69,
+        "endLineNumber" : 356,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  if (var.getTypeInfo().getType().isTypeKnown()) {\n    return false;\n  }\n  PhiInsn phiInsn=var.getUsedInPhi();\n  if (phiInsn == null) {\n    return false;\n  }\n  if (var.getUseCount() == 1) {\n    InsnNode assignInsn=var.getAssign().getAssignInsn();\n    if (assignInsn != null && assignInsn.getType() == InsnType.MOVE) {\n      return false;\n    }\n  }\n  for (  Map.Entry<RegisterArg,BlockNode> entry : phiInsn.getBlockBinds().entrySet()) {\n    RegisterArg reg=entry.getKey();\n    if (reg.getSVar() == var) {\n      BlockNode blockNode=entry.getValue();\n      InsnNode lastInsn=BlockUtils.getLastInsn(blockNode);\n      if (lastInsn != null && BlockSplitter.SEPARATE_INSNS.contains(lastInsn.getType())) {\n        if (Consts.DEBUG) {\n          LOG.warn(\"Can't insert move for PHI in block with separate insn: {}\",lastInsn);\n        }\n        return false;\n      }\n      int regNum=reg.getRegNum();\n      RegisterArg resultArg=reg.duplicate(regNum,null);\n      SSAVar newSsaVar=mth.makeNewSVar(regNum,resultArg);\n      RegisterArg arg=reg.duplicate(regNum,var);\n      InsnNode moveInsn=new InsnNode(InsnType.MOVE,1);\n      moveInsn.setResult(resultArg);\n      moveInsn.addArg(arg);\n      moveInsn.add(AFlag.SYNTHETIC);\n      blockNode.getInstructions().add(moveInsn);\n      phiInsn.replaceArg(reg,reg.duplicate(regNum,newSsaVar));\n      attachBounds(var);\n      for (      InsnArg phiArg : phiInsn.getArguments()) {\n        attachBounds(((RegisterArg)phiArg).getSVar());\n      }\n      for (      InsnArg phiArg : phiInsn.getArguments()) {\n        mergePhiBounds(((RegisterArg)phiArg).getSVar());\n      }\n      InitCodeVariables.initCodeVar(newSsaVar);\n      return true;\n    }\n  }\n  return false;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 270,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 1861,
+        "startLineNumber" : 301,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 356,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "/** \n * Add MOVE instruction before PHI in bound blocks to make 'soft' type link. This allows to use different types in blocks merged by PHI.\n */\nprivate boolean tryInsertAdditionalInsn(MethodNode mth,SSAVar var){\n  if (var.getTypeInfo().getType().isTypeKnown()) {\n    return false;\n  }\n  PhiInsn phiInsn=var.getUsedInPhi();\n  if (phiInsn == null) {\n    return false;\n  }\n  if (var.getUseCount() == 1) {\n    InsnNode assignInsn=var.getAssign().getAssignInsn();\n    if (assignInsn != null && assignInsn.getType() == InsnType.MOVE) {\n      return false;\n    }\n  }\n  for (  Map.Entry<RegisterArg,BlockNode> entry : phiInsn.getBlockBinds().entrySet()) {\n    RegisterArg reg=entry.getKey();\n    if (reg.getSVar() == var) {\n      BlockNode blockNode=entry.getValue();\n      InsnNode lastInsn=BlockUtils.getLastInsn(blockNode);\n      if (lastInsn != null && BlockSplitter.SEPARATE_INSNS.contains(lastInsn.getType())) {\n        if (Consts.DEBUG) {\n          LOG.warn(\"Can't insert move for PHI in block with separate insn: {}\",lastInsn);\n        }\n        return false;\n      }\n      int regNum=reg.getRegNum();\n      RegisterArg resultArg=reg.duplicate(regNum,null);\n      SSAVar newSsaVar=mth.makeNewSVar(regNum,resultArg);\n      RegisterArg arg=reg.duplicate(regNum,var);\n      InsnNode moveInsn=new InsnNode(InsnType.MOVE,1);\n      moveInsn.setResult(resultArg);\n      moveInsn.addArg(arg);\n      moveInsn.add(AFlag.SYNTHETIC);\n      blockNode.getInstructions().add(moveInsn);\n      phiInsn.replaceArg(reg,reg.duplicate(regNum,newSsaVar));\n      attachBounds(var);\n      for (      InsnArg phiArg : phiInsn.getArguments()) {\n        attachBounds(((RegisterArg)phiArg).getSVar());\n      }\n      for (      InsnArg phiArg : phiInsn.getArguments()) {\n        mergePhiBounds(((RegisterArg)phiArg).getSVar());\n      }\n      InitCodeVariables.initCodeVar(newSsaVar);\n      return true;\n    }\n  }\n  return false;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 283,
+      "astHeight" : 15
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 13,
+        "startLineNumber" : 316,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 316,
+        "endColumnNumber" : 17
+      },
+      "nodeContext" : "return false;\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 2,
+      "astHeight" : 2
+    },
+    "tokenLength" : 1,
+    "type" : "boolean"
+  }, {
+    "nodeContext" : "false",
+    "nodeType" : "BooleanLiteral",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 328,
+      "startColumnNumber" : 12,
+      "endLineNumber" : 328,
+      "endColumnNumber" : 17
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 13,
+        "startLineNumber" : 328,
+        "startColumnNumber" : 5,
+        "endLineNumber" : 328,
+        "endColumnNumber" : 18
+      },
+      "nodeContext" : "return false;\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 2,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 145,
+        "startLineNumber" : 324,
+        "startColumnNumber" : 87,
+        "endLineNumber" : 329,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (Consts.DEBUG) {\n    LOG.warn(\"Can't insert move for PHI in block with separate insn: {}\",lastInsn);\n  }\n  return false;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 14,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 228,
+        "startLineNumber" : 324,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 329,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "if (lastInsn != null && BlockSplitter.SEPARATE_INSNS.contains(lastInsn.getType())) {\n  if (Consts.DEBUG) {\n    LOG.warn(\"Can't insert move for PHI in block with separate insn: {}\",lastInsn);\n  }\n  return false;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 27,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 1118,
+        "startLineNumber" : 321,
+        "startColumnNumber" : 29,
+        "endLineNumber" : 353,
+        "endColumnNumber" : 4
+      },
+      "nodeContext" : "{\n  BlockNode blockNode=entry.getValue();\n  InsnNode lastInsn=BlockUtils.getLastInsn(blockNode);\n  if (lastInsn != null && BlockSplitter.SEPARATE_INSNS.contains(lastInsn.getType())) {\n    if (Consts.DEBUG) {\n      LOG.warn(\"Can't insert move for PHI in block with separate insn: {}\",lastInsn);\n    }\n    return false;\n  }\n  int regNum=reg.getRegNum();\n  RegisterArg resultArg=reg.duplicate(regNum,null);\n  SSAVar newSsaVar=mth.makeNewSVar(regNum,resultArg);\n  RegisterArg arg=reg.duplicate(regNum,var);\n  InsnNode moveInsn=new InsnNode(InsnType.MOVE,1);\n  moveInsn.setResult(resultArg);\n  moveInsn.addArg(arg);\n  moveInsn.add(AFlag.SYNTHETIC);\n  blockNode.getInstructions().add(moveInsn);\n  phiInsn.replaceArg(reg,reg.duplicate(regNum,newSsaVar));\n  attachBounds(var);\n  for (  InsnArg phiArg : phiInsn.getArguments()) {\n    attachBounds(((RegisterArg)phiArg).getSVar());\n  }\n  for (  InsnArg phiArg : phiInsn.getArguments()) {\n    mergePhiBounds(((RegisterArg)phiArg).getSVar());\n  }\n  InitCodeVariables.initCodeVar(newSsaVar);\n  return true;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 177,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1144,
+        "startLineNumber" : 321,
+        "startColumnNumber" : 3,
+        "endLineNumber" : 353,
+        "endColumnNumber" : 4
+      },
+      "nodeContext" : "if (reg.getSVar() == var) {\n  BlockNode blockNode=entry.getValue();\n  InsnNode lastInsn=BlockUtils.getLastInsn(blockNode);\n  if (lastInsn != null && BlockSplitter.SEPARATE_INSNS.contains(lastInsn.getType())) {\n    if (Consts.DEBUG) {\n      LOG.warn(\"Can't insert move for PHI in block with separate insn: {}\",lastInsn);\n    }\n    return false;\n  }\n  int regNum=reg.getRegNum();\n  RegisterArg resultArg=reg.duplicate(regNum,null);\n  SSAVar newSsaVar=mth.makeNewSVar(regNum,resultArg);\n  RegisterArg arg=reg.duplicate(regNum,var);\n  InsnNode moveInsn=new InsnNode(InsnType.MOVE,1);\n  moveInsn.setResult(resultArg);\n  moveInsn.addArg(arg);\n  moveInsn.add(AFlag.SYNTHETIC);\n  blockNode.getInstructions().add(moveInsn);\n  phiInsn.replaceArg(reg,reg.duplicate(regNum,newSsaVar));\n  attachBounds(var);\n  for (  InsnArg phiArg : phiInsn.getArguments()) {\n    attachBounds(((RegisterArg)phiArg).getSVar());\n  }\n  for (  InsnArg phiArg : phiInsn.getArguments()) {\n    mergePhiBounds(((RegisterArg)phiArg).getSVar());\n  }\n  InitCodeVariables.initCodeVar(newSsaVar);\n  return true;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 183,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.EnhancedForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 1190,
+        "startLineNumber" : 319,
+        "startColumnNumber" : 85,
+        "endLineNumber" : 354,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  RegisterArg reg=entry.getKey();\n  if (reg.getSVar() == var) {\n    BlockNode blockNode=entry.getValue();\n    InsnNode lastInsn=BlockUtils.getLastInsn(blockNode);\n    if (lastInsn != null && BlockSplitter.SEPARATE_INSNS.contains(lastInsn.getType())) {\n      if (Consts.DEBUG) {\n        LOG.warn(\"Can't insert move for PHI in block with separate insn: {}\",lastInsn);\n      }\n      return false;\n    }\n    int regNum=reg.getRegNum();\n    RegisterArg resultArg=reg.duplicate(regNum,null);\n    SSAVar newSsaVar=mth.makeNewSVar(regNum,resultArg);\n    RegisterArg arg=reg.duplicate(regNum,var);\n    InsnNode moveInsn=new InsnNode(InsnType.MOVE,1);\n    moveInsn.setResult(resultArg);\n    moveInsn.addArg(arg);\n    moveInsn.add(AFlag.SYNTHETIC);\n    blockNode.getInstructions().add(moveInsn);\n    phiInsn.replaceArg(reg,reg.duplicate(regNum,newSsaVar));\n    attachBounds(var);\n    for (    InsnArg phiArg : phiInsn.getArguments()) {\n      attachBounds(((RegisterArg)phiArg).getSVar());\n    }\n    for (    InsnArg phiArg : phiInsn.getArguments()) {\n      mergePhiBounds(((RegisterArg)phiArg).getSVar());\n    }\n    InitCodeVariables.initCodeVar(newSsaVar);\n    return true;\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 192,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1273,
+        "startLineNumber" : 319,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 354,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "for (Map.Entry<RegisterArg,BlockNode> entry : phiInsn.getBlockBinds().entrySet()) {\n  RegisterArg reg=entry.getKey();\n  if (reg.getSVar() == var) {\n    BlockNode blockNode=entry.getValue();\n    InsnNode lastInsn=BlockUtils.getLastInsn(blockNode);\n    if (lastInsn != null && BlockSplitter.SEPARATE_INSNS.contains(lastInsn.getType())) {\n      if (Consts.DEBUG) {\n        LOG.warn(\"Can't insert move for PHI in block with separate insn: {}\",lastInsn);\n      }\n      return false;\n    }\n    int regNum=reg.getRegNum();\n    RegisterArg resultArg=reg.duplicate(regNum,null);\n    SSAVar newSsaVar=mth.makeNewSVar(regNum,resultArg);\n    RegisterArg arg=reg.duplicate(regNum,var);\n    InsnNode moveInsn=new InsnNode(InsnType.MOVE,1);\n    moveInsn.setResult(resultArg);\n    moveInsn.addArg(arg);\n    moveInsn.add(AFlag.SYNTHETIC);\n    blockNode.getInstructions().add(moveInsn);\n    phiInsn.replaceArg(reg,reg.duplicate(regNum,newSsaVar));\n    attachBounds(var);\n    for (    InsnArg phiArg : phiInsn.getArguments()) {\n      attachBounds(((RegisterArg)phiArg).getSVar());\n    }\n    for (    InsnArg phiArg : phiInsn.getArguments()) {\n      mergePhiBounds(((RegisterArg)phiArg).getSVar());\n    }\n    InitCodeVariables.initCodeVar(newSsaVar);\n    return true;\n  }\n}\n",
+      "nodeType" : "EnhancedForStatement",
+      "astNodeNumber" : 209,
+      "astHeight" : 13
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 1641,
+        "startLineNumber" : 305,
+        "startColumnNumber" : 69,
+        "endLineNumber" : 356,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  if (var.getTypeInfo().getType().isTypeKnown()) {\n    return false;\n  }\n  PhiInsn phiInsn=var.getUsedInPhi();\n  if (phiInsn == null) {\n    return false;\n  }\n  if (var.getUseCount() == 1) {\n    InsnNode assignInsn=var.getAssign().getAssignInsn();\n    if (assignInsn != null && assignInsn.getType() == InsnType.MOVE) {\n      return false;\n    }\n  }\n  for (  Map.Entry<RegisterArg,BlockNode> entry : phiInsn.getBlockBinds().entrySet()) {\n    RegisterArg reg=entry.getKey();\n    if (reg.getSVar() == var) {\n      BlockNode blockNode=entry.getValue();\n      InsnNode lastInsn=BlockUtils.getLastInsn(blockNode);\n      if (lastInsn != null && BlockSplitter.SEPARATE_INSNS.contains(lastInsn.getType())) {\n        if (Consts.DEBUG) {\n          LOG.warn(\"Can't insert move for PHI in block with separate insn: {}\",lastInsn);\n        }\n        return false;\n      }\n      int regNum=reg.getRegNum();\n      RegisterArg resultArg=reg.duplicate(regNum,null);\n      SSAVar newSsaVar=mth.makeNewSVar(regNum,resultArg);\n      RegisterArg arg=reg.duplicate(regNum,var);\n      InsnNode moveInsn=new InsnNode(InsnType.MOVE,1);\n      moveInsn.setResult(resultArg);\n      moveInsn.addArg(arg);\n      moveInsn.add(AFlag.SYNTHETIC);\n      blockNode.getInstructions().add(moveInsn);\n      phiInsn.replaceArg(reg,reg.duplicate(regNum,newSsaVar));\n      attachBounds(var);\n      for (      InsnArg phiArg : phiInsn.getArguments()) {\n        attachBounds(((RegisterArg)phiArg).getSVar());\n      }\n      for (      InsnArg phiArg : phiInsn.getArguments()) {\n        mergePhiBounds(((RegisterArg)phiArg).getSVar());\n      }\n      InitCodeVariables.initCodeVar(newSsaVar);\n      return true;\n    }\n  }\n  return false;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 270,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 1861,
+        "startLineNumber" : 301,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 356,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "/** \n * Add MOVE instruction before PHI in bound blocks to make 'soft' type link. This allows to use different types in blocks merged by PHI.\n */\nprivate boolean tryInsertAdditionalInsn(MethodNode mth,SSAVar var){\n  if (var.getTypeInfo().getType().isTypeKnown()) {\n    return false;\n  }\n  PhiInsn phiInsn=var.getUsedInPhi();\n  if (phiInsn == null) {\n    return false;\n  }\n  if (var.getUseCount() == 1) {\n    InsnNode assignInsn=var.getAssign().getAssignInsn();\n    if (assignInsn != null && assignInsn.getType() == InsnType.MOVE) {\n      return false;\n    }\n  }\n  for (  Map.Entry<RegisterArg,BlockNode> entry : phiInsn.getBlockBinds().entrySet()) {\n    RegisterArg reg=entry.getKey();\n    if (reg.getSVar() == var) {\n      BlockNode blockNode=entry.getValue();\n      InsnNode lastInsn=BlockUtils.getLastInsn(blockNode);\n      if (lastInsn != null && BlockSplitter.SEPARATE_INSNS.contains(lastInsn.getType())) {\n        if (Consts.DEBUG) {\n          LOG.warn(\"Can't insert move for PHI in block with separate insn: {}\",lastInsn);\n        }\n        return false;\n      }\n      int regNum=reg.getRegNum();\n      RegisterArg resultArg=reg.duplicate(regNum,null);\n      SSAVar newSsaVar=mth.makeNewSVar(regNum,resultArg);\n      RegisterArg arg=reg.duplicate(regNum,var);\n      InsnNode moveInsn=new InsnNode(InsnType.MOVE,1);\n      moveInsn.setResult(resultArg);\n      moveInsn.addArg(arg);\n      moveInsn.add(AFlag.SYNTHETIC);\n      blockNode.getInstructions().add(moveInsn);\n      phiInsn.replaceArg(reg,reg.duplicate(regNum,newSsaVar));\n      attachBounds(var);\n      for (      InsnArg phiArg : phiInsn.getArguments()) {\n        attachBounds(((RegisterArg)phiArg).getSVar());\n      }\n      for (      InsnArg phiArg : phiInsn.getArguments()) {\n        mergePhiBounds(((RegisterArg)phiArg).getSVar());\n      }\n      InitCodeVariables.initCodeVar(newSsaVar);\n      return true;\n    }\n  }\n  return false;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 283,
+      "astHeight" : 15
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 13,
+        "startLineNumber" : 328,
+        "startColumnNumber" : 5,
+        "endLineNumber" : 328,
+        "endColumnNumber" : 18
+      },
+      "nodeContext" : "return false;\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 2,
+      "astHeight" : 2
+    },
+    "tokenLength" : 1,
+    "type" : "boolean"
+  }, {
+    "nodeContext" : "false",
+    "nodeType" : "BooleanLiteral",
+    "nodePosition" : {
+      "charLength" : 5,
+      "startLineNumber" : 355,
+      "startColumnNumber" : 9,
+      "endLineNumber" : 355,
+      "endColumnNumber" : 14
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 13,
+        "startLineNumber" : 355,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 355,
+        "endColumnNumber" : 15
+      },
+      "nodeContext" : "return false;\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 2,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 1641,
+        "startLineNumber" : 305,
+        "startColumnNumber" : 69,
+        "endLineNumber" : 356,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "{\n  if (var.getTypeInfo().getType().isTypeKnown()) {\n    return false;\n  }\n  PhiInsn phiInsn=var.getUsedInPhi();\n  if (phiInsn == null) {\n    return false;\n  }\n  if (var.getUseCount() == 1) {\n    InsnNode assignInsn=var.getAssign().getAssignInsn();\n    if (assignInsn != null && assignInsn.getType() == InsnType.MOVE) {\n      return false;\n    }\n  }\n  for (  Map.Entry<RegisterArg,BlockNode> entry : phiInsn.getBlockBinds().entrySet()) {\n    RegisterArg reg=entry.getKey();\n    if (reg.getSVar() == var) {\n      BlockNode blockNode=entry.getValue();\n      InsnNode lastInsn=BlockUtils.getLastInsn(blockNode);\n      if (lastInsn != null && BlockSplitter.SEPARATE_INSNS.contains(lastInsn.getType())) {\n        if (Consts.DEBUG) {\n          LOG.warn(\"Can't insert move for PHI in block with separate insn: {}\",lastInsn);\n        }\n        return false;\n      }\n      int regNum=reg.getRegNum();\n      RegisterArg resultArg=reg.duplicate(regNum,null);\n      SSAVar newSsaVar=mth.makeNewSVar(regNum,resultArg);\n      RegisterArg arg=reg.duplicate(regNum,var);\n      InsnNode moveInsn=new InsnNode(InsnType.MOVE,1);\n      moveInsn.setResult(resultArg);\n      moveInsn.addArg(arg);\n      moveInsn.add(AFlag.SYNTHETIC);\n      blockNode.getInstructions().add(moveInsn);\n      phiInsn.replaceArg(reg,reg.duplicate(regNum,newSsaVar));\n      attachBounds(var);\n      for (      InsnArg phiArg : phiInsn.getArguments()) {\n        attachBounds(((RegisterArg)phiArg).getSVar());\n      }\n      for (      InsnArg phiArg : phiInsn.getArguments()) {\n        mergePhiBounds(((RegisterArg)phiArg).getSVar());\n      }\n      InitCodeVariables.initCodeVar(newSsaVar);\n      return true;\n    }\n  }\n  return false;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 270,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 1861,
+        "startLineNumber" : 301,
+        "startColumnNumber" : 1,
+        "endLineNumber" : 356,
+        "endColumnNumber" : 2
+      },
+      "nodeContext" : "/** \n * Add MOVE instruction before PHI in bound blocks to make 'soft' type link. This allows to use different types in blocks merged by PHI.\n */\nprivate boolean tryInsertAdditionalInsn(MethodNode mth,SSAVar var){\n  if (var.getTypeInfo().getType().isTypeKnown()) {\n    return false;\n  }\n  PhiInsn phiInsn=var.getUsedInPhi();\n  if (phiInsn == null) {\n    return false;\n  }\n  if (var.getUseCount() == 1) {\n    InsnNode assignInsn=var.getAssign().getAssignInsn();\n    if (assignInsn != null && assignInsn.getType() == InsnType.MOVE) {\n      return false;\n    }\n  }\n  for (  Map.Entry<RegisterArg,BlockNode> entry : phiInsn.getBlockBinds().entrySet()) {\n    RegisterArg reg=entry.getKey();\n    if (reg.getSVar() == var) {\n      BlockNode blockNode=entry.getValue();\n      InsnNode lastInsn=BlockUtils.getLastInsn(blockNode);\n      if (lastInsn != null && BlockSplitter.SEPARATE_INSNS.contains(lastInsn.getType())) {\n        if (Consts.DEBUG) {\n          LOG.warn(\"Can't insert move for PHI in block with separate insn: {}\",lastInsn);\n        }\n        return false;\n      }\n      int regNum=reg.getRegNum();\n      RegisterArg resultArg=reg.duplicate(regNum,null);\n      SSAVar newSsaVar=mth.makeNewSVar(regNum,resultArg);\n      RegisterArg arg=reg.duplicate(regNum,var);\n      InsnNode moveInsn=new InsnNode(InsnType.MOVE,1);\n      moveInsn.setResult(resultArg);\n      moveInsn.addArg(arg);\n      moveInsn.add(AFlag.SYNTHETIC);\n      blockNode.getInstructions().add(moveInsn);\n      phiInsn.replaceArg(reg,reg.duplicate(regNum,newSsaVar));\n      attachBounds(var);\n      for (      InsnArg phiArg : phiInsn.getArguments()) {\n        attachBounds(((RegisterArg)phiArg).getSVar());\n      }\n      for (      InsnArg phiArg : phiInsn.getArguments()) {\n        mergePhiBounds(((RegisterArg)phiArg).getSVar());\n      }\n      InitCodeVariables.initCodeVar(newSsaVar);\n      return true;\n    }\n  }\n  return false;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 283,
+      "astHeight" : 15
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 13,
+        "startLineNumber" : 355,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 355,
+        "endColumnNumber" : 15
+      },
+      "nodeContext" : "return false;\n",
+      "nodeType" : "ReturnStatement",
+      "astNodeNumber" : 2,
+      "astHeight" : 2
+    },
+    "tokenLength" : 1,
+    "type" : "boolean"
+  } ],
+  "positionList" : [ {
+    "charLength" : 5,
+    "startLineNumber" : 307,
+    "startColumnNumber" : 10,
+    "endLineNumber" : 307,
+    "endColumnNumber" : 15
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 311,
+    "startColumnNumber" : 10,
+    "endLineNumber" : 311,
+    "endColumnNumber" : 15
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 316,
+    "startColumnNumber" : 11,
+    "endLineNumber" : 316,
+    "endColumnNumber" : 16
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 328,
+    "startColumnNumber" : 12,
+    "endLineNumber" : 328,
+    "endColumnNumber" : 17
+  }, {
+    "charLength" : 5,
+    "startLineNumber" : 355,
+    "startColumnNumber" : 9,
+    "endLineNumber" : 355,
+    "endColumnNumber" : 14
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 3,
+    "layout" : 5
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 4,
+    "layout" : 5
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 0,
+    "layout" : 7
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 1,
+    "layout" : 7
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 2,
+    "layout" : 7
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 4,
+    "layout" : 7
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 0,
+    "layout" : 1
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 1,
+    "layout" : 1
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 2,
+    "layout" : 1
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 3,
+    "layout" : 1
+  } ]
+}

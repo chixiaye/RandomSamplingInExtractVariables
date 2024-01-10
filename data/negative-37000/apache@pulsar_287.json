@@ -1,0 +1,694 @@
+{
+  "id" : 287,
+  "expression" : "arguments.configurationStore",
+  "projectName" : "apache@pulsar",
+  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
+  "filePath" : "/pulsar-broker/src/main/java/org/apache/pulsar/PulsarClusterMetadataSetup.java",
+  "occurrences" : 6,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "arguments.configurationStore",
+    "nodeType" : "QualifiedName",
+    "nodePosition" : {
+      "charLength" : 28,
+      "startLineNumber" : 179,
+      "startColumnNumber" : 12,
+      "endLineNumber" : 179,
+      "endColumnNumber" : 40
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 36,
+        "startLineNumber" : 179,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 179,
+        "endColumnNumber" : 48
+      },
+      "nodeContext" : "arguments.configurationStore == null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 73,
+        "startLineNumber" : 179,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 179,
+        "endColumnNumber" : 85
+      },
+      "nodeContext" : "arguments.configurationStore == null && arguments.globalZookeeper == null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 11,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 258,
+        "startLineNumber" : 179,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 183,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (arguments.configurationStore == null && arguments.globalZookeeper == null) {\n  System.err.println(\"Configuration store address argument is required (--configuration-store)\");\n  jcommander.usage();\n  System.exit(1);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 29,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5849,
+        "startLineNumber" : 158,
+        "startColumnNumber" : 60,
+        "endLineNumber" : 286,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  Arguments arguments=new Arguments();\n  JCommander jcommander=new JCommander();\n  try {\n    jcommander.addObject(arguments);\n    jcommander.parse(args);\n    if (arguments.help) {\n      jcommander.usage();\n      return;\n    }\n    if (arguments.generateDocs) {\n      CmdGenerateDocs cmd=new CmdGenerateDocs(\"pulsar\");\n      cmd.addCommand(\"initialize-cluster-metadata\",arguments);\n      cmd.run(null);\n      return;\n    }\n  }\n catch (  Exception e) {\n    jcommander.usage();\n    throw e;\n  }\n  if (arguments.configurationStore == null && arguments.globalZookeeper == null) {\n    System.err.println(\"Configuration store address argument is required (--configuration-store)\");\n    jcommander.usage();\n    System.exit(1);\n  }\n  if (arguments.configurationStore != null && arguments.globalZookeeper != null) {\n    System.err.println(\"Configuration store argument (--configuration-store) \" + \"supersedes the deprecated (--global-zookeeper) argument\");\n    jcommander.usage();\n    System.exit(1);\n  }\n  if (arguments.configurationStore == null) {\n    arguments.configurationStore=arguments.globalZookeeper;\n  }\n  if (arguments.numTransactionCoordinators <= 0) {\n    System.err.println(\"Number of transaction coordinators must greater than 0\");\n    System.exit(1);\n  }\n  log.info(\"Setting up cluster {} with zk={} configuration-store={}\",arguments.cluster,arguments.zookeeper,arguments.configurationStore);\n  MetadataStoreExtended localStore=initMetadataStore(arguments.zookeeper,arguments.zkSessionTimeoutMillis);\n  MetadataStoreExtended configStore=initMetadataStore(arguments.configurationStore,arguments.zkSessionTimeoutMillis);\n  ServerConfiguration bkConf=new ServerConfiguration();\n  if (arguments.existingBkMetadataServiceUri == null && arguments.bookieMetadataServiceUri == null) {\n    bkConf.setZkServers(arguments.zookeeper);\n    bkConf.setZkTimeout(arguments.zkSessionTimeoutMillis);\n    if (!localStore.exists(\"/ledgers\").get() && !BookKeeperAdmin.format(bkConf,false,false)) {\n      throw new IOException(\"Failed to initialize BookKeeper metadata\");\n    }\n  }\n  String uriStr=bkConf.getMetadataServiceUri();\n  if (arguments.existingBkMetadataServiceUri != null) {\n    uriStr=arguments.existingBkMetadataServiceUri;\n  }\n else   if (arguments.bookieMetadataServiceUri != null) {\n    uriStr=arguments.bookieMetadataServiceUri;\n  }\n  ServiceURI bkMetadataServiceUri=ServiceURI.create(uriStr);\n  initialDlogNamespaceMetadata(arguments.configurationStore,uriStr);\n  if (arguments.numStreamStorageContainers > 0) {\n    ClusterInitializer initializer=new ZkClusterInitializer(arguments.zookeeper);\n    initializer.initializeCluster(bkMetadataServiceUri.getUri(),arguments.numStreamStorageContainers);\n  }\n  if (!localStore.exists(ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH).get()) {\n    createMetadataNode(localStore,ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH,\"{}\".getBytes());\n  }\n  createMetadataNode(localStore,\"/managed-ledgers\",new byte[0]);\n  createMetadataNode(localStore,\"/namespace\",new byte[0]);\n  createMetadataNode(configStore,POLICIES_ROOT,new byte[0]);\n  createMetadataNode(configStore,\"/admin/clusters\",new byte[0]);\n  ClusterData clusterData=ClusterData.builder().serviceUrl(arguments.clusterWebServiceUrl).serviceUrlTls(arguments.clusterWebServiceUrlTls).brokerServiceUrl(arguments.clusterBrokerServiceUrl).brokerServiceUrlTls(arguments.clusterBrokerServiceUrlTls).build();\n  byte[] clusterDataJson=ObjectMapperFactory.getThreadLocal().writeValueAsBytes(clusterData);\n  createMetadataNode(configStore,\"/admin/clusters/\" + arguments.cluster,clusterDataJson);\n  ClusterData globalClusterData=ClusterData.builder().build();\n  byte[] globalClusterDataJson=ObjectMapperFactory.getThreadLocal().writeValueAsBytes(globalClusterData);\n  createMetadataNode(configStore,\"/admin/clusters/global\",globalClusterDataJson);\n  createTenantIfAbsent(configStore,TopicName.PUBLIC_TENANT,arguments.cluster);\n  createTenantIfAbsent(configStore,NamespaceName.SYSTEM_NAMESPACE.getTenant(),arguments.cluster);\n  createNamespaceIfAbsent(configStore,NamespaceName.get(TopicName.PUBLIC_TENANT,TopicName.DEFAULT_NAMESPACE),arguments.cluster);\n  createNamespaceIfAbsent(configStore,NamespaceName.SYSTEM_NAMESPACE,arguments.cluster);\n  createPartitionedTopic(configStore,TopicName.TRANSACTION_COORDINATOR_ASSIGN,arguments.numTransactionCoordinators);\n  localStore.close();\n  configStore.close();\n  log.info(\"Cluster metadata for '{}' setup correctly\",arguments.cluster);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 561,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 5905,
+        "startLineNumber" : 158,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 286,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "public static void main(String[] args) throws Exception {\n  Arguments arguments=new Arguments();\n  JCommander jcommander=new JCommander();\n  try {\n    jcommander.addObject(arguments);\n    jcommander.parse(args);\n    if (arguments.help) {\n      jcommander.usage();\n      return;\n    }\n    if (arguments.generateDocs) {\n      CmdGenerateDocs cmd=new CmdGenerateDocs(\"pulsar\");\n      cmd.addCommand(\"initialize-cluster-metadata\",arguments);\n      cmd.run(null);\n      return;\n    }\n  }\n catch (  Exception e) {\n    jcommander.usage();\n    throw e;\n  }\n  if (arguments.configurationStore == null && arguments.globalZookeeper == null) {\n    System.err.println(\"Configuration store address argument is required (--configuration-store)\");\n    jcommander.usage();\n    System.exit(1);\n  }\n  if (arguments.configurationStore != null && arguments.globalZookeeper != null) {\n    System.err.println(\"Configuration store argument (--configuration-store) \" + \"supersedes the deprecated (--global-zookeeper) argument\");\n    jcommander.usage();\n    System.exit(1);\n  }\n  if (arguments.configurationStore == null) {\n    arguments.configurationStore=arguments.globalZookeeper;\n  }\n  if (arguments.numTransactionCoordinators <= 0) {\n    System.err.println(\"Number of transaction coordinators must greater than 0\");\n    System.exit(1);\n  }\n  log.info(\"Setting up cluster {} with zk={} configuration-store={}\",arguments.cluster,arguments.zookeeper,arguments.configurationStore);\n  MetadataStoreExtended localStore=initMetadataStore(arguments.zookeeper,arguments.zkSessionTimeoutMillis);\n  MetadataStoreExtended configStore=initMetadataStore(arguments.configurationStore,arguments.zkSessionTimeoutMillis);\n  ServerConfiguration bkConf=new ServerConfiguration();\n  if (arguments.existingBkMetadataServiceUri == null && arguments.bookieMetadataServiceUri == null) {\n    bkConf.setZkServers(arguments.zookeeper);\n    bkConf.setZkTimeout(arguments.zkSessionTimeoutMillis);\n    if (!localStore.exists(\"/ledgers\").get() && !BookKeeperAdmin.format(bkConf,false,false)) {\n      throw new IOException(\"Failed to initialize BookKeeper metadata\");\n    }\n  }\n  String uriStr=bkConf.getMetadataServiceUri();\n  if (arguments.existingBkMetadataServiceUri != null) {\n    uriStr=arguments.existingBkMetadataServiceUri;\n  }\n else   if (arguments.bookieMetadataServiceUri != null) {\n    uriStr=arguments.bookieMetadataServiceUri;\n  }\n  ServiceURI bkMetadataServiceUri=ServiceURI.create(uriStr);\n  initialDlogNamespaceMetadata(arguments.configurationStore,uriStr);\n  if (arguments.numStreamStorageContainers > 0) {\n    ClusterInitializer initializer=new ZkClusterInitializer(arguments.zookeeper);\n    initializer.initializeCluster(bkMetadataServiceUri.getUri(),arguments.numStreamStorageContainers);\n  }\n  if (!localStore.exists(ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH).get()) {\n    createMetadataNode(localStore,ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH,\"{}\".getBytes());\n  }\n  createMetadataNode(localStore,\"/managed-ledgers\",new byte[0]);\n  createMetadataNode(localStore,\"/namespace\",new byte[0]);\n  createMetadataNode(configStore,POLICIES_ROOT,new byte[0]);\n  createMetadataNode(configStore,\"/admin/clusters\",new byte[0]);\n  ClusterData clusterData=ClusterData.builder().serviceUrl(arguments.clusterWebServiceUrl).serviceUrlTls(arguments.clusterWebServiceUrlTls).brokerServiceUrl(arguments.clusterBrokerServiceUrl).brokerServiceUrlTls(arguments.clusterBrokerServiceUrlTls).build();\n  byte[] clusterDataJson=ObjectMapperFactory.getThreadLocal().writeValueAsBytes(clusterData);\n  createMetadataNode(configStore,\"/admin/clusters/\" + arguments.cluster,clusterDataJson);\n  ClusterData globalClusterData=ClusterData.builder().build();\n  byte[] globalClusterDataJson=ObjectMapperFactory.getThreadLocal().writeValueAsBytes(globalClusterData);\n  createMetadataNode(configStore,\"/admin/clusters/global\",globalClusterDataJson);\n  createTenantIfAbsent(configStore,TopicName.PUBLIC_TENANT,arguments.cluster);\n  createTenantIfAbsent(configStore,NamespaceName.SYSTEM_NAMESPACE.getTenant(),arguments.cluster);\n  createNamespaceIfAbsent(configStore,NamespaceName.get(TopicName.PUBLIC_TENANT,TopicName.DEFAULT_NAMESPACE),arguments.cluster);\n  createNamespaceIfAbsent(configStore,NamespaceName.SYSTEM_NAMESPACE,arguments.cluster);\n  createPartitionedTopic(configStore,TopicName.TRANSACTION_COORDINATOR_ASSIGN,arguments.numTransactionCoordinators);\n  localStore.close();\n  configStore.close();\n  log.info(\"Cluster metadata for '{}' setup correctly\",arguments.cluster);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 574,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 73,
+        "startLineNumber" : 179,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 179,
+        "endColumnNumber" : 85
+      },
+      "nodeContext" : "arguments.configurationStore == null && arguments.globalZookeeper == null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 11,
+      "astHeight" : 4
+    },
+    "tokenLength" : 2,
+    "type" : "java.lang.String"
+  }, {
+    "nodeContext" : "arguments.configurationStore",
+    "nodeType" : "QualifiedName",
+    "nodePosition" : {
+      "charLength" : 28,
+      "startLineNumber" : 185,
+      "startColumnNumber" : 12,
+      "endLineNumber" : 185,
+      "endColumnNumber" : 40
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 36,
+        "startLineNumber" : 185,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 185,
+        "endColumnNumber" : 48
+      },
+      "nodeContext" : "arguments.configurationStore != null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 73,
+        "startLineNumber" : 185,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 185,
+        "endColumnNumber" : 85
+      },
+      "nodeContext" : "arguments.configurationStore != null && arguments.globalZookeeper != null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 11,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 319,
+        "startLineNumber" : 185,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 190,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (arguments.configurationStore != null && arguments.globalZookeeper != null) {\n  System.err.println(\"Configuration store argument (--configuration-store) \" + \"supersedes the deprecated (--global-zookeeper) argument\");\n  jcommander.usage();\n  System.exit(1);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 31,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5849,
+        "startLineNumber" : 158,
+        "startColumnNumber" : 60,
+        "endLineNumber" : 286,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  Arguments arguments=new Arguments();\n  JCommander jcommander=new JCommander();\n  try {\n    jcommander.addObject(arguments);\n    jcommander.parse(args);\n    if (arguments.help) {\n      jcommander.usage();\n      return;\n    }\n    if (arguments.generateDocs) {\n      CmdGenerateDocs cmd=new CmdGenerateDocs(\"pulsar\");\n      cmd.addCommand(\"initialize-cluster-metadata\",arguments);\n      cmd.run(null);\n      return;\n    }\n  }\n catch (  Exception e) {\n    jcommander.usage();\n    throw e;\n  }\n  if (arguments.configurationStore == null && arguments.globalZookeeper == null) {\n    System.err.println(\"Configuration store address argument is required (--configuration-store)\");\n    jcommander.usage();\n    System.exit(1);\n  }\n  if (arguments.configurationStore != null && arguments.globalZookeeper != null) {\n    System.err.println(\"Configuration store argument (--configuration-store) \" + \"supersedes the deprecated (--global-zookeeper) argument\");\n    jcommander.usage();\n    System.exit(1);\n  }\n  if (arguments.configurationStore == null) {\n    arguments.configurationStore=arguments.globalZookeeper;\n  }\n  if (arguments.numTransactionCoordinators <= 0) {\n    System.err.println(\"Number of transaction coordinators must greater than 0\");\n    System.exit(1);\n  }\n  log.info(\"Setting up cluster {} with zk={} configuration-store={}\",arguments.cluster,arguments.zookeeper,arguments.configurationStore);\n  MetadataStoreExtended localStore=initMetadataStore(arguments.zookeeper,arguments.zkSessionTimeoutMillis);\n  MetadataStoreExtended configStore=initMetadataStore(arguments.configurationStore,arguments.zkSessionTimeoutMillis);\n  ServerConfiguration bkConf=new ServerConfiguration();\n  if (arguments.existingBkMetadataServiceUri == null && arguments.bookieMetadataServiceUri == null) {\n    bkConf.setZkServers(arguments.zookeeper);\n    bkConf.setZkTimeout(arguments.zkSessionTimeoutMillis);\n    if (!localStore.exists(\"/ledgers\").get() && !BookKeeperAdmin.format(bkConf,false,false)) {\n      throw new IOException(\"Failed to initialize BookKeeper metadata\");\n    }\n  }\n  String uriStr=bkConf.getMetadataServiceUri();\n  if (arguments.existingBkMetadataServiceUri != null) {\n    uriStr=arguments.existingBkMetadataServiceUri;\n  }\n else   if (arguments.bookieMetadataServiceUri != null) {\n    uriStr=arguments.bookieMetadataServiceUri;\n  }\n  ServiceURI bkMetadataServiceUri=ServiceURI.create(uriStr);\n  initialDlogNamespaceMetadata(arguments.configurationStore,uriStr);\n  if (arguments.numStreamStorageContainers > 0) {\n    ClusterInitializer initializer=new ZkClusterInitializer(arguments.zookeeper);\n    initializer.initializeCluster(bkMetadataServiceUri.getUri(),arguments.numStreamStorageContainers);\n  }\n  if (!localStore.exists(ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH).get()) {\n    createMetadataNode(localStore,ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH,\"{}\".getBytes());\n  }\n  createMetadataNode(localStore,\"/managed-ledgers\",new byte[0]);\n  createMetadataNode(localStore,\"/namespace\",new byte[0]);\n  createMetadataNode(configStore,POLICIES_ROOT,new byte[0]);\n  createMetadataNode(configStore,\"/admin/clusters\",new byte[0]);\n  ClusterData clusterData=ClusterData.builder().serviceUrl(arguments.clusterWebServiceUrl).serviceUrlTls(arguments.clusterWebServiceUrlTls).brokerServiceUrl(arguments.clusterBrokerServiceUrl).brokerServiceUrlTls(arguments.clusterBrokerServiceUrlTls).build();\n  byte[] clusterDataJson=ObjectMapperFactory.getThreadLocal().writeValueAsBytes(clusterData);\n  createMetadataNode(configStore,\"/admin/clusters/\" + arguments.cluster,clusterDataJson);\n  ClusterData globalClusterData=ClusterData.builder().build();\n  byte[] globalClusterDataJson=ObjectMapperFactory.getThreadLocal().writeValueAsBytes(globalClusterData);\n  createMetadataNode(configStore,\"/admin/clusters/global\",globalClusterDataJson);\n  createTenantIfAbsent(configStore,TopicName.PUBLIC_TENANT,arguments.cluster);\n  createTenantIfAbsent(configStore,NamespaceName.SYSTEM_NAMESPACE.getTenant(),arguments.cluster);\n  createNamespaceIfAbsent(configStore,NamespaceName.get(TopicName.PUBLIC_TENANT,TopicName.DEFAULT_NAMESPACE),arguments.cluster);\n  createNamespaceIfAbsent(configStore,NamespaceName.SYSTEM_NAMESPACE,arguments.cluster);\n  createPartitionedTopic(configStore,TopicName.TRANSACTION_COORDINATOR_ASSIGN,arguments.numTransactionCoordinators);\n  localStore.close();\n  configStore.close();\n  log.info(\"Cluster metadata for '{}' setup correctly\",arguments.cluster);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 561,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 5905,
+        "startLineNumber" : 158,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 286,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "public static void main(String[] args) throws Exception {\n  Arguments arguments=new Arguments();\n  JCommander jcommander=new JCommander();\n  try {\n    jcommander.addObject(arguments);\n    jcommander.parse(args);\n    if (arguments.help) {\n      jcommander.usage();\n      return;\n    }\n    if (arguments.generateDocs) {\n      CmdGenerateDocs cmd=new CmdGenerateDocs(\"pulsar\");\n      cmd.addCommand(\"initialize-cluster-metadata\",arguments);\n      cmd.run(null);\n      return;\n    }\n  }\n catch (  Exception e) {\n    jcommander.usage();\n    throw e;\n  }\n  if (arguments.configurationStore == null && arguments.globalZookeeper == null) {\n    System.err.println(\"Configuration store address argument is required (--configuration-store)\");\n    jcommander.usage();\n    System.exit(1);\n  }\n  if (arguments.configurationStore != null && arguments.globalZookeeper != null) {\n    System.err.println(\"Configuration store argument (--configuration-store) \" + \"supersedes the deprecated (--global-zookeeper) argument\");\n    jcommander.usage();\n    System.exit(1);\n  }\n  if (arguments.configurationStore == null) {\n    arguments.configurationStore=arguments.globalZookeeper;\n  }\n  if (arguments.numTransactionCoordinators <= 0) {\n    System.err.println(\"Number of transaction coordinators must greater than 0\");\n    System.exit(1);\n  }\n  log.info(\"Setting up cluster {} with zk={} configuration-store={}\",arguments.cluster,arguments.zookeeper,arguments.configurationStore);\n  MetadataStoreExtended localStore=initMetadataStore(arguments.zookeeper,arguments.zkSessionTimeoutMillis);\n  MetadataStoreExtended configStore=initMetadataStore(arguments.configurationStore,arguments.zkSessionTimeoutMillis);\n  ServerConfiguration bkConf=new ServerConfiguration();\n  if (arguments.existingBkMetadataServiceUri == null && arguments.bookieMetadataServiceUri == null) {\n    bkConf.setZkServers(arguments.zookeeper);\n    bkConf.setZkTimeout(arguments.zkSessionTimeoutMillis);\n    if (!localStore.exists(\"/ledgers\").get() && !BookKeeperAdmin.format(bkConf,false,false)) {\n      throw new IOException(\"Failed to initialize BookKeeper metadata\");\n    }\n  }\n  String uriStr=bkConf.getMetadataServiceUri();\n  if (arguments.existingBkMetadataServiceUri != null) {\n    uriStr=arguments.existingBkMetadataServiceUri;\n  }\n else   if (arguments.bookieMetadataServiceUri != null) {\n    uriStr=arguments.bookieMetadataServiceUri;\n  }\n  ServiceURI bkMetadataServiceUri=ServiceURI.create(uriStr);\n  initialDlogNamespaceMetadata(arguments.configurationStore,uriStr);\n  if (arguments.numStreamStorageContainers > 0) {\n    ClusterInitializer initializer=new ZkClusterInitializer(arguments.zookeeper);\n    initializer.initializeCluster(bkMetadataServiceUri.getUri(),arguments.numStreamStorageContainers);\n  }\n  if (!localStore.exists(ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH).get()) {\n    createMetadataNode(localStore,ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH,\"{}\".getBytes());\n  }\n  createMetadataNode(localStore,\"/managed-ledgers\",new byte[0]);\n  createMetadataNode(localStore,\"/namespace\",new byte[0]);\n  createMetadataNode(configStore,POLICIES_ROOT,new byte[0]);\n  createMetadataNode(configStore,\"/admin/clusters\",new byte[0]);\n  ClusterData clusterData=ClusterData.builder().serviceUrl(arguments.clusterWebServiceUrl).serviceUrlTls(arguments.clusterWebServiceUrlTls).brokerServiceUrl(arguments.clusterBrokerServiceUrl).brokerServiceUrlTls(arguments.clusterBrokerServiceUrlTls).build();\n  byte[] clusterDataJson=ObjectMapperFactory.getThreadLocal().writeValueAsBytes(clusterData);\n  createMetadataNode(configStore,\"/admin/clusters/\" + arguments.cluster,clusterDataJson);\n  ClusterData globalClusterData=ClusterData.builder().build();\n  byte[] globalClusterDataJson=ObjectMapperFactory.getThreadLocal().writeValueAsBytes(globalClusterData);\n  createMetadataNode(configStore,\"/admin/clusters/global\",globalClusterDataJson);\n  createTenantIfAbsent(configStore,TopicName.PUBLIC_TENANT,arguments.cluster);\n  createTenantIfAbsent(configStore,NamespaceName.SYSTEM_NAMESPACE.getTenant(),arguments.cluster);\n  createNamespaceIfAbsent(configStore,NamespaceName.get(TopicName.PUBLIC_TENANT,TopicName.DEFAULT_NAMESPACE),arguments.cluster);\n  createNamespaceIfAbsent(configStore,NamespaceName.SYSTEM_NAMESPACE,arguments.cluster);\n  createPartitionedTopic(configStore,TopicName.TRANSACTION_COORDINATOR_ASSIGN,arguments.numTransactionCoordinators);\n  localStore.close();\n  configStore.close();\n  log.info(\"Cluster metadata for '{}' setup correctly\",arguments.cluster);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 574,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 73,
+        "startLineNumber" : 185,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 185,
+        "endColumnNumber" : 85
+      },
+      "nodeContext" : "arguments.configurationStore != null && arguments.globalZookeeper != null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 11,
+      "astHeight" : 4
+    },
+    "tokenLength" : 2,
+    "type" : "java.lang.String"
+  }, {
+    "nodeContext" : "arguments.configurationStore",
+    "nodeType" : "QualifiedName",
+    "nodePosition" : {
+      "charLength" : 28,
+      "startLineNumber" : 192,
+      "startColumnNumber" : 12,
+      "endLineNumber" : 192,
+      "endColumnNumber" : 40
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 36,
+        "startLineNumber" : 192,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 192,
+        "endColumnNumber" : 48
+      },
+      "nodeContext" : "arguments.configurationStore == null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 123,
+        "startLineNumber" : 192,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 194,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (arguments.configurationStore == null) {\n  arguments.configurationStore=arguments.globalZookeeper;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 15,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5849,
+        "startLineNumber" : 158,
+        "startColumnNumber" : 60,
+        "endLineNumber" : 286,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  Arguments arguments=new Arguments();\n  JCommander jcommander=new JCommander();\n  try {\n    jcommander.addObject(arguments);\n    jcommander.parse(args);\n    if (arguments.help) {\n      jcommander.usage();\n      return;\n    }\n    if (arguments.generateDocs) {\n      CmdGenerateDocs cmd=new CmdGenerateDocs(\"pulsar\");\n      cmd.addCommand(\"initialize-cluster-metadata\",arguments);\n      cmd.run(null);\n      return;\n    }\n  }\n catch (  Exception e) {\n    jcommander.usage();\n    throw e;\n  }\n  if (arguments.configurationStore == null && arguments.globalZookeeper == null) {\n    System.err.println(\"Configuration store address argument is required (--configuration-store)\");\n    jcommander.usage();\n    System.exit(1);\n  }\n  if (arguments.configurationStore != null && arguments.globalZookeeper != null) {\n    System.err.println(\"Configuration store argument (--configuration-store) \" + \"supersedes the deprecated (--global-zookeeper) argument\");\n    jcommander.usage();\n    System.exit(1);\n  }\n  if (arguments.configurationStore == null) {\n    arguments.configurationStore=arguments.globalZookeeper;\n  }\n  if (arguments.numTransactionCoordinators <= 0) {\n    System.err.println(\"Number of transaction coordinators must greater than 0\");\n    System.exit(1);\n  }\n  log.info(\"Setting up cluster {} with zk={} configuration-store={}\",arguments.cluster,arguments.zookeeper,arguments.configurationStore);\n  MetadataStoreExtended localStore=initMetadataStore(arguments.zookeeper,arguments.zkSessionTimeoutMillis);\n  MetadataStoreExtended configStore=initMetadataStore(arguments.configurationStore,arguments.zkSessionTimeoutMillis);\n  ServerConfiguration bkConf=new ServerConfiguration();\n  if (arguments.existingBkMetadataServiceUri == null && arguments.bookieMetadataServiceUri == null) {\n    bkConf.setZkServers(arguments.zookeeper);\n    bkConf.setZkTimeout(arguments.zkSessionTimeoutMillis);\n    if (!localStore.exists(\"/ledgers\").get() && !BookKeeperAdmin.format(bkConf,false,false)) {\n      throw new IOException(\"Failed to initialize BookKeeper metadata\");\n    }\n  }\n  String uriStr=bkConf.getMetadataServiceUri();\n  if (arguments.existingBkMetadataServiceUri != null) {\n    uriStr=arguments.existingBkMetadataServiceUri;\n  }\n else   if (arguments.bookieMetadataServiceUri != null) {\n    uriStr=arguments.bookieMetadataServiceUri;\n  }\n  ServiceURI bkMetadataServiceUri=ServiceURI.create(uriStr);\n  initialDlogNamespaceMetadata(arguments.configurationStore,uriStr);\n  if (arguments.numStreamStorageContainers > 0) {\n    ClusterInitializer initializer=new ZkClusterInitializer(arguments.zookeeper);\n    initializer.initializeCluster(bkMetadataServiceUri.getUri(),arguments.numStreamStorageContainers);\n  }\n  if (!localStore.exists(ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH).get()) {\n    createMetadataNode(localStore,ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH,\"{}\".getBytes());\n  }\n  createMetadataNode(localStore,\"/managed-ledgers\",new byte[0]);\n  createMetadataNode(localStore,\"/namespace\",new byte[0]);\n  createMetadataNode(configStore,POLICIES_ROOT,new byte[0]);\n  createMetadataNode(configStore,\"/admin/clusters\",new byte[0]);\n  ClusterData clusterData=ClusterData.builder().serviceUrl(arguments.clusterWebServiceUrl).serviceUrlTls(arguments.clusterWebServiceUrlTls).brokerServiceUrl(arguments.clusterBrokerServiceUrl).brokerServiceUrlTls(arguments.clusterBrokerServiceUrlTls).build();\n  byte[] clusterDataJson=ObjectMapperFactory.getThreadLocal().writeValueAsBytes(clusterData);\n  createMetadataNode(configStore,\"/admin/clusters/\" + arguments.cluster,clusterDataJson);\n  ClusterData globalClusterData=ClusterData.builder().build();\n  byte[] globalClusterDataJson=ObjectMapperFactory.getThreadLocal().writeValueAsBytes(globalClusterData);\n  createMetadataNode(configStore,\"/admin/clusters/global\",globalClusterDataJson);\n  createTenantIfAbsent(configStore,TopicName.PUBLIC_TENANT,arguments.cluster);\n  createTenantIfAbsent(configStore,NamespaceName.SYSTEM_NAMESPACE.getTenant(),arguments.cluster);\n  createNamespaceIfAbsent(configStore,NamespaceName.get(TopicName.PUBLIC_TENANT,TopicName.DEFAULT_NAMESPACE),arguments.cluster);\n  createNamespaceIfAbsent(configStore,NamespaceName.SYSTEM_NAMESPACE,arguments.cluster);\n  createPartitionedTopic(configStore,TopicName.TRANSACTION_COORDINATOR_ASSIGN,arguments.numTransactionCoordinators);\n  localStore.close();\n  configStore.close();\n  log.info(\"Cluster metadata for '{}' setup correctly\",arguments.cluster);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 561,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 5905,
+        "startLineNumber" : 158,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 286,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "public static void main(String[] args) throws Exception {\n  Arguments arguments=new Arguments();\n  JCommander jcommander=new JCommander();\n  try {\n    jcommander.addObject(arguments);\n    jcommander.parse(args);\n    if (arguments.help) {\n      jcommander.usage();\n      return;\n    }\n    if (arguments.generateDocs) {\n      CmdGenerateDocs cmd=new CmdGenerateDocs(\"pulsar\");\n      cmd.addCommand(\"initialize-cluster-metadata\",arguments);\n      cmd.run(null);\n      return;\n    }\n  }\n catch (  Exception e) {\n    jcommander.usage();\n    throw e;\n  }\n  if (arguments.configurationStore == null && arguments.globalZookeeper == null) {\n    System.err.println(\"Configuration store address argument is required (--configuration-store)\");\n    jcommander.usage();\n    System.exit(1);\n  }\n  if (arguments.configurationStore != null && arguments.globalZookeeper != null) {\n    System.err.println(\"Configuration store argument (--configuration-store) \" + \"supersedes the deprecated (--global-zookeeper) argument\");\n    jcommander.usage();\n    System.exit(1);\n  }\n  if (arguments.configurationStore == null) {\n    arguments.configurationStore=arguments.globalZookeeper;\n  }\n  if (arguments.numTransactionCoordinators <= 0) {\n    System.err.println(\"Number of transaction coordinators must greater than 0\");\n    System.exit(1);\n  }\n  log.info(\"Setting up cluster {} with zk={} configuration-store={}\",arguments.cluster,arguments.zookeeper,arguments.configurationStore);\n  MetadataStoreExtended localStore=initMetadataStore(arguments.zookeeper,arguments.zkSessionTimeoutMillis);\n  MetadataStoreExtended configStore=initMetadataStore(arguments.configurationStore,arguments.zkSessionTimeoutMillis);\n  ServerConfiguration bkConf=new ServerConfiguration();\n  if (arguments.existingBkMetadataServiceUri == null && arguments.bookieMetadataServiceUri == null) {\n    bkConf.setZkServers(arguments.zookeeper);\n    bkConf.setZkTimeout(arguments.zkSessionTimeoutMillis);\n    if (!localStore.exists(\"/ledgers\").get() && !BookKeeperAdmin.format(bkConf,false,false)) {\n      throw new IOException(\"Failed to initialize BookKeeper metadata\");\n    }\n  }\n  String uriStr=bkConf.getMetadataServiceUri();\n  if (arguments.existingBkMetadataServiceUri != null) {\n    uriStr=arguments.existingBkMetadataServiceUri;\n  }\n else   if (arguments.bookieMetadataServiceUri != null) {\n    uriStr=arguments.bookieMetadataServiceUri;\n  }\n  ServiceURI bkMetadataServiceUri=ServiceURI.create(uriStr);\n  initialDlogNamespaceMetadata(arguments.configurationStore,uriStr);\n  if (arguments.numStreamStorageContainers > 0) {\n    ClusterInitializer initializer=new ZkClusterInitializer(arguments.zookeeper);\n    initializer.initializeCluster(bkMetadataServiceUri.getUri(),arguments.numStreamStorageContainers);\n  }\n  if (!localStore.exists(ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH).get()) {\n    createMetadataNode(localStore,ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH,\"{}\".getBytes());\n  }\n  createMetadataNode(localStore,\"/managed-ledgers\",new byte[0]);\n  createMetadataNode(localStore,\"/namespace\",new byte[0]);\n  createMetadataNode(configStore,POLICIES_ROOT,new byte[0]);\n  createMetadataNode(configStore,\"/admin/clusters\",new byte[0]);\n  ClusterData clusterData=ClusterData.builder().serviceUrl(arguments.clusterWebServiceUrl).serviceUrlTls(arguments.clusterWebServiceUrlTls).brokerServiceUrl(arguments.clusterBrokerServiceUrl).brokerServiceUrlTls(arguments.clusterBrokerServiceUrlTls).build();\n  byte[] clusterDataJson=ObjectMapperFactory.getThreadLocal().writeValueAsBytes(clusterData);\n  createMetadataNode(configStore,\"/admin/clusters/\" + arguments.cluster,clusterDataJson);\n  ClusterData globalClusterData=ClusterData.builder().build();\n  byte[] globalClusterDataJson=ObjectMapperFactory.getThreadLocal().writeValueAsBytes(globalClusterData);\n  createMetadataNode(configStore,\"/admin/clusters/global\",globalClusterDataJson);\n  createTenantIfAbsent(configStore,TopicName.PUBLIC_TENANT,arguments.cluster);\n  createTenantIfAbsent(configStore,NamespaceName.SYSTEM_NAMESPACE.getTenant(),arguments.cluster);\n  createNamespaceIfAbsent(configStore,NamespaceName.get(TopicName.PUBLIC_TENANT,TopicName.DEFAULT_NAMESPACE),arguments.cluster);\n  createNamespaceIfAbsent(configStore,NamespaceName.SYSTEM_NAMESPACE,arguments.cluster);\n  createPartitionedTopic(configStore,TopicName.TRANSACTION_COORDINATOR_ASSIGN,arguments.numTransactionCoordinators);\n  localStore.close();\n  configStore.close();\n  log.info(\"Cluster metadata for '{}' setup correctly\",arguments.cluster);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 574,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 36,
+        "startLineNumber" : 192,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 192,
+        "endColumnNumber" : 48
+      },
+      "nodeContext" : "arguments.configurationStore == null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    },
+    "tokenLength" : 2,
+    "type" : "java.lang.String"
+  }, {
+    "nodeContext" : "arguments.configurationStore",
+    "nodeType" : "QualifiedName",
+    "nodePosition" : {
+      "charLength" : 28,
+      "startLineNumber" : 202,
+      "startColumnNumber" : 16,
+      "endLineNumber" : 202,
+      "endColumnNumber" : 44
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 153,
+        "startLineNumber" : 201,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 202,
+        "endColumnNumber" : 45
+      },
+      "nodeContext" : "log.info(\"Setting up cluster {} with zk={} configuration-store={}\",arguments.cluster,arguments.zookeeper,arguments.configurationStore)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 13,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 154,
+        "startLineNumber" : 201,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 202,
+        "endColumnNumber" : 46
+      },
+      "nodeContext" : "log.info(\"Setting up cluster {} with zk={} configuration-store={}\",arguments.cluster,arguments.zookeeper,arguments.configurationStore);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 14,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5849,
+        "startLineNumber" : 158,
+        "startColumnNumber" : 60,
+        "endLineNumber" : 286,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  Arguments arguments=new Arguments();\n  JCommander jcommander=new JCommander();\n  try {\n    jcommander.addObject(arguments);\n    jcommander.parse(args);\n    if (arguments.help) {\n      jcommander.usage();\n      return;\n    }\n    if (arguments.generateDocs) {\n      CmdGenerateDocs cmd=new CmdGenerateDocs(\"pulsar\");\n      cmd.addCommand(\"initialize-cluster-metadata\",arguments);\n      cmd.run(null);\n      return;\n    }\n  }\n catch (  Exception e) {\n    jcommander.usage();\n    throw e;\n  }\n  if (arguments.configurationStore == null && arguments.globalZookeeper == null) {\n    System.err.println(\"Configuration store address argument is required (--configuration-store)\");\n    jcommander.usage();\n    System.exit(1);\n  }\n  if (arguments.configurationStore != null && arguments.globalZookeeper != null) {\n    System.err.println(\"Configuration store argument (--configuration-store) \" + \"supersedes the deprecated (--global-zookeeper) argument\");\n    jcommander.usage();\n    System.exit(1);\n  }\n  if (arguments.configurationStore == null) {\n    arguments.configurationStore=arguments.globalZookeeper;\n  }\n  if (arguments.numTransactionCoordinators <= 0) {\n    System.err.println(\"Number of transaction coordinators must greater than 0\");\n    System.exit(1);\n  }\n  log.info(\"Setting up cluster {} with zk={} configuration-store={}\",arguments.cluster,arguments.zookeeper,arguments.configurationStore);\n  MetadataStoreExtended localStore=initMetadataStore(arguments.zookeeper,arguments.zkSessionTimeoutMillis);\n  MetadataStoreExtended configStore=initMetadataStore(arguments.configurationStore,arguments.zkSessionTimeoutMillis);\n  ServerConfiguration bkConf=new ServerConfiguration();\n  if (arguments.existingBkMetadataServiceUri == null && arguments.bookieMetadataServiceUri == null) {\n    bkConf.setZkServers(arguments.zookeeper);\n    bkConf.setZkTimeout(arguments.zkSessionTimeoutMillis);\n    if (!localStore.exists(\"/ledgers\").get() && !BookKeeperAdmin.format(bkConf,false,false)) {\n      throw new IOException(\"Failed to initialize BookKeeper metadata\");\n    }\n  }\n  String uriStr=bkConf.getMetadataServiceUri();\n  if (arguments.existingBkMetadataServiceUri != null) {\n    uriStr=arguments.existingBkMetadataServiceUri;\n  }\n else   if (arguments.bookieMetadataServiceUri != null) {\n    uriStr=arguments.bookieMetadataServiceUri;\n  }\n  ServiceURI bkMetadataServiceUri=ServiceURI.create(uriStr);\n  initialDlogNamespaceMetadata(arguments.configurationStore,uriStr);\n  if (arguments.numStreamStorageContainers > 0) {\n    ClusterInitializer initializer=new ZkClusterInitializer(arguments.zookeeper);\n    initializer.initializeCluster(bkMetadataServiceUri.getUri(),arguments.numStreamStorageContainers);\n  }\n  if (!localStore.exists(ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH).get()) {\n    createMetadataNode(localStore,ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH,\"{}\".getBytes());\n  }\n  createMetadataNode(localStore,\"/managed-ledgers\",new byte[0]);\n  createMetadataNode(localStore,\"/namespace\",new byte[0]);\n  createMetadataNode(configStore,POLICIES_ROOT,new byte[0]);\n  createMetadataNode(configStore,\"/admin/clusters\",new byte[0]);\n  ClusterData clusterData=ClusterData.builder().serviceUrl(arguments.clusterWebServiceUrl).serviceUrlTls(arguments.clusterWebServiceUrlTls).brokerServiceUrl(arguments.clusterBrokerServiceUrl).brokerServiceUrlTls(arguments.clusterBrokerServiceUrlTls).build();\n  byte[] clusterDataJson=ObjectMapperFactory.getThreadLocal().writeValueAsBytes(clusterData);\n  createMetadataNode(configStore,\"/admin/clusters/\" + arguments.cluster,clusterDataJson);\n  ClusterData globalClusterData=ClusterData.builder().build();\n  byte[] globalClusterDataJson=ObjectMapperFactory.getThreadLocal().writeValueAsBytes(globalClusterData);\n  createMetadataNode(configStore,\"/admin/clusters/global\",globalClusterDataJson);\n  createTenantIfAbsent(configStore,TopicName.PUBLIC_TENANT,arguments.cluster);\n  createTenantIfAbsent(configStore,NamespaceName.SYSTEM_NAMESPACE.getTenant(),arguments.cluster);\n  createNamespaceIfAbsent(configStore,NamespaceName.get(TopicName.PUBLIC_TENANT,TopicName.DEFAULT_NAMESPACE),arguments.cluster);\n  createNamespaceIfAbsent(configStore,NamespaceName.SYSTEM_NAMESPACE,arguments.cluster);\n  createPartitionedTopic(configStore,TopicName.TRANSACTION_COORDINATOR_ASSIGN,arguments.numTransactionCoordinators);\n  localStore.close();\n  configStore.close();\n  log.info(\"Cluster metadata for '{}' setup correctly\",arguments.cluster);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 561,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 5905,
+        "startLineNumber" : 158,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 286,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "public static void main(String[] args) throws Exception {\n  Arguments arguments=new Arguments();\n  JCommander jcommander=new JCommander();\n  try {\n    jcommander.addObject(arguments);\n    jcommander.parse(args);\n    if (arguments.help) {\n      jcommander.usage();\n      return;\n    }\n    if (arguments.generateDocs) {\n      CmdGenerateDocs cmd=new CmdGenerateDocs(\"pulsar\");\n      cmd.addCommand(\"initialize-cluster-metadata\",arguments);\n      cmd.run(null);\n      return;\n    }\n  }\n catch (  Exception e) {\n    jcommander.usage();\n    throw e;\n  }\n  if (arguments.configurationStore == null && arguments.globalZookeeper == null) {\n    System.err.println(\"Configuration store address argument is required (--configuration-store)\");\n    jcommander.usage();\n    System.exit(1);\n  }\n  if (arguments.configurationStore != null && arguments.globalZookeeper != null) {\n    System.err.println(\"Configuration store argument (--configuration-store) \" + \"supersedes the deprecated (--global-zookeeper) argument\");\n    jcommander.usage();\n    System.exit(1);\n  }\n  if (arguments.configurationStore == null) {\n    arguments.configurationStore=arguments.globalZookeeper;\n  }\n  if (arguments.numTransactionCoordinators <= 0) {\n    System.err.println(\"Number of transaction coordinators must greater than 0\");\n    System.exit(1);\n  }\n  log.info(\"Setting up cluster {} with zk={} configuration-store={}\",arguments.cluster,arguments.zookeeper,arguments.configurationStore);\n  MetadataStoreExtended localStore=initMetadataStore(arguments.zookeeper,arguments.zkSessionTimeoutMillis);\n  MetadataStoreExtended configStore=initMetadataStore(arguments.configurationStore,arguments.zkSessionTimeoutMillis);\n  ServerConfiguration bkConf=new ServerConfiguration();\n  if (arguments.existingBkMetadataServiceUri == null && arguments.bookieMetadataServiceUri == null) {\n    bkConf.setZkServers(arguments.zookeeper);\n    bkConf.setZkTimeout(arguments.zkSessionTimeoutMillis);\n    if (!localStore.exists(\"/ledgers\").get() && !BookKeeperAdmin.format(bkConf,false,false)) {\n      throw new IOException(\"Failed to initialize BookKeeper metadata\");\n    }\n  }\n  String uriStr=bkConf.getMetadataServiceUri();\n  if (arguments.existingBkMetadataServiceUri != null) {\n    uriStr=arguments.existingBkMetadataServiceUri;\n  }\n else   if (arguments.bookieMetadataServiceUri != null) {\n    uriStr=arguments.bookieMetadataServiceUri;\n  }\n  ServiceURI bkMetadataServiceUri=ServiceURI.create(uriStr);\n  initialDlogNamespaceMetadata(arguments.configurationStore,uriStr);\n  if (arguments.numStreamStorageContainers > 0) {\n    ClusterInitializer initializer=new ZkClusterInitializer(arguments.zookeeper);\n    initializer.initializeCluster(bkMetadataServiceUri.getUri(),arguments.numStreamStorageContainers);\n  }\n  if (!localStore.exists(ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH).get()) {\n    createMetadataNode(localStore,ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH,\"{}\".getBytes());\n  }\n  createMetadataNode(localStore,\"/managed-ledgers\",new byte[0]);\n  createMetadataNode(localStore,\"/namespace\",new byte[0]);\n  createMetadataNode(configStore,POLICIES_ROOT,new byte[0]);\n  createMetadataNode(configStore,\"/admin/clusters\",new byte[0]);\n  ClusterData clusterData=ClusterData.builder().serviceUrl(arguments.clusterWebServiceUrl).serviceUrlTls(arguments.clusterWebServiceUrlTls).brokerServiceUrl(arguments.clusterBrokerServiceUrl).brokerServiceUrlTls(arguments.clusterBrokerServiceUrlTls).build();\n  byte[] clusterDataJson=ObjectMapperFactory.getThreadLocal().writeValueAsBytes(clusterData);\n  createMetadataNode(configStore,\"/admin/clusters/\" + arguments.cluster,clusterDataJson);\n  ClusterData globalClusterData=ClusterData.builder().build();\n  byte[] globalClusterDataJson=ObjectMapperFactory.getThreadLocal().writeValueAsBytes(globalClusterData);\n  createMetadataNode(configStore,\"/admin/clusters/global\",globalClusterDataJson);\n  createTenantIfAbsent(configStore,TopicName.PUBLIC_TENANT,arguments.cluster);\n  createTenantIfAbsent(configStore,NamespaceName.SYSTEM_NAMESPACE.getTenant(),arguments.cluster);\n  createNamespaceIfAbsent(configStore,NamespaceName.get(TopicName.PUBLIC_TENANT,TopicName.DEFAULT_NAMESPACE),arguments.cluster);\n  createNamespaceIfAbsent(configStore,NamespaceName.SYSTEM_NAMESPACE,arguments.cluster);\n  createPartitionedTopic(configStore,TopicName.TRANSACTION_COORDINATOR_ASSIGN,arguments.numTransactionCoordinators);\n  localStore.close();\n  configStore.close();\n  log.info(\"Cluster metadata for '{}' setup correctly\",arguments.cluster);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 574,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 153,
+        "startLineNumber" : 201,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 202,
+        "endColumnNumber" : 45
+      },
+      "nodeContext" : "log.info(\"Setting up cluster {} with zk={} configuration-store={}\",arguments.cluster,arguments.zookeeper,arguments.configurationStore)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 13,
+      "astHeight" : 3
+    },
+    "tokenLength" : 2,
+    "type" : "java.lang.String"
+  }, {
+    "nodeContext" : "arguments.configurationStore",
+    "nodeType" : "QualifiedName",
+    "nodePosition" : {
+      "charLength" : 28,
+      "startLineNumber" : 205,
+      "startColumnNumber" : 62,
+      "endLineNumber" : 205,
+      "endColumnNumber" : 90
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 97,
+        "startLineNumber" : 205,
+        "startColumnNumber" : 44,
+        "endLineNumber" : 206,
+        "endColumnNumber" : 49
+      },
+      "nodeContext" : "initMetadataStore(arguments.configurationStore,arguments.zkSessionTimeoutMillis)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 8,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 111,
+        "startLineNumber" : 205,
+        "startColumnNumber" : 30,
+        "endLineNumber" : 206,
+        "endColumnNumber" : 49
+      },
+      "nodeContext" : "configStore=initMetadataStore(arguments.configurationStore,arguments.zkSessionTimeoutMillis)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 134,
+        "startLineNumber" : 205,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 206,
+        "endColumnNumber" : 50
+      },
+      "nodeContext" : "MetadataStoreExtended configStore=initMetadataStore(arguments.configurationStore,arguments.zkSessionTimeoutMillis);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 13,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5849,
+        "startLineNumber" : 158,
+        "startColumnNumber" : 60,
+        "endLineNumber" : 286,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  Arguments arguments=new Arguments();\n  JCommander jcommander=new JCommander();\n  try {\n    jcommander.addObject(arguments);\n    jcommander.parse(args);\n    if (arguments.help) {\n      jcommander.usage();\n      return;\n    }\n    if (arguments.generateDocs) {\n      CmdGenerateDocs cmd=new CmdGenerateDocs(\"pulsar\");\n      cmd.addCommand(\"initialize-cluster-metadata\",arguments);\n      cmd.run(null);\n      return;\n    }\n  }\n catch (  Exception e) {\n    jcommander.usage();\n    throw e;\n  }\n  if (arguments.configurationStore == null && arguments.globalZookeeper == null) {\n    System.err.println(\"Configuration store address argument is required (--configuration-store)\");\n    jcommander.usage();\n    System.exit(1);\n  }\n  if (arguments.configurationStore != null && arguments.globalZookeeper != null) {\n    System.err.println(\"Configuration store argument (--configuration-store) \" + \"supersedes the deprecated (--global-zookeeper) argument\");\n    jcommander.usage();\n    System.exit(1);\n  }\n  if (arguments.configurationStore == null) {\n    arguments.configurationStore=arguments.globalZookeeper;\n  }\n  if (arguments.numTransactionCoordinators <= 0) {\n    System.err.println(\"Number of transaction coordinators must greater than 0\");\n    System.exit(1);\n  }\n  log.info(\"Setting up cluster {} with zk={} configuration-store={}\",arguments.cluster,arguments.zookeeper,arguments.configurationStore);\n  MetadataStoreExtended localStore=initMetadataStore(arguments.zookeeper,arguments.zkSessionTimeoutMillis);\n  MetadataStoreExtended configStore=initMetadataStore(arguments.configurationStore,arguments.zkSessionTimeoutMillis);\n  ServerConfiguration bkConf=new ServerConfiguration();\n  if (arguments.existingBkMetadataServiceUri == null && arguments.bookieMetadataServiceUri == null) {\n    bkConf.setZkServers(arguments.zookeeper);\n    bkConf.setZkTimeout(arguments.zkSessionTimeoutMillis);\n    if (!localStore.exists(\"/ledgers\").get() && !BookKeeperAdmin.format(bkConf,false,false)) {\n      throw new IOException(\"Failed to initialize BookKeeper metadata\");\n    }\n  }\n  String uriStr=bkConf.getMetadataServiceUri();\n  if (arguments.existingBkMetadataServiceUri != null) {\n    uriStr=arguments.existingBkMetadataServiceUri;\n  }\n else   if (arguments.bookieMetadataServiceUri != null) {\n    uriStr=arguments.bookieMetadataServiceUri;\n  }\n  ServiceURI bkMetadataServiceUri=ServiceURI.create(uriStr);\n  initialDlogNamespaceMetadata(arguments.configurationStore,uriStr);\n  if (arguments.numStreamStorageContainers > 0) {\n    ClusterInitializer initializer=new ZkClusterInitializer(arguments.zookeeper);\n    initializer.initializeCluster(bkMetadataServiceUri.getUri(),arguments.numStreamStorageContainers);\n  }\n  if (!localStore.exists(ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH).get()) {\n    createMetadataNode(localStore,ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH,\"{}\".getBytes());\n  }\n  createMetadataNode(localStore,\"/managed-ledgers\",new byte[0]);\n  createMetadataNode(localStore,\"/namespace\",new byte[0]);\n  createMetadataNode(configStore,POLICIES_ROOT,new byte[0]);\n  createMetadataNode(configStore,\"/admin/clusters\",new byte[0]);\n  ClusterData clusterData=ClusterData.builder().serviceUrl(arguments.clusterWebServiceUrl).serviceUrlTls(arguments.clusterWebServiceUrlTls).brokerServiceUrl(arguments.clusterBrokerServiceUrl).brokerServiceUrlTls(arguments.clusterBrokerServiceUrlTls).build();\n  byte[] clusterDataJson=ObjectMapperFactory.getThreadLocal().writeValueAsBytes(clusterData);\n  createMetadataNode(configStore,\"/admin/clusters/\" + arguments.cluster,clusterDataJson);\n  ClusterData globalClusterData=ClusterData.builder().build();\n  byte[] globalClusterDataJson=ObjectMapperFactory.getThreadLocal().writeValueAsBytes(globalClusterData);\n  createMetadataNode(configStore,\"/admin/clusters/global\",globalClusterDataJson);\n  createTenantIfAbsent(configStore,TopicName.PUBLIC_TENANT,arguments.cluster);\n  createTenantIfAbsent(configStore,NamespaceName.SYSTEM_NAMESPACE.getTenant(),arguments.cluster);\n  createNamespaceIfAbsent(configStore,NamespaceName.get(TopicName.PUBLIC_TENANT,TopicName.DEFAULT_NAMESPACE),arguments.cluster);\n  createNamespaceIfAbsent(configStore,NamespaceName.SYSTEM_NAMESPACE,arguments.cluster);\n  createPartitionedTopic(configStore,TopicName.TRANSACTION_COORDINATOR_ASSIGN,arguments.numTransactionCoordinators);\n  localStore.close();\n  configStore.close();\n  log.info(\"Cluster metadata for '{}' setup correctly\",arguments.cluster);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 561,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 5905,
+        "startLineNumber" : 158,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 286,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "public static void main(String[] args) throws Exception {\n  Arguments arguments=new Arguments();\n  JCommander jcommander=new JCommander();\n  try {\n    jcommander.addObject(arguments);\n    jcommander.parse(args);\n    if (arguments.help) {\n      jcommander.usage();\n      return;\n    }\n    if (arguments.generateDocs) {\n      CmdGenerateDocs cmd=new CmdGenerateDocs(\"pulsar\");\n      cmd.addCommand(\"initialize-cluster-metadata\",arguments);\n      cmd.run(null);\n      return;\n    }\n  }\n catch (  Exception e) {\n    jcommander.usage();\n    throw e;\n  }\n  if (arguments.configurationStore == null && arguments.globalZookeeper == null) {\n    System.err.println(\"Configuration store address argument is required (--configuration-store)\");\n    jcommander.usage();\n    System.exit(1);\n  }\n  if (arguments.configurationStore != null && arguments.globalZookeeper != null) {\n    System.err.println(\"Configuration store argument (--configuration-store) \" + \"supersedes the deprecated (--global-zookeeper) argument\");\n    jcommander.usage();\n    System.exit(1);\n  }\n  if (arguments.configurationStore == null) {\n    arguments.configurationStore=arguments.globalZookeeper;\n  }\n  if (arguments.numTransactionCoordinators <= 0) {\n    System.err.println(\"Number of transaction coordinators must greater than 0\");\n    System.exit(1);\n  }\n  log.info(\"Setting up cluster {} with zk={} configuration-store={}\",arguments.cluster,arguments.zookeeper,arguments.configurationStore);\n  MetadataStoreExtended localStore=initMetadataStore(arguments.zookeeper,arguments.zkSessionTimeoutMillis);\n  MetadataStoreExtended configStore=initMetadataStore(arguments.configurationStore,arguments.zkSessionTimeoutMillis);\n  ServerConfiguration bkConf=new ServerConfiguration();\n  if (arguments.existingBkMetadataServiceUri == null && arguments.bookieMetadataServiceUri == null) {\n    bkConf.setZkServers(arguments.zookeeper);\n    bkConf.setZkTimeout(arguments.zkSessionTimeoutMillis);\n    if (!localStore.exists(\"/ledgers\").get() && !BookKeeperAdmin.format(bkConf,false,false)) {\n      throw new IOException(\"Failed to initialize BookKeeper metadata\");\n    }\n  }\n  String uriStr=bkConf.getMetadataServiceUri();\n  if (arguments.existingBkMetadataServiceUri != null) {\n    uriStr=arguments.existingBkMetadataServiceUri;\n  }\n else   if (arguments.bookieMetadataServiceUri != null) {\n    uriStr=arguments.bookieMetadataServiceUri;\n  }\n  ServiceURI bkMetadataServiceUri=ServiceURI.create(uriStr);\n  initialDlogNamespaceMetadata(arguments.configurationStore,uriStr);\n  if (arguments.numStreamStorageContainers > 0) {\n    ClusterInitializer initializer=new ZkClusterInitializer(arguments.zookeeper);\n    initializer.initializeCluster(bkMetadataServiceUri.getUri(),arguments.numStreamStorageContainers);\n  }\n  if (!localStore.exists(ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH).get()) {\n    createMetadataNode(localStore,ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH,\"{}\".getBytes());\n  }\n  createMetadataNode(localStore,\"/managed-ledgers\",new byte[0]);\n  createMetadataNode(localStore,\"/namespace\",new byte[0]);\n  createMetadataNode(configStore,POLICIES_ROOT,new byte[0]);\n  createMetadataNode(configStore,\"/admin/clusters\",new byte[0]);\n  ClusterData clusterData=ClusterData.builder().serviceUrl(arguments.clusterWebServiceUrl).serviceUrlTls(arguments.clusterWebServiceUrlTls).brokerServiceUrl(arguments.clusterBrokerServiceUrl).brokerServiceUrlTls(arguments.clusterBrokerServiceUrlTls).build();\n  byte[] clusterDataJson=ObjectMapperFactory.getThreadLocal().writeValueAsBytes(clusterData);\n  createMetadataNode(configStore,\"/admin/clusters/\" + arguments.cluster,clusterDataJson);\n  ClusterData globalClusterData=ClusterData.builder().build();\n  byte[] globalClusterDataJson=ObjectMapperFactory.getThreadLocal().writeValueAsBytes(globalClusterData);\n  createMetadataNode(configStore,\"/admin/clusters/global\",globalClusterDataJson);\n  createTenantIfAbsent(configStore,TopicName.PUBLIC_TENANT,arguments.cluster);\n  createTenantIfAbsent(configStore,NamespaceName.SYSTEM_NAMESPACE.getTenant(),arguments.cluster);\n  createNamespaceIfAbsent(configStore,NamespaceName.get(TopicName.PUBLIC_TENANT,TopicName.DEFAULT_NAMESPACE),arguments.cluster);\n  createNamespaceIfAbsent(configStore,NamespaceName.SYSTEM_NAMESPACE,arguments.cluster);\n  createPartitionedTopic(configStore,TopicName.TRANSACTION_COORDINATOR_ASSIGN,arguments.numTransactionCoordinators);\n  localStore.close();\n  configStore.close();\n  log.info(\"Cluster metadata for '{}' setup correctly\",arguments.cluster);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 574,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 97,
+        "startLineNumber" : 205,
+        "startColumnNumber" : 44,
+        "endLineNumber" : 206,
+        "endColumnNumber" : 49
+      },
+      "nodeContext" : "initMetadataStore(arguments.configurationStore,arguments.zkSessionTimeoutMillis)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 8,
+      "astHeight" : 3
+    },
+    "tokenLength" : 2,
+    "type" : "java.lang.String"
+  }, {
+    "nodeContext" : "arguments.configurationStore",
+    "nodeType" : "QualifiedName",
+    "nodePosition" : {
+      "charLength" : 28,
+      "startLineNumber" : 229,
+      "startColumnNumber" : 37,
+      "endLineNumber" : 229,
+      "endColumnNumber" : 65
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 66,
+        "startLineNumber" : 229,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 229,
+        "endColumnNumber" : 74
+      },
+      "nodeContext" : "initialDlogNamespaceMetadata(arguments.configurationStore,uriStr)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 67,
+        "startLineNumber" : 229,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 229,
+        "endColumnNumber" : 75
+      },
+      "nodeContext" : "initialDlogNamespaceMetadata(arguments.configurationStore,uriStr);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5849,
+        "startLineNumber" : 158,
+        "startColumnNumber" : 60,
+        "endLineNumber" : 286,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  Arguments arguments=new Arguments();\n  JCommander jcommander=new JCommander();\n  try {\n    jcommander.addObject(arguments);\n    jcommander.parse(args);\n    if (arguments.help) {\n      jcommander.usage();\n      return;\n    }\n    if (arguments.generateDocs) {\n      CmdGenerateDocs cmd=new CmdGenerateDocs(\"pulsar\");\n      cmd.addCommand(\"initialize-cluster-metadata\",arguments);\n      cmd.run(null);\n      return;\n    }\n  }\n catch (  Exception e) {\n    jcommander.usage();\n    throw e;\n  }\n  if (arguments.configurationStore == null && arguments.globalZookeeper == null) {\n    System.err.println(\"Configuration store address argument is required (--configuration-store)\");\n    jcommander.usage();\n    System.exit(1);\n  }\n  if (arguments.configurationStore != null && arguments.globalZookeeper != null) {\n    System.err.println(\"Configuration store argument (--configuration-store) \" + \"supersedes the deprecated (--global-zookeeper) argument\");\n    jcommander.usage();\n    System.exit(1);\n  }\n  if (arguments.configurationStore == null) {\n    arguments.configurationStore=arguments.globalZookeeper;\n  }\n  if (arguments.numTransactionCoordinators <= 0) {\n    System.err.println(\"Number of transaction coordinators must greater than 0\");\n    System.exit(1);\n  }\n  log.info(\"Setting up cluster {} with zk={} configuration-store={}\",arguments.cluster,arguments.zookeeper,arguments.configurationStore);\n  MetadataStoreExtended localStore=initMetadataStore(arguments.zookeeper,arguments.zkSessionTimeoutMillis);\n  MetadataStoreExtended configStore=initMetadataStore(arguments.configurationStore,arguments.zkSessionTimeoutMillis);\n  ServerConfiguration bkConf=new ServerConfiguration();\n  if (arguments.existingBkMetadataServiceUri == null && arguments.bookieMetadataServiceUri == null) {\n    bkConf.setZkServers(arguments.zookeeper);\n    bkConf.setZkTimeout(arguments.zkSessionTimeoutMillis);\n    if (!localStore.exists(\"/ledgers\").get() && !BookKeeperAdmin.format(bkConf,false,false)) {\n      throw new IOException(\"Failed to initialize BookKeeper metadata\");\n    }\n  }\n  String uriStr=bkConf.getMetadataServiceUri();\n  if (arguments.existingBkMetadataServiceUri != null) {\n    uriStr=arguments.existingBkMetadataServiceUri;\n  }\n else   if (arguments.bookieMetadataServiceUri != null) {\n    uriStr=arguments.bookieMetadataServiceUri;\n  }\n  ServiceURI bkMetadataServiceUri=ServiceURI.create(uriStr);\n  initialDlogNamespaceMetadata(arguments.configurationStore,uriStr);\n  if (arguments.numStreamStorageContainers > 0) {\n    ClusterInitializer initializer=new ZkClusterInitializer(arguments.zookeeper);\n    initializer.initializeCluster(bkMetadataServiceUri.getUri(),arguments.numStreamStorageContainers);\n  }\n  if (!localStore.exists(ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH).get()) {\n    createMetadataNode(localStore,ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH,\"{}\".getBytes());\n  }\n  createMetadataNode(localStore,\"/managed-ledgers\",new byte[0]);\n  createMetadataNode(localStore,\"/namespace\",new byte[0]);\n  createMetadataNode(configStore,POLICIES_ROOT,new byte[0]);\n  createMetadataNode(configStore,\"/admin/clusters\",new byte[0]);\n  ClusterData clusterData=ClusterData.builder().serviceUrl(arguments.clusterWebServiceUrl).serviceUrlTls(arguments.clusterWebServiceUrlTls).brokerServiceUrl(arguments.clusterBrokerServiceUrl).brokerServiceUrlTls(arguments.clusterBrokerServiceUrlTls).build();\n  byte[] clusterDataJson=ObjectMapperFactory.getThreadLocal().writeValueAsBytes(clusterData);\n  createMetadataNode(configStore,\"/admin/clusters/\" + arguments.cluster,clusterDataJson);\n  ClusterData globalClusterData=ClusterData.builder().build();\n  byte[] globalClusterDataJson=ObjectMapperFactory.getThreadLocal().writeValueAsBytes(globalClusterData);\n  createMetadataNode(configStore,\"/admin/clusters/global\",globalClusterDataJson);\n  createTenantIfAbsent(configStore,TopicName.PUBLIC_TENANT,arguments.cluster);\n  createTenantIfAbsent(configStore,NamespaceName.SYSTEM_NAMESPACE.getTenant(),arguments.cluster);\n  createNamespaceIfAbsent(configStore,NamespaceName.get(TopicName.PUBLIC_TENANT,TopicName.DEFAULT_NAMESPACE),arguments.cluster);\n  createNamespaceIfAbsent(configStore,NamespaceName.SYSTEM_NAMESPACE,arguments.cluster);\n  createPartitionedTopic(configStore,TopicName.TRANSACTION_COORDINATOR_ASSIGN,arguments.numTransactionCoordinators);\n  localStore.close();\n  configStore.close();\n  log.info(\"Cluster metadata for '{}' setup correctly\",arguments.cluster);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 561,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 5905,
+        "startLineNumber" : 158,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 286,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "public static void main(String[] args) throws Exception {\n  Arguments arguments=new Arguments();\n  JCommander jcommander=new JCommander();\n  try {\n    jcommander.addObject(arguments);\n    jcommander.parse(args);\n    if (arguments.help) {\n      jcommander.usage();\n      return;\n    }\n    if (arguments.generateDocs) {\n      CmdGenerateDocs cmd=new CmdGenerateDocs(\"pulsar\");\n      cmd.addCommand(\"initialize-cluster-metadata\",arguments);\n      cmd.run(null);\n      return;\n    }\n  }\n catch (  Exception e) {\n    jcommander.usage();\n    throw e;\n  }\n  if (arguments.configurationStore == null && arguments.globalZookeeper == null) {\n    System.err.println(\"Configuration store address argument is required (--configuration-store)\");\n    jcommander.usage();\n    System.exit(1);\n  }\n  if (arguments.configurationStore != null && arguments.globalZookeeper != null) {\n    System.err.println(\"Configuration store argument (--configuration-store) \" + \"supersedes the deprecated (--global-zookeeper) argument\");\n    jcommander.usage();\n    System.exit(1);\n  }\n  if (arguments.configurationStore == null) {\n    arguments.configurationStore=arguments.globalZookeeper;\n  }\n  if (arguments.numTransactionCoordinators <= 0) {\n    System.err.println(\"Number of transaction coordinators must greater than 0\");\n    System.exit(1);\n  }\n  log.info(\"Setting up cluster {} with zk={} configuration-store={}\",arguments.cluster,arguments.zookeeper,arguments.configurationStore);\n  MetadataStoreExtended localStore=initMetadataStore(arguments.zookeeper,arguments.zkSessionTimeoutMillis);\n  MetadataStoreExtended configStore=initMetadataStore(arguments.configurationStore,arguments.zkSessionTimeoutMillis);\n  ServerConfiguration bkConf=new ServerConfiguration();\n  if (arguments.existingBkMetadataServiceUri == null && arguments.bookieMetadataServiceUri == null) {\n    bkConf.setZkServers(arguments.zookeeper);\n    bkConf.setZkTimeout(arguments.zkSessionTimeoutMillis);\n    if (!localStore.exists(\"/ledgers\").get() && !BookKeeperAdmin.format(bkConf,false,false)) {\n      throw new IOException(\"Failed to initialize BookKeeper metadata\");\n    }\n  }\n  String uriStr=bkConf.getMetadataServiceUri();\n  if (arguments.existingBkMetadataServiceUri != null) {\n    uriStr=arguments.existingBkMetadataServiceUri;\n  }\n else   if (arguments.bookieMetadataServiceUri != null) {\n    uriStr=arguments.bookieMetadataServiceUri;\n  }\n  ServiceURI bkMetadataServiceUri=ServiceURI.create(uriStr);\n  initialDlogNamespaceMetadata(arguments.configurationStore,uriStr);\n  if (arguments.numStreamStorageContainers > 0) {\n    ClusterInitializer initializer=new ZkClusterInitializer(arguments.zookeeper);\n    initializer.initializeCluster(bkMetadataServiceUri.getUri(),arguments.numStreamStorageContainers);\n  }\n  if (!localStore.exists(ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH).get()) {\n    createMetadataNode(localStore,ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH,\"{}\".getBytes());\n  }\n  createMetadataNode(localStore,\"/managed-ledgers\",new byte[0]);\n  createMetadataNode(localStore,\"/namespace\",new byte[0]);\n  createMetadataNode(configStore,POLICIES_ROOT,new byte[0]);\n  createMetadataNode(configStore,\"/admin/clusters\",new byte[0]);\n  ClusterData clusterData=ClusterData.builder().serviceUrl(arguments.clusterWebServiceUrl).serviceUrlTls(arguments.clusterWebServiceUrlTls).brokerServiceUrl(arguments.clusterBrokerServiceUrl).brokerServiceUrlTls(arguments.clusterBrokerServiceUrlTls).build();\n  byte[] clusterDataJson=ObjectMapperFactory.getThreadLocal().writeValueAsBytes(clusterData);\n  createMetadataNode(configStore,\"/admin/clusters/\" + arguments.cluster,clusterDataJson);\n  ClusterData globalClusterData=ClusterData.builder().build();\n  byte[] globalClusterDataJson=ObjectMapperFactory.getThreadLocal().writeValueAsBytes(globalClusterData);\n  createMetadataNode(configStore,\"/admin/clusters/global\",globalClusterDataJson);\n  createTenantIfAbsent(configStore,TopicName.PUBLIC_TENANT,arguments.cluster);\n  createTenantIfAbsent(configStore,NamespaceName.SYSTEM_NAMESPACE.getTenant(),arguments.cluster);\n  createNamespaceIfAbsent(configStore,NamespaceName.get(TopicName.PUBLIC_TENANT,TopicName.DEFAULT_NAMESPACE),arguments.cluster);\n  createNamespaceIfAbsent(configStore,NamespaceName.SYSTEM_NAMESPACE,arguments.cluster);\n  createPartitionedTopic(configStore,TopicName.TRANSACTION_COORDINATOR_ASSIGN,arguments.numTransactionCoordinators);\n  localStore.close();\n  configStore.close();\n  log.info(\"Cluster metadata for '{}' setup correctly\",arguments.cluster);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 574,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 67,
+        "startLineNumber" : 229,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 229,
+        "endColumnNumber" : 75
+      },
+      "nodeContext" : "initialDlogNamespaceMetadata(arguments.configurationStore,uriStr);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    },
+    "tokenLength" : 2,
+    "type" : "java.lang.String"
+  } ],
+  "positionList" : [ {
+    "charLength" : 28,
+    "startLineNumber" : 179,
+    "startColumnNumber" : 12,
+    "endLineNumber" : 179,
+    "endColumnNumber" : 40
+  }, {
+    "charLength" : 28,
+    "startLineNumber" : 185,
+    "startColumnNumber" : 12,
+    "endLineNumber" : 185,
+    "endColumnNumber" : 40
+  }, {
+    "charLength" : 28,
+    "startLineNumber" : 192,
+    "startColumnNumber" : 12,
+    "endLineNumber" : 192,
+    "endColumnNumber" : 40
+  }, {
+    "charLength" : 28,
+    "startLineNumber" : 202,
+    "startColumnNumber" : 16,
+    "endLineNumber" : 202,
+    "endColumnNumber" : 44
+  }, {
+    "charLength" : 28,
+    "startLineNumber" : 205,
+    "startColumnNumber" : 62,
+    "endLineNumber" : 205,
+    "endColumnNumber" : 90
+  }, {
+    "charLength" : 28,
+    "startLineNumber" : 229,
+    "startColumnNumber" : 37,
+    "endLineNumber" : 229,
+    "endColumnNumber" : 65
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 4,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 5,
+    "layout" : 2
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 0,
+    "layout" : 2
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 2,
+    "layout" : 2
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 4,
+    "layout" : 2
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 5,
+    "layout" : 2
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 0,
+    "layout" : 2
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 2,
+    "layout" : 2
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 4,
+    "layout" : 2
+  } ]
+}

@@ -1,0 +1,772 @@
+{
+  "id" : 895,
+  "expression" : "ft",
+  "projectName" : "jackrabbit-oak",
+  "commitID" : "606cd24b0f053320a363274346e76bdd7d898208",
+  "filePath" : "oak-lucene/src/main/java/org/apache/jackrabbit/oak/plugins/index/lucene/IndexPlanner.java",
+  "occurrences" : 6,
+  "isArithmeticExpression" : 1,
+  "isGetTypeMethod" : 1,
+  "expressionList" : [ {
+    "nodeContext" : "ft",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 2,
+      "startLineNumber" : 113,
+      "startColumnNumber" : 12,
+      "endLineNumber" : 113,
+      "endColumnNumber" : 14
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 10,
+        "startLineNumber" : 113,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 113,
+        "endColumnNumber" : 22
+      },
+      "nodeContext" : "ft != null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 45,
+        "startLineNumber" : 113,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 113,
+        "endColumnNumber" : 57
+      },
+      "nodeContext" : "ft != null && !definition.isFullTextEnabled()",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 87,
+        "startLineNumber" : 113,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 115,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (ft != null && !definition.isFullTextEnabled()) {\n  return null;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 12,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3993,
+        "startLineNumber" : 103,
+        "startColumnNumber" : 47,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  log.trace(\"Evaluating plan with index definition {}\",definition);\n  FullTextExpression ft=filter.getFullTextConstraint();\n  if (!definition.getVersion().isAtLeast(IndexFormatVersion.V2)) {\n    log.trace(\"Index is old format. Not supported\");\n    return null;\n  }\n  if (ft != null && !definition.isFullTextEnabled()) {\n    return null;\n  }\n  IndexingRule indexingRule=getApplicableRule();\n  if (indexingRule == null) {\n    return null;\n  }\n  if (ft != null && !indexingRule.isFulltextEnabled()) {\n    return null;\n  }\n  if (!checkForQueryPaths()) {\n    log.trace(\"Opting out due mismatch between path restriction {} and query paths {}\",filter.getPath(),definition.getQueryPaths());\n    return null;\n  }\n  result=new PlanResult(indexPath,definition,indexingRule);\n  if (definition.hasFunctionDefined() && filter.getPropertyRestriction(definition.getFunctionName()) != null) {\n    return defaultPlan().setEstimatedEntryCount(1);\n  }\n  List<String> indexedProps=newArrayListWithCapacity(filter.getPropertyRestrictions().size());\n  if (indexingRule.propertyIndexEnabled) {\n    for (    PropertyRestriction pr : filter.getPropertyRestrictions()) {\n      PropertyDefinition pd=indexingRule.getConfig(pr.propertyName);\n      if (pd != null && pd.propertyIndexEnabled()) {\n        if (pr.isNullRestriction() && !pd.nullCheckEnabled) {\n          continue;\n        }\n        indexedProps.add(pr.propertyName);\n        result.propDefns.put(pr.propertyName,pd);\n      }\n    }\n  }\n  boolean evalNodeTypeRestrictions=canEvalNodeTypeRestrictions(indexingRule);\n  boolean evalPathRestrictions=canEvalPathRestrictions(indexingRule);\n  boolean canEvalAlFullText=canEvalAllFullText(indexingRule,ft);\n  if (ft != null && !canEvalAlFullText) {\n    return null;\n  }\n  List<OrderEntry> sortOrder=createSortOrder(indexingRule);\n  boolean canSort=canSortByProperty(sortOrder);\n  if (!indexedProps.isEmpty() || canSort || ft != null || evalPathRestrictions || evalNodeTypeRestrictions) {\n    int costPerEntryFactor=indexedProps.size();\n    costPerEntryFactor+=sortOrder.size();\n    IndexPlan.Builder plan=defaultPlan();\n    if (!sortOrder.isEmpty()) {\n      plan.setSortOrder(sortOrder);\n    }\n    if (costPerEntryFactor == 0) {\n      costPerEntryFactor=1;\n    }\n    if (ft == null) {\n      result.enableNonFullTextConstraints();\n    }\n    if (evalNodeTypeRestrictions) {\n      result.enableNodeTypeEvaluation();\n    }\n    return plan.setCostPerEntry(definition.getCostPerEntry() / costPerEntryFactor);\n  }\n  return null;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 329,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4036,
+        "startLineNumber" : 103,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "private IndexPlan.Builder getPlanBuilder(){\n  log.trace(\"Evaluating plan with index definition {}\",definition);\n  FullTextExpression ft=filter.getFullTextConstraint();\n  if (!definition.getVersion().isAtLeast(IndexFormatVersion.V2)) {\n    log.trace(\"Index is old format. Not supported\");\n    return null;\n  }\n  if (ft != null && !definition.isFullTextEnabled()) {\n    return null;\n  }\n  IndexingRule indexingRule=getApplicableRule();\n  if (indexingRule == null) {\n    return null;\n  }\n  if (ft != null && !indexingRule.isFulltextEnabled()) {\n    return null;\n  }\n  if (!checkForQueryPaths()) {\n    log.trace(\"Opting out due mismatch between path restriction {} and query paths {}\",filter.getPath(),definition.getQueryPaths());\n    return null;\n  }\n  result=new PlanResult(indexPath,definition,indexingRule);\n  if (definition.hasFunctionDefined() && filter.getPropertyRestriction(definition.getFunctionName()) != null) {\n    return defaultPlan().setEstimatedEntryCount(1);\n  }\n  List<String> indexedProps=newArrayListWithCapacity(filter.getPropertyRestrictions().size());\n  if (indexingRule.propertyIndexEnabled) {\n    for (    PropertyRestriction pr : filter.getPropertyRestrictions()) {\n      PropertyDefinition pd=indexingRule.getConfig(pr.propertyName);\n      if (pd != null && pd.propertyIndexEnabled()) {\n        if (pr.isNullRestriction() && !pd.nullCheckEnabled) {\n          continue;\n        }\n        indexedProps.add(pr.propertyName);\n        result.propDefns.put(pr.propertyName,pd);\n      }\n    }\n  }\n  boolean evalNodeTypeRestrictions=canEvalNodeTypeRestrictions(indexingRule);\n  boolean evalPathRestrictions=canEvalPathRestrictions(indexingRule);\n  boolean canEvalAlFullText=canEvalAllFullText(indexingRule,ft);\n  if (ft != null && !canEvalAlFullText) {\n    return null;\n  }\n  List<OrderEntry> sortOrder=createSortOrder(indexingRule);\n  boolean canSort=canSortByProperty(sortOrder);\n  if (!indexedProps.isEmpty() || canSort || ft != null || evalPathRestrictions || evalNodeTypeRestrictions) {\n    int costPerEntryFactor=indexedProps.size();\n    costPerEntryFactor+=sortOrder.size();\n    IndexPlan.Builder plan=defaultPlan();\n    if (!sortOrder.isEmpty()) {\n      plan.setSortOrder(sortOrder);\n    }\n    if (costPerEntryFactor == 0) {\n      costPerEntryFactor=1;\n    }\n    if (ft == null) {\n      result.enableNonFullTextConstraints();\n    }\n    if (evalNodeTypeRestrictions) {\n      result.enableNodeTypeEvaluation();\n    }\n    return plan.setCostPerEntry(definition.getCostPerEntry() / costPerEntryFactor);\n  }\n  return null;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 336,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 45,
+        "startLineNumber" : 113,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 113,
+        "endColumnNumber" : 57
+      },
+      "nodeContext" : "ft != null && !definition.isFullTextEnabled()",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.jackrabbit.oak.query.fulltext.FullTextExpression"
+  }, {
+    "nodeContext" : "ft",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 2,
+      "startLineNumber" : 123,
+      "startColumnNumber" : 12,
+      "endLineNumber" : 123,
+      "endColumnNumber" : 14
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 10,
+        "startLineNumber" : 123,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 22
+      },
+      "nodeContext" : "ft != null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 47,
+        "startLineNumber" : 123,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 59
+      },
+      "nodeContext" : "ft != null && !indexingRule.isFulltextEnabled()",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 88,
+        "startLineNumber" : 123,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 125,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (ft != null && !indexingRule.isFulltextEnabled()) {\n  return null;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 12,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3993,
+        "startLineNumber" : 103,
+        "startColumnNumber" : 47,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  log.trace(\"Evaluating plan with index definition {}\",definition);\n  FullTextExpression ft=filter.getFullTextConstraint();\n  if (!definition.getVersion().isAtLeast(IndexFormatVersion.V2)) {\n    log.trace(\"Index is old format. Not supported\");\n    return null;\n  }\n  if (ft != null && !definition.isFullTextEnabled()) {\n    return null;\n  }\n  IndexingRule indexingRule=getApplicableRule();\n  if (indexingRule == null) {\n    return null;\n  }\n  if (ft != null && !indexingRule.isFulltextEnabled()) {\n    return null;\n  }\n  if (!checkForQueryPaths()) {\n    log.trace(\"Opting out due mismatch between path restriction {} and query paths {}\",filter.getPath(),definition.getQueryPaths());\n    return null;\n  }\n  result=new PlanResult(indexPath,definition,indexingRule);\n  if (definition.hasFunctionDefined() && filter.getPropertyRestriction(definition.getFunctionName()) != null) {\n    return defaultPlan().setEstimatedEntryCount(1);\n  }\n  List<String> indexedProps=newArrayListWithCapacity(filter.getPropertyRestrictions().size());\n  if (indexingRule.propertyIndexEnabled) {\n    for (    PropertyRestriction pr : filter.getPropertyRestrictions()) {\n      PropertyDefinition pd=indexingRule.getConfig(pr.propertyName);\n      if (pd != null && pd.propertyIndexEnabled()) {\n        if (pr.isNullRestriction() && !pd.nullCheckEnabled) {\n          continue;\n        }\n        indexedProps.add(pr.propertyName);\n        result.propDefns.put(pr.propertyName,pd);\n      }\n    }\n  }\n  boolean evalNodeTypeRestrictions=canEvalNodeTypeRestrictions(indexingRule);\n  boolean evalPathRestrictions=canEvalPathRestrictions(indexingRule);\n  boolean canEvalAlFullText=canEvalAllFullText(indexingRule,ft);\n  if (ft != null && !canEvalAlFullText) {\n    return null;\n  }\n  List<OrderEntry> sortOrder=createSortOrder(indexingRule);\n  boolean canSort=canSortByProperty(sortOrder);\n  if (!indexedProps.isEmpty() || canSort || ft != null || evalPathRestrictions || evalNodeTypeRestrictions) {\n    int costPerEntryFactor=indexedProps.size();\n    costPerEntryFactor+=sortOrder.size();\n    IndexPlan.Builder plan=defaultPlan();\n    if (!sortOrder.isEmpty()) {\n      plan.setSortOrder(sortOrder);\n    }\n    if (costPerEntryFactor == 0) {\n      costPerEntryFactor=1;\n    }\n    if (ft == null) {\n      result.enableNonFullTextConstraints();\n    }\n    if (evalNodeTypeRestrictions) {\n      result.enableNodeTypeEvaluation();\n    }\n    return plan.setCostPerEntry(definition.getCostPerEntry() / costPerEntryFactor);\n  }\n  return null;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 329,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4036,
+        "startLineNumber" : 103,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "private IndexPlan.Builder getPlanBuilder(){\n  log.trace(\"Evaluating plan with index definition {}\",definition);\n  FullTextExpression ft=filter.getFullTextConstraint();\n  if (!definition.getVersion().isAtLeast(IndexFormatVersion.V2)) {\n    log.trace(\"Index is old format. Not supported\");\n    return null;\n  }\n  if (ft != null && !definition.isFullTextEnabled()) {\n    return null;\n  }\n  IndexingRule indexingRule=getApplicableRule();\n  if (indexingRule == null) {\n    return null;\n  }\n  if (ft != null && !indexingRule.isFulltextEnabled()) {\n    return null;\n  }\n  if (!checkForQueryPaths()) {\n    log.trace(\"Opting out due mismatch between path restriction {} and query paths {}\",filter.getPath(),definition.getQueryPaths());\n    return null;\n  }\n  result=new PlanResult(indexPath,definition,indexingRule);\n  if (definition.hasFunctionDefined() && filter.getPropertyRestriction(definition.getFunctionName()) != null) {\n    return defaultPlan().setEstimatedEntryCount(1);\n  }\n  List<String> indexedProps=newArrayListWithCapacity(filter.getPropertyRestrictions().size());\n  if (indexingRule.propertyIndexEnabled) {\n    for (    PropertyRestriction pr : filter.getPropertyRestrictions()) {\n      PropertyDefinition pd=indexingRule.getConfig(pr.propertyName);\n      if (pd != null && pd.propertyIndexEnabled()) {\n        if (pr.isNullRestriction() && !pd.nullCheckEnabled) {\n          continue;\n        }\n        indexedProps.add(pr.propertyName);\n        result.propDefns.put(pr.propertyName,pd);\n      }\n    }\n  }\n  boolean evalNodeTypeRestrictions=canEvalNodeTypeRestrictions(indexingRule);\n  boolean evalPathRestrictions=canEvalPathRestrictions(indexingRule);\n  boolean canEvalAlFullText=canEvalAllFullText(indexingRule,ft);\n  if (ft != null && !canEvalAlFullText) {\n    return null;\n  }\n  List<OrderEntry> sortOrder=createSortOrder(indexingRule);\n  boolean canSort=canSortByProperty(sortOrder);\n  if (!indexedProps.isEmpty() || canSort || ft != null || evalPathRestrictions || evalNodeTypeRestrictions) {\n    int costPerEntryFactor=indexedProps.size();\n    costPerEntryFactor+=sortOrder.size();\n    IndexPlan.Builder plan=defaultPlan();\n    if (!sortOrder.isEmpty()) {\n      plan.setSortOrder(sortOrder);\n    }\n    if (costPerEntryFactor == 0) {\n      costPerEntryFactor=1;\n    }\n    if (ft == null) {\n      result.enableNonFullTextConstraints();\n    }\n    if (evalNodeTypeRestrictions) {\n      result.enableNodeTypeEvaluation();\n    }\n    return plan.setCostPerEntry(definition.getCostPerEntry() / costPerEntryFactor);\n  }\n  return null;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 336,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 47,
+        "startLineNumber" : 123,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 123,
+        "endColumnNumber" : 59
+      },
+      "nodeContext" : "ft != null && !indexingRule.isFulltextEnabled()",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.jackrabbit.oak.query.fulltext.FullTextExpression"
+  }, {
+    "nodeContext" : "ft",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 2,
+      "startLineNumber" : 161,
+      "startColumnNumber" : 69,
+      "endLineNumber" : 161,
+      "endColumnNumber" : 71
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 36,
+        "startLineNumber" : 161,
+        "startColumnNumber" : 36,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 72
+      },
+      "nodeContext" : "canEvalAllFullText(indexingRule,ft)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 56,
+        "startLineNumber" : 161,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 72
+      },
+      "nodeContext" : "canEvalAlFullText=canEvalAllFullText(indexingRule,ft)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 65,
+        "startLineNumber" : 161,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 73
+      },
+      "nodeContext" : "boolean canEvalAlFullText=canEvalAllFullText(indexingRule,ft);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3993,
+        "startLineNumber" : 103,
+        "startColumnNumber" : 47,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  log.trace(\"Evaluating plan with index definition {}\",definition);\n  FullTextExpression ft=filter.getFullTextConstraint();\n  if (!definition.getVersion().isAtLeast(IndexFormatVersion.V2)) {\n    log.trace(\"Index is old format. Not supported\");\n    return null;\n  }\n  if (ft != null && !definition.isFullTextEnabled()) {\n    return null;\n  }\n  IndexingRule indexingRule=getApplicableRule();\n  if (indexingRule == null) {\n    return null;\n  }\n  if (ft != null && !indexingRule.isFulltextEnabled()) {\n    return null;\n  }\n  if (!checkForQueryPaths()) {\n    log.trace(\"Opting out due mismatch between path restriction {} and query paths {}\",filter.getPath(),definition.getQueryPaths());\n    return null;\n  }\n  result=new PlanResult(indexPath,definition,indexingRule);\n  if (definition.hasFunctionDefined() && filter.getPropertyRestriction(definition.getFunctionName()) != null) {\n    return defaultPlan().setEstimatedEntryCount(1);\n  }\n  List<String> indexedProps=newArrayListWithCapacity(filter.getPropertyRestrictions().size());\n  if (indexingRule.propertyIndexEnabled) {\n    for (    PropertyRestriction pr : filter.getPropertyRestrictions()) {\n      PropertyDefinition pd=indexingRule.getConfig(pr.propertyName);\n      if (pd != null && pd.propertyIndexEnabled()) {\n        if (pr.isNullRestriction() && !pd.nullCheckEnabled) {\n          continue;\n        }\n        indexedProps.add(pr.propertyName);\n        result.propDefns.put(pr.propertyName,pd);\n      }\n    }\n  }\n  boolean evalNodeTypeRestrictions=canEvalNodeTypeRestrictions(indexingRule);\n  boolean evalPathRestrictions=canEvalPathRestrictions(indexingRule);\n  boolean canEvalAlFullText=canEvalAllFullText(indexingRule,ft);\n  if (ft != null && !canEvalAlFullText) {\n    return null;\n  }\n  List<OrderEntry> sortOrder=createSortOrder(indexingRule);\n  boolean canSort=canSortByProperty(sortOrder);\n  if (!indexedProps.isEmpty() || canSort || ft != null || evalPathRestrictions || evalNodeTypeRestrictions) {\n    int costPerEntryFactor=indexedProps.size();\n    costPerEntryFactor+=sortOrder.size();\n    IndexPlan.Builder plan=defaultPlan();\n    if (!sortOrder.isEmpty()) {\n      plan.setSortOrder(sortOrder);\n    }\n    if (costPerEntryFactor == 0) {\n      costPerEntryFactor=1;\n    }\n    if (ft == null) {\n      result.enableNonFullTextConstraints();\n    }\n    if (evalNodeTypeRestrictions) {\n      result.enableNodeTypeEvaluation();\n    }\n    return plan.setCostPerEntry(definition.getCostPerEntry() / costPerEntryFactor);\n  }\n  return null;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 329,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4036,
+        "startLineNumber" : 103,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "private IndexPlan.Builder getPlanBuilder(){\n  log.trace(\"Evaluating plan with index definition {}\",definition);\n  FullTextExpression ft=filter.getFullTextConstraint();\n  if (!definition.getVersion().isAtLeast(IndexFormatVersion.V2)) {\n    log.trace(\"Index is old format. Not supported\");\n    return null;\n  }\n  if (ft != null && !definition.isFullTextEnabled()) {\n    return null;\n  }\n  IndexingRule indexingRule=getApplicableRule();\n  if (indexingRule == null) {\n    return null;\n  }\n  if (ft != null && !indexingRule.isFulltextEnabled()) {\n    return null;\n  }\n  if (!checkForQueryPaths()) {\n    log.trace(\"Opting out due mismatch between path restriction {} and query paths {}\",filter.getPath(),definition.getQueryPaths());\n    return null;\n  }\n  result=new PlanResult(indexPath,definition,indexingRule);\n  if (definition.hasFunctionDefined() && filter.getPropertyRestriction(definition.getFunctionName()) != null) {\n    return defaultPlan().setEstimatedEntryCount(1);\n  }\n  List<String> indexedProps=newArrayListWithCapacity(filter.getPropertyRestrictions().size());\n  if (indexingRule.propertyIndexEnabled) {\n    for (    PropertyRestriction pr : filter.getPropertyRestrictions()) {\n      PropertyDefinition pd=indexingRule.getConfig(pr.propertyName);\n      if (pd != null && pd.propertyIndexEnabled()) {\n        if (pr.isNullRestriction() && !pd.nullCheckEnabled) {\n          continue;\n        }\n        indexedProps.add(pr.propertyName);\n        result.propDefns.put(pr.propertyName,pd);\n      }\n    }\n  }\n  boolean evalNodeTypeRestrictions=canEvalNodeTypeRestrictions(indexingRule);\n  boolean evalPathRestrictions=canEvalPathRestrictions(indexingRule);\n  boolean canEvalAlFullText=canEvalAllFullText(indexingRule,ft);\n  if (ft != null && !canEvalAlFullText) {\n    return null;\n  }\n  List<OrderEntry> sortOrder=createSortOrder(indexingRule);\n  boolean canSort=canSortByProperty(sortOrder);\n  if (!indexedProps.isEmpty() || canSort || ft != null || evalPathRestrictions || evalNodeTypeRestrictions) {\n    int costPerEntryFactor=indexedProps.size();\n    costPerEntryFactor+=sortOrder.size();\n    IndexPlan.Builder plan=defaultPlan();\n    if (!sortOrder.isEmpty()) {\n      plan.setSortOrder(sortOrder);\n    }\n    if (costPerEntryFactor == 0) {\n      costPerEntryFactor=1;\n    }\n    if (ft == null) {\n      result.enableNonFullTextConstraints();\n    }\n    if (evalNodeTypeRestrictions) {\n      result.enableNodeTypeEvaluation();\n    }\n    return plan.setCostPerEntry(definition.getCostPerEntry() / costPerEntryFactor);\n  }\n  return null;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 336,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 65,
+        "startLineNumber" : 161,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 161,
+        "endColumnNumber" : 73
+      },
+      "nodeContext" : "boolean canEvalAlFullText=canEvalAllFullText(indexingRule,ft);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.jackrabbit.oak.query.fulltext.FullTextExpression"
+  }, {
+    "nodeContext" : "ft",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 2,
+      "startLineNumber" : 163,
+      "startColumnNumber" : 12,
+      "endLineNumber" : 163,
+      "endColumnNumber" : 14
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 10,
+        "startLineNumber" : 163,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 163,
+        "endColumnNumber" : 22
+      },
+      "nodeContext" : "ft != null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 32,
+        "startLineNumber" : 163,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 163,
+        "endColumnNumber" : 44
+      },
+      "nodeContext" : "ft != null && !canEvalAlFullText",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 73,
+        "startLineNumber" : 163,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 165,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (ft != null && !canEvalAlFullText) {\n  return null;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3993,
+        "startLineNumber" : 103,
+        "startColumnNumber" : 47,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  log.trace(\"Evaluating plan with index definition {}\",definition);\n  FullTextExpression ft=filter.getFullTextConstraint();\n  if (!definition.getVersion().isAtLeast(IndexFormatVersion.V2)) {\n    log.trace(\"Index is old format. Not supported\");\n    return null;\n  }\n  if (ft != null && !definition.isFullTextEnabled()) {\n    return null;\n  }\n  IndexingRule indexingRule=getApplicableRule();\n  if (indexingRule == null) {\n    return null;\n  }\n  if (ft != null && !indexingRule.isFulltextEnabled()) {\n    return null;\n  }\n  if (!checkForQueryPaths()) {\n    log.trace(\"Opting out due mismatch between path restriction {} and query paths {}\",filter.getPath(),definition.getQueryPaths());\n    return null;\n  }\n  result=new PlanResult(indexPath,definition,indexingRule);\n  if (definition.hasFunctionDefined() && filter.getPropertyRestriction(definition.getFunctionName()) != null) {\n    return defaultPlan().setEstimatedEntryCount(1);\n  }\n  List<String> indexedProps=newArrayListWithCapacity(filter.getPropertyRestrictions().size());\n  if (indexingRule.propertyIndexEnabled) {\n    for (    PropertyRestriction pr : filter.getPropertyRestrictions()) {\n      PropertyDefinition pd=indexingRule.getConfig(pr.propertyName);\n      if (pd != null && pd.propertyIndexEnabled()) {\n        if (pr.isNullRestriction() && !pd.nullCheckEnabled) {\n          continue;\n        }\n        indexedProps.add(pr.propertyName);\n        result.propDefns.put(pr.propertyName,pd);\n      }\n    }\n  }\n  boolean evalNodeTypeRestrictions=canEvalNodeTypeRestrictions(indexingRule);\n  boolean evalPathRestrictions=canEvalPathRestrictions(indexingRule);\n  boolean canEvalAlFullText=canEvalAllFullText(indexingRule,ft);\n  if (ft != null && !canEvalAlFullText) {\n    return null;\n  }\n  List<OrderEntry> sortOrder=createSortOrder(indexingRule);\n  boolean canSort=canSortByProperty(sortOrder);\n  if (!indexedProps.isEmpty() || canSort || ft != null || evalPathRestrictions || evalNodeTypeRestrictions) {\n    int costPerEntryFactor=indexedProps.size();\n    costPerEntryFactor+=sortOrder.size();\n    IndexPlan.Builder plan=defaultPlan();\n    if (!sortOrder.isEmpty()) {\n      plan.setSortOrder(sortOrder);\n    }\n    if (costPerEntryFactor == 0) {\n      costPerEntryFactor=1;\n    }\n    if (ft == null) {\n      result.enableNonFullTextConstraints();\n    }\n    if (evalNodeTypeRestrictions) {\n      result.enableNodeTypeEvaluation();\n    }\n    return plan.setCostPerEntry(definition.getCostPerEntry() / costPerEntryFactor);\n  }\n  return null;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 329,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4036,
+        "startLineNumber" : 103,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "private IndexPlan.Builder getPlanBuilder(){\n  log.trace(\"Evaluating plan with index definition {}\",definition);\n  FullTextExpression ft=filter.getFullTextConstraint();\n  if (!definition.getVersion().isAtLeast(IndexFormatVersion.V2)) {\n    log.trace(\"Index is old format. Not supported\");\n    return null;\n  }\n  if (ft != null && !definition.isFullTextEnabled()) {\n    return null;\n  }\n  IndexingRule indexingRule=getApplicableRule();\n  if (indexingRule == null) {\n    return null;\n  }\n  if (ft != null && !indexingRule.isFulltextEnabled()) {\n    return null;\n  }\n  if (!checkForQueryPaths()) {\n    log.trace(\"Opting out due mismatch between path restriction {} and query paths {}\",filter.getPath(),definition.getQueryPaths());\n    return null;\n  }\n  result=new PlanResult(indexPath,definition,indexingRule);\n  if (definition.hasFunctionDefined() && filter.getPropertyRestriction(definition.getFunctionName()) != null) {\n    return defaultPlan().setEstimatedEntryCount(1);\n  }\n  List<String> indexedProps=newArrayListWithCapacity(filter.getPropertyRestrictions().size());\n  if (indexingRule.propertyIndexEnabled) {\n    for (    PropertyRestriction pr : filter.getPropertyRestrictions()) {\n      PropertyDefinition pd=indexingRule.getConfig(pr.propertyName);\n      if (pd != null && pd.propertyIndexEnabled()) {\n        if (pr.isNullRestriction() && !pd.nullCheckEnabled) {\n          continue;\n        }\n        indexedProps.add(pr.propertyName);\n        result.propDefns.put(pr.propertyName,pd);\n      }\n    }\n  }\n  boolean evalNodeTypeRestrictions=canEvalNodeTypeRestrictions(indexingRule);\n  boolean evalPathRestrictions=canEvalPathRestrictions(indexingRule);\n  boolean canEvalAlFullText=canEvalAllFullText(indexingRule,ft);\n  if (ft != null && !canEvalAlFullText) {\n    return null;\n  }\n  List<OrderEntry> sortOrder=createSortOrder(indexingRule);\n  boolean canSort=canSortByProperty(sortOrder);\n  if (!indexedProps.isEmpty() || canSort || ft != null || evalPathRestrictions || evalNodeTypeRestrictions) {\n    int costPerEntryFactor=indexedProps.size();\n    costPerEntryFactor+=sortOrder.size();\n    IndexPlan.Builder plan=defaultPlan();\n    if (!sortOrder.isEmpty()) {\n      plan.setSortOrder(sortOrder);\n    }\n    if (costPerEntryFactor == 0) {\n      costPerEntryFactor=1;\n    }\n    if (ft == null) {\n      result.enableNonFullTextConstraints();\n    }\n    if (evalNodeTypeRestrictions) {\n      result.enableNodeTypeEvaluation();\n    }\n    return plan.setCostPerEntry(definition.getCostPerEntry() / costPerEntryFactor);\n  }\n  return null;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 336,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 32,
+        "startLineNumber" : 163,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 163,
+        "endColumnNumber" : 44
+      },
+      "nodeContext" : "ft != null && !canEvalAlFullText",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.jackrabbit.oak.query.fulltext.FullTextExpression"
+  }, {
+    "nodeContext" : "ft",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 2,
+      "startLineNumber" : 171,
+      "startColumnNumber" : 50,
+      "endLineNumber" : 171,
+      "endColumnNumber" : 52
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.InfixExpression,extendedOperands]",
+      "nodePosition" : {
+        "charLength" : 10,
+        "startLineNumber" : 171,
+        "startColumnNumber" : 50,
+        "endLineNumber" : 171,
+        "endColumnNumber" : 60
+      },
+      "nodeContext" : "ft != null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 48,
+        "startLineNumber" : 171,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 171,
+        "endColumnNumber" : 60
+      },
+      "nodeContext" : "!indexedProps.isEmpty() || canSort || ft != null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 72,
+        "startLineNumber" : 171,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 171,
+        "endColumnNumber" : 84
+      },
+      "nodeContext" : "!indexedProps.isEmpty() || canSort || ft != null || evalPathRestrictions",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 11,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 100,
+        "startLineNumber" : 171,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 171,
+        "endColumnNumber" : 112
+      },
+      "nodeContext" : "!indexedProps.isEmpty() || canSort || ft != null || evalPathRestrictions || evalNodeTypeRestrictions",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 13,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1150,
+        "startLineNumber" : 171,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 198,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (!indexedProps.isEmpty() || canSort || ft != null || evalPathRestrictions || evalNodeTypeRestrictions) {\n  int costPerEntryFactor=indexedProps.size();\n  costPerEntryFactor+=sortOrder.size();\n  IndexPlan.Builder plan=defaultPlan();\n  if (!sortOrder.isEmpty()) {\n    plan.setSortOrder(sortOrder);\n  }\n  if (costPerEntryFactor == 0) {\n    costPerEntryFactor=1;\n  }\n  if (ft == null) {\n    result.enableNonFullTextConstraints();\n  }\n  if (evalNodeTypeRestrictions) {\n    result.enableNodeTypeEvaluation();\n  }\n  return plan.setCostPerEntry(definition.getCostPerEntry() / costPerEntryFactor);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 82,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3993,
+        "startLineNumber" : 103,
+        "startColumnNumber" : 47,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  log.trace(\"Evaluating plan with index definition {}\",definition);\n  FullTextExpression ft=filter.getFullTextConstraint();\n  if (!definition.getVersion().isAtLeast(IndexFormatVersion.V2)) {\n    log.trace(\"Index is old format. Not supported\");\n    return null;\n  }\n  if (ft != null && !definition.isFullTextEnabled()) {\n    return null;\n  }\n  IndexingRule indexingRule=getApplicableRule();\n  if (indexingRule == null) {\n    return null;\n  }\n  if (ft != null && !indexingRule.isFulltextEnabled()) {\n    return null;\n  }\n  if (!checkForQueryPaths()) {\n    log.trace(\"Opting out due mismatch between path restriction {} and query paths {}\",filter.getPath(),definition.getQueryPaths());\n    return null;\n  }\n  result=new PlanResult(indexPath,definition,indexingRule);\n  if (definition.hasFunctionDefined() && filter.getPropertyRestriction(definition.getFunctionName()) != null) {\n    return defaultPlan().setEstimatedEntryCount(1);\n  }\n  List<String> indexedProps=newArrayListWithCapacity(filter.getPropertyRestrictions().size());\n  if (indexingRule.propertyIndexEnabled) {\n    for (    PropertyRestriction pr : filter.getPropertyRestrictions()) {\n      PropertyDefinition pd=indexingRule.getConfig(pr.propertyName);\n      if (pd != null && pd.propertyIndexEnabled()) {\n        if (pr.isNullRestriction() && !pd.nullCheckEnabled) {\n          continue;\n        }\n        indexedProps.add(pr.propertyName);\n        result.propDefns.put(pr.propertyName,pd);\n      }\n    }\n  }\n  boolean evalNodeTypeRestrictions=canEvalNodeTypeRestrictions(indexingRule);\n  boolean evalPathRestrictions=canEvalPathRestrictions(indexingRule);\n  boolean canEvalAlFullText=canEvalAllFullText(indexingRule,ft);\n  if (ft != null && !canEvalAlFullText) {\n    return null;\n  }\n  List<OrderEntry> sortOrder=createSortOrder(indexingRule);\n  boolean canSort=canSortByProperty(sortOrder);\n  if (!indexedProps.isEmpty() || canSort || ft != null || evalPathRestrictions || evalNodeTypeRestrictions) {\n    int costPerEntryFactor=indexedProps.size();\n    costPerEntryFactor+=sortOrder.size();\n    IndexPlan.Builder plan=defaultPlan();\n    if (!sortOrder.isEmpty()) {\n      plan.setSortOrder(sortOrder);\n    }\n    if (costPerEntryFactor == 0) {\n      costPerEntryFactor=1;\n    }\n    if (ft == null) {\n      result.enableNonFullTextConstraints();\n    }\n    if (evalNodeTypeRestrictions) {\n      result.enableNodeTypeEvaluation();\n    }\n    return plan.setCostPerEntry(definition.getCostPerEntry() / costPerEntryFactor);\n  }\n  return null;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 329,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4036,
+        "startLineNumber" : 103,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "private IndexPlan.Builder getPlanBuilder(){\n  log.trace(\"Evaluating plan with index definition {}\",definition);\n  FullTextExpression ft=filter.getFullTextConstraint();\n  if (!definition.getVersion().isAtLeast(IndexFormatVersion.V2)) {\n    log.trace(\"Index is old format. Not supported\");\n    return null;\n  }\n  if (ft != null && !definition.isFullTextEnabled()) {\n    return null;\n  }\n  IndexingRule indexingRule=getApplicableRule();\n  if (indexingRule == null) {\n    return null;\n  }\n  if (ft != null && !indexingRule.isFulltextEnabled()) {\n    return null;\n  }\n  if (!checkForQueryPaths()) {\n    log.trace(\"Opting out due mismatch between path restriction {} and query paths {}\",filter.getPath(),definition.getQueryPaths());\n    return null;\n  }\n  result=new PlanResult(indexPath,definition,indexingRule);\n  if (definition.hasFunctionDefined() && filter.getPropertyRestriction(definition.getFunctionName()) != null) {\n    return defaultPlan().setEstimatedEntryCount(1);\n  }\n  List<String> indexedProps=newArrayListWithCapacity(filter.getPropertyRestrictions().size());\n  if (indexingRule.propertyIndexEnabled) {\n    for (    PropertyRestriction pr : filter.getPropertyRestrictions()) {\n      PropertyDefinition pd=indexingRule.getConfig(pr.propertyName);\n      if (pd != null && pd.propertyIndexEnabled()) {\n        if (pr.isNullRestriction() && !pd.nullCheckEnabled) {\n          continue;\n        }\n        indexedProps.add(pr.propertyName);\n        result.propDefns.put(pr.propertyName,pd);\n      }\n    }\n  }\n  boolean evalNodeTypeRestrictions=canEvalNodeTypeRestrictions(indexingRule);\n  boolean evalPathRestrictions=canEvalPathRestrictions(indexingRule);\n  boolean canEvalAlFullText=canEvalAllFullText(indexingRule,ft);\n  if (ft != null && !canEvalAlFullText) {\n    return null;\n  }\n  List<OrderEntry> sortOrder=createSortOrder(indexingRule);\n  boolean canSort=canSortByProperty(sortOrder);\n  if (!indexedProps.isEmpty() || canSort || ft != null || evalPathRestrictions || evalNodeTypeRestrictions) {\n    int costPerEntryFactor=indexedProps.size();\n    costPerEntryFactor+=sortOrder.size();\n    IndexPlan.Builder plan=defaultPlan();\n    if (!sortOrder.isEmpty()) {\n      plan.setSortOrder(sortOrder);\n    }\n    if (costPerEntryFactor == 0) {\n      costPerEntryFactor=1;\n    }\n    if (ft == null) {\n      result.enableNonFullTextConstraints();\n    }\n    if (evalNodeTypeRestrictions) {\n      result.enableNodeTypeEvaluation();\n    }\n    return plan.setCostPerEntry(definition.getCostPerEntry() / costPerEntryFactor);\n  }\n  return null;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 336,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 100,
+        "startLineNumber" : 171,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 171,
+        "endColumnNumber" : 112
+      },
+      "nodeContext" : "!indexedProps.isEmpty() || canSort || ft != null || evalPathRestrictions || evalNodeTypeRestrictions",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 13,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.jackrabbit.oak.query.fulltext.FullTextExpression"
+  }, {
+    "nodeContext" : "ft",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 2,
+      "startLineNumber" : 189,
+      "startColumnNumber" : 16,
+      "endLineNumber" : 189,
+      "endColumnNumber" : 18
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 10,
+        "startLineNumber" : 189,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 189,
+        "endColumnNumber" : 26
+      },
+      "nodeContext" : "ft == null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 85,
+        "startLineNumber" : 189,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 191,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "if (ft == null) {\n  result.enableNonFullTextConstraints();\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 1044,
+        "startLineNumber" : 171,
+        "startColumnNumber" : 114,
+        "endLineNumber" : 198,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  int costPerEntryFactor=indexedProps.size();\n  costPerEntryFactor+=sortOrder.size();\n  IndexPlan.Builder plan=defaultPlan();\n  if (!sortOrder.isEmpty()) {\n    plan.setSortOrder(sortOrder);\n  }\n  if (costPerEntryFactor == 0) {\n    costPerEntryFactor=1;\n  }\n  if (ft == null) {\n    result.enableNonFullTextConstraints();\n  }\n  if (evalNodeTypeRestrictions) {\n    result.enableNodeTypeEvaluation();\n  }\n  return plan.setCostPerEntry(definition.getCostPerEntry() / costPerEntryFactor);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 68,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1150,
+        "startLineNumber" : 171,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 198,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (!indexedProps.isEmpty() || canSort || ft != null || evalPathRestrictions || evalNodeTypeRestrictions) {\n  int costPerEntryFactor=indexedProps.size();\n  costPerEntryFactor+=sortOrder.size();\n  IndexPlan.Builder plan=defaultPlan();\n  if (!sortOrder.isEmpty()) {\n    plan.setSortOrder(sortOrder);\n  }\n  if (costPerEntryFactor == 0) {\n    costPerEntryFactor=1;\n  }\n  if (ft == null) {\n    result.enableNonFullTextConstraints();\n  }\n  if (evalNodeTypeRestrictions) {\n    result.enableNodeTypeEvaluation();\n  }\n  return plan.setCostPerEntry(definition.getCostPerEntry() / costPerEntryFactor);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 82,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3993,
+        "startLineNumber" : 103,
+        "startColumnNumber" : 47,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  log.trace(\"Evaluating plan with index definition {}\",definition);\n  FullTextExpression ft=filter.getFullTextConstraint();\n  if (!definition.getVersion().isAtLeast(IndexFormatVersion.V2)) {\n    log.trace(\"Index is old format. Not supported\");\n    return null;\n  }\n  if (ft != null && !definition.isFullTextEnabled()) {\n    return null;\n  }\n  IndexingRule indexingRule=getApplicableRule();\n  if (indexingRule == null) {\n    return null;\n  }\n  if (ft != null && !indexingRule.isFulltextEnabled()) {\n    return null;\n  }\n  if (!checkForQueryPaths()) {\n    log.trace(\"Opting out due mismatch between path restriction {} and query paths {}\",filter.getPath(),definition.getQueryPaths());\n    return null;\n  }\n  result=new PlanResult(indexPath,definition,indexingRule);\n  if (definition.hasFunctionDefined() && filter.getPropertyRestriction(definition.getFunctionName()) != null) {\n    return defaultPlan().setEstimatedEntryCount(1);\n  }\n  List<String> indexedProps=newArrayListWithCapacity(filter.getPropertyRestrictions().size());\n  if (indexingRule.propertyIndexEnabled) {\n    for (    PropertyRestriction pr : filter.getPropertyRestrictions()) {\n      PropertyDefinition pd=indexingRule.getConfig(pr.propertyName);\n      if (pd != null && pd.propertyIndexEnabled()) {\n        if (pr.isNullRestriction() && !pd.nullCheckEnabled) {\n          continue;\n        }\n        indexedProps.add(pr.propertyName);\n        result.propDefns.put(pr.propertyName,pd);\n      }\n    }\n  }\n  boolean evalNodeTypeRestrictions=canEvalNodeTypeRestrictions(indexingRule);\n  boolean evalPathRestrictions=canEvalPathRestrictions(indexingRule);\n  boolean canEvalAlFullText=canEvalAllFullText(indexingRule,ft);\n  if (ft != null && !canEvalAlFullText) {\n    return null;\n  }\n  List<OrderEntry> sortOrder=createSortOrder(indexingRule);\n  boolean canSort=canSortByProperty(sortOrder);\n  if (!indexedProps.isEmpty() || canSort || ft != null || evalPathRestrictions || evalNodeTypeRestrictions) {\n    int costPerEntryFactor=indexedProps.size();\n    costPerEntryFactor+=sortOrder.size();\n    IndexPlan.Builder plan=defaultPlan();\n    if (!sortOrder.isEmpty()) {\n      plan.setSortOrder(sortOrder);\n    }\n    if (costPerEntryFactor == 0) {\n      costPerEntryFactor=1;\n    }\n    if (ft == null) {\n      result.enableNonFullTextConstraints();\n    }\n    if (evalNodeTypeRestrictions) {\n      result.enableNodeTypeEvaluation();\n    }\n    return plan.setCostPerEntry(definition.getCostPerEntry() / costPerEntryFactor);\n  }\n  return null;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 329,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4036,
+        "startLineNumber" : 103,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 204,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "private IndexPlan.Builder getPlanBuilder(){\n  log.trace(\"Evaluating plan with index definition {}\",definition);\n  FullTextExpression ft=filter.getFullTextConstraint();\n  if (!definition.getVersion().isAtLeast(IndexFormatVersion.V2)) {\n    log.trace(\"Index is old format. Not supported\");\n    return null;\n  }\n  if (ft != null && !definition.isFullTextEnabled()) {\n    return null;\n  }\n  IndexingRule indexingRule=getApplicableRule();\n  if (indexingRule == null) {\n    return null;\n  }\n  if (ft != null && !indexingRule.isFulltextEnabled()) {\n    return null;\n  }\n  if (!checkForQueryPaths()) {\n    log.trace(\"Opting out due mismatch between path restriction {} and query paths {}\",filter.getPath(),definition.getQueryPaths());\n    return null;\n  }\n  result=new PlanResult(indexPath,definition,indexingRule);\n  if (definition.hasFunctionDefined() && filter.getPropertyRestriction(definition.getFunctionName()) != null) {\n    return defaultPlan().setEstimatedEntryCount(1);\n  }\n  List<String> indexedProps=newArrayListWithCapacity(filter.getPropertyRestrictions().size());\n  if (indexingRule.propertyIndexEnabled) {\n    for (    PropertyRestriction pr : filter.getPropertyRestrictions()) {\n      PropertyDefinition pd=indexingRule.getConfig(pr.propertyName);\n      if (pd != null && pd.propertyIndexEnabled()) {\n        if (pr.isNullRestriction() && !pd.nullCheckEnabled) {\n          continue;\n        }\n        indexedProps.add(pr.propertyName);\n        result.propDefns.put(pr.propertyName,pd);\n      }\n    }\n  }\n  boolean evalNodeTypeRestrictions=canEvalNodeTypeRestrictions(indexingRule);\n  boolean evalPathRestrictions=canEvalPathRestrictions(indexingRule);\n  boolean canEvalAlFullText=canEvalAllFullText(indexingRule,ft);\n  if (ft != null && !canEvalAlFullText) {\n    return null;\n  }\n  List<OrderEntry> sortOrder=createSortOrder(indexingRule);\n  boolean canSort=canSortByProperty(sortOrder);\n  if (!indexedProps.isEmpty() || canSort || ft != null || evalPathRestrictions || evalNodeTypeRestrictions) {\n    int costPerEntryFactor=indexedProps.size();\n    costPerEntryFactor+=sortOrder.size();\n    IndexPlan.Builder plan=defaultPlan();\n    if (!sortOrder.isEmpty()) {\n      plan.setSortOrder(sortOrder);\n    }\n    if (costPerEntryFactor == 0) {\n      costPerEntryFactor=1;\n    }\n    if (ft == null) {\n      result.enableNonFullTextConstraints();\n    }\n    if (evalNodeTypeRestrictions) {\n      result.enableNodeTypeEvaluation();\n    }\n    return plan.setCostPerEntry(definition.getCostPerEntry() / costPerEntryFactor);\n  }\n  return null;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 336,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 10,
+        "startLineNumber" : 189,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 189,
+        "endColumnNumber" : 26
+      },
+      "nodeContext" : "ft == null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.jackrabbit.oak.query.fulltext.FullTextExpression"
+  } ],
+  "positionList" : [ {
+    "charLength" : 2,
+    "startLineNumber" : 113,
+    "startColumnNumber" : 12,
+    "endLineNumber" : 113,
+    "endColumnNumber" : 14
+  }, {
+    "charLength" : 2,
+    "startLineNumber" : 123,
+    "startColumnNumber" : 12,
+    "endLineNumber" : 123,
+    "endColumnNumber" : 14
+  }, {
+    "charLength" : 2,
+    "startLineNumber" : 161,
+    "startColumnNumber" : 69,
+    "endLineNumber" : 161,
+    "endColumnNumber" : 71
+  }, {
+    "charLength" : 2,
+    "startLineNumber" : 163,
+    "startColumnNumber" : 12,
+    "endLineNumber" : 163,
+    "endColumnNumber" : 14
+  }, {
+    "charLength" : 2,
+    "startLineNumber" : 171,
+    "startColumnNumber" : 50,
+    "endLineNumber" : 171,
+    "endColumnNumber" : 52
+  }, {
+    "charLength" : 2,
+    "startLineNumber" : 189,
+    "startColumnNumber" : 16,
+    "endLineNumber" : 189,
+    "endColumnNumber" : 18
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 3,
+    "layout" : 5
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 5,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 4,
+    "layout" : 3
+  } ]
+}

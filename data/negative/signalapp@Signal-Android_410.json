@@ -1,100 +1,580 @@
 {
   "id" : 410,
-  "expression" : "\"\"",
+  "expression" : "allAttachments",
   "projectName" : "signalapp@Signal-Android",
-  "commitID" : "7e91132e7ed62a58b5f347de252ab1eda3f43b90",
-  "filePath" : "/libsignal/service/src/main/java/org/whispersystems/util/Base64UrlSafe.java",
-  "occurrences" : 1,
+  "commitID" : "665d9e31f6ce67e4fa24ca8ca5dc21eaa4a4d8d1",
+  "filePath" : "app/src/main/java/org/thoughtcrime/securesms/database/MmsDatabase.java",
+  "occurrences" : 5,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "\"\"",
-    "nodeType" : "StringLiteral",
+    "nodeContext" : "allAttachments",
+    "nodeType" : "SimpleName",
     "nodePosition" : {
-      "charLength" : 2,
-      "startLineNumber" : 32,
-      "startColumnNumber" : 44,
-      "endLineNumber" : 32,
-      "endColumnNumber" : 46
+      "charLength" : 14,
+      "startLineNumber" : 1602,
+      "startColumnNumber" : 4,
+      "endLineNumber" : 1602,
+      "endColumnNumber" : 18
     },
     "astNodeNumber" : 1,
     "astHeight" : 1,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ReturnStatement,expression]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
       "nodePosition" : {
-        "charLength" : 36,
-        "startLineNumber" : 32,
-        "startColumnNumber" : 11,
-        "endLineNumber" : 32,
-        "endColumnNumber" : 47
+        "charLength" : 34,
+        "startLineNumber" : 1602,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1602,
+        "endColumnNumber" : 38
       },
-      "nodeContext" : "encodeBytes(source).replace(\"=\",\"\")",
+      "nodeContext" : "allAttachments.addAll(attachments)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 35,
+        "startLineNumber" : 1602,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1602,
+        "endColumnNumber" : 39
+      },
+      "nodeContext" : "allAttachments.addAll(attachments);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3053,
+        "startLineNumber" : 1591,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 1659,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  SQLiteDatabase db=databaseHelper.getSignalWritableDatabase();\n  AttachmentDatabase partsDatabase=DatabaseFactory.getAttachmentDatabase(context);\n  MentionDatabase mentionDatabase=DatabaseFactory.getMentionDatabase(context);\n  boolean mentionsSelf=Stream.of(mentions).filter(m -> Recipient.resolved(m.getRecipientId()).isSelf()).findFirst().isPresent();\n  List<Attachment> allAttachments=new LinkedList<>();\n  List<Attachment> contactAttachments=Stream.of(sharedContacts).map(Contact::getAvatarAttachment).filter(a -> a != null).toList();\n  List<Attachment> previewAttachments=Stream.of(linkPreviews).filter(lp -> lp.getThumbnail().isPresent()).map(lp -> lp.getThumbnail().get()).toList();\n  allAttachments.addAll(attachments);\n  allAttachments.addAll(contactAttachments);\n  allAttachments.addAll(previewAttachments);\n  contentValues.put(BODY,body);\n  contentValues.put(PART_COUNT,allAttachments.size());\n  contentValues.put(MENTIONS_SELF,mentionsSelf ? 1 : 0);\n  db.beginTransaction();\n  try {\n    long messageId=db.insert(TABLE_NAME,null,contentValues);\n    mentionDatabase.insert(threadId,messageId,mentions);\n    Map<Attachment,AttachmentId> insertedAttachments=partsDatabase.insertAttachmentsForMessage(messageId,allAttachments,quoteAttachments);\n    String serializedContacts=getSerializedSharedContacts(insertedAttachments,sharedContacts);\n    String serializedPreviews=getSerializedLinkPreviews(insertedAttachments,linkPreviews);\n    if (!TextUtils.isEmpty(serializedContacts)) {\n      ContentValues contactValues=new ContentValues();\n      contactValues.put(SHARED_CONTACTS,serializedContacts);\n      SQLiteDatabase database=databaseHelper.getSignalReadableDatabase();\n      int rows=database.update(TABLE_NAME,contactValues,ID + \" = ?\",new String[]{String.valueOf(messageId)});\n      if (rows <= 0) {\n        Log.w(TAG,\"Failed to update message with shared contact data.\");\n      }\n    }\n    if (!TextUtils.isEmpty(serializedPreviews)) {\n      ContentValues contactValues=new ContentValues();\n      contactValues.put(LINK_PREVIEWS,serializedPreviews);\n      SQLiteDatabase database=databaseHelper.getSignalReadableDatabase();\n      int rows=database.update(TABLE_NAME,contactValues,ID + \" = ?\",new String[]{String.valueOf(messageId)});\n      if (rows <= 0) {\n        Log.w(TAG,\"Failed to update message with link preview data.\");\n      }\n    }\n    db.setTransactionSuccessful();\n    return messageId;\n  }\n  finally {\n    db.endTransaction();\n    if (insertListener != null) {\n      insertListener.onComplete();\n    }\n    long contentValuesThreadId=contentValues.getAsLong(THREAD_ID);\n    notifyConversationListeners(contentValuesThreadId);\n    DatabaseFactory.getThreadDatabase(context).setLastScrolled(contentValuesThreadId,0);\n    ThreadUpdateJob.enqueue(contentValuesThreadId);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 390,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3710,
+        "startLineNumber" : 1581,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 1659,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "private long insertMediaMessage(long threadId,@Nullable String body,@NonNull List<Attachment> attachments,@NonNull List<Attachment> quoteAttachments,@NonNull List<Contact> sharedContacts,@NonNull List<LinkPreview> linkPreviews,@NonNull List<Mention> mentions,@NonNull ContentValues contentValues,@Nullable SmsDatabase.InsertListener insertListener) throws MmsException {\n  SQLiteDatabase db=databaseHelper.getSignalWritableDatabase();\n  AttachmentDatabase partsDatabase=DatabaseFactory.getAttachmentDatabase(context);\n  MentionDatabase mentionDatabase=DatabaseFactory.getMentionDatabase(context);\n  boolean mentionsSelf=Stream.of(mentions).filter(m -> Recipient.resolved(m.getRecipientId()).isSelf()).findFirst().isPresent();\n  List<Attachment> allAttachments=new LinkedList<>();\n  List<Attachment> contactAttachments=Stream.of(sharedContacts).map(Contact::getAvatarAttachment).filter(a -> a != null).toList();\n  List<Attachment> previewAttachments=Stream.of(linkPreviews).filter(lp -> lp.getThumbnail().isPresent()).map(lp -> lp.getThumbnail().get()).toList();\n  allAttachments.addAll(attachments);\n  allAttachments.addAll(contactAttachments);\n  allAttachments.addAll(previewAttachments);\n  contentValues.put(BODY,body);\n  contentValues.put(PART_COUNT,allAttachments.size());\n  contentValues.put(MENTIONS_SELF,mentionsSelf ? 1 : 0);\n  db.beginTransaction();\n  try {\n    long messageId=db.insert(TABLE_NAME,null,contentValues);\n    mentionDatabase.insert(threadId,messageId,mentions);\n    Map<Attachment,AttachmentId> insertedAttachments=partsDatabase.insertAttachmentsForMessage(messageId,allAttachments,quoteAttachments);\n    String serializedContacts=getSerializedSharedContacts(insertedAttachments,sharedContacts);\n    String serializedPreviews=getSerializedLinkPreviews(insertedAttachments,linkPreviews);\n    if (!TextUtils.isEmpty(serializedContacts)) {\n      ContentValues contactValues=new ContentValues();\n      contactValues.put(SHARED_CONTACTS,serializedContacts);\n      SQLiteDatabase database=databaseHelper.getSignalReadableDatabase();\n      int rows=database.update(TABLE_NAME,contactValues,ID + \" = ?\",new String[]{String.valueOf(messageId)});\n      if (rows <= 0) {\n        Log.w(TAG,\"Failed to update message with shared contact data.\");\n      }\n    }\n    if (!TextUtils.isEmpty(serializedPreviews)) {\n      ContentValues contactValues=new ContentValues();\n      contactValues.put(LINK_PREVIEWS,serializedPreviews);\n      SQLiteDatabase database=databaseHelper.getSignalReadableDatabase();\n      int rows=database.update(TABLE_NAME,contactValues,ID + \" = ?\",new String[]{String.valueOf(messageId)});\n      if (rows <= 0) {\n        Log.w(TAG,\"Failed to update message with link preview data.\");\n      }\n    }\n    db.setTransactionSuccessful();\n    return messageId;\n  }\n  finally {\n    db.endTransaction();\n    if (insertListener != null) {\n      insertListener.onComplete();\n    }\n    long contentValuesThreadId=contentValues.getAsLong(THREAD_ID);\n    notifyConversationListeners(contentValuesThreadId);\n    DatabaseFactory.getThreadDatabase(context).setLastScrolled(contentValuesThreadId,0);\n    ThreadUpdateJob.enqueue(contentValuesThreadId);\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 464,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 35,
+        "startLineNumber" : 1602,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1602,
+        "endColumnNumber" : 39
+      },
+      "nodeContext" : "allAttachments.addAll(attachments);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "java.util.List<org.thoughtcrime.securesms.attachments.Attachment>"
+  }, {
+    "nodeContext" : "allAttachments",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 14,
+      "startLineNumber" : 1603,
+      "startColumnNumber" : 4,
+      "endLineNumber" : 1603,
+      "endColumnNumber" : 18
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 41,
+        "startLineNumber" : 1603,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1603,
+        "endColumnNumber" : 45
+      },
+      "nodeContext" : "allAttachments.addAll(contactAttachments)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 42,
+        "startLineNumber" : 1603,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1603,
+        "endColumnNumber" : 46
+      },
+      "nodeContext" : "allAttachments.addAll(contactAttachments);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3053,
+        "startLineNumber" : 1591,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 1659,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  SQLiteDatabase db=databaseHelper.getSignalWritableDatabase();\n  AttachmentDatabase partsDatabase=DatabaseFactory.getAttachmentDatabase(context);\n  MentionDatabase mentionDatabase=DatabaseFactory.getMentionDatabase(context);\n  boolean mentionsSelf=Stream.of(mentions).filter(m -> Recipient.resolved(m.getRecipientId()).isSelf()).findFirst().isPresent();\n  List<Attachment> allAttachments=new LinkedList<>();\n  List<Attachment> contactAttachments=Stream.of(sharedContacts).map(Contact::getAvatarAttachment).filter(a -> a != null).toList();\n  List<Attachment> previewAttachments=Stream.of(linkPreviews).filter(lp -> lp.getThumbnail().isPresent()).map(lp -> lp.getThumbnail().get()).toList();\n  allAttachments.addAll(attachments);\n  allAttachments.addAll(contactAttachments);\n  allAttachments.addAll(previewAttachments);\n  contentValues.put(BODY,body);\n  contentValues.put(PART_COUNT,allAttachments.size());\n  contentValues.put(MENTIONS_SELF,mentionsSelf ? 1 : 0);\n  db.beginTransaction();\n  try {\n    long messageId=db.insert(TABLE_NAME,null,contentValues);\n    mentionDatabase.insert(threadId,messageId,mentions);\n    Map<Attachment,AttachmentId> insertedAttachments=partsDatabase.insertAttachmentsForMessage(messageId,allAttachments,quoteAttachments);\n    String serializedContacts=getSerializedSharedContacts(insertedAttachments,sharedContacts);\n    String serializedPreviews=getSerializedLinkPreviews(insertedAttachments,linkPreviews);\n    if (!TextUtils.isEmpty(serializedContacts)) {\n      ContentValues contactValues=new ContentValues();\n      contactValues.put(SHARED_CONTACTS,serializedContacts);\n      SQLiteDatabase database=databaseHelper.getSignalReadableDatabase();\n      int rows=database.update(TABLE_NAME,contactValues,ID + \" = ?\",new String[]{String.valueOf(messageId)});\n      if (rows <= 0) {\n        Log.w(TAG,\"Failed to update message with shared contact data.\");\n      }\n    }\n    if (!TextUtils.isEmpty(serializedPreviews)) {\n      ContentValues contactValues=new ContentValues();\n      contactValues.put(LINK_PREVIEWS,serializedPreviews);\n      SQLiteDatabase database=databaseHelper.getSignalReadableDatabase();\n      int rows=database.update(TABLE_NAME,contactValues,ID + \" = ?\",new String[]{String.valueOf(messageId)});\n      if (rows <= 0) {\n        Log.w(TAG,\"Failed to update message with link preview data.\");\n      }\n    }\n    db.setTransactionSuccessful();\n    return messageId;\n  }\n  finally {\n    db.endTransaction();\n    if (insertListener != null) {\n      insertListener.onComplete();\n    }\n    long contentValuesThreadId=contentValues.getAsLong(THREAD_ID);\n    notifyConversationListeners(contentValuesThreadId);\n    DatabaseFactory.getThreadDatabase(context).setLastScrolled(contentValuesThreadId,0);\n    ThreadUpdateJob.enqueue(contentValuesThreadId);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 390,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3710,
+        "startLineNumber" : 1581,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 1659,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "private long insertMediaMessage(long threadId,@Nullable String body,@NonNull List<Attachment> attachments,@NonNull List<Attachment> quoteAttachments,@NonNull List<Contact> sharedContacts,@NonNull List<LinkPreview> linkPreviews,@NonNull List<Mention> mentions,@NonNull ContentValues contentValues,@Nullable SmsDatabase.InsertListener insertListener) throws MmsException {\n  SQLiteDatabase db=databaseHelper.getSignalWritableDatabase();\n  AttachmentDatabase partsDatabase=DatabaseFactory.getAttachmentDatabase(context);\n  MentionDatabase mentionDatabase=DatabaseFactory.getMentionDatabase(context);\n  boolean mentionsSelf=Stream.of(mentions).filter(m -> Recipient.resolved(m.getRecipientId()).isSelf()).findFirst().isPresent();\n  List<Attachment> allAttachments=new LinkedList<>();\n  List<Attachment> contactAttachments=Stream.of(sharedContacts).map(Contact::getAvatarAttachment).filter(a -> a != null).toList();\n  List<Attachment> previewAttachments=Stream.of(linkPreviews).filter(lp -> lp.getThumbnail().isPresent()).map(lp -> lp.getThumbnail().get()).toList();\n  allAttachments.addAll(attachments);\n  allAttachments.addAll(contactAttachments);\n  allAttachments.addAll(previewAttachments);\n  contentValues.put(BODY,body);\n  contentValues.put(PART_COUNT,allAttachments.size());\n  contentValues.put(MENTIONS_SELF,mentionsSelf ? 1 : 0);\n  db.beginTransaction();\n  try {\n    long messageId=db.insert(TABLE_NAME,null,contentValues);\n    mentionDatabase.insert(threadId,messageId,mentions);\n    Map<Attachment,AttachmentId> insertedAttachments=partsDatabase.insertAttachmentsForMessage(messageId,allAttachments,quoteAttachments);\n    String serializedContacts=getSerializedSharedContacts(insertedAttachments,sharedContacts);\n    String serializedPreviews=getSerializedLinkPreviews(insertedAttachments,linkPreviews);\n    if (!TextUtils.isEmpty(serializedContacts)) {\n      ContentValues contactValues=new ContentValues();\n      contactValues.put(SHARED_CONTACTS,serializedContacts);\n      SQLiteDatabase database=databaseHelper.getSignalReadableDatabase();\n      int rows=database.update(TABLE_NAME,contactValues,ID + \" = ?\",new String[]{String.valueOf(messageId)});\n      if (rows <= 0) {\n        Log.w(TAG,\"Failed to update message with shared contact data.\");\n      }\n    }\n    if (!TextUtils.isEmpty(serializedPreviews)) {\n      ContentValues contactValues=new ContentValues();\n      contactValues.put(LINK_PREVIEWS,serializedPreviews);\n      SQLiteDatabase database=databaseHelper.getSignalReadableDatabase();\n      int rows=database.update(TABLE_NAME,contactValues,ID + \" = ?\",new String[]{String.valueOf(messageId)});\n      if (rows <= 0) {\n        Log.w(TAG,\"Failed to update message with link preview data.\");\n      }\n    }\n    db.setTransactionSuccessful();\n    return messageId;\n  }\n  finally {\n    db.endTransaction();\n    if (insertListener != null) {\n      insertListener.onComplete();\n    }\n    long contentValuesThreadId=contentValues.getAsLong(THREAD_ID);\n    notifyConversationListeners(contentValuesThreadId);\n    DatabaseFactory.getThreadDatabase(context).setLastScrolled(contentValuesThreadId,0);\n    ThreadUpdateJob.enqueue(contentValuesThreadId);\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 464,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 42,
+        "startLineNumber" : 1603,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1603,
+        "endColumnNumber" : 46
+      },
+      "nodeContext" : "allAttachments.addAll(contactAttachments);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "java.util.List<org.thoughtcrime.securesms.attachments.Attachment>"
+  }, {
+    "nodeContext" : "allAttachments",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 14,
+      "startLineNumber" : 1604,
+      "startColumnNumber" : 4,
+      "endLineNumber" : 1604,
+      "endColumnNumber" : 18
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 41,
+        "startLineNumber" : 1604,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1604,
+        "endColumnNumber" : 45
+      },
+      "nodeContext" : "allAttachments.addAll(previewAttachments)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 42,
+        "startLineNumber" : 1604,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1604,
+        "endColumnNumber" : 46
+      },
+      "nodeContext" : "allAttachments.addAll(previewAttachments);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3053,
+        "startLineNumber" : 1591,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 1659,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  SQLiteDatabase db=databaseHelper.getSignalWritableDatabase();\n  AttachmentDatabase partsDatabase=DatabaseFactory.getAttachmentDatabase(context);\n  MentionDatabase mentionDatabase=DatabaseFactory.getMentionDatabase(context);\n  boolean mentionsSelf=Stream.of(mentions).filter(m -> Recipient.resolved(m.getRecipientId()).isSelf()).findFirst().isPresent();\n  List<Attachment> allAttachments=new LinkedList<>();\n  List<Attachment> contactAttachments=Stream.of(sharedContacts).map(Contact::getAvatarAttachment).filter(a -> a != null).toList();\n  List<Attachment> previewAttachments=Stream.of(linkPreviews).filter(lp -> lp.getThumbnail().isPresent()).map(lp -> lp.getThumbnail().get()).toList();\n  allAttachments.addAll(attachments);\n  allAttachments.addAll(contactAttachments);\n  allAttachments.addAll(previewAttachments);\n  contentValues.put(BODY,body);\n  contentValues.put(PART_COUNT,allAttachments.size());\n  contentValues.put(MENTIONS_SELF,mentionsSelf ? 1 : 0);\n  db.beginTransaction();\n  try {\n    long messageId=db.insert(TABLE_NAME,null,contentValues);\n    mentionDatabase.insert(threadId,messageId,mentions);\n    Map<Attachment,AttachmentId> insertedAttachments=partsDatabase.insertAttachmentsForMessage(messageId,allAttachments,quoteAttachments);\n    String serializedContacts=getSerializedSharedContacts(insertedAttachments,sharedContacts);\n    String serializedPreviews=getSerializedLinkPreviews(insertedAttachments,linkPreviews);\n    if (!TextUtils.isEmpty(serializedContacts)) {\n      ContentValues contactValues=new ContentValues();\n      contactValues.put(SHARED_CONTACTS,serializedContacts);\n      SQLiteDatabase database=databaseHelper.getSignalReadableDatabase();\n      int rows=database.update(TABLE_NAME,contactValues,ID + \" = ?\",new String[]{String.valueOf(messageId)});\n      if (rows <= 0) {\n        Log.w(TAG,\"Failed to update message with shared contact data.\");\n      }\n    }\n    if (!TextUtils.isEmpty(serializedPreviews)) {\n      ContentValues contactValues=new ContentValues();\n      contactValues.put(LINK_PREVIEWS,serializedPreviews);\n      SQLiteDatabase database=databaseHelper.getSignalReadableDatabase();\n      int rows=database.update(TABLE_NAME,contactValues,ID + \" = ?\",new String[]{String.valueOf(messageId)});\n      if (rows <= 0) {\n        Log.w(TAG,\"Failed to update message with link preview data.\");\n      }\n    }\n    db.setTransactionSuccessful();\n    return messageId;\n  }\n  finally {\n    db.endTransaction();\n    if (insertListener != null) {\n      insertListener.onComplete();\n    }\n    long contentValuesThreadId=contentValues.getAsLong(THREAD_ID);\n    notifyConversationListeners(contentValuesThreadId);\n    DatabaseFactory.getThreadDatabase(context).setLastScrolled(contentValuesThreadId,0);\n    ThreadUpdateJob.enqueue(contentValuesThreadId);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 390,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3710,
+        "startLineNumber" : 1581,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 1659,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "private long insertMediaMessage(long threadId,@Nullable String body,@NonNull List<Attachment> attachments,@NonNull List<Attachment> quoteAttachments,@NonNull List<Contact> sharedContacts,@NonNull List<LinkPreview> linkPreviews,@NonNull List<Mention> mentions,@NonNull ContentValues contentValues,@Nullable SmsDatabase.InsertListener insertListener) throws MmsException {\n  SQLiteDatabase db=databaseHelper.getSignalWritableDatabase();\n  AttachmentDatabase partsDatabase=DatabaseFactory.getAttachmentDatabase(context);\n  MentionDatabase mentionDatabase=DatabaseFactory.getMentionDatabase(context);\n  boolean mentionsSelf=Stream.of(mentions).filter(m -> Recipient.resolved(m.getRecipientId()).isSelf()).findFirst().isPresent();\n  List<Attachment> allAttachments=new LinkedList<>();\n  List<Attachment> contactAttachments=Stream.of(sharedContacts).map(Contact::getAvatarAttachment).filter(a -> a != null).toList();\n  List<Attachment> previewAttachments=Stream.of(linkPreviews).filter(lp -> lp.getThumbnail().isPresent()).map(lp -> lp.getThumbnail().get()).toList();\n  allAttachments.addAll(attachments);\n  allAttachments.addAll(contactAttachments);\n  allAttachments.addAll(previewAttachments);\n  contentValues.put(BODY,body);\n  contentValues.put(PART_COUNT,allAttachments.size());\n  contentValues.put(MENTIONS_SELF,mentionsSelf ? 1 : 0);\n  db.beginTransaction();\n  try {\n    long messageId=db.insert(TABLE_NAME,null,contentValues);\n    mentionDatabase.insert(threadId,messageId,mentions);\n    Map<Attachment,AttachmentId> insertedAttachments=partsDatabase.insertAttachmentsForMessage(messageId,allAttachments,quoteAttachments);\n    String serializedContacts=getSerializedSharedContacts(insertedAttachments,sharedContacts);\n    String serializedPreviews=getSerializedLinkPreviews(insertedAttachments,linkPreviews);\n    if (!TextUtils.isEmpty(serializedContacts)) {\n      ContentValues contactValues=new ContentValues();\n      contactValues.put(SHARED_CONTACTS,serializedContacts);\n      SQLiteDatabase database=databaseHelper.getSignalReadableDatabase();\n      int rows=database.update(TABLE_NAME,contactValues,ID + \" = ?\",new String[]{String.valueOf(messageId)});\n      if (rows <= 0) {\n        Log.w(TAG,\"Failed to update message with shared contact data.\");\n      }\n    }\n    if (!TextUtils.isEmpty(serializedPreviews)) {\n      ContentValues contactValues=new ContentValues();\n      contactValues.put(LINK_PREVIEWS,serializedPreviews);\n      SQLiteDatabase database=databaseHelper.getSignalReadableDatabase();\n      int rows=database.update(TABLE_NAME,contactValues,ID + \" = ?\",new String[]{String.valueOf(messageId)});\n      if (rows <= 0) {\n        Log.w(TAG,\"Failed to update message with link preview data.\");\n      }\n    }\n    db.setTransactionSuccessful();\n    return messageId;\n  }\n  finally {\n    db.endTransaction();\n    if (insertListener != null) {\n      insertListener.onComplete();\n    }\n    long contentValuesThreadId=contentValues.getAsLong(THREAD_ID);\n    notifyConversationListeners(contentValuesThreadId);\n    DatabaseFactory.getThreadDatabase(context).setLastScrolled(contentValuesThreadId,0);\n    ThreadUpdateJob.enqueue(contentValuesThreadId);\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 464,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 42,
+        "startLineNumber" : 1604,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1604,
+        "endColumnNumber" : 46
+      },
+      "nodeContext" : "allAttachments.addAll(previewAttachments);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "java.util.List<org.thoughtcrime.securesms.attachments.Attachment>"
+  }, {
+    "nodeContext" : "allAttachments",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 14,
+      "startLineNumber" : 1607,
+      "startColumnNumber" : 34,
+      "endLineNumber" : 1607,
+      "endColumnNumber" : 48
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 21,
+        "startLineNumber" : 1607,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 1607,
+        "endColumnNumber" : 55
+      },
+      "nodeContext" : "allAttachments.size()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 52,
+        "startLineNumber" : 1607,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1607,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "contentValues.put(PART_COUNT,allAttachments.size())",
       "nodeType" : "MethodInvocation",
       "astNodeNumber" : 7,
       "astHeight" : 3
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 44,
-        "startLineNumber" : 32,
+        "charLength" : 53,
+        "startLineNumber" : 1607,
         "startColumnNumber" : 4,
-        "endLineNumber" : 32,
-        "endColumnNumber" : 48
+        "endLineNumber" : 1607,
+        "endColumnNumber" : 57
       },
-      "nodeContext" : "return encodeBytes(source).replace(\"=\",\"\");\n",
-      "nodeType" : "ReturnStatement",
+      "nodeContext" : "contentValues.put(PART_COUNT,allAttachments.size());\n",
+      "nodeType" : "ExpressionStatement",
       "astNodeNumber" : 8,
       "astHeight" : 4
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 54,
-        "startLineNumber" : 31,
-        "startColumnNumber" : 64,
-        "endLineNumber" : 33,
+        "charLength" : 3053,
+        "startLineNumber" : 1591,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 1659,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "{\n  return encodeBytes(source).replace(\"=\",\"\");\n}\n",
+      "nodeContext" : "{\n  SQLiteDatabase db=databaseHelper.getSignalWritableDatabase();\n  AttachmentDatabase partsDatabase=DatabaseFactory.getAttachmentDatabase(context);\n  MentionDatabase mentionDatabase=DatabaseFactory.getMentionDatabase(context);\n  boolean mentionsSelf=Stream.of(mentions).filter(m -> Recipient.resolved(m.getRecipientId()).isSelf()).findFirst().isPresent();\n  List<Attachment> allAttachments=new LinkedList<>();\n  List<Attachment> contactAttachments=Stream.of(sharedContacts).map(Contact::getAvatarAttachment).filter(a -> a != null).toList();\n  List<Attachment> previewAttachments=Stream.of(linkPreviews).filter(lp -> lp.getThumbnail().isPresent()).map(lp -> lp.getThumbnail().get()).toList();\n  allAttachments.addAll(attachments);\n  allAttachments.addAll(contactAttachments);\n  allAttachments.addAll(previewAttachments);\n  contentValues.put(BODY,body);\n  contentValues.put(PART_COUNT,allAttachments.size());\n  contentValues.put(MENTIONS_SELF,mentionsSelf ? 1 : 0);\n  db.beginTransaction();\n  try {\n    long messageId=db.insert(TABLE_NAME,null,contentValues);\n    mentionDatabase.insert(threadId,messageId,mentions);\n    Map<Attachment,AttachmentId> insertedAttachments=partsDatabase.insertAttachmentsForMessage(messageId,allAttachments,quoteAttachments);\n    String serializedContacts=getSerializedSharedContacts(insertedAttachments,sharedContacts);\n    String serializedPreviews=getSerializedLinkPreviews(insertedAttachments,linkPreviews);\n    if (!TextUtils.isEmpty(serializedContacts)) {\n      ContentValues contactValues=new ContentValues();\n      contactValues.put(SHARED_CONTACTS,serializedContacts);\n      SQLiteDatabase database=databaseHelper.getSignalReadableDatabase();\n      int rows=database.update(TABLE_NAME,contactValues,ID + \" = ?\",new String[]{String.valueOf(messageId)});\n      if (rows <= 0) {\n        Log.w(TAG,\"Failed to update message with shared contact data.\");\n      }\n    }\n    if (!TextUtils.isEmpty(serializedPreviews)) {\n      ContentValues contactValues=new ContentValues();\n      contactValues.put(LINK_PREVIEWS,serializedPreviews);\n      SQLiteDatabase database=databaseHelper.getSignalReadableDatabase();\n      int rows=database.update(TABLE_NAME,contactValues,ID + \" = ?\",new String[]{String.valueOf(messageId)});\n      if (rows <= 0) {\n        Log.w(TAG,\"Failed to update message with link preview data.\");\n      }\n    }\n    db.setTransactionSuccessful();\n    return messageId;\n  }\n  finally {\n    db.endTransaction();\n    if (insertListener != null) {\n      insertListener.onComplete();\n    }\n    long contentValuesThreadId=contentValues.getAsLong(THREAD_ID);\n    notifyConversationListeners(contentValuesThreadId);\n    DatabaseFactory.getThreadDatabase(context).setLastScrolled(contentValuesThreadId,0);\n    ThreadUpdateJob.enqueue(contentValuesThreadId);\n  }\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 9,
-      "astHeight" : 5
+      "astNodeNumber" : 390,
+      "astHeight" : 12
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 116,
-        "startLineNumber" : 31,
+        "charLength" : 3710,
+        "startLineNumber" : 1581,
         "startColumnNumber" : 2,
-        "endLineNumber" : 33,
+        "endLineNumber" : 1659,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "public static String encodeBytesWithoutPadding(byte[] source){\n  return encodeBytes(source).replace(\"=\",\"\");\n}\n",
+      "nodeContext" : "private long insertMediaMessage(long threadId,@Nullable String body,@NonNull List<Attachment> attachments,@NonNull List<Attachment> quoteAttachments,@NonNull List<Contact> sharedContacts,@NonNull List<LinkPreview> linkPreviews,@NonNull List<Mention> mentions,@NonNull ContentValues contentValues,@Nullable SmsDatabase.InsertListener insertListener) throws MmsException {\n  SQLiteDatabase db=databaseHelper.getSignalWritableDatabase();\n  AttachmentDatabase partsDatabase=DatabaseFactory.getAttachmentDatabase(context);\n  MentionDatabase mentionDatabase=DatabaseFactory.getMentionDatabase(context);\n  boolean mentionsSelf=Stream.of(mentions).filter(m -> Recipient.resolved(m.getRecipientId()).isSelf()).findFirst().isPresent();\n  List<Attachment> allAttachments=new LinkedList<>();\n  List<Attachment> contactAttachments=Stream.of(sharedContacts).map(Contact::getAvatarAttachment).filter(a -> a != null).toList();\n  List<Attachment> previewAttachments=Stream.of(linkPreviews).filter(lp -> lp.getThumbnail().isPresent()).map(lp -> lp.getThumbnail().get()).toList();\n  allAttachments.addAll(attachments);\n  allAttachments.addAll(contactAttachments);\n  allAttachments.addAll(previewAttachments);\n  contentValues.put(BODY,body);\n  contentValues.put(PART_COUNT,allAttachments.size());\n  contentValues.put(MENTIONS_SELF,mentionsSelf ? 1 : 0);\n  db.beginTransaction();\n  try {\n    long messageId=db.insert(TABLE_NAME,null,contentValues);\n    mentionDatabase.insert(threadId,messageId,mentions);\n    Map<Attachment,AttachmentId> insertedAttachments=partsDatabase.insertAttachmentsForMessage(messageId,allAttachments,quoteAttachments);\n    String serializedContacts=getSerializedSharedContacts(insertedAttachments,sharedContacts);\n    String serializedPreviews=getSerializedLinkPreviews(insertedAttachments,linkPreviews);\n    if (!TextUtils.isEmpty(serializedContacts)) {\n      ContentValues contactValues=new ContentValues();\n      contactValues.put(SHARED_CONTACTS,serializedContacts);\n      SQLiteDatabase database=databaseHelper.getSignalReadableDatabase();\n      int rows=database.update(TABLE_NAME,contactValues,ID + \" = ?\",new String[]{String.valueOf(messageId)});\n      if (rows <= 0) {\n        Log.w(TAG,\"Failed to update message with shared contact data.\");\n      }\n    }\n    if (!TextUtils.isEmpty(serializedPreviews)) {\n      ContentValues contactValues=new ContentValues();\n      contactValues.put(LINK_PREVIEWS,serializedPreviews);\n      SQLiteDatabase database=databaseHelper.getSignalReadableDatabase();\n      int rows=database.update(TABLE_NAME,contactValues,ID + \" = ?\",new String[]{String.valueOf(messageId)});\n      if (rows <= 0) {\n        Log.w(TAG,\"Failed to update message with link preview data.\");\n      }\n    }\n    db.setTransactionSuccessful();\n    return messageId;\n  }\n  finally {\n    db.endTransaction();\n    if (insertListener != null) {\n      insertListener.onComplete();\n    }\n    long contentValuesThreadId=contentValues.getAsLong(THREAD_ID);\n    notifyConversationListeners(contentValuesThreadId);\n    DatabaseFactory.getThreadDatabase(context).setLastScrolled(contentValuesThreadId,0);\n    ThreadUpdateJob.enqueue(contentValuesThreadId);\n  }\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 20,
-      "astHeight" : 6
+      "astNodeNumber" : 464,
+      "astHeight" : 13
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 44,
-        "startLineNumber" : 32,
+        "charLength" : 53,
+        "startLineNumber" : 1607,
         "startColumnNumber" : 4,
-        "endLineNumber" : 32,
-        "endColumnNumber" : 48
+        "endLineNumber" : 1607,
+        "endColumnNumber" : 57
       },
-      "nodeContext" : "return encodeBytes(source).replace(\"=\",\"\");\n",
-      "nodeType" : "ReturnStatement",
+      "nodeContext" : "contentValues.put(PART_COUNT,allAttachments.size());\n",
+      "nodeType" : "ExpressionStatement",
       "astNodeNumber" : 8,
       "astHeight" : 4
     },
     "tokenLength" : 1,
-    "type" : "java.lang.String"
+    "type" : "java.util.List<org.thoughtcrime.securesms.attachments.Attachment>"
+  }, {
+    "nodeContext" : "allAttachments",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 14,
+      "startLineNumber" : 1616,
+      "startColumnNumber" : 111,
+      "endLineNumber" : 1616,
+      "endColumnNumber" : 125
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 86,
+        "startLineNumber" : 1616,
+        "startColumnNumber" : 58,
+        "endLineNumber" : 1616,
+        "endColumnNumber" : 144
+      },
+      "nodeContext" : "partsDatabase.insertAttachmentsForMessage(messageId,allAttachments,quoteAttachments)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 6,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 108,
+        "startLineNumber" : 1616,
+        "startColumnNumber" : 36,
+        "endLineNumber" : 1616,
+        "endColumnNumber" : 144
+      },
+      "nodeContext" : "insertedAttachments=partsDatabase.insertAttachmentsForMessage(messageId,allAttachments,quoteAttachments)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 8,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 139,
+        "startLineNumber" : 1616,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 1616,
+        "endColumnNumber" : 145
+      },
+      "nodeContext" : "Map<Attachment,AttachmentId> insertedAttachments=partsDatabase.insertAttachmentsForMessage(messageId,allAttachments,quoteAttachments);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 16,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
+      "nodePosition" : {
+        "charLength" : 1573,
+        "startLineNumber" : 1611,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1646,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  long messageId=db.insert(TABLE_NAME,null,contentValues);\n  mentionDatabase.insert(threadId,messageId,mentions);\n  Map<Attachment,AttachmentId> insertedAttachments=partsDatabase.insertAttachmentsForMessage(messageId,allAttachments,quoteAttachments);\n  String serializedContacts=getSerializedSharedContacts(insertedAttachments,sharedContacts);\n  String serializedPreviews=getSerializedLinkPreviews(insertedAttachments,linkPreviews);\n  if (!TextUtils.isEmpty(serializedContacts)) {\n    ContentValues contactValues=new ContentValues();\n    contactValues.put(SHARED_CONTACTS,serializedContacts);\n    SQLiteDatabase database=databaseHelper.getSignalReadableDatabase();\n    int rows=database.update(TABLE_NAME,contactValues,ID + \" = ?\",new String[]{String.valueOf(messageId)});\n    if (rows <= 0) {\n      Log.w(TAG,\"Failed to update message with shared contact data.\");\n    }\n  }\n  if (!TextUtils.isEmpty(serializedPreviews)) {\n    ContentValues contactValues=new ContentValues();\n    contactValues.put(LINK_PREVIEWS,serializedPreviews);\n    SQLiteDatabase database=databaseHelper.getSignalReadableDatabase();\n    int rows=database.update(TABLE_NAME,contactValues,ID + \" = ?\",new String[]{String.valueOf(messageId)});\n    if (rows <= 0) {\n      Log.w(TAG,\"Failed to update message with link preview data.\");\n    }\n  }\n  db.setTransactionSuccessful();\n  return messageId;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 182,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1979,
+        "startLineNumber" : 1611,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1658,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "try {\n  long messageId=db.insert(TABLE_NAME,null,contentValues);\n  mentionDatabase.insert(threadId,messageId,mentions);\n  Map<Attachment,AttachmentId> insertedAttachments=partsDatabase.insertAttachmentsForMessage(messageId,allAttachments,quoteAttachments);\n  String serializedContacts=getSerializedSharedContacts(insertedAttachments,sharedContacts);\n  String serializedPreviews=getSerializedLinkPreviews(insertedAttachments,linkPreviews);\n  if (!TextUtils.isEmpty(serializedContacts)) {\n    ContentValues contactValues=new ContentValues();\n    contactValues.put(SHARED_CONTACTS,serializedContacts);\n    SQLiteDatabase database=databaseHelper.getSignalReadableDatabase();\n    int rows=database.update(TABLE_NAME,contactValues,ID + \" = ?\",new String[]{String.valueOf(messageId)});\n    if (rows <= 0) {\n      Log.w(TAG,\"Failed to update message with shared contact data.\");\n    }\n  }\n  if (!TextUtils.isEmpty(serializedPreviews)) {\n    ContentValues contactValues=new ContentValues();\n    contactValues.put(LINK_PREVIEWS,serializedPreviews);\n    SQLiteDatabase database=databaseHelper.getSignalReadableDatabase();\n    int rows=database.update(TABLE_NAME,contactValues,ID + \" = ?\",new String[]{String.valueOf(messageId)});\n    if (rows <= 0) {\n      Log.w(TAG,\"Failed to update message with link preview data.\");\n    }\n  }\n  db.setTransactionSuccessful();\n  return messageId;\n}\n  finally {\n  db.endTransaction();\n  if (insertListener != null) {\n    insertListener.onComplete();\n  }\n  long contentValuesThreadId=contentValues.getAsLong(THREAD_ID);\n  notifyConversationListeners(contentValuesThreadId);\n  DatabaseFactory.getThreadDatabase(context).setLastScrolled(contentValuesThreadId,0);\n  ThreadUpdateJob.enqueue(contentValuesThreadId);\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 223,
+      "astHeight" : 11
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3053,
+        "startLineNumber" : 1591,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 1659,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  SQLiteDatabase db=databaseHelper.getSignalWritableDatabase();\n  AttachmentDatabase partsDatabase=DatabaseFactory.getAttachmentDatabase(context);\n  MentionDatabase mentionDatabase=DatabaseFactory.getMentionDatabase(context);\n  boolean mentionsSelf=Stream.of(mentions).filter(m -> Recipient.resolved(m.getRecipientId()).isSelf()).findFirst().isPresent();\n  List<Attachment> allAttachments=new LinkedList<>();\n  List<Attachment> contactAttachments=Stream.of(sharedContacts).map(Contact::getAvatarAttachment).filter(a -> a != null).toList();\n  List<Attachment> previewAttachments=Stream.of(linkPreviews).filter(lp -> lp.getThumbnail().isPresent()).map(lp -> lp.getThumbnail().get()).toList();\n  allAttachments.addAll(attachments);\n  allAttachments.addAll(contactAttachments);\n  allAttachments.addAll(previewAttachments);\n  contentValues.put(BODY,body);\n  contentValues.put(PART_COUNT,allAttachments.size());\n  contentValues.put(MENTIONS_SELF,mentionsSelf ? 1 : 0);\n  db.beginTransaction();\n  try {\n    long messageId=db.insert(TABLE_NAME,null,contentValues);\n    mentionDatabase.insert(threadId,messageId,mentions);\n    Map<Attachment,AttachmentId> insertedAttachments=partsDatabase.insertAttachmentsForMessage(messageId,allAttachments,quoteAttachments);\n    String serializedContacts=getSerializedSharedContacts(insertedAttachments,sharedContacts);\n    String serializedPreviews=getSerializedLinkPreviews(insertedAttachments,linkPreviews);\n    if (!TextUtils.isEmpty(serializedContacts)) {\n      ContentValues contactValues=new ContentValues();\n      contactValues.put(SHARED_CONTACTS,serializedContacts);\n      SQLiteDatabase database=databaseHelper.getSignalReadableDatabase();\n      int rows=database.update(TABLE_NAME,contactValues,ID + \" = ?\",new String[]{String.valueOf(messageId)});\n      if (rows <= 0) {\n        Log.w(TAG,\"Failed to update message with shared contact data.\");\n      }\n    }\n    if (!TextUtils.isEmpty(serializedPreviews)) {\n      ContentValues contactValues=new ContentValues();\n      contactValues.put(LINK_PREVIEWS,serializedPreviews);\n      SQLiteDatabase database=databaseHelper.getSignalReadableDatabase();\n      int rows=database.update(TABLE_NAME,contactValues,ID + \" = ?\",new String[]{String.valueOf(messageId)});\n      if (rows <= 0) {\n        Log.w(TAG,\"Failed to update message with link preview data.\");\n      }\n    }\n    db.setTransactionSuccessful();\n    return messageId;\n  }\n  finally {\n    db.endTransaction();\n    if (insertListener != null) {\n      insertListener.onComplete();\n    }\n    long contentValuesThreadId=contentValues.getAsLong(THREAD_ID);\n    notifyConversationListeners(contentValuesThreadId);\n    DatabaseFactory.getThreadDatabase(context).setLastScrolled(contentValuesThreadId,0);\n    ThreadUpdateJob.enqueue(contentValuesThreadId);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 390,
+      "astHeight" : 12
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3710,
+        "startLineNumber" : 1581,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 1659,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "private long insertMediaMessage(long threadId,@Nullable String body,@NonNull List<Attachment> attachments,@NonNull List<Attachment> quoteAttachments,@NonNull List<Contact> sharedContacts,@NonNull List<LinkPreview> linkPreviews,@NonNull List<Mention> mentions,@NonNull ContentValues contentValues,@Nullable SmsDatabase.InsertListener insertListener) throws MmsException {\n  SQLiteDatabase db=databaseHelper.getSignalWritableDatabase();\n  AttachmentDatabase partsDatabase=DatabaseFactory.getAttachmentDatabase(context);\n  MentionDatabase mentionDatabase=DatabaseFactory.getMentionDatabase(context);\n  boolean mentionsSelf=Stream.of(mentions).filter(m -> Recipient.resolved(m.getRecipientId()).isSelf()).findFirst().isPresent();\n  List<Attachment> allAttachments=new LinkedList<>();\n  List<Attachment> contactAttachments=Stream.of(sharedContacts).map(Contact::getAvatarAttachment).filter(a -> a != null).toList();\n  List<Attachment> previewAttachments=Stream.of(linkPreviews).filter(lp -> lp.getThumbnail().isPresent()).map(lp -> lp.getThumbnail().get()).toList();\n  allAttachments.addAll(attachments);\n  allAttachments.addAll(contactAttachments);\n  allAttachments.addAll(previewAttachments);\n  contentValues.put(BODY,body);\n  contentValues.put(PART_COUNT,allAttachments.size());\n  contentValues.put(MENTIONS_SELF,mentionsSelf ? 1 : 0);\n  db.beginTransaction();\n  try {\n    long messageId=db.insert(TABLE_NAME,null,contentValues);\n    mentionDatabase.insert(threadId,messageId,mentions);\n    Map<Attachment,AttachmentId> insertedAttachments=partsDatabase.insertAttachmentsForMessage(messageId,allAttachments,quoteAttachments);\n    String serializedContacts=getSerializedSharedContacts(insertedAttachments,sharedContacts);\n    String serializedPreviews=getSerializedLinkPreviews(insertedAttachments,linkPreviews);\n    if (!TextUtils.isEmpty(serializedContacts)) {\n      ContentValues contactValues=new ContentValues();\n      contactValues.put(SHARED_CONTACTS,serializedContacts);\n      SQLiteDatabase database=databaseHelper.getSignalReadableDatabase();\n      int rows=database.update(TABLE_NAME,contactValues,ID + \" = ?\",new String[]{String.valueOf(messageId)});\n      if (rows <= 0) {\n        Log.w(TAG,\"Failed to update message with shared contact data.\");\n      }\n    }\n    if (!TextUtils.isEmpty(serializedPreviews)) {\n      ContentValues contactValues=new ContentValues();\n      contactValues.put(LINK_PREVIEWS,serializedPreviews);\n      SQLiteDatabase database=databaseHelper.getSignalReadableDatabase();\n      int rows=database.update(TABLE_NAME,contactValues,ID + \" = ?\",new String[]{String.valueOf(messageId)});\n      if (rows <= 0) {\n        Log.w(TAG,\"Failed to update message with link preview data.\");\n      }\n    }\n    db.setTransactionSuccessful();\n    return messageId;\n  }\n  finally {\n    db.endTransaction();\n    if (insertListener != null) {\n      insertListener.onComplete();\n    }\n    long contentValuesThreadId=contentValues.getAsLong(THREAD_ID);\n    notifyConversationListeners(contentValuesThreadId);\n    DatabaseFactory.getThreadDatabase(context).setLastScrolled(contentValuesThreadId,0);\n    ThreadUpdateJob.enqueue(contentValuesThreadId);\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 464,
+      "astHeight" : 13
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 139,
+        "startLineNumber" : 1616,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 1616,
+        "endColumnNumber" : 145
+      },
+      "nodeContext" : "Map<Attachment,AttachmentId> insertedAttachments=partsDatabase.insertAttachmentsForMessage(messageId,allAttachments,quoteAttachments);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 16,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "java.util.List<org.thoughtcrime.securesms.attachments.Attachment>"
   } ],
   "positionList" : [ {
-    "charLength" : 2,
-    "startLineNumber" : 32,
-    "startColumnNumber" : 44,
-    "endLineNumber" : 32,
-    "endColumnNumber" : 46
+    "charLength" : 14,
+    "startLineNumber" : 1602,
+    "startColumnNumber" : 4,
+    "endLineNumber" : 1602,
+    "endColumnNumber" : 18
+  }, {
+    "charLength" : 14,
+    "startLineNumber" : 1603,
+    "startColumnNumber" : 4,
+    "endLineNumber" : 1603,
+    "endColumnNumber" : 18
+  }, {
+    "charLength" : 14,
+    "startLineNumber" : 1604,
+    "startColumnNumber" : 4,
+    "endLineNumber" : 1604,
+    "endColumnNumber" : 18
+  }, {
+    "charLength" : 14,
+    "startLineNumber" : 1607,
+    "startColumnNumber" : 34,
+    "endLineNumber" : 1607,
+    "endColumnNumber" : 48
+  }, {
+    "charLength" : 14,
+    "startLineNumber" : 1616,
+    "startColumnNumber" : 111,
+    "endLineNumber" : 1616,
+    "endColumnNumber" : 125
   } ],
-  "layoutRelationDataList" : [ ]
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 4,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 4,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 3,
+    "layout" : 2
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 4,
+    "layout" : 2
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 3,
+    "layout" : 5
+  } ]
 }

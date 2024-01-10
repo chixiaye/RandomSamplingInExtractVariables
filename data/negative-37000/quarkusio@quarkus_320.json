@@ -1,0 +1,100 @@
+{
+  "id" : 320,
+  "expression" : "config.userAgent",
+  "projectName" : "quarkusio@quarkus",
+  "commitID" : "2862b200ee266332150317795b9fe315be51d68b",
+  "filePath" : "/extensions/grpc/runtime/src/main/java/io/quarkus/grpc/runtime/supports/Channels.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "config.userAgent",
+    "nodeType" : "QualifiedName",
+    "nodePosition" : {
+      "charLength" : 16,
+      "startLineNumber" : 157,
+      "startColumnNumber" : 37,
+      "endLineNumber" : 157,
+      "endColumnNumber" : 53
+    },
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 28,
+        "startLineNumber" : 157,
+        "startColumnNumber" : 25,
+        "endLineNumber" : 157,
+        "endColumnNumber" : 53
+      },
+      "nodeContext" : "userAgent=config.userAgent",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 46,
+        "startLineNumber" : 157,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 157,
+        "endColumnNumber" : 54
+      },
+      "nodeContext" : "Optional<String> userAgent=config.userAgent;\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 6360,
+        "startLineNumber" : 60,
+        "startColumnNumber" : 108,
+        "endLineNumber" : 202,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  InstanceHandle<GrpcClientConfigProvider> instance=Arc.container().instance(GrpcClientConfigProvider.class);\n  if (!instance.isAvailable()) {\n    throw new IllegalStateException(\"Unable to find the GrpcClientConfigProvider\");\n  }\n  GrpcClientConfigProvider configProvider=instance.get();\n  GrpcClientConfiguration config=configProvider.getConfiguration(name);\n  if (config == null && LaunchMode.current() == LaunchMode.TEST) {\n    LOGGER.infof(\"gRPC client %s created without configuration. We are assuming that it's created to test your gRPC services.\",name);\n    config=testConfig(configProvider.getServerConfiguration());\n  }\n  if (config == null) {\n    throw new IllegalStateException(\"gRPC client \" + name + \" is missing configuration.\");\n  }\n  String host=config.host;\n  int port=config.port;\n  String nameResolver=config.nameResolver;\n  String[] resolverSplit=nameResolver.split(\":\");\n  if (GrpcClientConfiguration.DNS.equalsIgnoreCase(resolverSplit[0])) {\n    host=\"/\" + host;\n  }\n  String target=String.format(\"%s://%s:%d\",resolverSplit[0],host,port);\n  boolean plainText=config.ssl.trustStore.isEmpty();\n  Optional<Boolean> usePlainText=config.plainText;\n  if (usePlainText.isPresent()) {\n    plainText=usePlainText.get();\n  }\n  SslContext context=null;\n  if (!plainText) {\n    Path trustStorePath=config.ssl.trustStore.orElse(null);\n    Path certificatePath=config.ssl.certificate.orElse(null);\n    Path keyPath=config.ssl.key.orElse(null);\n    SslContextBuilder sslContextBuilder=GrpcSslContexts.forClient();\n    if (trustStorePath != null) {\n      try (InputStream stream=streamFor(trustStorePath,\"trust store\")){\n        sslContextBuilder.trustManager(stream);\n      }\n catch (      IOException e) {\n        throw new UncheckedIOException(\"Configuring gRPC client trust store failed\",e);\n      }\n    }\n    if (certificatePath != null && keyPath != null) {\n      try (InputStream certificate=streamFor(certificatePath,\"certificate\");InputStream key=streamFor(keyPath,\"key\")){\n        sslContextBuilder.keyManager(certificate,key);\n      }\n catch (      IOException e) {\n        throw new UncheckedIOException(\"Configuring gRPC client certificate failed\",e);\n      }\n    }\n    context=sslContextBuilder.build();\n  }\n  String loadBalancingPolicy=config.loadBalancingPolicy;\n  boolean stork=false;\n  if (Stork.STORK.equalsIgnoreCase(nameResolver)) {\n    loadBalancingPolicy=Stork.STORK;\n    stork=true;\n  }\n  NettyChannelBuilder builder=NettyChannelBuilder.forTarget(target).directExecutor().offloadExecutor(Infrastructure.getDefaultExecutor()).defaultLoadBalancingPolicy(loadBalancingPolicy).flowControlWindow(config.flowControlWindow.orElse(DEFAULT_FLOW_CONTROL_WINDOW)).keepAliveWithoutCalls(config.keepAliveWithoutCalls).maxHedgedAttempts(config.maxHedgedAttempts).maxRetryAttempts(config.maxRetryAttempts).maxInboundMetadataSize(config.maxInboundMetadataSize.orElse(DEFAULT_MAX_HEADER_LIST_SIZE)).maxInboundMessageSize(config.maxInboundMessageSize.orElse(DEFAULT_MAX_MESSAGE_SIZE)).negotiationType(NegotiationType.valueOf(config.negotiationType.toUpperCase()));\n  if (config.retry) {\n    builder.enableRetry();\n  }\n else {\n    builder.disableRetry();\n  }\n  if (config.maxTraceEvents.isPresent()) {\n    builder.maxTraceEvents(config.maxTraceEvents.getAsInt());\n  }\n  Optional<String> userAgent=config.userAgent;\n  if (userAgent.isPresent()) {\n    builder.userAgent(userAgent.get());\n  }\n  if (config.retryBufferSize.isPresent()) {\n    builder.retryBufferSize(config.retryBufferSize.getAsLong());\n  }\n  if (config.perRpcBufferLimit.isPresent()) {\n    builder.perRpcBufferLimit(config.perRpcBufferLimit.getAsLong());\n  }\n  Optional<String> overrideAuthority=config.overrideAuthority;\n  if (overrideAuthority.isPresent()) {\n    builder.overrideAuthority(overrideAuthority.get());\n  }\n  Optional<Duration> keepAliveTime=config.keepAliveTime;\n  if (keepAliveTime.isPresent()) {\n    builder.keepAliveTime(keepAliveTime.get().toMillis(),TimeUnit.MILLISECONDS);\n  }\n  Optional<Duration> keepAliveTimeout=config.keepAliveTimeout;\n  if (keepAliveTimeout.isPresent()) {\n    builder.keepAliveTimeout(keepAliveTimeout.get().toMillis(),TimeUnit.MILLISECONDS);\n  }\n  Optional<Duration> idleTimeout=config.idleTimeout;\n  if (idleTimeout.isPresent()) {\n    builder.keepAliveTimeout(idleTimeout.get().toMillis(),TimeUnit.MILLISECONDS);\n  }\n  if (plainText) {\n    builder.usePlaintext();\n  }\n  if (context != null) {\n    builder.sslContext(context);\n  }\n  GrpcClientInterceptorContainer interceptorContainer=Arc.container().instance(GrpcClientInterceptorContainer.class).get();\n  if (stork) {\n    perClientInterceptors=new HashSet<>(perClientInterceptors);\n    perClientInterceptors.add(StorkMeasuringGrpcInterceptor.class.getName());\n  }\n  interceptorContainer.getSortedPerServiceInterceptors(perClientInterceptors).forEach(builder::intercept);\n  interceptorContainer.getSortedGlobalInterceptors().forEach(builder::intercept);\n  return builder.build();\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 691,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 6464,
+        "startLineNumber" : 60,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 202,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "public static Channel createChannel(String name,Set<String> perClientInterceptors) throws SSLException {\n  InstanceHandle<GrpcClientConfigProvider> instance=Arc.container().instance(GrpcClientConfigProvider.class);\n  if (!instance.isAvailable()) {\n    throw new IllegalStateException(\"Unable to find the GrpcClientConfigProvider\");\n  }\n  GrpcClientConfigProvider configProvider=instance.get();\n  GrpcClientConfiguration config=configProvider.getConfiguration(name);\n  if (config == null && LaunchMode.current() == LaunchMode.TEST) {\n    LOGGER.infof(\"gRPC client %s created without configuration. We are assuming that it's created to test your gRPC services.\",name);\n    config=testConfig(configProvider.getServerConfiguration());\n  }\n  if (config == null) {\n    throw new IllegalStateException(\"gRPC client \" + name + \" is missing configuration.\");\n  }\n  String host=config.host;\n  int port=config.port;\n  String nameResolver=config.nameResolver;\n  String[] resolverSplit=nameResolver.split(\":\");\n  if (GrpcClientConfiguration.DNS.equalsIgnoreCase(resolverSplit[0])) {\n    host=\"/\" + host;\n  }\n  String target=String.format(\"%s://%s:%d\",resolverSplit[0],host,port);\n  boolean plainText=config.ssl.trustStore.isEmpty();\n  Optional<Boolean> usePlainText=config.plainText;\n  if (usePlainText.isPresent()) {\n    plainText=usePlainText.get();\n  }\n  SslContext context=null;\n  if (!plainText) {\n    Path trustStorePath=config.ssl.trustStore.orElse(null);\n    Path certificatePath=config.ssl.certificate.orElse(null);\n    Path keyPath=config.ssl.key.orElse(null);\n    SslContextBuilder sslContextBuilder=GrpcSslContexts.forClient();\n    if (trustStorePath != null) {\n      try (InputStream stream=streamFor(trustStorePath,\"trust store\")){\n        sslContextBuilder.trustManager(stream);\n      }\n catch (      IOException e) {\n        throw new UncheckedIOException(\"Configuring gRPC client trust store failed\",e);\n      }\n    }\n    if (certificatePath != null && keyPath != null) {\n      try (InputStream certificate=streamFor(certificatePath,\"certificate\");InputStream key=streamFor(keyPath,\"key\")){\n        sslContextBuilder.keyManager(certificate,key);\n      }\n catch (      IOException e) {\n        throw new UncheckedIOException(\"Configuring gRPC client certificate failed\",e);\n      }\n    }\n    context=sslContextBuilder.build();\n  }\n  String loadBalancingPolicy=config.loadBalancingPolicy;\n  boolean stork=false;\n  if (Stork.STORK.equalsIgnoreCase(nameResolver)) {\n    loadBalancingPolicy=Stork.STORK;\n    stork=true;\n  }\n  NettyChannelBuilder builder=NettyChannelBuilder.forTarget(target).directExecutor().offloadExecutor(Infrastructure.getDefaultExecutor()).defaultLoadBalancingPolicy(loadBalancingPolicy).flowControlWindow(config.flowControlWindow.orElse(DEFAULT_FLOW_CONTROL_WINDOW)).keepAliveWithoutCalls(config.keepAliveWithoutCalls).maxHedgedAttempts(config.maxHedgedAttempts).maxRetryAttempts(config.maxRetryAttempts).maxInboundMetadataSize(config.maxInboundMetadataSize.orElse(DEFAULT_MAX_HEADER_LIST_SIZE)).maxInboundMessageSize(config.maxInboundMessageSize.orElse(DEFAULT_MAX_MESSAGE_SIZE)).negotiationType(NegotiationType.valueOf(config.negotiationType.toUpperCase()));\n  if (config.retry) {\n    builder.enableRetry();\n  }\n else {\n    builder.disableRetry();\n  }\n  if (config.maxTraceEvents.isPresent()) {\n    builder.maxTraceEvents(config.maxTraceEvents.getAsInt());\n  }\n  Optional<String> userAgent=config.userAgent;\n  if (userAgent.isPresent()) {\n    builder.userAgent(userAgent.get());\n  }\n  if (config.retryBufferSize.isPresent()) {\n    builder.retryBufferSize(config.retryBufferSize.getAsLong());\n  }\n  if (config.perRpcBufferLimit.isPresent()) {\n    builder.perRpcBufferLimit(config.perRpcBufferLimit.getAsLong());\n  }\n  Optional<String> overrideAuthority=config.overrideAuthority;\n  if (overrideAuthority.isPresent()) {\n    builder.overrideAuthority(overrideAuthority.get());\n  }\n  Optional<Duration> keepAliveTime=config.keepAliveTime;\n  if (keepAliveTime.isPresent()) {\n    builder.keepAliveTime(keepAliveTime.get().toMillis(),TimeUnit.MILLISECONDS);\n  }\n  Optional<Duration> keepAliveTimeout=config.keepAliveTimeout;\n  if (keepAliveTimeout.isPresent()) {\n    builder.keepAliveTimeout(keepAliveTimeout.get().toMillis(),TimeUnit.MILLISECONDS);\n  }\n  Optional<Duration> idleTimeout=config.idleTimeout;\n  if (idleTimeout.isPresent()) {\n    builder.keepAliveTimeout(idleTimeout.get().toMillis(),TimeUnit.MILLISECONDS);\n  }\n  if (plainText) {\n    builder.usePlaintext();\n  }\n  if (context != null) {\n    builder.sslContext(context);\n  }\n  GrpcClientInterceptorContainer interceptorContainer=Arc.container().instance(GrpcClientInterceptorContainer.class).get();\n  if (stork) {\n    perClientInterceptors=new HashSet<>(perClientInterceptors);\n    perClientInterceptors.add(StorkMeasuringGrpcInterceptor.class.getName());\n  }\n  interceptorContainer.getSortedPerServiceInterceptors(perClientInterceptors).forEach(builder::intercept);\n  interceptorContainer.getSortedGlobalInterceptors().forEach(builder::intercept);\n  return builder.build();\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 710,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 46,
+        "startLineNumber" : 157,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 157,
+        "endColumnNumber" : 54
+      },
+      "nodeContext" : "Optional<String> userAgent=config.userAgent;\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 4
+    },
+    "tokenLength" : 2,
+    "type" : "java.util.Optional<java.lang.String>"
+  } ],
+  "positionList" : [ {
+    "charLength" : 16,
+    "startLineNumber" : 157,
+    "startColumnNumber" : 37,
+    "endLineNumber" : 157,
+    "endColumnNumber" : 53
+  } ],
+  "layoutRelationDataList" : [ ]
+}

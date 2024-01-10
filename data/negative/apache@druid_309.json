@@ -1,126 +1,100 @@
 {
   "id" : 309,
-  "expression" : "expected",
+  "expression" : "granularitySpec.getSegmentGranularity() == null",
   "projectName" : "apache@druid",
-  "commitID" : "f6662b4893a9b8cc8a0ebb77e63daddde882148d",
-  "filePath" : "/processing/src/test/java/org/apache/druid/segment/data/CompressedVSizeColumnarIntsSupplierTest.java",
+  "commitID" : "b7b0ee83627dd7887392e8f9d6fb5cb29465c28c",
+  "filePath" : "indexing-service/src/main/java/org/apache/druid/indexing/common/task/CompactionTask.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "expected",
-    "nodeType" : "SimpleName",
+    "nodeContext" : "granularitySpec.getSegmentGranularity() == null",
+    "nodeType" : "InfixExpression",
     "nodePosition" : {
-      "charLength" : 8,
-      "startLineNumber" : 350,
-      "startColumnNumber" : 26,
-      "endLineNumber" : 350,
-      "endColumnNumber" : 34
+      "charLength" : 47,
+      "startLineNumber" : 504,
+      "startColumnNumber" : 35,
+      "endLineNumber" : 504,
+      "endColumnNumber" : 82
     },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
+    "astNodeNumber" : 5,
+    "astHeight" : 3,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
       "nodePosition" : {
-        "charLength" : 37,
-        "startLineNumber" : 350,
-        "startColumnNumber" : 6,
-        "endLineNumber" : 350,
-        "endColumnNumber" : 43
+        "charLength" : 74,
+        "startLineNumber" : 504,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 504,
+        "endColumnNumber" : 82
       },
-      "nodeContext" : "Assert.assertEquals(expected,actual)",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 5,
-      "astHeight" : 2
+      "nodeContext" : "granularitySpec == null || granularitySpec.getSegmentGranularity() == null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 38,
-        "startLineNumber" : 350,
-        "startColumnNumber" : 6,
-        "endLineNumber" : 350,
-        "endColumnNumber" : 44
-      },
-      "nodeContext" : "Assert.assertEquals(expected,actual);\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 6,
-      "astHeight" : 3
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,body]",
-      "nodePosition" : {
-        "charLength" : 156,
-        "startLineNumber" : 347,
-        "startColumnNumber" : 63,
-        "endLineNumber" : 352,
-        "endColumnNumber" : 5
-      },
-      "nodeContext" : "{\n  final int expected=vals[i];\n  final int actual=columnarInts.get(i);\n  Assert.assertEquals(expected,actual);\n  indices[i]=i;\n}\n",
-      "nodeType" : "Block",
-      "astNodeNumber" : 30,
-      "astHeight" : 5
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 215,
-        "startLineNumber" : 347,
+        "charLength" : 3666,
+        "startLineNumber" : 504,
         "startColumnNumber" : 4,
-        "endLineNumber" : 352,
+        "endLineNumber" : 591,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "for (int i=0, size=columnarInts.size(); i < size; ++i) {\n  final int expected=vals[i];\n  final int actual=columnarInts.get(i);\n  Assert.assertEquals(expected,actual);\n  indices[i]=i;\n}\n",
-      "nodeType" : "ForStatement",
-      "astNodeNumber" : 46,
-      "astHeight" : 6
+      "nodeContext" : "if (granularitySpec == null || granularitySpec.getSegmentGranularity() == null) {\n  final Map<Interval,List<NonnullPair<QueryableIndex,DataSegment>>> intervalToSegments=new TreeMap<>(Comparators.intervalsByStartThenEnd());\n  queryableIndexAndSegments.forEach(p -> intervalToSegments.computeIfAbsent(p.rhs.getInterval(),k -> new ArrayList<>()).add(p));\n  List<NonnullPair<Interval,List<NonnullPair<QueryableIndex,DataSegment>>>> intervalToSegmentsUnified=new ArrayList<>();\n  Interval union=null;\n  List<NonnullPair<QueryableIndex,DataSegment>> segments=new ArrayList<>();\n  for (  Entry<Interval,List<NonnullPair<QueryableIndex,DataSegment>>> entry : intervalToSegments.entrySet()) {\n    Interval cur=entry.getKey();\n    if (union == null) {\n      union=cur;\n      segments.addAll(entry.getValue());\n    }\n else     if (union.overlaps(cur)) {\n      union=Intervals.utc(union.getStartMillis(),Math.max(union.getEndMillis(),cur.getEndMillis()));\n      segments.addAll(entry.getValue());\n    }\n else {\n      intervalToSegmentsUnified.add(new NonnullPair<>(union,segments));\n      union=cur;\n      segments=new ArrayList<>(entry.getValue());\n    }\n  }\n  intervalToSegmentsUnified.add(new NonnullPair<>(union,segments));\n  final List<ParallelIndexIngestionSpec> specs=new ArrayList<>(intervalToSegmentsUnified.size());\n  for (  NonnullPair<Interval,List<NonnullPair<QueryableIndex,DataSegment>>> entry : intervalToSegmentsUnified) {\n    final Interval interval=entry.lhs;\n    final List<NonnullPair<QueryableIndex,DataSegment>> segmentsToCompact=entry.rhs;\n    Granularity segmentGranularityToUse=GranularityType.fromPeriod(interval.toPeriod()).getDefaultGranularity();\n    final DataSchema dataSchema=createDataSchema(segmentProvider.dataSource,segmentsToCompact,dimensionsSpec,metricsSpec,granularitySpec == null ? new ClientCompactionTaskGranularitySpec(segmentGranularityToUse,null) : granularitySpec.withSegmentGranularity(segmentGranularityToUse));\n    specs.add(new ParallelIndexIngestionSpec(dataSchema,createIoConfig(toolbox,dataSchema,interval,coordinatorClient,segmentLoaderFactory,retryPolicyFactory),compactionTuningConfig));\n  }\n  return specs;\n}\n else {\n  final DataSchema dataSchema=createDataSchema(segmentProvider.dataSource,queryableIndexAndSegments,dimensionsSpec,metricsSpec,granularitySpec);\n  return Collections.singletonList(new ParallelIndexIngestionSpec(dataSchema,createIoConfig(toolbox,dataSchema,segmentProvider.interval,coordinatorClient,segmentLoaderFactory,retryPolicyFactory),compactionTuningConfig));\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 378,
+      "astHeight" : 13
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 716,
-        "startLineNumber" : 342,
+        "charLength" : 4513,
+        "startLineNumber" : 481,
         "startColumnNumber" : 2,
-        "endLineNumber" : 361,
+        "endLineNumber" : 592,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "{\n  Assert.assertEquals(vals.length,columnarInts.size());\n  int[] indices=new int[vals.length];\n  for (int i=0, size=columnarInts.size(); i < size; ++i) {\n    final int expected=vals[i];\n    final int actual=columnarInts.get(i);\n    Assert.assertEquals(expected,actual);\n    indices[i]=i;\n  }\n  IntArrays.shuffle(indices,ThreadLocalRandom.current());\n  final int limit=Math.min(columnarInts.size(),1000);\n  for (int i=0; i < limit; ++i) {\n    int k=indices[i];\n    Assert.assertEquals(vals[k],columnarInts.get(k));\n  }\n}\n",
+      "nodeContext" : "{\n  NonnullPair<Map<DataSegment,File>,List<TimelineObjectHolder<String,DataSegment>>> pair=prepareSegments(toolbox,segmentProvider,lockGranularityInUse);\n  final Map<DataSegment,File> segmentFileMap=pair.lhs;\n  final List<TimelineObjectHolder<String,DataSegment>> timelineSegments=pair.rhs;\n  if (timelineSegments.size() == 0) {\n    return Collections.emptyList();\n  }\n  final List<NonnullPair<QueryableIndex,DataSegment>> queryableIndexAndSegments=loadSegments(timelineSegments,segmentFileMap,toolbox.getIndexIO());\n  final ParallelIndexTuningConfig compactionTuningConfig=partitionConfigurationManager.computeTuningConfig();\n  if (granularitySpec == null || granularitySpec.getSegmentGranularity() == null) {\n    final Map<Interval,List<NonnullPair<QueryableIndex,DataSegment>>> intervalToSegments=new TreeMap<>(Comparators.intervalsByStartThenEnd());\n    queryableIndexAndSegments.forEach(p -> intervalToSegments.computeIfAbsent(p.rhs.getInterval(),k -> new ArrayList<>()).add(p));\n    List<NonnullPair<Interval,List<NonnullPair<QueryableIndex,DataSegment>>>> intervalToSegmentsUnified=new ArrayList<>();\n    Interval union=null;\n    List<NonnullPair<QueryableIndex,DataSegment>> segments=new ArrayList<>();\n    for (    Entry<Interval,List<NonnullPair<QueryableIndex,DataSegment>>> entry : intervalToSegments.entrySet()) {\n      Interval cur=entry.getKey();\n      if (union == null) {\n        union=cur;\n        segments.addAll(entry.getValue());\n      }\n else       if (union.overlaps(cur)) {\n        union=Intervals.utc(union.getStartMillis(),Math.max(union.getEndMillis(),cur.getEndMillis()));\n        segments.addAll(entry.getValue());\n      }\n else {\n        intervalToSegmentsUnified.add(new NonnullPair<>(union,segments));\n        union=cur;\n        segments=new ArrayList<>(entry.getValue());\n      }\n    }\n    intervalToSegmentsUnified.add(new NonnullPair<>(union,segments));\n    final List<ParallelIndexIngestionSpec> specs=new ArrayList<>(intervalToSegmentsUnified.size());\n    for (    NonnullPair<Interval,List<NonnullPair<QueryableIndex,DataSegment>>> entry : intervalToSegmentsUnified) {\n      final Interval interval=entry.lhs;\n      final List<NonnullPair<QueryableIndex,DataSegment>> segmentsToCompact=entry.rhs;\n      Granularity segmentGranularityToUse=GranularityType.fromPeriod(interval.toPeriod()).getDefaultGranularity();\n      final DataSchema dataSchema=createDataSchema(segmentProvider.dataSource,segmentsToCompact,dimensionsSpec,metricsSpec,granularitySpec == null ? new ClientCompactionTaskGranularitySpec(segmentGranularityToUse,null) : granularitySpec.withSegmentGranularity(segmentGranularityToUse));\n      specs.add(new ParallelIndexIngestionSpec(dataSchema,createIoConfig(toolbox,dataSchema,interval,coordinatorClient,segmentLoaderFactory,retryPolicyFactory),compactionTuningConfig));\n    }\n    return specs;\n  }\n else {\n    final DataSchema dataSchema=createDataSchema(segmentProvider.dataSource,queryableIndexAndSegments,dimensionsSpec,metricsSpec,granularitySpec);\n    return Collections.singletonList(new ParallelIndexIngestionSpec(dataSchema,createIoConfig(toolbox,dataSchema,segmentProvider.interval,coordinatorClient,segmentLoaderFactory,retryPolicyFactory),compactionTuningConfig));\n  }\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 120,
-      "astHeight" : 7
+      "astNodeNumber" : 479,
+      "astHeight" : 14
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 756,
-        "startLineNumber" : 341,
+        "charLength" : 5368,
+        "startLineNumber" : 463,
         "startColumnNumber" : 2,
-        "endLineNumber" : 361,
+        "endLineNumber" : 592,
         "endColumnNumber" : 3
       },
-      "nodeContext" : "private void assertIndexMatchesVals(){\n  Assert.assertEquals(vals.length,columnarInts.size());\n  int[] indices=new int[vals.length];\n  for (int i=0, size=columnarInts.size(); i < size; ++i) {\n    final int expected=vals[i];\n    final int actual=columnarInts.get(i);\n    Assert.assertEquals(expected,actual);\n    indices[i]=i;\n  }\n  IntArrays.shuffle(indices,ThreadLocalRandom.current());\n  final int limit=Math.min(columnarInts.size(),1000);\n  for (int i=0; i < limit; ++i) {\n    int k=indices[i];\n    Assert.assertEquals(vals[k],columnarInts.get(k));\n  }\n}\n",
+      "nodeContext" : "/** \n * Generate  {@link ParallelIndexIngestionSpec} from input segments.\n * @return an empty list if input segments don't exist. Otherwise, a generated ingestionSpec.\n */\n@VisibleForTesting static List<ParallelIndexIngestionSpec> createIngestionSchema(final TaskToolbox toolbox,final LockGranularity lockGranularityInUse,final SegmentProvider segmentProvider,final PartitionConfigurationManager partitionConfigurationManager,@Nullable final DimensionsSpec dimensionsSpec,@Nullable final AggregatorFactory[] metricsSpec,@Nullable final ClientCompactionTaskGranularitySpec granularitySpec,final CoordinatorClient coordinatorClient,final SegmentLoaderFactory segmentLoaderFactory,final RetryPolicyFactory retryPolicyFactory) throws IOException, SegmentLoadingException {\n  NonnullPair<Map<DataSegment,File>,List<TimelineObjectHolder<String,DataSegment>>> pair=prepareSegments(toolbox,segmentProvider,lockGranularityInUse);\n  final Map<DataSegment,File> segmentFileMap=pair.lhs;\n  final List<TimelineObjectHolder<String,DataSegment>> timelineSegments=pair.rhs;\n  if (timelineSegments.size() == 0) {\n    return Collections.emptyList();\n  }\n  final List<NonnullPair<QueryableIndex,DataSegment>> queryableIndexAndSegments=loadSegments(timelineSegments,segmentFileMap,toolbox.getIndexIO());\n  final ParallelIndexTuningConfig compactionTuningConfig=partitionConfigurationManager.computeTuningConfig();\n  if (granularitySpec == null || granularitySpec.getSegmentGranularity() == null) {\n    final Map<Interval,List<NonnullPair<QueryableIndex,DataSegment>>> intervalToSegments=new TreeMap<>(Comparators.intervalsByStartThenEnd());\n    queryableIndexAndSegments.forEach(p -> intervalToSegments.computeIfAbsent(p.rhs.getInterval(),k -> new ArrayList<>()).add(p));\n    List<NonnullPair<Interval,List<NonnullPair<QueryableIndex,DataSegment>>>> intervalToSegmentsUnified=new ArrayList<>();\n    Interval union=null;\n    List<NonnullPair<QueryableIndex,DataSegment>> segments=new ArrayList<>();\n    for (    Entry<Interval,List<NonnullPair<QueryableIndex,DataSegment>>> entry : intervalToSegments.entrySet()) {\n      Interval cur=entry.getKey();\n      if (union == null) {\n        union=cur;\n        segments.addAll(entry.getValue());\n      }\n else       if (union.overlaps(cur)) {\n        union=Intervals.utc(union.getStartMillis(),Math.max(union.getEndMillis(),cur.getEndMillis()));\n        segments.addAll(entry.getValue());\n      }\n else {\n        intervalToSegmentsUnified.add(new NonnullPair<>(union,segments));\n        union=cur;\n        segments=new ArrayList<>(entry.getValue());\n      }\n    }\n    intervalToSegmentsUnified.add(new NonnullPair<>(union,segments));\n    final List<ParallelIndexIngestionSpec> specs=new ArrayList<>(intervalToSegmentsUnified.size());\n    for (    NonnullPair<Interval,List<NonnullPair<QueryableIndex,DataSegment>>> entry : intervalToSegmentsUnified) {\n      final Interval interval=entry.lhs;\n      final List<NonnullPair<QueryableIndex,DataSegment>> segmentsToCompact=entry.rhs;\n      Granularity segmentGranularityToUse=GranularityType.fromPeriod(interval.toPeriod()).getDefaultGranularity();\n      final DataSchema dataSchema=createDataSchema(segmentProvider.dataSource,segmentsToCompact,dimensionsSpec,metricsSpec,granularitySpec == null ? new ClientCompactionTaskGranularitySpec(segmentGranularityToUse,null) : granularitySpec.withSegmentGranularity(segmentGranularityToUse));\n      specs.add(new ParallelIndexIngestionSpec(dataSchema,createIoConfig(toolbox,dataSchema,interval,coordinatorClient,segmentLoaderFactory,retryPolicyFactory),compactionTuningConfig));\n    }\n    return specs;\n  }\n else {\n    final DataSchema dataSchema=createDataSchema(segmentProvider.dataSource,queryableIndexAndSegments,dimensionsSpec,metricsSpec,granularitySpec);\n    return Collections.singletonList(new ParallelIndexIngestionSpec(dataSchema,createIoConfig(toolbox,dataSchema,segmentProvider.interval,coordinatorClient,segmentLoaderFactory,retryPolicyFactory),compactionTuningConfig));\n  }\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 124,
-      "astHeight" : 8
+      "astNodeNumber" : 552,
+      "astHeight" : 15
     } ],
     "currentLineData" : {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
       "nodePosition" : {
-        "charLength" : 38,
-        "startLineNumber" : 350,
-        "startColumnNumber" : 6,
-        "endLineNumber" : 350,
-        "endColumnNumber" : 44
+        "charLength" : 74,
+        "startLineNumber" : 504,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 504,
+        "endColumnNumber" : 82
       },
-      "nodeContext" : "Assert.assertEquals(expected,actual);\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 6,
-      "astHeight" : 3
+      "nodeContext" : "granularitySpec == null || granularitySpec.getSegmentGranularity() == null",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
     },
-    "tokenLength" : 1,
-    "type" : "int"
+    "tokenLength" : 4,
+    "type" : "boolean"
   } ],
   "positionList" : [ {
-    "charLength" : 8,
-    "startLineNumber" : 350,
-    "startColumnNumber" : 26,
-    "endLineNumber" : 350,
-    "endColumnNumber" : 34
+    "charLength" : 47,
+    "startLineNumber" : 504,
+    "startColumnNumber" : 35,
+    "endLineNumber" : 504,
+    "endColumnNumber" : 82
   } ],
   "layoutRelationDataList" : [ ]
 }

@@ -1,0 +1,113 @@
+{
+  "id" : 134,
+  "expression" : "Smoosh",
+  "projectName" : "apache@druid",
+  "commitID" : "f6662b4893a9b8cc8a0ebb77e63daddde882148d",
+  "filePath" : "/processing/src/main/java/org/apache/druid/segment/IndexIO.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "Smoosh",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 6,
+      "startLineNumber" : 325,
+      "startColumnNumber" : 41,
+      "endLineNumber" : 325,
+      "endColumnNumber" : 47
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 17,
+        "startLineNumber" : 325,
+        "startColumnNumber" : 41,
+        "endLineNumber" : 325,
+        "endColumnNumber" : 58
+      },
+      "nodeContext" : "Smoosh.map(inDir)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 4,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 33,
+        "startLineNumber" : 325,
+        "startColumnNumber" : 25,
+        "endLineNumber" : 325,
+        "endColumnNumber" : 58
+      },
+      "nodeContext" : "smooshedFiles=Smoosh.map(inDir)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 53,
+        "startLineNumber" : 325,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 325,
+        "endColumnNumber" : 59
+      },
+      "nodeContext" : "SmooshedFileMapper smooshedFiles=Smoosh.map(inDir);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4351,
+        "startLineNumber" : 309,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 415,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  log.debug(\"Mapping v8 index[%s]\",inDir);\n  long startTime=System.currentTimeMillis();\n  InputStream indexIn=null;\n  try {\n    indexIn=new FileInputStream(new File(inDir,\"index.drd\"));\n    byte theVersion=(byte)indexIn.read();\n    if (theVersion != V8_VERSION) {\n      throw new IAE(\"Unknown version[%d]\",theVersion);\n    }\n  }\n  finally {\n    Closeables.close(indexIn,false);\n  }\n  SmooshedFileMapper smooshedFiles=Smoosh.map(inDir);\n  ByteBuffer indexBuffer=smooshedFiles.mapFile(\"index.drd\");\n  indexBuffer.get();\n  final GenericIndexed<String> availableDimensions=GenericIndexed.read(indexBuffer,GenericIndexed.STRING_STRATEGY,smooshedFiles);\n  final GenericIndexed<String> availableMetrics=GenericIndexed.read(indexBuffer,GenericIndexed.STRING_STRATEGY,smooshedFiles);\n  final Interval dataInterval=Intervals.of(SERIALIZER_UTILS.readString(indexBuffer));\n  final BitmapSerdeFactory bitmapSerdeFactory=new BitmapSerde.LegacyBitmapSerdeFactory();\n  CompressedColumnarLongsSupplier timestamps=CompressedColumnarLongsSupplier.fromByteBuffer(smooshedFiles.mapFile(makeTimeFile(inDir,BYTE_ORDER).getName()),BYTE_ORDER);\n  Map<String,MetricHolder> metrics=Maps.newLinkedHashMap();\n  for (  String metric : availableMetrics) {\n    final String metricFilename=makeMetricFile(inDir,metric,BYTE_ORDER).getName();\n    final MetricHolder holder=MetricHolder.fromByteBuffer(smooshedFiles.mapFile(metricFilename));\n    if (!metric.equals(holder.getName())) {\n      throw new ISE(\"Metric[%s] loaded up metric[%s] from disk.  File names do matter.\",metric,holder.getName());\n    }\n    metrics.put(metric,holder);\n  }\n  Map<String,GenericIndexed<String>> dimValueLookups=new HashMap<>();\n  Map<String,GenericIndexed<ByteBuffer>> dimValueUtf8Lookups=new HashMap<>();\n  Map<String,VSizeColumnarMultiInts> dimColumns=new HashMap<>();\n  Map<String,GenericIndexed<ImmutableBitmap>> bitmaps=new HashMap<>();\n  for (  String dimension : IndexedIterable.create(availableDimensions)) {\n    ByteBuffer dimBuffer=smooshedFiles.mapFile(makeDimFile(inDir,dimension).getName());\n    String fileDimensionName=SERIALIZER_UTILS.readString(dimBuffer);\n    Preconditions.checkState(dimension.equals(fileDimensionName),\"Dimension file[%s] has dimension[%s] in it!?\",makeDimFile(inDir,dimension),fileDimensionName);\n    dimValueLookups.put(dimension,GenericIndexed.read(dimBuffer.duplicate(),GenericIndexed.STRING_STRATEGY));\n    dimValueUtf8Lookups.put(dimension,GenericIndexed.read(dimBuffer,GenericIndexed.BYTE_BUFFER_STRATEGY));\n    dimColumns.put(dimension,VSizeColumnarMultiInts.readFromByteBuffer(dimBuffer));\n  }\n  ByteBuffer invertedBuffer=smooshedFiles.mapFile(\"inverted.drd\");\n  for (int i=0; i < availableDimensions.size(); ++i) {\n    bitmaps.put(SERIALIZER_UTILS.readString(invertedBuffer),GenericIndexed.read(invertedBuffer,bitmapSerdeFactory.getObjectStrategy()));\n  }\n  Map<String,ImmutableRTree> spatialIndexed=new HashMap<>();\n  ByteBuffer spatialBuffer=smooshedFiles.mapFile(\"spatial.drd\");\n  while (spatialBuffer != null && spatialBuffer.hasRemaining()) {\n    spatialIndexed.put(SERIALIZER_UTILS.readString(spatialBuffer),new ImmutableRTreeObjectStrategy(bitmapSerdeFactory.getBitmapFactory()).fromByteBufferWithSize(spatialBuffer));\n  }\n  final MMappedIndex retVal=new MMappedIndex(availableDimensions,availableMetrics,dataInterval,timestamps,metrics,dimValueLookups,dimValueUtf8Lookups,dimColumns,bitmaps,spatialIndexed,smooshedFiles);\n  log.debug(\"Mapped v8 index[%s] in %,d millis\",inDir,System.currentTimeMillis() - startTime);\n  return retVal;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 495,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4427,
+        "startLineNumber" : 307,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 415,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@Override public MMappedIndex mapDir(File inDir) throws IOException {\n  log.debug(\"Mapping v8 index[%s]\",inDir);\n  long startTime=System.currentTimeMillis();\n  InputStream indexIn=null;\n  try {\n    indexIn=new FileInputStream(new File(inDir,\"index.drd\"));\n    byte theVersion=(byte)indexIn.read();\n    if (theVersion != V8_VERSION) {\n      throw new IAE(\"Unknown version[%d]\",theVersion);\n    }\n  }\n  finally {\n    Closeables.close(indexIn,false);\n  }\n  SmooshedFileMapper smooshedFiles=Smoosh.map(inDir);\n  ByteBuffer indexBuffer=smooshedFiles.mapFile(\"index.drd\");\n  indexBuffer.get();\n  final GenericIndexed<String> availableDimensions=GenericIndexed.read(indexBuffer,GenericIndexed.STRING_STRATEGY,smooshedFiles);\n  final GenericIndexed<String> availableMetrics=GenericIndexed.read(indexBuffer,GenericIndexed.STRING_STRATEGY,smooshedFiles);\n  final Interval dataInterval=Intervals.of(SERIALIZER_UTILS.readString(indexBuffer));\n  final BitmapSerdeFactory bitmapSerdeFactory=new BitmapSerde.LegacyBitmapSerdeFactory();\n  CompressedColumnarLongsSupplier timestamps=CompressedColumnarLongsSupplier.fromByteBuffer(smooshedFiles.mapFile(makeTimeFile(inDir,BYTE_ORDER).getName()),BYTE_ORDER);\n  Map<String,MetricHolder> metrics=Maps.newLinkedHashMap();\n  for (  String metric : availableMetrics) {\n    final String metricFilename=makeMetricFile(inDir,metric,BYTE_ORDER).getName();\n    final MetricHolder holder=MetricHolder.fromByteBuffer(smooshedFiles.mapFile(metricFilename));\n    if (!metric.equals(holder.getName())) {\n      throw new ISE(\"Metric[%s] loaded up metric[%s] from disk.  File names do matter.\",metric,holder.getName());\n    }\n    metrics.put(metric,holder);\n  }\n  Map<String,GenericIndexed<String>> dimValueLookups=new HashMap<>();\n  Map<String,GenericIndexed<ByteBuffer>> dimValueUtf8Lookups=new HashMap<>();\n  Map<String,VSizeColumnarMultiInts> dimColumns=new HashMap<>();\n  Map<String,GenericIndexed<ImmutableBitmap>> bitmaps=new HashMap<>();\n  for (  String dimension : IndexedIterable.create(availableDimensions)) {\n    ByteBuffer dimBuffer=smooshedFiles.mapFile(makeDimFile(inDir,dimension).getName());\n    String fileDimensionName=SERIALIZER_UTILS.readString(dimBuffer);\n    Preconditions.checkState(dimension.equals(fileDimensionName),\"Dimension file[%s] has dimension[%s] in it!?\",makeDimFile(inDir,dimension),fileDimensionName);\n    dimValueLookups.put(dimension,GenericIndexed.read(dimBuffer.duplicate(),GenericIndexed.STRING_STRATEGY));\n    dimValueUtf8Lookups.put(dimension,GenericIndexed.read(dimBuffer,GenericIndexed.BYTE_BUFFER_STRATEGY));\n    dimColumns.put(dimension,VSizeColumnarMultiInts.readFromByteBuffer(dimBuffer));\n  }\n  ByteBuffer invertedBuffer=smooshedFiles.mapFile(\"inverted.drd\");\n  for (int i=0; i < availableDimensions.size(); ++i) {\n    bitmaps.put(SERIALIZER_UTILS.readString(invertedBuffer),GenericIndexed.read(invertedBuffer,bitmapSerdeFactory.getObjectStrategy()));\n  }\n  Map<String,ImmutableRTree> spatialIndexed=new HashMap<>();\n  ByteBuffer spatialBuffer=smooshedFiles.mapFile(\"spatial.drd\");\n  while (spatialBuffer != null && spatialBuffer.hasRemaining()) {\n    spatialIndexed.put(SERIALIZER_UTILS.readString(spatialBuffer),new ImmutableRTreeObjectStrategy(bitmapSerdeFactory.getBitmapFactory()).fromByteBufferWithSize(spatialBuffer));\n  }\n  final MMappedIndex retVal=new MMappedIndex(availableDimensions,availableMetrics,dataInterval,timestamps,metrics,dimValueLookups,dimValueUtf8Lookups,dimColumns,bitmaps,spatialIndexed,smooshedFiles);\n  log.debug(\"Mapped v8 index[%s] in %,d millis\",inDir,System.currentTimeMillis() - startTime);\n  return retVal;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 508,
+      "astHeight" : 10
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 53,
+        "startLineNumber" : 325,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 325,
+        "endColumnNumber" : 59
+      },
+      "nodeContext" : "SmooshedFileMapper smooshedFiles=Smoosh.map(inDir);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.druid.java.util.common.io.smoosh.Smoosh"
+  } ],
+  "positionList" : [ {
+    "charLength" : 6,
+    "startLineNumber" : 325,
+    "startColumnNumber" : 41,
+    "endLineNumber" : 325,
+    "endColumnNumber" : 47
+  } ],
+  "layoutRelationDataList" : [ ]
+}

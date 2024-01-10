@@ -1,0 +1,234 @@
+{
+  "id" : 865,
+  "expression" : "request",
+  "projectName" : "SeleniumHQ@selenium",
+  "commitID" : "e88d0e206d15eab761f73d35217fd3b1df322868",
+  "filePath" : "java/server/src/org/openqa/selenium/grid/distributor/Distributor.java",
+  "occurrences" : 2,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "request",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 7,
+      "startLineNumber" : 151,
+      "startColumnNumber" : 41,
+      "endLineNumber" : 151,
+      "endColumnNumber" : 48
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 60,
+        "startLineNumber" : 151,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 151,
+        "endColumnNumber" : 76
+      },
+      "nodeContext" : "newSpanAsChildOf(tracer,request,\"distributor.new_session\")",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 5,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 67,
+        "startLineNumber" : 151,
+        "startColumnNumber" : 9,
+        "endLineNumber" : 151,
+        "endColumnNumber" : 76
+      },
+      "nodeContext" : "span=newSpanAsChildOf(tracer,request,\"distributor.new_session\")",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 73,
+        "startLineNumber" : 151,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 151,
+        "endColumnNumber" : 77
+      },
+      "nodeContext" : "Span span=newSpanAsChildOf(tracer,request,\"distributor.new_session\");\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4408,
+        "startLineNumber" : 149,
+        "startColumnNumber" : 38,
+        "endLineNumber" : 251,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  Span span=newSpanAsChildOf(tracer,request,\"distributor.new_session\");\n  Map<String,EventAttributeValue> attributeMap=new HashMap<>();\n  try (Reader reader=reader(request);NewSessionPayload payload=NewSessionPayload.create(reader)){\n    Objects.requireNonNull(payload,\"Requests to process must be set.\");\n    attributeMap.put(AttributeKey.LOGGER_CLASS.getKey(),EventAttribute.setValue(getClass().getName()));\n    Iterator<Capabilities> iterator=payload.stream().iterator();\n    attributeMap.put(\"request.payload\",EventAttribute.setValue(payload.toString()));\n    if (!iterator.hasNext()) {\n      SessionNotCreatedException exception=new SessionNotCreatedException(\"No capabilities found\");\n      EXCEPTION.accept(attributeMap,exception);\n      attributeMap.put(AttributeKey.EXCEPTION_MESSAGE.getKey(),EventAttribute.setValue(\"Unable to create session. No capabilities found: \" + exception.getMessage()));\n      span.addEvent(AttributeKey.EXCEPTION_EVENT.getKey(),attributeMap);\n      throw exception;\n    }\n    Optional<Supplier<CreateSessionResponse>> selected;\n    CreateSessionRequest firstRequest=new CreateSessionRequest(payload.getDownstreamDialects(),iterator.next(),ImmutableMap.of(\"span\",span));\n    Lock writeLock=this.lock.writeLock();\n    writeLock.lock();\n    try {\n      ImmutableSet<Host> availableHosts=getModel().stream().filter(host -> UP.equals(host.getHostStatus())).collect(toImmutableSet());\n      Optional<Host> selectedHost=hostSelector.selectHost(firstRequest.getCapabilities(),availableHosts);\n      selected=selectedHost.map(host -> host.reserve(firstRequest));\n    }\n  finally {\n      writeLock.unlock();\n    }\n    CreateSessionResponse sessionResponse=selected.orElseThrow(() -> {\n      span.setAttribute(\"error\",true);\n      SessionNotCreatedException exception=new SessionNotCreatedException(\"Unable to find provider for session: \" + payload.stream().map(Capabilities::toString).collect(Collectors.joining(\", \")));\n      EXCEPTION.accept(attributeMap,exception);\n      attributeMap.put(AttributeKey.EXCEPTION_MESSAGE.getKey(),EventAttribute.setValue(\"Unable to find provider for session: \" + exception.getMessage()));\n      span.addEvent(AttributeKey.EXCEPTION_EVENT.getKey(),attributeMap);\n      return exception;\n    }\n).get();\n    sessions.add(sessionResponse.getSession());\n    SessionId sessionId=sessionResponse.getSession().getId();\n    Capabilities caps=sessionResponse.getSession().getCapabilities();\n    String sessionUri=sessionResponse.getSession().getUri().toString();\n    SESSION_ID.accept(span,sessionId);\n    CAPABILITIES.accept(span,caps);\n    SESSION_ID_EVENT.accept(attributeMap,sessionId);\n    CAPABILITIES_EVENT.accept(attributeMap,caps);\n    span.setAttribute(AttributeKey.SESSION_URI.getKey(),sessionUri);\n    attributeMap.put(AttributeKey.SESSION_URI.getKey(),EventAttribute.setValue(sessionUri));\n    span.addEvent(\"Session created by the distributor\",attributeMap);\n    return sessionResponse;\n  }\n catch (  SessionNotCreatedException e) {\n    span.setAttribute(\"error\",true);\n    span.setStatus(Status.ABORTED);\n    EXCEPTION.accept(attributeMap,e);\n    attributeMap.put(AttributeKey.EXCEPTION_MESSAGE.getKey(),EventAttribute.setValue(\"Unable to create session: \" + e.getMessage()));\n    span.addEvent(AttributeKey.EXCEPTION_EVENT.getKey(),attributeMap);\n    throw e;\n  }\ncatch (  IOException e) {\n    span.setAttribute(\"error\",true);\n    span.setStatus(Status.UNKNOWN);\n    EXCEPTION.accept(attributeMap,e);\n    attributeMap.put(AttributeKey.EXCEPTION_MESSAGE.getKey(),EventAttribute.setValue(\"Unknown error in LocalDistributor while creating session: \" + e.getMessage()));\n    span.addEvent(AttributeKey.EXCEPTION_EVENT.getKey(),attributeMap);\n    throw new SessionNotCreatedException(e.getMessage(),e);\n  }\n finally {\n    span.close();\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 536,
+      "astHeight" : 17
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4507,
+        "startLineNumber" : 148,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 251,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "public CreateSessionResponse newSession(HttpRequest request) throws SessionNotCreatedException {\n  Span span=newSpanAsChildOf(tracer,request,\"distributor.new_session\");\n  Map<String,EventAttributeValue> attributeMap=new HashMap<>();\n  try (Reader reader=reader(request);NewSessionPayload payload=NewSessionPayload.create(reader)){\n    Objects.requireNonNull(payload,\"Requests to process must be set.\");\n    attributeMap.put(AttributeKey.LOGGER_CLASS.getKey(),EventAttribute.setValue(getClass().getName()));\n    Iterator<Capabilities> iterator=payload.stream().iterator();\n    attributeMap.put(\"request.payload\",EventAttribute.setValue(payload.toString()));\n    if (!iterator.hasNext()) {\n      SessionNotCreatedException exception=new SessionNotCreatedException(\"No capabilities found\");\n      EXCEPTION.accept(attributeMap,exception);\n      attributeMap.put(AttributeKey.EXCEPTION_MESSAGE.getKey(),EventAttribute.setValue(\"Unable to create session. No capabilities found: \" + exception.getMessage()));\n      span.addEvent(AttributeKey.EXCEPTION_EVENT.getKey(),attributeMap);\n      throw exception;\n    }\n    Optional<Supplier<CreateSessionResponse>> selected;\n    CreateSessionRequest firstRequest=new CreateSessionRequest(payload.getDownstreamDialects(),iterator.next(),ImmutableMap.of(\"span\",span));\n    Lock writeLock=this.lock.writeLock();\n    writeLock.lock();\n    try {\n      ImmutableSet<Host> availableHosts=getModel().stream().filter(host -> UP.equals(host.getHostStatus())).collect(toImmutableSet());\n      Optional<Host> selectedHost=hostSelector.selectHost(firstRequest.getCapabilities(),availableHosts);\n      selected=selectedHost.map(host -> host.reserve(firstRequest));\n    }\n  finally {\n      writeLock.unlock();\n    }\n    CreateSessionResponse sessionResponse=selected.orElseThrow(() -> {\n      span.setAttribute(\"error\",true);\n      SessionNotCreatedException exception=new SessionNotCreatedException(\"Unable to find provider for session: \" + payload.stream().map(Capabilities::toString).collect(Collectors.joining(\", \")));\n      EXCEPTION.accept(attributeMap,exception);\n      attributeMap.put(AttributeKey.EXCEPTION_MESSAGE.getKey(),EventAttribute.setValue(\"Unable to find provider for session: \" + exception.getMessage()));\n      span.addEvent(AttributeKey.EXCEPTION_EVENT.getKey(),attributeMap);\n      return exception;\n    }\n).get();\n    sessions.add(sessionResponse.getSession());\n    SessionId sessionId=sessionResponse.getSession().getId();\n    Capabilities caps=sessionResponse.getSession().getCapabilities();\n    String sessionUri=sessionResponse.getSession().getUri().toString();\n    SESSION_ID.accept(span,sessionId);\n    CAPABILITIES.accept(span,caps);\n    SESSION_ID_EVENT.accept(attributeMap,sessionId);\n    CAPABILITIES_EVENT.accept(attributeMap,caps);\n    span.setAttribute(AttributeKey.SESSION_URI.getKey(),sessionUri);\n    attributeMap.put(AttributeKey.SESSION_URI.getKey(),EventAttribute.setValue(sessionUri));\n    span.addEvent(\"Session created by the distributor\",attributeMap);\n    return sessionResponse;\n  }\n catch (  SessionNotCreatedException e) {\n    span.setAttribute(\"error\",true);\n    span.setStatus(Status.ABORTED);\n    EXCEPTION.accept(attributeMap,e);\n    attributeMap.put(AttributeKey.EXCEPTION_MESSAGE.getKey(),EventAttribute.setValue(\"Unable to create session: \" + e.getMessage()));\n    span.addEvent(AttributeKey.EXCEPTION_EVENT.getKey(),attributeMap);\n    throw e;\n  }\ncatch (  IOException e) {\n    span.setAttribute(\"error\",true);\n    span.setStatus(Status.UNKNOWN);\n    EXCEPTION.accept(attributeMap,e);\n    attributeMap.put(AttributeKey.EXCEPTION_MESSAGE.getKey(),EventAttribute.setValue(\"Unknown error in LocalDistributor while creating session: \" + e.getMessage()));\n    span.addEvent(AttributeKey.EXCEPTION_EVENT.getKey(),attributeMap);\n    throw new SessionNotCreatedException(e.getMessage(),e);\n  }\n finally {\n    span.close();\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 547,
+      "astHeight" : 18
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 73,
+        "startLineNumber" : 151,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 151,
+        "endColumnNumber" : 77
+      },
+      "nodeContext" : "Span span=newSpanAsChildOf(tracer,request,\"distributor.new_session\");\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.openqa.selenium.remote.http.HttpRequest"
+  }, {
+    "nodeContext" : "request",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 7,
+      "startLineNumber" : 154,
+      "startColumnNumber" : 29,
+      "endLineNumber" : 154,
+      "endColumnNumber" : 36
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 15,
+        "startLineNumber" : 154,
+        "startColumnNumber" : 22,
+        "endLineNumber" : 154,
+        "endColumnNumber" : 37
+      },
+      "nodeContext" : "reader(request)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationExpression,fragments]",
+      "nodePosition" : {
+        "charLength" : 24,
+        "startLineNumber" : 154,
+        "startColumnNumber" : 13,
+        "endLineNumber" : 154,
+        "endColumnNumber" : 37
+      },
+      "nodeContext" : "reader=reader(request)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TryStatement,resources]",
+      "nodePosition" : {
+        "charLength" : 31,
+        "startLineNumber" : 154,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 154,
+        "endColumnNumber" : 37
+      },
+      "nodeContext" : "Reader reader=reader(request)",
+      "nodeType" : "VariableDeclarationExpression",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 4250,
+        "startLineNumber" : 153,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 250,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "try (Reader reader=reader(request);NewSessionPayload payload=NewSessionPayload.create(reader)){\n  Objects.requireNonNull(payload,\"Requests to process must be set.\");\n  attributeMap.put(AttributeKey.LOGGER_CLASS.getKey(),EventAttribute.setValue(getClass().getName()));\n  Iterator<Capabilities> iterator=payload.stream().iterator();\n  attributeMap.put(\"request.payload\",EventAttribute.setValue(payload.toString()));\n  if (!iterator.hasNext()) {\n    SessionNotCreatedException exception=new SessionNotCreatedException(\"No capabilities found\");\n    EXCEPTION.accept(attributeMap,exception);\n    attributeMap.put(AttributeKey.EXCEPTION_MESSAGE.getKey(),EventAttribute.setValue(\"Unable to create session. No capabilities found: \" + exception.getMessage()));\n    span.addEvent(AttributeKey.EXCEPTION_EVENT.getKey(),attributeMap);\n    throw exception;\n  }\n  Optional<Supplier<CreateSessionResponse>> selected;\n  CreateSessionRequest firstRequest=new CreateSessionRequest(payload.getDownstreamDialects(),iterator.next(),ImmutableMap.of(\"span\",span));\n  Lock writeLock=this.lock.writeLock();\n  writeLock.lock();\n  try {\n    ImmutableSet<Host> availableHosts=getModel().stream().filter(host -> UP.equals(host.getHostStatus())).collect(toImmutableSet());\n    Optional<Host> selectedHost=hostSelector.selectHost(firstRequest.getCapabilities(),availableHosts);\n    selected=selectedHost.map(host -> host.reserve(firstRequest));\n  }\n  finally {\n    writeLock.unlock();\n  }\n  CreateSessionResponse sessionResponse=selected.orElseThrow(() -> {\n    span.setAttribute(\"error\",true);\n    SessionNotCreatedException exception=new SessionNotCreatedException(\"Unable to find provider for session: \" + payload.stream().map(Capabilities::toString).collect(Collectors.joining(\", \")));\n    EXCEPTION.accept(attributeMap,exception);\n    attributeMap.put(AttributeKey.EXCEPTION_MESSAGE.getKey(),EventAttribute.setValue(\"Unable to find provider for session: \" + exception.getMessage()));\n    span.addEvent(AttributeKey.EXCEPTION_EVENT.getKey(),attributeMap);\n    return exception;\n  }\n).get();\n  sessions.add(sessionResponse.getSession());\n  SessionId sessionId=sessionResponse.getSession().getId();\n  Capabilities caps=sessionResponse.getSession().getCapabilities();\n  String sessionUri=sessionResponse.getSession().getUri().toString();\n  SESSION_ID.accept(span,sessionId);\n  CAPABILITIES.accept(span,caps);\n  SESSION_ID_EVENT.accept(attributeMap,sessionId);\n  CAPABILITIES_EVENT.accept(attributeMap,caps);\n  span.setAttribute(AttributeKey.SESSION_URI.getKey(),sessionUri);\n  attributeMap.put(AttributeKey.SESSION_URI.getKey(),EventAttribute.setValue(sessionUri));\n  span.addEvent(\"Session created by the distributor\",attributeMap);\n  return sessionResponse;\n}\n catch (SessionNotCreatedException e) {\n  span.setAttribute(\"error\",true);\n  span.setStatus(Status.ABORTED);\n  EXCEPTION.accept(attributeMap,e);\n  attributeMap.put(AttributeKey.EXCEPTION_MESSAGE.getKey(),EventAttribute.setValue(\"Unable to create session: \" + e.getMessage()));\n  span.addEvent(AttributeKey.EXCEPTION_EVENT.getKey(),attributeMap);\n  throw e;\n}\ncatch (IOException e) {\n  span.setAttribute(\"error\",true);\n  span.setStatus(Status.UNKNOWN);\n  EXCEPTION.accept(attributeMap,e);\n  attributeMap.put(AttributeKey.EXCEPTION_MESSAGE.getKey(),EventAttribute.setValue(\"Unknown error in LocalDistributor while creating session: \" + e.getMessage()));\n  span.addEvent(AttributeKey.EXCEPTION_EVENT.getKey(),attributeMap);\n  throw new SessionNotCreatedException(e.getMessage(),e);\n}\n finally {\n  span.close();\n}\n",
+      "nodeType" : "TryStatement",
+      "astNodeNumber" : 511,
+      "astHeight" : 16
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4408,
+        "startLineNumber" : 149,
+        "startColumnNumber" : 38,
+        "endLineNumber" : 251,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  Span span=newSpanAsChildOf(tracer,request,\"distributor.new_session\");\n  Map<String,EventAttributeValue> attributeMap=new HashMap<>();\n  try (Reader reader=reader(request);NewSessionPayload payload=NewSessionPayload.create(reader)){\n    Objects.requireNonNull(payload,\"Requests to process must be set.\");\n    attributeMap.put(AttributeKey.LOGGER_CLASS.getKey(),EventAttribute.setValue(getClass().getName()));\n    Iterator<Capabilities> iterator=payload.stream().iterator();\n    attributeMap.put(\"request.payload\",EventAttribute.setValue(payload.toString()));\n    if (!iterator.hasNext()) {\n      SessionNotCreatedException exception=new SessionNotCreatedException(\"No capabilities found\");\n      EXCEPTION.accept(attributeMap,exception);\n      attributeMap.put(AttributeKey.EXCEPTION_MESSAGE.getKey(),EventAttribute.setValue(\"Unable to create session. No capabilities found: \" + exception.getMessage()));\n      span.addEvent(AttributeKey.EXCEPTION_EVENT.getKey(),attributeMap);\n      throw exception;\n    }\n    Optional<Supplier<CreateSessionResponse>> selected;\n    CreateSessionRequest firstRequest=new CreateSessionRequest(payload.getDownstreamDialects(),iterator.next(),ImmutableMap.of(\"span\",span));\n    Lock writeLock=this.lock.writeLock();\n    writeLock.lock();\n    try {\n      ImmutableSet<Host> availableHosts=getModel().stream().filter(host -> UP.equals(host.getHostStatus())).collect(toImmutableSet());\n      Optional<Host> selectedHost=hostSelector.selectHost(firstRequest.getCapabilities(),availableHosts);\n      selected=selectedHost.map(host -> host.reserve(firstRequest));\n    }\n  finally {\n      writeLock.unlock();\n    }\n    CreateSessionResponse sessionResponse=selected.orElseThrow(() -> {\n      span.setAttribute(\"error\",true);\n      SessionNotCreatedException exception=new SessionNotCreatedException(\"Unable to find provider for session: \" + payload.stream().map(Capabilities::toString).collect(Collectors.joining(\", \")));\n      EXCEPTION.accept(attributeMap,exception);\n      attributeMap.put(AttributeKey.EXCEPTION_MESSAGE.getKey(),EventAttribute.setValue(\"Unable to find provider for session: \" + exception.getMessage()));\n      span.addEvent(AttributeKey.EXCEPTION_EVENT.getKey(),attributeMap);\n      return exception;\n    }\n).get();\n    sessions.add(sessionResponse.getSession());\n    SessionId sessionId=sessionResponse.getSession().getId();\n    Capabilities caps=sessionResponse.getSession().getCapabilities();\n    String sessionUri=sessionResponse.getSession().getUri().toString();\n    SESSION_ID.accept(span,sessionId);\n    CAPABILITIES.accept(span,caps);\n    SESSION_ID_EVENT.accept(attributeMap,sessionId);\n    CAPABILITIES_EVENT.accept(attributeMap,caps);\n    span.setAttribute(AttributeKey.SESSION_URI.getKey(),sessionUri);\n    attributeMap.put(AttributeKey.SESSION_URI.getKey(),EventAttribute.setValue(sessionUri));\n    span.addEvent(\"Session created by the distributor\",attributeMap);\n    return sessionResponse;\n  }\n catch (  SessionNotCreatedException e) {\n    span.setAttribute(\"error\",true);\n    span.setStatus(Status.ABORTED);\n    EXCEPTION.accept(attributeMap,e);\n    attributeMap.put(AttributeKey.EXCEPTION_MESSAGE.getKey(),EventAttribute.setValue(\"Unable to create session: \" + e.getMessage()));\n    span.addEvent(AttributeKey.EXCEPTION_EVENT.getKey(),attributeMap);\n    throw e;\n  }\ncatch (  IOException e) {\n    span.setAttribute(\"error\",true);\n    span.setStatus(Status.UNKNOWN);\n    EXCEPTION.accept(attributeMap,e);\n    attributeMap.put(AttributeKey.EXCEPTION_MESSAGE.getKey(),EventAttribute.setValue(\"Unknown error in LocalDistributor while creating session: \" + e.getMessage()));\n    span.addEvent(AttributeKey.EXCEPTION_EVENT.getKey(),attributeMap);\n    throw new SessionNotCreatedException(e.getMessage(),e);\n  }\n finally {\n    span.close();\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 536,
+      "astHeight" : 17
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4507,
+        "startLineNumber" : 148,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 251,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "public CreateSessionResponse newSession(HttpRequest request) throws SessionNotCreatedException {\n  Span span=newSpanAsChildOf(tracer,request,\"distributor.new_session\");\n  Map<String,EventAttributeValue> attributeMap=new HashMap<>();\n  try (Reader reader=reader(request);NewSessionPayload payload=NewSessionPayload.create(reader)){\n    Objects.requireNonNull(payload,\"Requests to process must be set.\");\n    attributeMap.put(AttributeKey.LOGGER_CLASS.getKey(),EventAttribute.setValue(getClass().getName()));\n    Iterator<Capabilities> iterator=payload.stream().iterator();\n    attributeMap.put(\"request.payload\",EventAttribute.setValue(payload.toString()));\n    if (!iterator.hasNext()) {\n      SessionNotCreatedException exception=new SessionNotCreatedException(\"No capabilities found\");\n      EXCEPTION.accept(attributeMap,exception);\n      attributeMap.put(AttributeKey.EXCEPTION_MESSAGE.getKey(),EventAttribute.setValue(\"Unable to create session. No capabilities found: \" + exception.getMessage()));\n      span.addEvent(AttributeKey.EXCEPTION_EVENT.getKey(),attributeMap);\n      throw exception;\n    }\n    Optional<Supplier<CreateSessionResponse>> selected;\n    CreateSessionRequest firstRequest=new CreateSessionRequest(payload.getDownstreamDialects(),iterator.next(),ImmutableMap.of(\"span\",span));\n    Lock writeLock=this.lock.writeLock();\n    writeLock.lock();\n    try {\n      ImmutableSet<Host> availableHosts=getModel().stream().filter(host -> UP.equals(host.getHostStatus())).collect(toImmutableSet());\n      Optional<Host> selectedHost=hostSelector.selectHost(firstRequest.getCapabilities(),availableHosts);\n      selected=selectedHost.map(host -> host.reserve(firstRequest));\n    }\n  finally {\n      writeLock.unlock();\n    }\n    CreateSessionResponse sessionResponse=selected.orElseThrow(() -> {\n      span.setAttribute(\"error\",true);\n      SessionNotCreatedException exception=new SessionNotCreatedException(\"Unable to find provider for session: \" + payload.stream().map(Capabilities::toString).collect(Collectors.joining(\", \")));\n      EXCEPTION.accept(attributeMap,exception);\n      attributeMap.put(AttributeKey.EXCEPTION_MESSAGE.getKey(),EventAttribute.setValue(\"Unable to find provider for session: \" + exception.getMessage()));\n      span.addEvent(AttributeKey.EXCEPTION_EVENT.getKey(),attributeMap);\n      return exception;\n    }\n).get();\n    sessions.add(sessionResponse.getSession());\n    SessionId sessionId=sessionResponse.getSession().getId();\n    Capabilities caps=sessionResponse.getSession().getCapabilities();\n    String sessionUri=sessionResponse.getSession().getUri().toString();\n    SESSION_ID.accept(span,sessionId);\n    CAPABILITIES.accept(span,caps);\n    SESSION_ID_EVENT.accept(attributeMap,sessionId);\n    CAPABILITIES_EVENT.accept(attributeMap,caps);\n    span.setAttribute(AttributeKey.SESSION_URI.getKey(),sessionUri);\n    attributeMap.put(AttributeKey.SESSION_URI.getKey(),EventAttribute.setValue(sessionUri));\n    span.addEvent(\"Session created by the distributor\",attributeMap);\n    return sessionResponse;\n  }\n catch (  SessionNotCreatedException e) {\n    span.setAttribute(\"error\",true);\n    span.setStatus(Status.ABORTED);\n    EXCEPTION.accept(attributeMap,e);\n    attributeMap.put(AttributeKey.EXCEPTION_MESSAGE.getKey(),EventAttribute.setValue(\"Unable to create session: \" + e.getMessage()));\n    span.addEvent(AttributeKey.EXCEPTION_EVENT.getKey(),attributeMap);\n    throw e;\n  }\ncatch (  IOException e) {\n    span.setAttribute(\"error\",true);\n    span.setStatus(Status.UNKNOWN);\n    EXCEPTION.accept(attributeMap,e);\n    attributeMap.put(AttributeKey.EXCEPTION_MESSAGE.getKey(),EventAttribute.setValue(\"Unknown error in LocalDistributor while creating session: \" + e.getMessage()));\n    span.addEvent(AttributeKey.EXCEPTION_EVENT.getKey(),attributeMap);\n    throw new SessionNotCreatedException(e.getMessage(),e);\n  }\n finally {\n    span.close();\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 547,
+      "astHeight" : 18
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TryStatement,resources]",
+      "nodePosition" : {
+        "charLength" : 31,
+        "startLineNumber" : 154,
+        "startColumnNumber" : 6,
+        "endLineNumber" : 154,
+        "endColumnNumber" : 37
+      },
+      "nodeContext" : "Reader reader=reader(request)",
+      "nodeType" : "VariableDeclarationExpression",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.openqa.selenium.remote.http.HttpRequest"
+  } ],
+  "positionList" : [ {
+    "charLength" : 7,
+    "startLineNumber" : 151,
+    "startColumnNumber" : 41,
+    "endLineNumber" : 151,
+    "endColumnNumber" : 48
+  }, {
+    "charLength" : 7,
+    "startLineNumber" : 154,
+    "startColumnNumber" : 29,
+    "endLineNumber" : 154,
+    "endColumnNumber" : 36
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 4
+  } ]
+}

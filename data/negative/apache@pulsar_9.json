@@ -1,100 +1,87 @@
 {
   "id" : 9,
-  "expression" : "\"[]\"",
+  "expression" : "i < NUM_BOOKIES",
   "projectName" : "apache@pulsar",
-  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
-  "filePath" : "/pulsar-broker/src/test/java/org/apache/pulsar/utils/StatsOutputStreamTest.java",
+  "commitID" : "b5d219add8857a51be0a88fac6f957d0144d949c",
+  "filePath" : "pulsar-broker/src/test/java/org/apache/pulsar/broker/service/RackAwareTest.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "\"[]\"",
-    "nodeType" : "StringLiteral",
+    "nodeContext" : "i < NUM_BOOKIES",
+    "nodeType" : "InfixExpression",
     "nodePosition" : {
-      "charLength" : 4,
-      "startLineNumber" : 62,
-      "startColumnNumber" : 28,
-      "endLineNumber" : 62,
-      "endColumnNumber" : 32
+      "charLength" : 15,
+      "startLineNumber" : 101,
+      "startColumnNumber" : 24,
+      "endLineNumber" : 101,
+      "endColumnNumber" : 39
     },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
     "parentDataList" : [ {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
-      "nodePosition" : {
-        "charLength" : 25,
-        "startLineNumber" : 62,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 62,
-        "endColumnNumber" : 33
-      },
-      "nodeContext" : "assertEquals(str(),\"[]\")",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 5,
-      "astHeight" : 3
-    }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 26,
-        "startLineNumber" : 62,
+        "charLength" : 547,
+        "startLineNumber" : 101,
         "startColumnNumber" : 8,
-        "endLineNumber" : 62,
-        "endColumnNumber" : 34
+        "endLineNumber" : 112,
+        "endColumnNumber" : 9
       },
-      "nodeContext" : "assertEquals(str(),\"[]\");\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 6,
-      "astHeight" : 4
+      "nodeContext" : "for (int i=0; i < NUM_BOOKIES; i++) {\n  String bookie=bookies.get(i).getLocalAddress().toString();\n  int rackId=i == 0 ? 1 : 2;\n  BookieInfo bi=BookieInfo.builder().rack(\"rack-\" + rackId).hostname(\"bookie-\" + (i + 1)).build();\n  log.info(\"setting rack for bookie at {} -- {}\",bookie,bi);\n  admin.bookies().updateBookieRackInfo(bookie,group,bi);\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 74,
+      "astHeight" : 10
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 718,
-        "startLineNumber" : 59,
-        "startColumnNumber" : 28,
-        "endLineNumber" : 83,
+        "charLength" : 2060,
+        "startLineNumber" : 99,
+        "startColumnNumber" : 49,
+        "endLineNumber" : 139,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  stream.startList();\n  stream.endList();\n  assertEquals(str(),\"[]\");\n  stream.startList();\n  stream.writeItem(1);\n  stream.endList();\n  assertEquals(str(),\"[1]\");\n  stream.startList();\n  stream.writeItem(1).writeItem(2);\n  stream.endList();\n  assertEquals(str(),\"[1,2]\");\n  stream.startList();\n  stream.writeItem(1).writeItem(2).writeItem(3);\n  stream.endList();\n  assertEquals(str(),\"[1,2,3]\");\n  stream.startList();\n  stream.writeItem(1).writeItem(2).writeItem(3).writeItem(false).writeItem(1.0).writeItem(\"xyz\");\n  stream.endList();\n  assertEquals(str(),\"[1,2,3,false,1.0,\\\"xyz\\\"]\");\n}\n",
+      "nodeContext" : "{\n  final String group=\"default\";\n  for (int i=0; i < NUM_BOOKIES; i++) {\n    String bookie=bookies.get(i).getLocalAddress().toString();\n    int rackId=i == 0 ? 1 : 2;\n    BookieInfo bi=BookieInfo.builder().rack(\"rack-\" + rackId).hostname(\"bookie-\" + (i + 1)).build();\n    log.info(\"setting rack for bookie at {} -- {}\",bookie,bi);\n    admin.bookies().updateBookieRackInfo(bookie,group,bi);\n  }\n  Awaitility.await().untilAsserted(() -> {\n    byte[] data=bkEnsemble.getZkClient().getData(ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH,false,null);\n    TreeMap<String,Map<String,Map<String,String>>> rackInfoMap=new Gson().fromJson(new String(data),TreeMap.class);\n    assertTrue(rackInfoMap.get(group).size() == NUM_BOOKIES);\n    Set<String> racks=rackInfoMap.values().stream().map(Map::values).flatMap(bookieId -> bookieId.stream().map(rackInfo -> rackInfo.get(\"rack\"))).collect(Collectors.toSet());\n    assertTrue(racks.containsAll(Lists.newArrayList(\"rack-1\",\"rack-2\")));\n  }\n);\n  BookKeeper bkc=this.pulsar.getBookKeeperClient();\n  BookieId firstBookie=bookies.get(0).getBookieId();\n  for (int i=0; i < 100; i++) {\n    LedgerHandle lh=bkc.createLedger(2,2,DigestType.DUMMY,new byte[0]);\n    log.info(\"Ledger: {} -- Ensemble: {}\",i,lh.getLedgerMetadata().getEnsembleAt(0));\n    assertTrue(lh.getLedgerMetadata().getEnsembleAt(0).contains(firstBookie),\"first bookie in rack 0 not included in ensemble\");\n    lh.close();\n  }\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 115,
-      "astHeight" : 9
+      "astNodeNumber" : 280,
+      "astHeight" : 14
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 752,
-        "startLineNumber" : 58,
+        "charLength" : 2115,
+        "startLineNumber" : 98,
         "startColumnNumber" : 4,
-        "endLineNumber" : 83,
+        "endLineNumber" : 139,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "@Test public void testLists(){\n  stream.startList();\n  stream.endList();\n  assertEquals(str(),\"[]\");\n  stream.startList();\n  stream.writeItem(1);\n  stream.endList();\n  assertEquals(str(),\"[1]\");\n  stream.startList();\n  stream.writeItem(1).writeItem(2);\n  stream.endList();\n  assertEquals(str(),\"[1,2]\");\n  stream.startList();\n  stream.writeItem(1).writeItem(2).writeItem(3);\n  stream.endList();\n  assertEquals(str(),\"[1,2,3]\");\n  stream.startList();\n  stream.writeItem(1).writeItem(2).writeItem(3).writeItem(false).writeItem(1.0).writeItem(\"xyz\");\n  stream.endList();\n  assertEquals(str(),\"[1,2,3,false,1.0,\\\"xyz\\\"]\");\n}\n",
+      "nodeContext" : "@Test public void testPlacement() throws Exception {\n  final String group=\"default\";\n  for (int i=0; i < NUM_BOOKIES; i++) {\n    String bookie=bookies.get(i).getLocalAddress().toString();\n    int rackId=i == 0 ? 1 : 2;\n    BookieInfo bi=BookieInfo.builder().rack(\"rack-\" + rackId).hostname(\"bookie-\" + (i + 1)).build();\n    log.info(\"setting rack for bookie at {} -- {}\",bookie,bi);\n    admin.bookies().updateBookieRackInfo(bookie,group,bi);\n  }\n  Awaitility.await().untilAsserted(() -> {\n    byte[] data=bkEnsemble.getZkClient().getData(ZkBookieRackAffinityMapping.BOOKIE_INFO_ROOT_PATH,false,null);\n    TreeMap<String,Map<String,Map<String,String>>> rackInfoMap=new Gson().fromJson(new String(data),TreeMap.class);\n    assertTrue(rackInfoMap.get(group).size() == NUM_BOOKIES);\n    Set<String> racks=rackInfoMap.values().stream().map(Map::values).flatMap(bookieId -> bookieId.stream().map(rackInfo -> rackInfo.get(\"rack\"))).collect(Collectors.toSet());\n    assertTrue(racks.containsAll(Lists.newArrayList(\"rack-1\",\"rack-2\")));\n  }\n);\n  BookKeeper bkc=this.pulsar.getBookKeeperClient();\n  BookieId firstBookie=bookies.get(0).getBookieId();\n  for (int i=0; i < 100; i++) {\n    LedgerHandle lh=bkc.createLedger(2,2,DigestType.DUMMY,new byte[0]);\n    log.info(\"Ledger: {} -- Ensemble: {}\",i,lh.getLedgerMetadata().getEnsembleAt(0));\n    assertTrue(lh.getLedgerMetadata().getEnsembleAt(0).contains(firstBookie),\"first bookie in rack 0 not included in ensemble\");\n    lh.close();\n  }\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 121,
-      "astHeight" : 10
+      "astNodeNumber" : 288,
+      "astHeight" : 15
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 26,
-        "startLineNumber" : 62,
+        "charLength" : 547,
+        "startLineNumber" : 101,
         "startColumnNumber" : 8,
-        "endLineNumber" : 62,
-        "endColumnNumber" : 34
+        "endLineNumber" : 112,
+        "endColumnNumber" : 9
       },
-      "nodeContext" : "assertEquals(str(),\"[]\");\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 6,
-      "astHeight" : 4
+      "nodeContext" : "for (int i=0; i < NUM_BOOKIES; i++) {\n  String bookie=bookies.get(i).getLocalAddress().toString();\n  int rackId=i == 0 ? 1 : 2;\n  BookieInfo bi=BookieInfo.builder().rack(\"rack-\" + rackId).hostname(\"bookie-\" + (i + 1)).build();\n  log.info(\"setting rack for bookie at {} -- {}\",bookie,bi);\n  admin.bookies().updateBookieRackInfo(bookie,group,bi);\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 74,
+      "astHeight" : 10
     },
-    "tokenLength" : 1,
-    "type" : "java.lang.String"
+    "tokenLength" : 4,
+    "type" : "boolean"
   } ],
   "positionList" : [ {
-    "charLength" : 4,
-    "startLineNumber" : 62,
-    "startColumnNumber" : 28,
-    "endLineNumber" : 62,
-    "endColumnNumber" : 32
+    "charLength" : 15,
+    "startLineNumber" : 101,
+    "startColumnNumber" : 24,
+    "endLineNumber" : 101,
+    "endColumnNumber" : 39
   } ],
   "layoutRelationDataList" : [ ]
 }

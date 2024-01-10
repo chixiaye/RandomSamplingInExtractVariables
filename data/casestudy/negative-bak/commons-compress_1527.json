@@ -1,0 +1,2846 @@
+{
+  "id" : 1527,
+  "expression" : "ze",
+  "projectName" : "commons-compress",
+  "commitID" : "1470c26cadbbfe6a7150f862766eaa30937fbd2b",
+  "filePath" : "src/main/java/org/apache/commons/compress/archivers/zip/ZipArchiveOutputStream.java",
+  "occurrences" : 16,
+  "isArithmeticExpression" : 1,
+  "isGetTypeMethod" : 1,
+  "expressionList" : [ {
+    "nodeContext" : "ze",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 2,
+      "startLineNumber" : 1381,
+      "startColumnNumber" : 29,
+      "endLineNumber" : 1381,
+      "endColumnNumber" : 31
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 29,
+        "startLineNumber" : 1381,
+        "startColumnNumber" : 29,
+        "endLineNumber" : 1381,
+        "endColumnNumber" : 58
+      },
+      "nodeContext" : "ze.getCentralDirectoryExtra()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 37,
+        "startLineNumber" : 1381,
+        "startColumnNumber" : 21,
+        "endLineNumber" : 1381,
+        "endColumnNumber" : 58
+      },
+      "nodeContext" : "extra=ze.getCentralDirectoryExtra()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 51,
+        "startLineNumber" : 1381,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1381,
+        "endColumnNumber" : 59
+      },
+      "nodeContext" : "final byte[] extra=ze.getCentralDirectoryExtra();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4425,
+        "startLineNumber" : 1368,
+        "startColumnNumber" : 93,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 453,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4914,
+        "startLineNumber" : 1359,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Writes the central file header entry.\n * @param ze the entry to write\n * @param name The encoded name\n * @param entryMetaData meta data for this file\n * @throws IOException on error\n */\nprivate byte[] createCentralFileHeader(final ZipArchiveEntry ze,final ByteBuffer name,final EntryMetaData entryMetaData,final boolean needsZip64Extra) throws IOException {\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 481,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 51,
+        "startLineNumber" : 1381,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1381,
+        "endColumnNumber" : 59
+      },
+      "nodeContext" : "final byte[] extra=ze.getCentralDirectoryExtra();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.zip.ZipArchiveEntry"
+  }, {
+    "nodeContext" : "ze",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 2,
+      "startLineNumber" : 1384,
+      "startColumnNumber" : 22,
+      "endLineNumber" : 1384,
+      "endColumnNumber" : 24
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 15,
+        "startLineNumber" : 1384,
+        "startColumnNumber" : 22,
+        "endLineNumber" : 1384,
+        "endColumnNumber" : 37
+      },
+      "nodeContext" : "ze.getComment()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 22,
+        "startLineNumber" : 1384,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 1384,
+        "endColumnNumber" : 37
+      },
+      "nodeContext" : "comm=ze.getComment()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 1384,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1384,
+        "endColumnNumber" : 38
+      },
+      "nodeContext" : "String comm=ze.getComment();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4425,
+        "startLineNumber" : 1368,
+        "startColumnNumber" : 93,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 453,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4914,
+        "startLineNumber" : 1359,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Writes the central file header entry.\n * @param ze the entry to write\n * @param name The encoded name\n * @param entryMetaData meta data for this file\n * @throws IOException on error\n */\nprivate byte[] createCentralFileHeader(final ZipArchiveEntry ze,final ByteBuffer name,final EntryMetaData entryMetaData,final boolean needsZip64Extra) throws IOException {\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 481,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 30,
+        "startLineNumber" : 1384,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1384,
+        "endColumnNumber" : 38
+      },
+      "nodeContext" : "String comm=ze.getComment();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.zip.ZipArchiveEntry"
+  }, {
+    "nodeContext" : "ze",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 2,
+      "startLineNumber" : 1389,
+      "startColumnNumber" : 53,
+      "endLineNumber" : 1389,
+      "endColumnNumber" : 55
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 20,
+        "startLineNumber" : 1389,
+        "startColumnNumber" : 36,
+        "endLineNumber" : 1389,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "getEntryEncoding(ze)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 33,
+        "startLineNumber" : 1389,
+        "startColumnNumber" : 36,
+        "endLineNumber" : 1389,
+        "endColumnNumber" : 69
+      },
+      "nodeContext" : "getEntryEncoding(ze).encode(comm)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 44,
+        "startLineNumber" : 1389,
+        "startColumnNumber" : 25,
+        "endLineNumber" : 1389,
+        "endColumnNumber" : 69
+      },
+      "nodeContext" : "commentB=getEntryEncoding(ze).encode(comm)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 62,
+        "startLineNumber" : 1389,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1389,
+        "endColumnNumber" : 70
+      },
+      "nodeContext" : "final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 12,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4425,
+        "startLineNumber" : 1368,
+        "startColumnNumber" : 93,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 453,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4914,
+        "startLineNumber" : 1359,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Writes the central file header entry.\n * @param ze the entry to write\n * @param name The encoded name\n * @param entryMetaData meta data for this file\n * @throws IOException on error\n */\nprivate byte[] createCentralFileHeader(final ZipArchiveEntry ze,final ByteBuffer name,final EntryMetaData entryMetaData,final boolean needsZip64Extra) throws IOException {\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 481,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 62,
+        "startLineNumber" : 1389,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1389,
+        "endColumnNumber" : 70
+      },
+      "nodeContext" : "final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 12,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.zip.ZipArchiveEntry"
+  }, {
+    "nodeContext" : "ze",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 2,
+      "startLineNumber" : 1399,
+      "startColumnNumber" : 18,
+      "endLineNumber" : 1399,
+      "endColumnNumber" : 20
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 16,
+        "startLineNumber" : 1399,
+        "startColumnNumber" : 18,
+        "endLineNumber" : 1399,
+        "endColumnNumber" : 34
+      },
+      "nodeContext" : "ze.getPlatform()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ParenthesizedExpression,expression]",
+      "nodePosition" : {
+        "charLength" : 21,
+        "startLineNumber" : 1399,
+        "startColumnNumber" : 18,
+        "endLineNumber" : 1399,
+        "endColumnNumber" : 39
+      },
+      "nodeContext" : "ze.getPlatform() << 8",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 23,
+        "startLineNumber" : 1399,
+        "startColumnNumber" : 17,
+        "endLineNumber" : 1399,
+        "endColumnNumber" : 40
+      },
+      "nodeContext" : "(ze.getPlatform() << 8)",
+      "nodeType" : "ParenthesizedExpression",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 91,
+        "startLineNumber" : 1399,
+        "startColumnNumber" : 17,
+        "endLineNumber" : 1399,
+        "endColumnNumber" : 108
+      },
+      "nodeContext" : "(ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION)",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 13,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 151,
+        "startLineNumber" : 1399,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1400,
+        "endColumnNumber" : 48
+      },
+      "nodeContext" : "putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 17,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 152,
+        "startLineNumber" : 1399,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1400,
+        "endColumnNumber" : 49
+      },
+      "nodeContext" : "putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 18,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4425,
+        "startLineNumber" : 1368,
+        "startColumnNumber" : 93,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 453,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4914,
+        "startLineNumber" : 1359,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Writes the central file header entry.\n * @param ze the entry to write\n * @param name The encoded name\n * @param entryMetaData meta data for this file\n * @throws IOException on error\n */\nprivate byte[] createCentralFileHeader(final ZipArchiveEntry ze,final ByteBuffer name,final EntryMetaData entryMetaData,final boolean needsZip64Extra) throws IOException {\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 481,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 91,
+        "startLineNumber" : 1399,
+        "startColumnNumber" : 17,
+        "endLineNumber" : 1399,
+        "endColumnNumber" : 108
+      },
+      "nodeContext" : "(ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION)",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 13,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.zip.ZipArchiveEntry"
+  }, {
+    "nodeContext" : "ze",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 2,
+      "startLineNumber" : 1402,
+      "startColumnNumber" : 30,
+      "endLineNumber" : 1402,
+      "endColumnNumber" : 32
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 14,
+        "startLineNumber" : 1402,
+        "startColumnNumber" : 30,
+        "endLineNumber" : 1402,
+        "endColumnNumber" : 44
+      },
+      "nodeContext" : "ze.getMethod()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 26,
+        "startLineNumber" : 1402,
+        "startColumnNumber" : 18,
+        "endLineNumber" : 1402,
+        "endColumnNumber" : 44
+      },
+      "nodeContext" : "zipMethod=ze.getMethod()",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 37,
+        "startLineNumber" : 1402,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1402,
+        "endColumnNumber" : 45
+      },
+      "nodeContext" : "final int zipMethod=ze.getMethod();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4425,
+        "startLineNumber" : 1368,
+        "startColumnNumber" : 93,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 453,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4914,
+        "startLineNumber" : 1359,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Writes the central file header entry.\n * @param ze the entry to write\n * @param name The encoded name\n * @param entryMetaData meta data for this file\n * @throws IOException on error\n */\nprivate byte[] createCentralFileHeader(final ZipArchiveEntry ze,final ByteBuffer name,final EntryMetaData entryMetaData,final boolean needsZip64Extra) throws IOException {\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 481,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 37,
+        "startLineNumber" : 1402,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1402,
+        "endColumnNumber" : 45
+      },
+      "nodeContext" : "final int zipMethod=ze.getMethod();\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.zip.ZipArchiveEntry"
+  }, {
+    "nodeContext" : "ze",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 2,
+      "startLineNumber" : 1403,
+      "startColumnNumber" : 56,
+      "endLineNumber" : 1403,
+      "endColumnNumber" : 58
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 12,
+        "startLineNumber" : 1403,
+        "startColumnNumber" : 56,
+        "endLineNumber" : 1403,
+        "endColumnNumber" : 68
+      },
+      "nodeContext" : "ze.getName()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 35,
+        "startLineNumber" : 1403,
+        "startColumnNumber" : 34,
+        "endLineNumber" : 1403,
+        "endColumnNumber" : 69
+      },
+      "nodeContext" : "zipEncoding.canEncode(ze.getName())",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 47,
+        "startLineNumber" : 1403,
+        "startColumnNumber" : 22,
+        "endLineNumber" : 1403,
+        "endColumnNumber" : 69
+      },
+      "nodeContext" : "encodable=zipEncoding.canEncode(ze.getName())",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 62,
+        "startLineNumber" : 1403,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1403,
+        "endColumnNumber" : 70
+      },
+      "nodeContext" : "final boolean encodable=zipEncoding.canEncode(ze.getName());\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4425,
+        "startLineNumber" : 1368,
+        "startColumnNumber" : 93,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 453,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4914,
+        "startLineNumber" : 1359,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Writes the central file header entry.\n * @param ze the entry to write\n * @param name The encoded name\n * @param entryMetaData meta data for this file\n * @throws IOException on error\n */\nprivate byte[] createCentralFileHeader(final ZipArchiveEntry ze,final ByteBuffer name,final EntryMetaData entryMetaData,final boolean needsZip64Extra) throws IOException {\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 481,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 62,
+        "startLineNumber" : 1403,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1403,
+        "endColumnNumber" : 70
+      },
+      "nodeContext" : "final boolean encodable=zipEncoding.canEncode(ze.getName());\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 11,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.zip.ZipArchiveEntry"
+  }, {
+    "nodeContext" : "ze",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 2,
+      "startLineNumber" : 1413,
+      "startColumnNumber" : 44,
+      "endLineNumber" : 1413,
+      "endColumnNumber" : 46
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 12,
+        "startLineNumber" : 1413,
+        "startColumnNumber" : 44,
+        "endLineNumber" : 1413,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "ze.getTime()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 71,
+        "startLineNumber" : 1413,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1413,
+        "endColumnNumber" : 79
+      },
+      "nodeContext" : "ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 9,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 72,
+        "startLineNumber" : 1413,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1413,
+        "endColumnNumber" : 80
+      },
+      "nodeContext" : "ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4425,
+        "startLineNumber" : 1368,
+        "startColumnNumber" : 93,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 453,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4914,
+        "startLineNumber" : 1359,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Writes the central file header entry.\n * @param ze the entry to write\n * @param name The encoded name\n * @param entryMetaData meta data for this file\n * @throws IOException on error\n */\nprivate byte[] createCentralFileHeader(final ZipArchiveEntry ze,final ByteBuffer name,final EntryMetaData entryMetaData,final boolean needsZip64Extra) throws IOException {\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 481,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 72,
+        "startLineNumber" : 1413,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1413,
+        "endColumnNumber" : 80
+      },
+      "nodeContext" : "ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.zip.ZipArchiveEntry"
+  }, {
+    "nodeContext" : "ze",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 2,
+      "startLineNumber" : 1418,
+      "startColumnNumber" : 16,
+      "endLineNumber" : 1418,
+      "endColumnNumber" : 18
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 11,
+        "startLineNumber" : 1418,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 1418,
+        "endColumnNumber" : 27
+      },
+      "nodeContext" : "ze.getCrc()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 41,
+        "startLineNumber" : 1418,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1418,
+        "endColumnNumber" : 49
+      },
+      "nodeContext" : "putLong(ze.getCrc(),buf,CFH_CRC_OFFSET)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 42,
+        "startLineNumber" : 1418,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1418,
+        "endColumnNumber" : 50
+      },
+      "nodeContext" : "putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4425,
+        "startLineNumber" : 1368,
+        "startColumnNumber" : 93,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 453,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4914,
+        "startLineNumber" : 1359,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Writes the central file header entry.\n * @param ze the entry to write\n * @param name The encoded name\n * @param entryMetaData meta data for this file\n * @throws IOException on error\n */\nprivate byte[] createCentralFileHeader(final ZipArchiveEntry ze,final ByteBuffer name,final EntryMetaData entryMetaData,final boolean needsZip64Extra) throws IOException {\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 481,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 42,
+        "startLineNumber" : 1418,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1418,
+        "endColumnNumber" : 50
+      },
+      "nodeContext" : "putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.zip.ZipArchiveEntry"
+  }, {
+    "nodeContext" : "ze",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 2,
+      "startLineNumber" : 1419,
+      "startColumnNumber" : 12,
+      "endLineNumber" : 1419,
+      "endColumnNumber" : 14
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 22,
+        "startLineNumber" : 1419,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 1419,
+        "endColumnNumber" : 34
+      },
+      "nodeContext" : "ze.getCompressedSize()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 37,
+        "startLineNumber" : 1419,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 1419,
+        "endColumnNumber" : 49
+      },
+      "nodeContext" : "ze.getCompressedSize() >= ZIP64_MAGIC",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 85,
+        "startLineNumber" : 1419,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 1420,
+        "endColumnNumber" : 46
+      },
+      "nodeContext" : "ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 11,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 135,
+        "startLineNumber" : 1419,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 1421,
+        "endColumnNumber" : 48
+      },
+      "nodeContext" : "ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 17,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 465,
+        "startLineNumber" : 1419,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1427,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n  ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n  ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n}\n else {\n  putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n  putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 52,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4425,
+        "startLineNumber" : 1368,
+        "startColumnNumber" : 93,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 453,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4914,
+        "startLineNumber" : 1359,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Writes the central file header entry.\n * @param ze the entry to write\n * @param name The encoded name\n * @param entryMetaData meta data for this file\n * @throws IOException on error\n */\nprivate byte[] createCentralFileHeader(final ZipArchiveEntry ze,final ByteBuffer name,final EntryMetaData entryMetaData,final boolean needsZip64Extra) throws IOException {\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 481,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 37,
+        "startLineNumber" : 1419,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 1419,
+        "endColumnNumber" : 49
+      },
+      "nodeContext" : "ze.getCompressedSize() >= ZIP64_MAGIC",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.zip.ZipArchiveEntry"
+  }, {
+    "nodeContext" : "ze",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 2,
+      "startLineNumber" : 1420,
+      "startColumnNumber" : 19,
+      "endLineNumber" : 1420,
+      "endColumnNumber" : 21
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 12,
+        "startLineNumber" : 1420,
+        "startColumnNumber" : 19,
+        "endLineNumber" : 1420,
+        "endColumnNumber" : 31
+      },
+      "nodeContext" : "ze.getSize()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,rightOperand]",
+      "nodePosition" : {
+        "charLength" : 27,
+        "startLineNumber" : 1420,
+        "startColumnNumber" : 19,
+        "endLineNumber" : 1420,
+        "endColumnNumber" : 46
+      },
+      "nodeContext" : "ze.getSize() >= ZIP64_MAGIC",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 85,
+        "startLineNumber" : 1419,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 1420,
+        "endColumnNumber" : 46
+      },
+      "nodeContext" : "ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 11,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 135,
+        "startLineNumber" : 1419,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 1421,
+        "endColumnNumber" : 48
+      },
+      "nodeContext" : "ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 17,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 465,
+        "startLineNumber" : 1419,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1427,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n  ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n  ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n}\n else {\n  putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n  putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 52,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4425,
+        "startLineNumber" : 1368,
+        "startColumnNumber" : 93,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 453,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4914,
+        "startLineNumber" : 1359,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Writes the central file header entry.\n * @param ze the entry to write\n * @param name The encoded name\n * @param entryMetaData meta data for this file\n * @throws IOException on error\n */\nprivate byte[] createCentralFileHeader(final ZipArchiveEntry ze,final ByteBuffer name,final EntryMetaData entryMetaData,final boolean needsZip64Extra) throws IOException {\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 481,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,rightOperand]",
+      "nodePosition" : {
+        "charLength" : 27,
+        "startLineNumber" : 1420,
+        "startColumnNumber" : 19,
+        "endLineNumber" : 1420,
+        "endColumnNumber" : 46
+      },
+      "nodeContext" : "ze.getSize() >= ZIP64_MAGIC",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.zip.ZipArchiveEntry"
+  }, {
+    "nodeContext" : "ze",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 2,
+      "startLineNumber" : 1425,
+      "startColumnNumber" : 20,
+      "endLineNumber" : 1425,
+      "endColumnNumber" : 22
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 22,
+        "startLineNumber" : 1425,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 1425,
+        "endColumnNumber" : 42
+      },
+      "nodeContext" : "ze.getCompressedSize()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 64,
+        "startLineNumber" : 1425,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 1425,
+        "endColumnNumber" : 76
+      },
+      "nodeContext" : "putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 65,
+        "startLineNumber" : 1425,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 1425,
+        "endColumnNumber" : 77
+      },
+      "nodeContext" : "putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 158,
+        "startLineNumber" : 1424,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 1427,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n  putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 17,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 465,
+        "startLineNumber" : 1419,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1427,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n  ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n  ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n}\n else {\n  putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n  putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 52,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4425,
+        "startLineNumber" : 1368,
+        "startColumnNumber" : 93,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 453,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4914,
+        "startLineNumber" : 1359,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Writes the central file header entry.\n * @param ze the entry to write\n * @param name The encoded name\n * @param entryMetaData meta data for this file\n * @throws IOException on error\n */\nprivate byte[] createCentralFileHeader(final ZipArchiveEntry ze,final ByteBuffer name,final EntryMetaData entryMetaData,final boolean needsZip64Extra) throws IOException {\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 481,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 65,
+        "startLineNumber" : 1425,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 1425,
+        "endColumnNumber" : 77
+      },
+      "nodeContext" : "putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.zip.ZipArchiveEntry"
+  }, {
+    "nodeContext" : "ze",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 2,
+      "startLineNumber" : 1426,
+      "startColumnNumber" : 20,
+      "endLineNumber" : 1426,
+      "endColumnNumber" : 22
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 12,
+        "startLineNumber" : 1426,
+        "startColumnNumber" : 20,
+        "endLineNumber" : 1426,
+        "endColumnNumber" : 32
+      },
+      "nodeContext" : "ze.getSize()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 52,
+        "startLineNumber" : 1426,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 1426,
+        "endColumnNumber" : 64
+      },
+      "nodeContext" : "putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 53,
+        "startLineNumber" : 1426,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 1426,
+        "endColumnNumber" : 65
+      },
+      "nodeContext" : "putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 158,
+        "startLineNumber" : 1424,
+        "startColumnNumber" : 15,
+        "endLineNumber" : 1427,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n  putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 17,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 465,
+        "startLineNumber" : 1419,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1427,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n  ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n  ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n}\n else {\n  putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n  putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 52,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4425,
+        "startLineNumber" : 1368,
+        "startColumnNumber" : 93,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 453,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4914,
+        "startLineNumber" : 1359,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Writes the central file header entry.\n * @param ze the entry to write\n * @param name The encoded name\n * @param entryMetaData meta data for this file\n * @throws IOException on error\n */\nprivate byte[] createCentralFileHeader(final ZipArchiveEntry ze,final ByteBuffer name,final EntryMetaData entryMetaData,final boolean needsZip64Extra) throws IOException {\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 481,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 53,
+        "startLineNumber" : 1426,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 1426,
+        "endColumnNumber" : 65
+      },
+      "nodeContext" : "putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.zip.ZipArchiveEntry"
+  }, {
+    "nodeContext" : "ze",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 2,
+      "startLineNumber" : 1438,
+      "startColumnNumber" : 16,
+      "endLineNumber" : 1438,
+      "endColumnNumber" : 18
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 23,
+        "startLineNumber" : 1438,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 1438,
+        "endColumnNumber" : 39
+      },
+      "nodeContext" : "ze.getDiskNumberStart()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.InfixExpression,leftOperand]",
+      "nodePosition" : {
+        "charLength" : 44,
+        "startLineNumber" : 1438,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 1438,
+        "endColumnNumber" : 60
+      },
+      "nodeContext" : "ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 77,
+        "startLineNumber" : 1438,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 1438,
+        "endColumnNumber" : 93
+      },
+      "nodeContext" : "ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 11,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 283,
+        "startLineNumber" : 1438,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 1442,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n  putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n}\n else {\n  putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 30,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 309,
+        "startLineNumber" : 1437,
+        "startColumnNumber" : 23,
+        "endLineNumber" : 1443,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n    putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n  }\n else {\n    putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 31,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 418,
+        "startLineNumber" : 1437,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1445,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (isSplitZip) {\n  if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n    putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n  }\n else {\n    putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n  }\n}\n else {\n  System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 43,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4425,
+        "startLineNumber" : 1368,
+        "startColumnNumber" : 93,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 453,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4914,
+        "startLineNumber" : 1359,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Writes the central file header entry.\n * @param ze the entry to write\n * @param name The encoded name\n * @param entryMetaData meta data for this file\n * @throws IOException on error\n */\nprivate byte[] createCentralFileHeader(final ZipArchiveEntry ze,final ByteBuffer name,final EntryMetaData entryMetaData,final boolean needsZip64Extra) throws IOException {\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 481,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 77,
+        "startLineNumber" : 1438,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 1438,
+        "endColumnNumber" : 93
+      },
+      "nodeContext" : "ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always",
+      "nodeType" : "InfixExpression",
+      "astNodeNumber" : 11,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.zip.ZipArchiveEntry"
+  }, {
+    "nodeContext" : "ze",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 2,
+      "startLineNumber" : 1441,
+      "startColumnNumber" : 31,
+      "endLineNumber" : 1441,
+      "endColumnNumber" : 33
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.CastExpression,expression]",
+      "nodePosition" : {
+        "charLength" : 23,
+        "startLineNumber" : 1441,
+        "startColumnNumber" : 31,
+        "endLineNumber" : 1441,
+        "endColumnNumber" : 54
+      },
+      "nodeContext" : "ze.getDiskNumberStart()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 29,
+        "startLineNumber" : 1441,
+        "startColumnNumber" : 25,
+        "endLineNumber" : 1441,
+        "endColumnNumber" : 54
+      },
+      "nodeContext" : "(int)ze.getDiskNumberStart()",
+      "nodeType" : "CastExpression",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 68,
+        "startLineNumber" : 1441,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 1441,
+        "endColumnNumber" : 84
+      },
+      "nodeContext" : "putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 9,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 69,
+        "startLineNumber" : 1441,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 1441,
+        "endColumnNumber" : 85
+      },
+      "nodeContext" : "putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,elseStatement]",
+      "nodePosition" : {
+        "charLength" : 103,
+        "startLineNumber" : 1440,
+        "startColumnNumber" : 19,
+        "endLineNumber" : 1442,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "{\n  putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 11,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 283,
+        "startLineNumber" : 1438,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 1442,
+        "endColumnNumber" : 13
+      },
+      "nodeContext" : "if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n  putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n}\n else {\n  putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 30,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,thenStatement]",
+      "nodePosition" : {
+        "charLength" : 309,
+        "startLineNumber" : 1437,
+        "startColumnNumber" : 23,
+        "endLineNumber" : 1443,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n    putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n  }\n else {\n    putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 31,
+      "astHeight" : 8
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 418,
+        "startLineNumber" : 1437,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1445,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "if (isSplitZip) {\n  if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n    putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n  }\n else {\n    putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n  }\n}\n else {\n  System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 43,
+      "astHeight" : 9
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4425,
+        "startLineNumber" : 1368,
+        "startColumnNumber" : 93,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 453,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4914,
+        "startLineNumber" : 1359,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Writes the central file header entry.\n * @param ze the entry to write\n * @param name The encoded name\n * @param entryMetaData meta data for this file\n * @throws IOException on error\n */\nprivate byte[] createCentralFileHeader(final ZipArchiveEntry ze,final ByteBuffer name,final EntryMetaData entryMetaData,final boolean needsZip64Extra) throws IOException {\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 481,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 69,
+        "startLineNumber" : 1441,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 1441,
+        "endColumnNumber" : 85
+      },
+      "nodeContext" : "putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 10,
+      "astHeight" : 5
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.zip.ZipArchiveEntry"
+  }, {
+    "nodeContext" : "ze",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 2,
+      "startLineNumber" : 1448,
+      "startColumnNumber" : 17,
+      "endLineNumber" : 1448,
+      "endColumnNumber" : 19
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 26,
+        "startLineNumber" : 1448,
+        "startColumnNumber" : 17,
+        "endLineNumber" : 1448,
+        "endColumnNumber" : 43
+      },
+      "nodeContext" : "ze.getInternalAttributes()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 73,
+        "startLineNumber" : 1448,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1448,
+        "endColumnNumber" : 81
+      },
+      "nodeContext" : "putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 74,
+        "startLineNumber" : 1448,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1448,
+        "endColumnNumber" : 82
+      },
+      "nodeContext" : "putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4425,
+        "startLineNumber" : 1368,
+        "startColumnNumber" : 93,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 453,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4914,
+        "startLineNumber" : 1359,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Writes the central file header entry.\n * @param ze the entry to write\n * @param name The encoded name\n * @param entryMetaData meta data for this file\n * @throws IOException on error\n */\nprivate byte[] createCentralFileHeader(final ZipArchiveEntry ze,final ByteBuffer name,final EntryMetaData entryMetaData,final boolean needsZip64Extra) throws IOException {\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 481,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 74,
+        "startLineNumber" : 1448,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1448,
+        "endColumnNumber" : 82
+      },
+      "nodeContext" : "putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.zip.ZipArchiveEntry"
+  }, {
+    "nodeContext" : "ze",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 2,
+      "startLineNumber" : 1451,
+      "startColumnNumber" : 16,
+      "endLineNumber" : 1451,
+      "endColumnNumber" : 18
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "nodePosition" : {
+        "charLength" : 26,
+        "startLineNumber" : 1451,
+        "startColumnNumber" : 16,
+        "endLineNumber" : 1451,
+        "endColumnNumber" : 42
+      },
+      "nodeContext" : "ze.getExternalAttributes()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 72,
+        "startLineNumber" : 1451,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1451,
+        "endColumnNumber" : 80
+      },
+      "nodeContext" : "putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 7,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 73,
+        "startLineNumber" : 1451,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1451,
+        "endColumnNumber" : 81
+      },
+      "nodeContext" : "putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4425,
+        "startLineNumber" : 1368,
+        "startColumnNumber" : 93,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 453,
+      "astHeight" : 10
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4914,
+        "startLineNumber" : 1359,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 1471,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "/** \n * Writes the central file header entry.\n * @param ze the entry to write\n * @param name The encoded name\n * @param entryMetaData meta data for this file\n * @throws IOException on error\n */\nprivate byte[] createCentralFileHeader(final ZipArchiveEntry ze,final ByteBuffer name,final EntryMetaData entryMetaData,final boolean needsZip64Extra) throws IOException {\n  if (isSplitZip) {\n    final int currentSplitSegment=((ZipSplitOutputStream)this.out).getCurrentSplitSegmentIndex();\n    if (numberOfCDInDiskData.get(currentSplitSegment) == null) {\n      numberOfCDInDiskData.put(currentSplitSegment,1);\n    }\n else {\n      final int originalNumberOfCD=numberOfCDInDiskData.get(currentSplitSegment);\n      numberOfCDInDiskData.put(currentSplitSegment,originalNumberOfCD + 1);\n    }\n  }\n  final byte[] extra=ze.getCentralDirectoryExtra();\n  String comm=ze.getComment();\n  if (comm == null) {\n    comm=\"\";\n  }\n  final ByteBuffer commentB=getEntryEncoding(ze).encode(comm);\n  final int nameLen=name.limit() - name.position();\n  final int commentLen=commentB.limit() - commentB.position();\n  final int len=CFH_FILENAME_OFFSET + nameLen + extra.length+ commentLen;\n  final byte[] buf=new byte[len];\n  System.arraycopy(CFH_SIG,0,buf,CFH_SIG_OFFSET,WORD);\n  putShort((ze.getPlatform() << 8) | (!hasUsedZip64 ? DATA_DESCRIPTOR_MIN_VERSION : ZIP64_MIN_VERSION),buf,CFH_VERSION_MADE_BY_OFFSET);\n  final int zipMethod=ze.getMethod();\n  final boolean encodable=zipEncoding.canEncode(ze.getName());\n  putShort(versionNeededToExtract(zipMethod,needsZip64Extra,entryMetaData.usesDataDescriptor),buf,CFH_VERSION_NEEDED_OFFSET);\n  getGeneralPurposeBits(!encodable && fallbackToUTF8,entryMetaData.usesDataDescriptor).encode(buf,CFH_GPB_OFFSET);\n  putShort(zipMethod,buf,CFH_METHOD_OFFSET);\n  ZipUtil.toDosTime(calendarInstance,ze.getTime(),buf,CFH_TIME_OFFSET);\n  putLong(ze.getCrc(),buf,CFH_CRC_OFFSET);\n  if (ze.getCompressedSize() >= ZIP64_MAGIC || ze.getSize() >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_COMPRESSED_SIZE_OFFSET);\n    ZipLong.ZIP64_MAGIC.putLong(buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n else {\n    putLong(ze.getCompressedSize(),buf,CFH_COMPRESSED_SIZE_OFFSET);\n    putLong(ze.getSize(),buf,CFH_ORIGINAL_SIZE_OFFSET);\n  }\n  putShort(nameLen,buf,CFH_FILENAME_LENGTH_OFFSET);\n  putShort(extra.length,buf,CFH_EXTRA_LENGTH_OFFSET);\n  putShort(commentLen,buf,CFH_COMMENT_LENGTH_OFFSET);\n  if (isSplitZip) {\n    if (ze.getDiskNumberStart() >= ZIP64_MAGIC_SHORT || zip64Mode == Zip64Mode.Always) {\n      putShort(ZIP64_MAGIC_SHORT,buf,CFH_DISK_NUMBER_OFFSET);\n    }\n else {\n      putShort((int)ze.getDiskNumberStart(),buf,CFH_DISK_NUMBER_OFFSET);\n    }\n  }\n else {\n    System.arraycopy(ZERO,0,buf,CFH_DISK_NUMBER_OFFSET,SHORT);\n  }\n  putShort(ze.getInternalAttributes(),buf,CFH_INTERNAL_ATTRIBUTES_OFFSET);\n  putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n  if (entryMetaData.offset >= ZIP64_MAGIC || zip64Mode == Zip64Mode.Always) {\n    putLong(ZIP64_MAGIC,buf,CFH_LFH_OFFSET);\n  }\n else {\n    putLong(Math.min(entryMetaData.offset,ZIP64_MAGIC),buf,CFH_LFH_OFFSET);\n  }\n  System.arraycopy(name.array(),name.arrayOffset(),buf,CFH_FILENAME_OFFSET,nameLen);\n  final int extraStart=CFH_FILENAME_OFFSET + nameLen;\n  System.arraycopy(extra,0,buf,extraStart,extra.length);\n  final int commentStart=extraStart + extra.length;\n  System.arraycopy(commentB.array(),commentB.arrayOffset(),buf,commentStart,commentLen);\n  return buf;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 481,
+      "astHeight" : 11
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 73,
+        "startLineNumber" : 1451,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 1451,
+        "endColumnNumber" : 81
+      },
+      "nodeContext" : "putLong(ze.getExternalAttributes(),buf,CFH_EXTERNAL_ATTRIBUTES_OFFSET);\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 8,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "org.apache.commons.compress.archivers.zip.ZipArchiveEntry"
+  } ],
+  "positionList" : [ {
+    "charLength" : 2,
+    "startLineNumber" : 1381,
+    "startColumnNumber" : 29,
+    "endLineNumber" : 1381,
+    "endColumnNumber" : 31
+  }, {
+    "charLength" : 2,
+    "startLineNumber" : 1384,
+    "startColumnNumber" : 22,
+    "endLineNumber" : 1384,
+    "endColumnNumber" : 24
+  }, {
+    "charLength" : 2,
+    "startLineNumber" : 1389,
+    "startColumnNumber" : 53,
+    "endLineNumber" : 1389,
+    "endColumnNumber" : 55
+  }, {
+    "charLength" : 2,
+    "startLineNumber" : 1399,
+    "startColumnNumber" : 18,
+    "endLineNumber" : 1399,
+    "endColumnNumber" : 20
+  }, {
+    "charLength" : 2,
+    "startLineNumber" : 1402,
+    "startColumnNumber" : 30,
+    "endLineNumber" : 1402,
+    "endColumnNumber" : 32
+  }, {
+    "charLength" : 2,
+    "startLineNumber" : 1403,
+    "startColumnNumber" : 56,
+    "endLineNumber" : 1403,
+    "endColumnNumber" : 58
+  }, {
+    "charLength" : 2,
+    "startLineNumber" : 1413,
+    "startColumnNumber" : 44,
+    "endLineNumber" : 1413,
+    "endColumnNumber" : 46
+  }, {
+    "charLength" : 2,
+    "startLineNumber" : 1418,
+    "startColumnNumber" : 16,
+    "endLineNumber" : 1418,
+    "endColumnNumber" : 18
+  }, {
+    "charLength" : 2,
+    "startLineNumber" : 1419,
+    "startColumnNumber" : 12,
+    "endLineNumber" : 1419,
+    "endColumnNumber" : 14
+  }, {
+    "charLength" : 2,
+    "startLineNumber" : 1420,
+    "startColumnNumber" : 19,
+    "endLineNumber" : 1420,
+    "endColumnNumber" : 21
+  }, {
+    "charLength" : 2,
+    "startLineNumber" : 1425,
+    "startColumnNumber" : 20,
+    "endLineNumber" : 1425,
+    "endColumnNumber" : 22
+  }, {
+    "charLength" : 2,
+    "startLineNumber" : 1426,
+    "startColumnNumber" : 20,
+    "endLineNumber" : 1426,
+    "endColumnNumber" : 22
+  }, {
+    "charLength" : 2,
+    "startLineNumber" : 1438,
+    "startColumnNumber" : 16,
+    "endLineNumber" : 1438,
+    "endColumnNumber" : 18
+  }, {
+    "charLength" : 2,
+    "startLineNumber" : 1441,
+    "startColumnNumber" : 31,
+    "endLineNumber" : 1441,
+    "endColumnNumber" : 33
+  }, {
+    "charLength" : 2,
+    "startLineNumber" : 1448,
+    "startColumnNumber" : 17,
+    "endLineNumber" : 1448,
+    "endColumnNumber" : 19
+  }, {
+    "charLength" : 2,
+    "startLineNumber" : 1451,
+    "startColumnNumber" : 16,
+    "endLineNumber" : 1451,
+    "endColumnNumber" : 18
+  } ],
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 7,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 10,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 11,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 12,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 13,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 14,
+    "layout" : 3
+  }, {
+    "firstKey" : 0,
+    "secondKey" : 15,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 7,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 10,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 11,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 12,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 13,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 14,
+    "layout" : 3
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 15,
+    "layout" : 3
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 5,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 6,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 7,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 8,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 9,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 10,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 11,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 12,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 13,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 14,
+    "layout" : 4
+  }, {
+    "firstKey" : 2,
+    "secondKey" : 15,
+    "layout" : 4
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 0,
+    "layout" : 6
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 1,
+    "layout" : 6
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 2,
+    "layout" : 6
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 4,
+    "layout" : 6
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 5,
+    "layout" : 6
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 6,
+    "layout" : 6
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 7,
+    "layout" : 6
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 8,
+    "layout" : 6
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 9,
+    "layout" : 6
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 10,
+    "layout" : 6
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 11,
+    "layout" : 6
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 12,
+    "layout" : 6
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 13,
+    "layout" : 6
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 14,
+    "layout" : 6
+  }, {
+    "firstKey" : 3,
+    "secondKey" : 15,
+    "layout" : 6
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 7,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 10,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 11,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 12,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 13,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 14,
+    "layout" : 3
+  }, {
+    "firstKey" : 4,
+    "secondKey" : 15,
+    "layout" : 3
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 0,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 1,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 2,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 3,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 4,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 6,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 7,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 8,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 9,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 10,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 11,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 12,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 13,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 14,
+    "layout" : 4
+  }, {
+    "firstKey" : 5,
+    "secondKey" : 15,
+    "layout" : 4
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 7,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 10,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 11,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 12,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 13,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 14,
+    "layout" : 3
+  }, {
+    "firstKey" : 6,
+    "secondKey" : 15,
+    "layout" : 3
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 10,
+    "layout" : 3
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 11,
+    "layout" : 3
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 12,
+    "layout" : 3
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 13,
+    "layout" : 3
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 14,
+    "layout" : 3
+  }, {
+    "firstKey" : 7,
+    "secondKey" : 15,
+    "layout" : 3
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 3,
+    "layout" : 5
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 4,
+    "layout" : 5
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 5,
+    "layout" : 5
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 6,
+    "layout" : 5
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 7,
+    "layout" : 5
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 9,
+    "layout" : 2
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 10,
+    "layout" : 4
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 11,
+    "layout" : 4
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 12,
+    "layout" : 5
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 13,
+    "layout" : 5
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 14,
+    "layout" : 5
+  }, {
+    "firstKey" : 8,
+    "secondKey" : 15,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 3,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 4,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 5,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 6,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 7,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 8,
+    "layout" : 2
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 10,
+    "layout" : 4
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 11,
+    "layout" : 4
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 12,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 13,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 14,
+    "layout" : 5
+  }, {
+    "firstKey" : 9,
+    "secondKey" : 15,
+    "layout" : 5
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 3,
+    "layout" : 5
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 4,
+    "layout" : 5
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 5,
+    "layout" : 5
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 6,
+    "layout" : 5
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 7,
+    "layout" : 5
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 8,
+    "layout" : 4
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 9,
+    "layout" : 4
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 11,
+    "layout" : 3
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 12,
+    "layout" : 5
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 13,
+    "layout" : 5
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 14,
+    "layout" : 5
+  }, {
+    "firstKey" : 10,
+    "secondKey" : 15,
+    "layout" : 5
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 0,
+    "layout" : 5
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 1,
+    "layout" : 5
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 2,
+    "layout" : 5
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 3,
+    "layout" : 5
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 4,
+    "layout" : 5
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 5,
+    "layout" : 5
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 6,
+    "layout" : 5
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 7,
+    "layout" : 5
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 8,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 9,
+    "layout" : 4
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 10,
+    "layout" : 3
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 12,
+    "layout" : 5
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 13,
+    "layout" : 5
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 14,
+    "layout" : 5
+  }, {
+    "firstKey" : 11,
+    "secondKey" : 15,
+    "layout" : 5
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 0,
+    "layout" : 6
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 1,
+    "layout" : 6
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 2,
+    "layout" : 6
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 3,
+    "layout" : 6
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 4,
+    "layout" : 6
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 5,
+    "layout" : 6
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 6,
+    "layout" : 6
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 7,
+    "layout" : 6
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 8,
+    "layout" : 6
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 9,
+    "layout" : 6
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 10,
+    "layout" : 6
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 11,
+    "layout" : 6
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 13,
+    "layout" : 3
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 14,
+    "layout" : 6
+  }, {
+    "firstKey" : 12,
+    "secondKey" : 15,
+    "layout" : 6
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 0,
+    "layout" : 8
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 1,
+    "layout" : 8
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 2,
+    "layout" : 8
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 3,
+    "layout" : 8
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 4,
+    "layout" : 8
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 5,
+    "layout" : 8
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 6,
+    "layout" : 8
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 7,
+    "layout" : 8
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 8,
+    "layout" : 8
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 9,
+    "layout" : 8
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 10,
+    "layout" : 8
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 11,
+    "layout" : 8
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 12,
+    "layout" : 5
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 14,
+    "layout" : 8
+  }, {
+    "firstKey" : 13,
+    "secondKey" : 15,
+    "layout" : 8
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 7,
+    "layout" : 3
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 10,
+    "layout" : 3
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 11,
+    "layout" : 3
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 12,
+    "layout" : 3
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 13,
+    "layout" : 3
+  }, {
+    "firstKey" : 14,
+    "secondKey" : 15,
+    "layout" : 3
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 0,
+    "layout" : 3
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 1,
+    "layout" : 3
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 2,
+    "layout" : 3
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 3,
+    "layout" : 3
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 4,
+    "layout" : 3
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 5,
+    "layout" : 3
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 6,
+    "layout" : 3
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 7,
+    "layout" : 3
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 8,
+    "layout" : 3
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 9,
+    "layout" : 3
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 10,
+    "layout" : 3
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 11,
+    "layout" : 3
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 12,
+    "layout" : 3
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 13,
+    "layout" : 3
+  }, {
+    "firstKey" : 15,
+    "secondKey" : 14,
+    "layout" : 3
+  } ]
+}

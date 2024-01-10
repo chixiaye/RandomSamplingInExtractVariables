@@ -1,87 +1,113 @@
 {
   "id" : 139,
-  "expression" : "true",
+  "expression" : "queryParams",
   "projectName" : "Netflix@zuul",
-  "commitID" : "f8ef3551d8dd57a512336315ec51bb6c0444c517",
-  "filePath" : "/zuul-core/src/main/java/com/netflix/zuul/origins/OriginThrottledException.java",
+  "commitID" : "4dd944db59b0a82e7432c25822231e4a83296e77",
+  "filePath" : "zuul-servletapi/src/main/java/com/netflix/zuul/context/ServletSessionContextFactory.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "true",
-    "nodeType" : "BooleanLiteral",
+    "nodeContext" : "queryParams",
+    "nodeType" : "SimpleName",
     "nodePosition" : {
-      "charLength" : 4,
-      "startLineNumber" : 30,
-      "startColumnNumber" : 46,
-      "endLineNumber" : 30,
-      "endColumnNumber" : 50
+      "charLength" : 11,
+      "startLineNumber" : 74,
+      "startColumnNumber" : 48,
+      "endLineNumber" : 74,
+      "endColumnNumber" : 59
     },
     "astNodeNumber" : 1,
     "astHeight" : 1,
     "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 306,
+        "startLineNumber" : 73,
+        "startColumnNumber" : 37,
+        "endLineNumber" : 75,
+        "endColumnNumber" : 107
+      },
+      "nodeContext" : "new HttpRequestMessageImpl(context,servletRequest.getProtocol(),servletRequest.getMethod(),servletRequest.getRequestURI(),queryParams,reqHeaders,servletRequest.getRemoteAddr(),servletRequest.getScheme(),servletRequest.getServerPort(),servletRequest.getServerName())",
+      "nodeType" : "ClassInstanceCreation",
+      "astNodeNumber" : 27,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 316,
+        "startLineNumber" : 73,
+        "startColumnNumber" : 27,
+        "endLineNumber" : 75,
+        "endColumnNumber" : 107
+      },
+      "nodeContext" : "request=new HttpRequestMessageImpl(context,servletRequest.getProtocol(),servletRequest.getMethod(),servletRequest.getRequestURI(),queryParams,reqHeaders,servletRequest.getRemoteAddr(),servletRequest.getScheme(),servletRequest.getServerPort(),servletRequest.getServerName())",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 29,
+      "astHeight" : 4
+    }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 44,
-        "startLineNumber" : 30,
+        "charLength" : 336,
+        "startLineNumber" : 73,
         "startColumnNumber" : 8,
-        "endLineNumber" : 30,
-        "endColumnNumber" : 52
+        "endLineNumber" : 75,
+        "endColumnNumber" : 108
       },
-      "nodeContext" : "super(msg + \", origin=\" + originName,true);\n",
-      "nodeType" : "SuperConstructorInvocation",
-      "astNodeNumber" : 6,
-      "astHeight" : 3
+      "nodeContext" : "HttpRequestMessage request=new HttpRequestMessageImpl(context,servletRequest.getProtocol(),servletRequest.getMethod(),servletRequest.getRequestURI(),queryParams,reqHeaders,servletRequest.getRemoteAddr(),servletRequest.getScheme(),servletRequest.getServerPort(),servletRequest.getServerName());\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 32,
+      "astHeight" : 5
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 264,
-        "startLineNumber" : 28,
+        "charLength" : 3282,
+        "startLineNumber" : 52,
         "startColumnNumber" : 4,
-        "endLineNumber" : 34,
+        "endLineNumber" : 119,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  super(msg + \", origin=\" + originName,true);\n  this.originName=originName;\n  this.statusCategory=statusCategory;\n  this.setStatusCode(503);\n}\n",
+      "nodeContext" : "{\n  Headers reqHeaders=new Headers();\n  Enumeration headerNames=servletRequest.getHeaderNames();\n  while (headerNames.hasMoreElements()) {\n    String name=(String)headerNames.nextElement();\n    Enumeration values=servletRequest.getHeaders(name);\n    HeaderName hn=HttpHeaderNames.get(name);\n    while (values.hasMoreElements()) {\n      String value=(String)values.nextElement();\n      reqHeaders.add(hn,value);\n    }\n  }\n  HttpQueryParams queryParams=HttpQueryParams.parse(servletRequest.getQueryString());\n  copyServletRequestAttributes(context,servletRequest);\n  HttpRequestMessage request=new HttpRequestMessageImpl(context,servletRequest.getProtocol(),servletRequest.getMethod(),servletRequest.getRequestURI(),queryParams,reqHeaders,servletRequest.getRemoteAddr(),servletRequest.getScheme(),servletRequest.getServerPort(),servletRequest.getServerName());\n  request.storeInboundRequest();\n  InputStream bodyInput;\n  try {\n    bodyInput=servletRequest.getInputStream();\n  }\n catch (  IOException e) {\n    String errorMsg=\"Error reading ServletInputStream.\";\n    LOG.error(errorMsg,e);\n    throw new RuntimeException(errorMsg,e);\n  }\n  if (bodyInput != null) {\n    Observable<ByteBuf> bodyObs=ByteBufUtils.fromInputStream(bodyInput);\n    bodyObs=bodyObs.onErrorReturn((e) -> {\n      if (SocketTimeoutException.class.isAssignableFrom(e.getClass())) {\n        LOG.error(\"SocketTimeoutException reading request body from inputstream. error=\" + String.valueOf(e.getMessage()) + \", request-info: \"+ request.getInfoForLogging());\n      }\n else {\n        LOG.error(\"Error reading request body from inputstream. error=\" + String.valueOf(e.getMessage()) + \", request-info: \"+ request.getInfoForLogging());\n      }\n      ZuulException ze=new ZuulException(e.getMessage(),e,\"TIMEOUT_READING_REQ_BODY\");\n      ze.setStatusCode(400);\n      request.getContext().setError(ze);\n      request.getContext().setShouldSendErrorResponse(true);\n      return Unpooled.EMPTY_BUFFER;\n    }\n);\n    request.setBodyStream(bodyObs);\n  }\n  return request;\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 24,
-      "astHeight" : 5
+      "astNodeNumber" : 275,
+      "astHeight" : 16
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 362,
-        "startLineNumber" : 27,
+        "charLength" : 3385,
+        "startLineNumber" : 50,
         "startColumnNumber" : 4,
-        "endLineNumber" : 34,
+        "endLineNumber" : 119,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "public OriginThrottledException(String originName,String msg,StatusCategory statusCategory){\n  super(msg + \", origin=\" + originName,true);\n  this.originName=originName;\n  this.statusCategory=statusCategory;\n  this.setStatusCode(503);\n}\n",
+      "nodeContext" : "@Override public ZuulMessage create(SessionContext context,HttpServletRequest servletRequest){\n  Headers reqHeaders=new Headers();\n  Enumeration headerNames=servletRequest.getHeaderNames();\n  while (headerNames.hasMoreElements()) {\n    String name=(String)headerNames.nextElement();\n    Enumeration values=servletRequest.getHeaders(name);\n    HeaderName hn=HttpHeaderNames.get(name);\n    while (values.hasMoreElements()) {\n      String value=(String)values.nextElement();\n      reqHeaders.add(hn,value);\n    }\n  }\n  HttpQueryParams queryParams=HttpQueryParams.parse(servletRequest.getQueryString());\n  copyServletRequestAttributes(context,servletRequest);\n  HttpRequestMessage request=new HttpRequestMessageImpl(context,servletRequest.getProtocol(),servletRequest.getMethod(),servletRequest.getRequestURI(),queryParams,reqHeaders,servletRequest.getRemoteAddr(),servletRequest.getScheme(),servletRequest.getServerPort(),servletRequest.getServerName());\n  request.storeInboundRequest();\n  InputStream bodyInput;\n  try {\n    bodyInput=servletRequest.getInputStream();\n  }\n catch (  IOException e) {\n    String errorMsg=\"Error reading ServletInputStream.\";\n    LOG.error(errorMsg,e);\n    throw new RuntimeException(errorMsg,e);\n  }\n  if (bodyInput != null) {\n    Observable<ByteBuf> bodyObs=ByteBufUtils.fromInputStream(bodyInput);\n    bodyObs=bodyObs.onErrorReturn((e) -> {\n      if (SocketTimeoutException.class.isAssignableFrom(e.getClass())) {\n        LOG.error(\"SocketTimeoutException reading request body from inputstream. error=\" + String.valueOf(e.getMessage()) + \", request-info: \"+ request.getInfoForLogging());\n      }\n else {\n        LOG.error(\"Error reading request body from inputstream. error=\" + String.valueOf(e.getMessage()) + \", request-info: \"+ request.getInfoForLogging());\n      }\n      ZuulException ze=new ZuulException(e.getMessage(),e,\"TIMEOUT_READING_REQ_BODY\");\n      ze.setStatusCode(400);\n      request.getContext().setError(ze);\n      request.getContext().setShouldSendErrorResponse(true);\n      return Unpooled.EMPTY_BUFFER;\n    }\n);\n    request.setBodyStream(bodyObs);\n  }\n  return request;\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 39,
-      "astHeight" : 6
+      "astNodeNumber" : 290,
+      "astHeight" : 17
     } ],
     "currentLineData" : {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
       "nodePosition" : {
-        "charLength" : 44,
-        "startLineNumber" : 30,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 30,
-        "endColumnNumber" : 52
+        "charLength" : 306,
+        "startLineNumber" : 73,
+        "startColumnNumber" : 37,
+        "endLineNumber" : 75,
+        "endColumnNumber" : 107
       },
-      "nodeContext" : "super(msg + \", origin=\" + originName,true);\n",
-      "nodeType" : "SuperConstructorInvocation",
-      "astNodeNumber" : 6,
+      "nodeContext" : "new HttpRequestMessageImpl(context,servletRequest.getProtocol(),servletRequest.getMethod(),servletRequest.getRequestURI(),queryParams,reqHeaders,servletRequest.getRemoteAddr(),servletRequest.getScheme(),servletRequest.getServerPort(),servletRequest.getServerName())",
+      "nodeType" : "ClassInstanceCreation",
+      "astNodeNumber" : 27,
       "astHeight" : 3
     },
     "tokenLength" : 1,
-    "type" : "boolean"
+    "type" : "com.netflix.zuul.message.http.HttpQueryParams"
   } ],
   "positionList" : [ {
-    "charLength" : 4,
-    "startLineNumber" : 30,
-    "startColumnNumber" : 46,
-    "endLineNumber" : 30,
-    "endColumnNumber" : 50
+    "charLength" : 11,
+    "startLineNumber" : 74,
+    "startColumnNumber" : 48,
+    "endLineNumber" : 74,
+    "endColumnNumber" : 59
   } ],
   "layoutRelationDataList" : [ ]
 }

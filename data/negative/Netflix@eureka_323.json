@@ -1,87 +1,208 @@
 {
   "id" : 323,
-  "expression" : "name != null ? !name.equals(that.name) : that.name != null",
+  "expression" : "remoteRegionURL",
   "projectName" : "Netflix@eureka",
-  "commitID" : "2f6d04dae7f6fca2a17e85fc53020e13272a79b2",
-  "filePath" : "/eureka-core/src/main/java/com/netflix/eureka2/registry/instance/ServicePort.java",
-  "occurrences" : 1,
+  "commitID" : "295f257424f0952b17a6903940bbd4e2f2fced03",
+  "filePath" : "eureka-core/src/main/java/com/netflix/eureka/RemoteRegionRegistry.java",
+  "occurrences" : 2,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "name != null ? !name.equals(that.name) : that.name != null",
-    "nodeType" : "ConditionalExpression",
+    "nodeContext" : "remoteRegionURL",
+    "nodeType" : "SimpleName",
     "nodePosition" : {
-      "charLength" : 58,
-      "startLineNumber" : 96,
-      "startColumnNumber" : 12,
-      "endLineNumber" : 96,
-      "endColumnNumber" : 70
+      "charLength" : 15,
+      "startLineNumber" : 74,
+      "startColumnNumber" : 31,
+      "endLineNumber" : 74,
+      "endColumnNumber" : 46
     },
-    "astNodeNumber" : 16,
-    "astHeight" : 5,
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
     "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 38,
+        "startLineNumber" : 74,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 74,
+        "endColumnNumber" : 46
+      },
+      "nodeContext" : "this.remoteRegionURL=remoteRegionURL",
+      "nodeType" : "Assignment",
+      "astNodeNumber" : 5,
+      "astHeight" : 3
+    }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 101,
-        "startLineNumber" : 96,
+        "charLength" : 39,
+        "startLineNumber" : 74,
         "startColumnNumber" : 8,
-        "endLineNumber" : 98,
-        "endColumnNumber" : 9
+        "endLineNumber" : 74,
+        "endColumnNumber" : 47
       },
-      "nodeContext" : "if (name != null ? !name.equals(that.name) : that.name != null) {\n  return false;\n}\n",
-      "nodeType" : "IfStatement",
-      "astNodeNumber" : 20,
-      "astHeight" : 6
+      "nodeContext" : "this.remoteRegionURL=remoteRegionURL;\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 665,
-        "startLineNumber" : 80,
-        "startColumnNumber" : 36,
-        "endLineNumber" : 104,
+        "charLength" : 4046,
+        "startLineNumber" : 73,
+        "startColumnNumber" : 72,
+        "endLineNumber" : 156,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  if (this == o) {\n    return true;\n  }\n  if (o == null || getClass() != o.getClass()) {\n    return false;\n  }\n  ServicePort that=(ServicePort)o;\n  if (secure != that.secure) {\n    return false;\n  }\n  if (addressLabels != null ? !addressLabels.equals(that.addressLabels) : that.addressLabels != null) {\n    return false;\n  }\n  if (name != null ? !name.equals(that.name) : that.name != null) {\n    return false;\n  }\n  if (port != null ? !port.equals(that.port) : that.port != null) {\n    return false;\n  }\n  return true;\n}\n",
+      "nodeContext" : "{\n  this.remoteRegionURL=remoteRegionURL;\n  this.fetchRegistryTimer=Monitors.newTimer(this.remoteRegionURL.toString() + \"_\" + \"FetchRegistry\");\n  String jerseyClientName;\n  if (remoteRegionURL.getProtocol().equals(\"http\")) {\n    jerseyClientName=\"Discovery-RemoteRegionClient-\" + regionName;\n    discoveryJerseyClient=EurekaJerseyClient.createJerseyClient(jerseyClientName,EUREKA_SERVER_CONFIG.getRemoteRegionConnectTimeoutMs(),EUREKA_SERVER_CONFIG.getRemoteRegionReadTimeoutMs(),EUREKA_SERVER_CONFIG.getRemoteRegionTotalConnectionsPerHost(),EUREKA_SERVER_CONFIG.getRemoteRegionTotalConnections(),EUREKA_SERVER_CONFIG.getRemoteRegionConnectionIdleTimeoutSeconds());\n  }\n else {\n    jerseyClientName=\"Discovery-RemoteRegionSecureClient-\" + regionName;\n    discoveryJerseyClient=EurekaJerseyClient.createSSLJerseyClient(jerseyClientName,EUREKA_SERVER_CONFIG.getRemoteRegionConnectTimeoutMs(),EUREKA_SERVER_CONFIG.getRemoteRegionReadTimeoutMs(),EUREKA_SERVER_CONFIG.getRemoteRegionTotalConnectionsPerHost(),EUREKA_SERVER_CONFIG.getRemoteRegionTotalConnections(),EUREKA_SERVER_CONFIG.getRemoteRegionConnectionIdleTimeoutSeconds(),EUREKA_SERVER_CONFIG.getRemoteRegionTrustStore(),EUREKA_SERVER_CONFIG.getRemoteRegionTrustStorePassword());\n  }\n  discoveryApacheClient=discoveryJerseyClient.getClient();\n  if (EUREKA_SERVER_CONFIG.shouldGZipContentFromRemoteRegion()) {\n    discoveryApacheClient.addFilter(new GZIPContentEncodingFilter(false));\n  }\n  String ip=null;\n  try {\n    ip=InetAddress.getLocalHost().getHostAddress();\n  }\n catch (  UnknownHostException e) {\n    logger.warn(\"Cannot find localhost ip\",e);\n  }\n  EurekaServerIdentity identity=new EurekaServerIdentity(ip);\n  discoveryApacheClient.addFilter(new EurekaIdentityHeaderFilter(identity));\n  applications.set(new Applications());\n  try {\n    if (fetchRegistry()) {\n      this.readyForServingData=true;\n    }\n else {\n      logger.warn(\"Failed to fetch remote registry. This means this eureka server is not ready for serving \" + \"traffic.\");\n    }\n  }\n catch (  Throwable e) {\n    logger.error(\"Problem fetching registry information :\",e);\n  }\n  remoteRegionCacheRefreshTimer.schedule(new TimerTask(){\n    @Override public void run(){\n      try {\n        if (fetchRegistry()) {\n          readyForServingData=true;\n        }\n else {\n          logger.warn(\"Failed to fetch remote registry. This means this eureka server is not \" + \"ready for serving traffic.\");\n        }\n      }\n catch (      Throwable e) {\n        logger.error(\"Error getting from remote registry :\",e);\n      }\n    }\n  }\n,EUREKA_SERVER_CONFIG.getRemoteRegionRegistryFetchInterval() * 1000,EUREKA_SERVER_CONFIG.getRemoteRegionRegistryFetchInterval() * 1000);\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 102,
-      "astHeight" : 7
+      "astNodeNumber" : 257,
+      "astHeight" : 15
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 711,
-        "startLineNumber" : 79,
+        "charLength" : 4114,
+        "startLineNumber" : 73,
         "startColumnNumber" : 4,
-        "endLineNumber" : 104,
+        "endLineNumber" : 156,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "@Override public boolean equals(Object o){\n  if (this == o) {\n    return true;\n  }\n  if (o == null || getClass() != o.getClass()) {\n    return false;\n  }\n  ServicePort that=(ServicePort)o;\n  if (secure != that.secure) {\n    return false;\n  }\n  if (addressLabels != null ? !addressLabels.equals(that.addressLabels) : that.addressLabels != null) {\n    return false;\n  }\n  if (name != null ? !name.equals(that.name) : that.name != null) {\n    return false;\n  }\n  if (port != null ? !port.equals(that.port) : that.port != null) {\n    return false;\n  }\n  return true;\n}\n",
+      "nodeContext" : "public RemoteRegionRegistry(String regionName,URL remoteRegionURL){\n  this.remoteRegionURL=remoteRegionURL;\n  this.fetchRegistryTimer=Monitors.newTimer(this.remoteRegionURL.toString() + \"_\" + \"FetchRegistry\");\n  String jerseyClientName;\n  if (remoteRegionURL.getProtocol().equals(\"http\")) {\n    jerseyClientName=\"Discovery-RemoteRegionClient-\" + regionName;\n    discoveryJerseyClient=EurekaJerseyClient.createJerseyClient(jerseyClientName,EUREKA_SERVER_CONFIG.getRemoteRegionConnectTimeoutMs(),EUREKA_SERVER_CONFIG.getRemoteRegionReadTimeoutMs(),EUREKA_SERVER_CONFIG.getRemoteRegionTotalConnectionsPerHost(),EUREKA_SERVER_CONFIG.getRemoteRegionTotalConnections(),EUREKA_SERVER_CONFIG.getRemoteRegionConnectionIdleTimeoutSeconds());\n  }\n else {\n    jerseyClientName=\"Discovery-RemoteRegionSecureClient-\" + regionName;\n    discoveryJerseyClient=EurekaJerseyClient.createSSLJerseyClient(jerseyClientName,EUREKA_SERVER_CONFIG.getRemoteRegionConnectTimeoutMs(),EUREKA_SERVER_CONFIG.getRemoteRegionReadTimeoutMs(),EUREKA_SERVER_CONFIG.getRemoteRegionTotalConnectionsPerHost(),EUREKA_SERVER_CONFIG.getRemoteRegionTotalConnections(),EUREKA_SERVER_CONFIG.getRemoteRegionConnectionIdleTimeoutSeconds(),EUREKA_SERVER_CONFIG.getRemoteRegionTrustStore(),EUREKA_SERVER_CONFIG.getRemoteRegionTrustStorePassword());\n  }\n  discoveryApacheClient=discoveryJerseyClient.getClient();\n  if (EUREKA_SERVER_CONFIG.shouldGZipContentFromRemoteRegion()) {\n    discoveryApacheClient.addFilter(new GZIPContentEncodingFilter(false));\n  }\n  String ip=null;\n  try {\n    ip=InetAddress.getLocalHost().getHostAddress();\n  }\n catch (  UnknownHostException e) {\n    logger.warn(\"Cannot find localhost ip\",e);\n  }\n  EurekaServerIdentity identity=new EurekaServerIdentity(ip);\n  discoveryApacheClient.addFilter(new EurekaIdentityHeaderFilter(identity));\n  applications.set(new Applications());\n  try {\n    if (fetchRegistry()) {\n      this.readyForServingData=true;\n    }\n else {\n      logger.warn(\"Failed to fetch remote registry. This means this eureka server is not ready for serving \" + \"traffic.\");\n    }\n  }\n catch (  Throwable e) {\n    logger.error(\"Problem fetching registry information :\",e);\n  }\n  remoteRegionCacheRefreshTimer.schedule(new TimerTask(){\n    @Override public void run(){\n      try {\n        if (fetchRegistry()) {\n          readyForServingData=true;\n        }\n else {\n          logger.warn(\"Failed to fetch remote registry. This means this eureka server is not \" + \"ready for serving traffic.\");\n        }\n      }\n catch (      Throwable e) {\n        logger.error(\"Error getting from remote registry :\",e);\n      }\n    }\n  }\n,EUREKA_SERVER_CONFIG.getRemoteRegionRegistryFetchInterval() * 1000,EUREKA_SERVER_CONFIG.getRemoteRegionRegistryFetchInterval() * 1000);\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 112,
-      "astHeight" : 8
+      "astNodeNumber" : 268,
+      "astHeight" : 16
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 101,
-        "startLineNumber" : 96,
+        "charLength" : 39,
+        "startLineNumber" : 74,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 74,
+        "endColumnNumber" : 47
+      },
+      "nodeContext" : "this.remoteRegionURL=remoteRegionURL;\n",
+      "nodeType" : "ExpressionStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 4
+    },
+    "tokenLength" : 1,
+    "type" : "java.net.URL"
+  }, {
+    "nodeContext" : "remoteRegionURL",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 15,
+      "startLineNumber" : 78,
+      "startColumnNumber" : 12,
+      "endLineNumber" : 78,
+      "endColumnNumber" : 27
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
+      "nodePosition" : {
+        "charLength" : 29,
+        "startLineNumber" : 78,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 78,
+        "endColumnNumber" : 41
+      },
+      "nodeContext" : "remoteRegionURL.getProtocol()",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 3,
+      "astHeight" : 2
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 44,
+        "startLineNumber" : 78,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 78,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "remoteRegionURL.getProtocol().equals(\"http\")",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 1472,
+        "startLineNumber" : 78,
         "startColumnNumber" : 8,
         "endLineNumber" : 98,
         "endColumnNumber" : 9
       },
-      "nodeContext" : "if (name != null ? !name.equals(that.name) : that.name != null) {\n  return false;\n}\n",
+      "nodeContext" : "if (remoteRegionURL.getProtocol().equals(\"http\")) {\n  jerseyClientName=\"Discovery-RemoteRegionClient-\" + regionName;\n  discoveryJerseyClient=EurekaJerseyClient.createJerseyClient(jerseyClientName,EUREKA_SERVER_CONFIG.getRemoteRegionConnectTimeoutMs(),EUREKA_SERVER_CONFIG.getRemoteRegionReadTimeoutMs(),EUREKA_SERVER_CONFIG.getRemoteRegionTotalConnectionsPerHost(),EUREKA_SERVER_CONFIG.getRemoteRegionTotalConnections(),EUREKA_SERVER_CONFIG.getRemoteRegionConnectionIdleTimeoutSeconds());\n}\n else {\n  jerseyClientName=\"Discovery-RemoteRegionSecureClient-\" + regionName;\n  discoveryJerseyClient=EurekaJerseyClient.createSSLJerseyClient(jerseyClientName,EUREKA_SERVER_CONFIG.getRemoteRegionConnectTimeoutMs(),EUREKA_SERVER_CONFIG.getRemoteRegionReadTimeoutMs(),EUREKA_SERVER_CONFIG.getRemoteRegionTotalConnectionsPerHost(),EUREKA_SERVER_CONFIG.getRemoteRegionTotalConnections(),EUREKA_SERVER_CONFIG.getRemoteRegionConnectionIdleTimeoutSeconds(),EUREKA_SERVER_CONFIG.getRemoteRegionTrustStore(),EUREKA_SERVER_CONFIG.getRemoteRegionTrustStorePassword());\n}\n",
       "nodeType" : "IfStatement",
-      "astNodeNumber" : 20,
-      "astHeight" : 6
+      "astNodeNumber" : 71,
+      "astHeight" : 7
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 4046,
+        "startLineNumber" : 73,
+        "startColumnNumber" : 72,
+        "endLineNumber" : 156,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  this.remoteRegionURL=remoteRegionURL;\n  this.fetchRegistryTimer=Monitors.newTimer(this.remoteRegionURL.toString() + \"_\" + \"FetchRegistry\");\n  String jerseyClientName;\n  if (remoteRegionURL.getProtocol().equals(\"http\")) {\n    jerseyClientName=\"Discovery-RemoteRegionClient-\" + regionName;\n    discoveryJerseyClient=EurekaJerseyClient.createJerseyClient(jerseyClientName,EUREKA_SERVER_CONFIG.getRemoteRegionConnectTimeoutMs(),EUREKA_SERVER_CONFIG.getRemoteRegionReadTimeoutMs(),EUREKA_SERVER_CONFIG.getRemoteRegionTotalConnectionsPerHost(),EUREKA_SERVER_CONFIG.getRemoteRegionTotalConnections(),EUREKA_SERVER_CONFIG.getRemoteRegionConnectionIdleTimeoutSeconds());\n  }\n else {\n    jerseyClientName=\"Discovery-RemoteRegionSecureClient-\" + regionName;\n    discoveryJerseyClient=EurekaJerseyClient.createSSLJerseyClient(jerseyClientName,EUREKA_SERVER_CONFIG.getRemoteRegionConnectTimeoutMs(),EUREKA_SERVER_CONFIG.getRemoteRegionReadTimeoutMs(),EUREKA_SERVER_CONFIG.getRemoteRegionTotalConnectionsPerHost(),EUREKA_SERVER_CONFIG.getRemoteRegionTotalConnections(),EUREKA_SERVER_CONFIG.getRemoteRegionConnectionIdleTimeoutSeconds(),EUREKA_SERVER_CONFIG.getRemoteRegionTrustStore(),EUREKA_SERVER_CONFIG.getRemoteRegionTrustStorePassword());\n  }\n  discoveryApacheClient=discoveryJerseyClient.getClient();\n  if (EUREKA_SERVER_CONFIG.shouldGZipContentFromRemoteRegion()) {\n    discoveryApacheClient.addFilter(new GZIPContentEncodingFilter(false));\n  }\n  String ip=null;\n  try {\n    ip=InetAddress.getLocalHost().getHostAddress();\n  }\n catch (  UnknownHostException e) {\n    logger.warn(\"Cannot find localhost ip\",e);\n  }\n  EurekaServerIdentity identity=new EurekaServerIdentity(ip);\n  discoveryApacheClient.addFilter(new EurekaIdentityHeaderFilter(identity));\n  applications.set(new Applications());\n  try {\n    if (fetchRegistry()) {\n      this.readyForServingData=true;\n    }\n else {\n      logger.warn(\"Failed to fetch remote registry. This means this eureka server is not ready for serving \" + \"traffic.\");\n    }\n  }\n catch (  Throwable e) {\n    logger.error(\"Problem fetching registry information :\",e);\n  }\n  remoteRegionCacheRefreshTimer.schedule(new TimerTask(){\n    @Override public void run(){\n      try {\n        if (fetchRegistry()) {\n          readyForServingData=true;\n        }\n else {\n          logger.warn(\"Failed to fetch remote registry. This means this eureka server is not \" + \"ready for serving traffic.\");\n        }\n      }\n catch (      Throwable e) {\n        logger.error(\"Error getting from remote registry :\",e);\n      }\n    }\n  }\n,EUREKA_SERVER_CONFIG.getRemoteRegionRegistryFetchInterval() * 1000,EUREKA_SERVER_CONFIG.getRemoteRegionRegistryFetchInterval() * 1000);\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 257,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 4114,
+        "startLineNumber" : 73,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 156,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "public RemoteRegionRegistry(String regionName,URL remoteRegionURL){\n  this.remoteRegionURL=remoteRegionURL;\n  this.fetchRegistryTimer=Monitors.newTimer(this.remoteRegionURL.toString() + \"_\" + \"FetchRegistry\");\n  String jerseyClientName;\n  if (remoteRegionURL.getProtocol().equals(\"http\")) {\n    jerseyClientName=\"Discovery-RemoteRegionClient-\" + regionName;\n    discoveryJerseyClient=EurekaJerseyClient.createJerseyClient(jerseyClientName,EUREKA_SERVER_CONFIG.getRemoteRegionConnectTimeoutMs(),EUREKA_SERVER_CONFIG.getRemoteRegionReadTimeoutMs(),EUREKA_SERVER_CONFIG.getRemoteRegionTotalConnectionsPerHost(),EUREKA_SERVER_CONFIG.getRemoteRegionTotalConnections(),EUREKA_SERVER_CONFIG.getRemoteRegionConnectionIdleTimeoutSeconds());\n  }\n else {\n    jerseyClientName=\"Discovery-RemoteRegionSecureClient-\" + regionName;\n    discoveryJerseyClient=EurekaJerseyClient.createSSLJerseyClient(jerseyClientName,EUREKA_SERVER_CONFIG.getRemoteRegionConnectTimeoutMs(),EUREKA_SERVER_CONFIG.getRemoteRegionReadTimeoutMs(),EUREKA_SERVER_CONFIG.getRemoteRegionTotalConnectionsPerHost(),EUREKA_SERVER_CONFIG.getRemoteRegionTotalConnections(),EUREKA_SERVER_CONFIG.getRemoteRegionConnectionIdleTimeoutSeconds(),EUREKA_SERVER_CONFIG.getRemoteRegionTrustStore(),EUREKA_SERVER_CONFIG.getRemoteRegionTrustStorePassword());\n  }\n  discoveryApacheClient=discoveryJerseyClient.getClient();\n  if (EUREKA_SERVER_CONFIG.shouldGZipContentFromRemoteRegion()) {\n    discoveryApacheClient.addFilter(new GZIPContentEncodingFilter(false));\n  }\n  String ip=null;\n  try {\n    ip=InetAddress.getLocalHost().getHostAddress();\n  }\n catch (  UnknownHostException e) {\n    logger.warn(\"Cannot find localhost ip\",e);\n  }\n  EurekaServerIdentity identity=new EurekaServerIdentity(ip);\n  discoveryApacheClient.addFilter(new EurekaIdentityHeaderFilter(identity));\n  applications.set(new Applications());\n  try {\n    if (fetchRegistry()) {\n      this.readyForServingData=true;\n    }\n else {\n      logger.warn(\"Failed to fetch remote registry. This means this eureka server is not ready for serving \" + \"traffic.\");\n    }\n  }\n catch (  Throwable e) {\n    logger.error(\"Problem fetching registry information :\",e);\n  }\n  remoteRegionCacheRefreshTimer.schedule(new TimerTask(){\n    @Override public void run(){\n      try {\n        if (fetchRegistry()) {\n          readyForServingData=true;\n        }\n else {\n          logger.warn(\"Failed to fetch remote registry. This means this eureka server is not \" + \"ready for serving traffic.\");\n        }\n      }\n catch (      Throwable e) {\n        logger.error(\"Error getting from remote registry :\",e);\n      }\n    }\n  }\n,EUREKA_SERVER_CONFIG.getRemoteRegionRegistryFetchInterval() * 1000,EUREKA_SERVER_CONFIG.getRemoteRegionRegistryFetchInterval() * 1000);\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 268,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.IfStatement,expression]",
+      "nodePosition" : {
+        "charLength" : 44,
+        "startLineNumber" : 78,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 78,
+        "endColumnNumber" : 56
+      },
+      "nodeContext" : "remoteRegionURL.getProtocol().equals(\"http\")",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
     },
-    "tokenLength" : 11,
-    "type" : "boolean"
+    "tokenLength" : 1,
+    "type" : "java.net.URL"
   } ],
   "positionList" : [ {
-    "charLength" : 58,
-    "startLineNumber" : 96,
+    "charLength" : 15,
+    "startLineNumber" : 74,
+    "startColumnNumber" : 31,
+    "endLineNumber" : 74,
+    "endColumnNumber" : 46
+  }, {
+    "charLength" : 15,
+    "startLineNumber" : 78,
     "startColumnNumber" : 12,
-    "endLineNumber" : 96,
-    "endColumnNumber" : 70
+    "endLineNumber" : 78,
+    "endColumnNumber" : 27
   } ],
-  "layoutRelationDataList" : [ ]
+  "layoutRelationDataList" : [ {
+    "firstKey" : 0,
+    "secondKey" : 1,
+    "layout" : 2
+  }, {
+    "firstKey" : 1,
+    "secondKey" : 0,
+    "layout" : 3
+  } ]
 }

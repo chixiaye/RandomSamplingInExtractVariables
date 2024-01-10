@@ -1,0 +1,126 @@
+{
+  "id" : 484,
+  "expression" : "true",
+  "projectName" : "apache@pulsar",
+  "commitID" : "5980ce060e5d08aea9a83659a68d64ed5673cf4e",
+  "filePath" : "pulsar-client-tools/src/main/java/org/apache/pulsar/client/cli/CmdConsume.java",
+  "occurrences" : 1,
+  "isArithmeticExpression" : 0,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "true",
+    "nodeType" : "BooleanLiteral",
+    "nodePosition" : {
+      "charLength" : 4,
+      "startLineNumber" : 382,
+      "startColumnNumber" : 82,
+      "endLineNumber" : 382,
+      "endColumnNumber" : 86
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.ClassInstanceCreation,arguments]",
+      "nodePosition" : {
+        "charLength" : 27,
+        "startLineNumber" : 382,
+        "startColumnNumber" : 60,
+        "endLineNumber" : 382,
+        "endColumnNumber" : 87
+      },
+      "nodeContext" : "new SslContextFactory(true)",
+      "nodeType" : "ClassInstanceCreation",
+      "astNodeNumber" : 4,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 48,
+        "startLineNumber" : 382,
+        "startColumnNumber" : 40,
+        "endLineNumber" : 382,
+        "endColumnNumber" : 88
+      },
+      "nodeContext" : "new WebSocketClient(new SslContextFactory(true))",
+      "nodeType" : "ClassInstanceCreation",
+      "astNodeNumber" : 7,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 64,
+        "startLineNumber" : 382,
+        "startColumnNumber" : 24,
+        "endLineNumber" : 382,
+        "endColumnNumber" : 88
+      },
+      "nodeContext" : "produceClient=new WebSocketClient(new SslContextFactory(true))",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 9,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 81,
+        "startLineNumber" : 382,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 382,
+        "endColumnNumber" : 89
+      },
+      "nodeContext" : "WebSocketClient produceClient=new WebSocketClient(new SslContextFactory(true));\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 12,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 3420,
+        "startLineNumber" : 367,
+        "startColumnNumber" : 51,
+        "endLineNumber" : 445,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "{\n  int numMessagesConsumed=0;\n  int returnCode=0;\n  TopicName topicName=TopicName.get(topic);\n  String wsTopic=String.format(\"%s/%s/\" + (StringUtils.isEmpty(topicName.getCluster()) ? \"\" : topicName.getCluster() + \"/\") + \"%s/%s/%s?subscriptionType=%s&subscriptionMode=%s\",topicName.getDomain(),topicName.getTenant(),topicName.getNamespacePortion(),topicName.getLocalName(),subscriptionName,subscriptionType.toString(),subscriptionMode.toString());\n  String consumerBaseUri=serviceURL + (serviceURL.endsWith(\"/\") ? \"\" : \"/\") + \"ws/consumer/\"+ wsTopic;\n  URI consumerUri=URI.create(consumerBaseUri);\n  WebSocketClient produceClient=new WebSocketClient(new SslContextFactory(true));\n  ClientUpgradeRequest produceRequest=new ClientUpgradeRequest();\n  try {\n    if (authentication != null) {\n      authentication.start();\n      AuthenticationDataProvider authData=authentication.getAuthData();\n      if (authData.hasDataForHttp()) {\n        for (        Map.Entry<String,String> kv : authData.getHttpHeaders()) {\n          produceRequest.setHeader(kv.getKey(),kv.getValue());\n        }\n      }\n    }\n  }\n catch (  Exception e) {\n    LOG.error(\"Authentication plugin error: \" + e.getMessage());\n    return -1;\n  }\n  CompletableFuture<Void> connected=new CompletableFuture<>();\n  ConsumerSocket consumerSocket=new ConsumerSocket(connected);\n  try {\n    produceClient.start();\n  }\n catch (  Exception e) {\n    LOG.error(\"Failed to start websocket-client\",e);\n    return -1;\n  }\n  try {\n    LOG.info(\"Trying to create websocket session..{}\",consumerUri);\n    produceClient.connect(consumerSocket,consumerUri,produceRequest);\n    connected.get();\n  }\n catch (  Exception e) {\n    LOG.error(\"Failed to create web-socket session\",e);\n    return -1;\n  }\n  try {\n    RateLimiter limiter=(this.consumeRate > 0) ? RateLimiter.create(this.consumeRate) : null;\n    while (this.numMessagesToConsume == 0 || numMessagesConsumed < this.numMessagesToConsume) {\n      if (limiter != null) {\n        limiter.acquire();\n      }\n      String msg=consumerSocket.receive(5,TimeUnit.SECONDS);\n      if (msg == null) {\n        LOG.debug(\"No message to consume after waiting for 5 seconds.\");\n      }\n else {\n        try {\n          String output=interpretByteArray(displayHex,Base64.getDecoder().decode(msg));\n          System.out.println(output);\n        }\n catch (        Exception e) {\n          System.out.println(msg);\n        }\n        numMessagesConsumed+=1;\n      }\n    }\n    consumerSocket.awaitClose(2,TimeUnit.SECONDS);\n  }\n catch (  Exception e) {\n    LOG.error(\"Error while consuming messages\");\n    LOG.error(e.getMessage(),e);\n    returnCode=-1;\n  }\n finally {\n    LOG.info(\"{} messages successfully consumed\",numMessagesConsumed);\n  }\n  return returnCode;\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 401,
+      "astHeight" : 15
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 3504,
+        "startLineNumber" : 366,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 445,
+        "endColumnNumber" : 5
+      },
+      "nodeContext" : "@SuppressWarnings(\"deprecation\") private int consumeFromWebSocket(String topic){\n  int numMessagesConsumed=0;\n  int returnCode=0;\n  TopicName topicName=TopicName.get(topic);\n  String wsTopic=String.format(\"%s/%s/\" + (StringUtils.isEmpty(topicName.getCluster()) ? \"\" : topicName.getCluster() + \"/\") + \"%s/%s/%s?subscriptionType=%s&subscriptionMode=%s\",topicName.getDomain(),topicName.getTenant(),topicName.getNamespacePortion(),topicName.getLocalName(),subscriptionName,subscriptionType.toString(),subscriptionMode.toString());\n  String consumerBaseUri=serviceURL + (serviceURL.endsWith(\"/\") ? \"\" : \"/\") + \"ws/consumer/\"+ wsTopic;\n  URI consumerUri=URI.create(consumerBaseUri);\n  WebSocketClient produceClient=new WebSocketClient(new SslContextFactory(true));\n  ClientUpgradeRequest produceRequest=new ClientUpgradeRequest();\n  try {\n    if (authentication != null) {\n      authentication.start();\n      AuthenticationDataProvider authData=authentication.getAuthData();\n      if (authData.hasDataForHttp()) {\n        for (        Map.Entry<String,String> kv : authData.getHttpHeaders()) {\n          produceRequest.setHeader(kv.getKey(),kv.getValue());\n        }\n      }\n    }\n  }\n catch (  Exception e) {\n    LOG.error(\"Authentication plugin error: \" + e.getMessage());\n    return -1;\n  }\n  CompletableFuture<Void> connected=new CompletableFuture<>();\n  ConsumerSocket consumerSocket=new ConsumerSocket(connected);\n  try {\n    produceClient.start();\n  }\n catch (  Exception e) {\n    LOG.error(\"Failed to start websocket-client\",e);\n    return -1;\n  }\n  try {\n    LOG.info(\"Trying to create websocket session..{}\",consumerUri);\n    produceClient.connect(consumerSocket,consumerUri,produceRequest);\n    connected.get();\n  }\n catch (  Exception e) {\n    LOG.error(\"Failed to create web-socket session\",e);\n    return -1;\n  }\n  try {\n    RateLimiter limiter=(this.consumeRate > 0) ? RateLimiter.create(this.consumeRate) : null;\n    while (this.numMessagesToConsume == 0 || numMessagesConsumed < this.numMessagesToConsume) {\n      if (limiter != null) {\n        limiter.acquire();\n      }\n      String msg=consumerSocket.receive(5,TimeUnit.SECONDS);\n      if (msg == null) {\n        LOG.debug(\"No message to consume after waiting for 5 seconds.\");\n      }\n else {\n        try {\n          String output=interpretByteArray(displayHex,Base64.getDecoder().decode(msg));\n          System.out.println(output);\n        }\n catch (        Exception e) {\n          System.out.println(msg);\n        }\n        numMessagesConsumed+=1;\n      }\n    }\n    consumerSocket.awaitClose(2,TimeUnit.SECONDS);\n  }\n catch (  Exception e) {\n    LOG.error(\"Error while consuming messages\");\n    LOG.error(e.getMessage(),e);\n    returnCode=-1;\n  }\n finally {\n    LOG.info(\"{} messages successfully consumed\",numMessagesConsumed);\n  }\n  return returnCode;\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 412,
+      "astHeight" : 16
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 81,
+        "startLineNumber" : 382,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 382,
+        "endColumnNumber" : 89
+      },
+      "nodeContext" : "WebSocketClient produceClient=new WebSocketClient(new SslContextFactory(true));\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 12,
+      "astHeight" : 6
+    },
+    "tokenLength" : 1,
+    "type" : "boolean"
+  } ],
+  "positionList" : [ {
+    "charLength" : 4,
+    "startLineNumber" : 382,
+    "startColumnNumber" : 82,
+    "endLineNumber" : 382,
+    "endColumnNumber" : 86
+  } ],
+  "layoutRelationDataList" : [ ]
+}

@@ -1,113 +1,113 @@
 {
   "id" : 324,
-  "expression" : "\"persistent://public/default/testCommitAndAbort\"",
+  "expression" : "entry == null",
   "projectName" : "apache@pulsar",
-  "commitID" : "ded806fd52f6e2f182fa02052cbd82c2a6755098",
-  "filePath" : "/pulsar-broker/src/test/java/org/apache/pulsar/broker/transaction/coordinator/TransactionCoordinatorClientTest.java",
+  "commitID" : "4f23767fcdc96e02d25837350891c14a13705b45",
+  "filePath" : "pulsar-broker/src/main/java/org/apache/pulsar/broker/service/AbstractBaseDispatcher.java",
   "occurrences" : 1,
   "isArithmeticExpression" : 0,
   "isGetTypeMethod" : 0,
   "expressionList" : [ {
-    "nodeContext" : "\"persistent://public/default/testCommitAndAbort\"",
-    "nodeType" : "StringLiteral",
+    "nodeContext" : "entry == null",
+    "nodeType" : "InfixExpression",
     "nodePosition" : {
-      "charLength" : 48,
-      "startLineNumber" : 85,
-      "startColumnNumber" : 88,
-      "endLineNumber" : 85,
-      "endColumnNumber" : 136
+      "charLength" : 13,
+      "startLineNumber" : 113,
+      "startColumnNumber" : 16,
+      "endLineNumber" : 113,
+      "endColumnNumber" : 29
     },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
+    "astNodeNumber" : 3,
+    "astHeight" : 2,
     "parentDataList" : [ {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.MethodInvocation,arguments]",
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 68,
-        "startLineNumber" : 85,
-        "startColumnNumber" : 69,
-        "endLineNumber" : 85,
-        "endColumnNumber" : 137
+        "charLength" : 60,
+        "startLineNumber" : 113,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 115,
+        "endColumnNumber" : 13
       },
-      "nodeContext" : "Lists.newArrayList(\"persistent://public/default/testCommitAndAbort\")",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 4,
-      "astHeight" : 2
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ExpressionStatement,expression]",
-      "nodePosition" : {
-        "charLength" : 130,
-        "startLineNumber" : 85,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 85,
-        "endColumnNumber" : 138
-      },
-      "nodeContext" : "transactionCoordinatorClient.addPublishPartitionToTxn(txnID,Lists.newArrayList(\"persistent://public/default/testCommitAndAbort\"))",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 8,
+      "nodeContext" : "if (entry == null) {\n  continue;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 6,
       "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.ForStatement,body]",
+      "nodePosition" : {
+        "charLength" : 3453,
+        "startLineNumber" : 111,
+        "startColumnNumber" : 76,
+        "endLineNumber" : 179,
+        "endColumnNumber" : 9
+      },
+      "nodeContext" : "{\n  Entry entry=entries.get(i);\n  if (entry == null) {\n    continue;\n  }\n  ByteBuf metadataAndPayload=entry.getDataBuffer();\n  int entryWrapperIndex=i + entryWrapperOffset;\n  MessageMetadata msgMetadata=entryWrapper.isPresent() && entryWrapper.get()[entryWrapperIndex] != null ? entryWrapper.get()[entryWrapperIndex].getMetadata() : null;\n  msgMetadata=msgMetadata == null ? Commands.peekMessageMetadata(metadataAndPayload,subscription.toString(),-1) : msgMetadata;\n  if (!isReplayRead && msgMetadata != null && msgMetadata.hasTxnidMostBits() && msgMetadata.hasTxnidLeastBits()) {\n    if (Markers.isTxnMarker(msgMetadata)) {\n      entries.set(i,null);\n      entry.release();\n      continue;\n    }\n else     if (((PersistentTopic)subscription.getTopic()).isTxnAborted(new TxnID(msgMetadata.getTxnidMostBits(),msgMetadata.getTxnidLeastBits()))) {\n      subscription.acknowledgeMessage(Collections.singletonList(entry.getPosition()),AckType.Individual,Collections.emptyMap());\n      entries.set(i,null);\n      entry.release();\n      continue;\n    }\n  }\n else   if (msgMetadata == null || Markers.isServerOnlyMarker(msgMetadata)) {\n    PositionImpl pos=(PositionImpl)entry.getPosition();\n    if (Markers.isReplicatedSubscriptionSnapshotMarker(msgMetadata)) {\n      processReplicatedSubscriptionSnapshot(pos,metadataAndPayload);\n    }\n    entries.set(i,null);\n    entry.release();\n    subscription.acknowledgeMessage(Collections.singletonList(pos),AckType.Individual,Collections.emptyMap());\n    continue;\n  }\n else   if (msgMetadata.hasDeliverAtTime() && trackDelayedDelivery(entry.getLedgerId(),entry.getEntryId(),msgMetadata)) {\n    entries.set(i,null);\n    entry.release();\n    continue;\n  }\n  int batchSize=msgMetadata.getNumMessagesInBatch();\n  totalMessages+=batchSize;\n  totalBytes+=metadataAndPayload.readableBytes();\n  totalChunkedMessages+=msgMetadata.hasChunkId() ? 1 : 0;\n  batchSizes.setBatchSize(i,batchSize);\n  long[] ackSet=null;\n  if (indexesAcks != null && cursor != null) {\n    ackSet=cursor.getDeletedBatchIndexesAsLongArray(PositionImpl.get(entry.getLedgerId(),entry.getEntryId()));\n    if (ackSet != null) {\n      indexesAcks.setIndexesAcks(i,Pair.of(batchSize,ackSet));\n    }\n else {\n      indexesAcks.setIndexesAcks(i,null);\n    }\n  }\n  BrokerInterceptor interceptor=subscription.interceptor();\n  if (null != interceptor) {\n    interceptor.beforeSendMessage(subscription,entry,ackSet,msgMetadata);\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 342,
+      "astHeight" : 11
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 131,
-        "startLineNumber" : 85,
+        "charLength" : 3521,
+        "startLineNumber" : 111,
         "startColumnNumber" : 8,
-        "endLineNumber" : 85,
-        "endColumnNumber" : 139
+        "endLineNumber" : 179,
+        "endColumnNumber" : 9
       },
-      "nodeContext" : "transactionCoordinatorClient.addPublishPartitionToTxn(txnID,Lists.newArrayList(\"persistent://public/default/testCommitAndAbort\"));\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 9,
-      "astHeight" : 4
+      "nodeContext" : "for (int i=0, entriesSize=entries.size(); i < entriesSize; i++) {\n  Entry entry=entries.get(i);\n  if (entry == null) {\n    continue;\n  }\n  ByteBuf metadataAndPayload=entry.getDataBuffer();\n  int entryWrapperIndex=i + entryWrapperOffset;\n  MessageMetadata msgMetadata=entryWrapper.isPresent() && entryWrapper.get()[entryWrapperIndex] != null ? entryWrapper.get()[entryWrapperIndex].getMetadata() : null;\n  msgMetadata=msgMetadata == null ? Commands.peekMessageMetadata(metadataAndPayload,subscription.toString(),-1) : msgMetadata;\n  if (!isReplayRead && msgMetadata != null && msgMetadata.hasTxnidMostBits() && msgMetadata.hasTxnidLeastBits()) {\n    if (Markers.isTxnMarker(msgMetadata)) {\n      entries.set(i,null);\n      entry.release();\n      continue;\n    }\n else     if (((PersistentTopic)subscription.getTopic()).isTxnAborted(new TxnID(msgMetadata.getTxnidMostBits(),msgMetadata.getTxnidLeastBits()))) {\n      subscription.acknowledgeMessage(Collections.singletonList(entry.getPosition()),AckType.Individual,Collections.emptyMap());\n      entries.set(i,null);\n      entry.release();\n      continue;\n    }\n  }\n else   if (msgMetadata == null || Markers.isServerOnlyMarker(msgMetadata)) {\n    PositionImpl pos=(PositionImpl)entry.getPosition();\n    if (Markers.isReplicatedSubscriptionSnapshotMarker(msgMetadata)) {\n      processReplicatedSubscriptionSnapshot(pos,metadataAndPayload);\n    }\n    entries.set(i,null);\n    entry.release();\n    subscription.acknowledgeMessage(Collections.singletonList(pos),AckType.Individual,Collections.emptyMap());\n    continue;\n  }\n else   if (msgMetadata.hasDeliverAtTime() && trackDelayedDelivery(entry.getLedgerId(),entry.getEntryId(),msgMetadata)) {\n    entries.set(i,null);\n    entry.release();\n    continue;\n  }\n  int batchSize=msgMetadata.getNumMessagesInBatch();\n  totalMessages+=batchSize;\n  totalBytes+=metadataAndPayload.readableBytes();\n  totalChunkedMessages+=msgMetadata.hasChunkId() ? 1 : 0;\n  batchSizes.setBatchSize(i,batchSize);\n  long[] ackSet=null;\n  if (indexesAcks != null && cursor != null) {\n    ackSet=cursor.getDeletedBatchIndexesAsLongArray(PositionImpl.get(entry.getLedgerId(),entry.getEntryId()));\n    if (ackSet != null) {\n      indexesAcks.setIndexesAcks(i,Pair.of(batchSize,ackSet));\n    }\n else {\n      indexesAcks.setIndexesAcks(i,null);\n    }\n  }\n  BrokerInterceptor interceptor=subscription.interceptor();\n  if (null != interceptor) {\n    interceptor.beforeSendMessage(subscription,entry,ackSet,msgMetadata);\n  }\n}\n",
+      "nodeType" : "ForStatement",
+      "astNodeNumber" : 358,
+      "astHeight" : 12
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 535,
-        "startLineNumber" : 83,
-        "startColumnNumber" : 82,
-        "endLineNumber" : 93,
+        "charLength" : 3814,
+        "startLineNumber" : 107,
+        "startColumnNumber" : 92,
+        "endLineNumber" : 183,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  TxnID txnID=transactionCoordinatorClient.newTransaction();\n  transactionCoordinatorClient.addPublishPartitionToTxn(txnID,Lists.newArrayList(\"persistent://public/default/testCommitAndAbort\"));\n  transactionCoordinatorClient.commit(txnID);\n  try {\n    transactionCoordinatorClient.abort(txnID);\n    Assert.fail(\"Should be fail, because the txn is in committing state, can't abort now.\");\n  }\n catch (  TransactionCoordinatorClientException ignore) {\n  }\n}\n",
+      "nodeContext" : "{\n  int totalMessages=0;\n  long totalBytes=0;\n  int totalChunkedMessages=0;\n  for (int i=0, entriesSize=entries.size(); i < entriesSize; i++) {\n    Entry entry=entries.get(i);\n    if (entry == null) {\n      continue;\n    }\n    ByteBuf metadataAndPayload=entry.getDataBuffer();\n    int entryWrapperIndex=i + entryWrapperOffset;\n    MessageMetadata msgMetadata=entryWrapper.isPresent() && entryWrapper.get()[entryWrapperIndex] != null ? entryWrapper.get()[entryWrapperIndex].getMetadata() : null;\n    msgMetadata=msgMetadata == null ? Commands.peekMessageMetadata(metadataAndPayload,subscription.toString(),-1) : msgMetadata;\n    if (!isReplayRead && msgMetadata != null && msgMetadata.hasTxnidMostBits() && msgMetadata.hasTxnidLeastBits()) {\n      if (Markers.isTxnMarker(msgMetadata)) {\n        entries.set(i,null);\n        entry.release();\n        continue;\n      }\n else       if (((PersistentTopic)subscription.getTopic()).isTxnAborted(new TxnID(msgMetadata.getTxnidMostBits(),msgMetadata.getTxnidLeastBits()))) {\n        subscription.acknowledgeMessage(Collections.singletonList(entry.getPosition()),AckType.Individual,Collections.emptyMap());\n        entries.set(i,null);\n        entry.release();\n        continue;\n      }\n    }\n else     if (msgMetadata == null || Markers.isServerOnlyMarker(msgMetadata)) {\n      PositionImpl pos=(PositionImpl)entry.getPosition();\n      if (Markers.isReplicatedSubscriptionSnapshotMarker(msgMetadata)) {\n        processReplicatedSubscriptionSnapshot(pos,metadataAndPayload);\n      }\n      entries.set(i,null);\n      entry.release();\n      subscription.acknowledgeMessage(Collections.singletonList(pos),AckType.Individual,Collections.emptyMap());\n      continue;\n    }\n else     if (msgMetadata.hasDeliverAtTime() && trackDelayedDelivery(entry.getLedgerId(),entry.getEntryId(),msgMetadata)) {\n      entries.set(i,null);\n      entry.release();\n      continue;\n    }\n    int batchSize=msgMetadata.getNumMessagesInBatch();\n    totalMessages+=batchSize;\n    totalBytes+=metadataAndPayload.readableBytes();\n    totalChunkedMessages+=msgMetadata.hasChunkId() ? 1 : 0;\n    batchSizes.setBatchSize(i,batchSize);\n    long[] ackSet=null;\n    if (indexesAcks != null && cursor != null) {\n      ackSet=cursor.getDeletedBatchIndexesAsLongArray(PositionImpl.get(entry.getLedgerId(),entry.getEntryId()));\n      if (ackSet != null) {\n        indexesAcks.setIndexesAcks(i,Pair.of(batchSize,ackSet));\n      }\n else {\n        indexesAcks.setIndexesAcks(i,null);\n      }\n    }\n    BrokerInterceptor interceptor=subscription.interceptor();\n    if (null != interceptor) {\n      interceptor.beforeSendMessage(subscription,entry,ackSet,msgMetadata);\n    }\n  }\n  sendMessageInfo.setTotalMessages(totalMessages);\n  sendMessageInfo.setTotalBytes(totalBytes);\n  sendMessageInfo.setTotalChunkedMessages(totalChunkedMessages);\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 41,
-      "astHeight" : 6
+      "astNodeNumber" : 389,
+      "astHeight" : 13
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 623,
-        "startLineNumber" : 82,
+        "charLength" : 4101,
+        "startLineNumber" : 105,
         "startColumnNumber" : 4,
-        "endLineNumber" : 93,
+        "endLineNumber" : 183,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "@Test public void testCommitAndAbort() throws TransactionCoordinatorClientException {\n  TxnID txnID=transactionCoordinatorClient.newTransaction();\n  transactionCoordinatorClient.addPublishPartitionToTxn(txnID,Lists.newArrayList(\"persistent://public/default/testCommitAndAbort\"));\n  transactionCoordinatorClient.commit(txnID);\n  try {\n    transactionCoordinatorClient.abort(txnID);\n    Assert.fail(\"Should be fail, because the txn is in committing state, can't abort now.\");\n  }\n catch (  TransactionCoordinatorClientException ignore) {\n  }\n}\n",
+      "nodeContext" : "public void filterEntriesForConsumer(Optional<EntryWrapper[]> entryWrapper,int entryWrapperOffset,List<Entry> entries,EntryBatchSizes batchSizes,SendMessageInfo sendMessageInfo,EntryBatchIndexesAcks indexesAcks,ManagedCursor cursor,boolean isReplayRead){\n  int totalMessages=0;\n  long totalBytes=0;\n  int totalChunkedMessages=0;\n  for (int i=0, entriesSize=entries.size(); i < entriesSize; i++) {\n    Entry entry=entries.get(i);\n    if (entry == null) {\n      continue;\n    }\n    ByteBuf metadataAndPayload=entry.getDataBuffer();\n    int entryWrapperIndex=i + entryWrapperOffset;\n    MessageMetadata msgMetadata=entryWrapper.isPresent() && entryWrapper.get()[entryWrapperIndex] != null ? entryWrapper.get()[entryWrapperIndex].getMetadata() : null;\n    msgMetadata=msgMetadata == null ? Commands.peekMessageMetadata(metadataAndPayload,subscription.toString(),-1) : msgMetadata;\n    if (!isReplayRead && msgMetadata != null && msgMetadata.hasTxnidMostBits() && msgMetadata.hasTxnidLeastBits()) {\n      if (Markers.isTxnMarker(msgMetadata)) {\n        entries.set(i,null);\n        entry.release();\n        continue;\n      }\n else       if (((PersistentTopic)subscription.getTopic()).isTxnAborted(new TxnID(msgMetadata.getTxnidMostBits(),msgMetadata.getTxnidLeastBits()))) {\n        subscription.acknowledgeMessage(Collections.singletonList(entry.getPosition()),AckType.Individual,Collections.emptyMap());\n        entries.set(i,null);\n        entry.release();\n        continue;\n      }\n    }\n else     if (msgMetadata == null || Markers.isServerOnlyMarker(msgMetadata)) {\n      PositionImpl pos=(PositionImpl)entry.getPosition();\n      if (Markers.isReplicatedSubscriptionSnapshotMarker(msgMetadata)) {\n        processReplicatedSubscriptionSnapshot(pos,metadataAndPayload);\n      }\n      entries.set(i,null);\n      entry.release();\n      subscription.acknowledgeMessage(Collections.singletonList(pos),AckType.Individual,Collections.emptyMap());\n      continue;\n    }\n else     if (msgMetadata.hasDeliverAtTime() && trackDelayedDelivery(entry.getLedgerId(),entry.getEntryId(),msgMetadata)) {\n      entries.set(i,null);\n      entry.release();\n      continue;\n    }\n    int batchSize=msgMetadata.getNumMessagesInBatch();\n    totalMessages+=batchSize;\n    totalBytes+=metadataAndPayload.readableBytes();\n    totalChunkedMessages+=msgMetadata.hasChunkId() ? 1 : 0;\n    batchSizes.setBatchSize(i,batchSize);\n    long[] ackSet=null;\n    if (indexesAcks != null && cursor != null) {\n      ackSet=cursor.getDeletedBatchIndexesAsLongArray(PositionImpl.get(entry.getLedgerId(),entry.getEntryId()));\n      if (ackSet != null) {\n        indexesAcks.setIndexesAcks(i,Pair.of(batchSize,ackSet));\n      }\n else {\n        indexesAcks.setIndexesAcks(i,null);\n      }\n    }\n    BrokerInterceptor interceptor=subscription.interceptor();\n    if (null != interceptor) {\n      interceptor.beforeSendMessage(subscription,entry,ackSet,msgMetadata);\n    }\n  }\n  sendMessageInfo.setTotalMessages(totalMessages);\n  sendMessageInfo.setTotalBytes(totalBytes);\n  sendMessageInfo.setTotalChunkedMessages(totalChunkedMessages);\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 49,
-      "astHeight" : 7
+      "astNodeNumber" : 431,
+      "astHeight" : 14
     } ],
     "currentLineData" : {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 131,
-        "startLineNumber" : 85,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 85,
-        "endColumnNumber" : 139
+        "charLength" : 60,
+        "startLineNumber" : 113,
+        "startColumnNumber" : 12,
+        "endLineNumber" : 115,
+        "endColumnNumber" : 13
       },
-      "nodeContext" : "transactionCoordinatorClient.addPublishPartitionToTxn(txnID,Lists.newArrayList(\"persistent://public/default/testCommitAndAbort\"));\n",
-      "nodeType" : "ExpressionStatement",
-      "astNodeNumber" : 9,
-      "astHeight" : 4
+      "nodeContext" : "if (entry == null) {\n  continue;\n}\n",
+      "nodeType" : "IfStatement",
+      "astNodeNumber" : 6,
+      "astHeight" : 3
     },
-    "tokenLength" : 2,
-    "type" : "java.lang.String"
+    "tokenLength" : 3,
+    "type" : "boolean"
   } ],
   "positionList" : [ {
-    "charLength" : 48,
-    "startLineNumber" : 85,
-    "startColumnNumber" : 88,
-    "endLineNumber" : 85,
-    "endColumnNumber" : 136
+    "charLength" : 13,
+    "startLineNumber" : 113,
+    "startColumnNumber" : 16,
+    "endLineNumber" : 113,
+    "endColumnNumber" : 29
   } ],
   "layoutRelationDataList" : [ ]
 }
