@@ -119,7 +119,6 @@ public class GitUtils {
         try (Repository repo = Git.open(new File(repoPath)).getRepository()) {
             Git git = new Git(repo);
             ObjectId commitId = repo.resolve(commitSHA);
-
             if (commitId == null) {
                 throw new IllegalArgumentException("Invalid commitSHA: " + commitSHA);
             }

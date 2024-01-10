@@ -2,6 +2,7 @@ package io.json;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import json.CaseStudy;
 import json.EVRecord;
 import json.LabelData;
 
@@ -24,6 +25,13 @@ public class JSONReader {
 
         return objectMapper.readValue(new File(json), new TypeReference<>() {
         });
+    }
+
+    public static List<CaseStudy> deserializeAsCaseStudy(String json) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<CaseStudy> list = objectMapper.readValue(new File(json), new TypeReference<>() {
+        });
+        return list;
     }
 
 

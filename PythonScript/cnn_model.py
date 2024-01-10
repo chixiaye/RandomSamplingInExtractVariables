@@ -31,7 +31,8 @@ pos_parser = JsonParser("C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtract
 positive_csv_reader = CSVReader('C:\\Users\\30219\\Desktop\\result\\result_4.csv', 1)
 negative_csv_reader = CSVReader('C:\\Users\\30219\\Desktop\\result\\result_negative_6.csv', 0)
 
-features = ['occurrences', 'charLength', "isGetTypeMethod", 'isArithmeticExpression']  # ,'currentLineData'
+features = ['occurrences', 'charLength', "isGetMethod", 'isArithmeticExp', 'isSimpleName', 'isQualifiedName',
+                'isClassInstanceCreation', 'isVariableDeclarationFragment', 'isLiteral' ]  # ,'currentLineData'
 
 # 读取特征数据
 neg_maps = neg_parser.get_value(features)
@@ -102,10 +103,10 @@ for fold, (train_index, test_index) in enumerate(kf.split(X_scaled_data)):
     X_train, X_test = X_scaled_data[train_index].copy(), X_scaled_data[test_index].copy()
     y_train, y_test = y[train_index].copy(), y[test_index].copy()
 
-    # # 实例化SMOTE对象
-    # smote = SMOTE(random_state=42)
-    # # 进行过采样
-    # X_train, y_train = smote.fit_resample(X_train, y_train)
+    # 实例化SMOTE对象
+    smote = SMOTE(random_state=42)
+    # 进行过采样
+    X_train, y_train = smote.fit_resample(X_train, y_train)
 
     # 对训练集进行标准化
     scaler = StandardScaler()  # 标准化转换
@@ -162,13 +163,13 @@ for fold, (train_index, test_index) in enumerate(kf.split(X_scaled_data)):
     for index in range(0, len(X_test)):
         # 如果预测为正 送入ValExtractor检验
         if y_predict[index] == 1:
-            tmp = X_test_copy[index].copy()  # 判断对象是否为数组
-            if isinstance(val_extractor_data[index_to_data_map[test_index[index]]], list):
-                tmp[0] = val_extractor_data[index_to_data_map[test_index[index]]][2]
-            tmp_norm = scaler.transform([tmp])  # 重新转换测试集
-            y_predict[index] = 1 if model.predict(tmp_norm, verbose=False)[0] > 0.5 else 0
-            if y_predict[index] == 0:
-                print(index_to_data_map[test_index[index]], tmp[0], X_test_copy[index][0])
+            # tmp = X_test_copy[index].copy()  # 判断对象是否为数组
+            # if isinstance(val_extractor_data[index_to_data_map[test_index[index]]], list):
+            #     tmp[0] = val_extractor_data[index_to_data_map[test_index[index]]][2]
+            # tmp_norm = scaler.transform([tmp])  # 重新转换测试集
+            # y_predict[index] = 1 if model.predict(tmp_norm, verbose=False)[0] > 0.5 else 0
+            # if y_predict[index] == 0:
+            #     print(index_to_data_map[test_index[index]], tmp[0], X_test_copy[index][0])
             pass
 
     # test_loss, test_acc = model.evaluate(X_test_norm, y_test)

@@ -4,9 +4,13 @@ import ast.ProjectsParser;
 import git.GitUtils;
 import io.json.JsonFileSplitter;
 import json.EVRecord;
+import json.LabelData;
 import json.MetaData;
+import json.utils.NodePosition;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.*;
 import sample.Constants;
 
 import java.io.IOException;
@@ -18,11 +22,16 @@ import java.util.*;
 @Slf4j
 public class NegativeMinerThread extends AbstractMinerThread {
 
+    private final LabelData labelData;
+    @Getter
+    int fIndex ;
     //每个文件最多采集多少个
     private int fMaxRecordsPerFile = 1;
 
-    public NegativeMinerThread(String projectName, int totalRecords ) {
-        super(projectName,totalRecords);
+    public NegativeMinerThread(String projectName, LabelData labelData,int  index) {
+        super(projectName,-1);
+        fIndex = index;
+        this.labelData = labelData;
     }
 
     @Override
@@ -31,33 +40,16 @@ public class NegativeMinerThread extends AbstractMinerThread {
         fProjectName = projectName;
         String gitPath = Constants.PREFIX_PATH + fProjectName + System.getProperty("file.separator");
         GitUtils.removeGitLock(gitPath);
-        fCommitID = null;
-        HashSet<String> set = new HashSet<>();
+        fCommitID = labelData.getRefactoredCommitID();
         fFileList = new ArrayList<>();
         Path projectPath = Paths.get(gitPath);
-        while (true) {
-            if (fCommitID != null)
-                set.add(fCommitID);
-            try {
-                fCommitID = GitUtils.getLatestCommitSHA(gitPath, set);
-                if(fCommitID==null){
-                    break;
-                }
-                GitUtils.rollbackToCommit(gitPath, fCommitID);
-                fProjectsParser = new ProjectsParser(new Path[]{projectPath}, projectPath, projectPath);
-                break;
-//                if (fProjectsParser.getTargetJavaFiles().size() >= fTotalRecords) {
-//
-//                    break;
-//                }else {
-//                    log.info("project {} has {} java files, less than {} refactorings, will try next commit",fProjectName,fProjectsParser.getTargetJavaFiles().size(),fTotalRecords);
-//                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
+        try {
+            GitUtils.rollbackToCommit(gitPath, fCommitID);
+            fProjectsParser = new ProjectsParser(new Path[]{projectPath}, projectPath, projectPath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -74,44 +66,61 @@ public class NegativeMinerThread extends AbstractMinerThread {
     }
 
     public void analyzeProject() throws IOException {
-        ArrayList<EVRecord> evRecords = new ArrayList<>();
-
         if (this.fCommitID == null) {
             return;
         }
+        String gitPath = Constants.PREFIX_PATH + fProjectName + System.getProperty("file.separator");
+        String path = labelData.getRefactoredFilePath();
+        String name = labelData.getRefactoredName();
+        NodePosition nodePosition = labelData.getRefactoredPositionList()[0];
+        CompilationUnit cu ;
+        try{
+            cu = fProjectsParser.parse(gitPath + Constants.FILE_SEPARATOR_PROPERTY + path);
+        }catch (Exception e){
+            log.error("parse error {}",path);
+            return;
+        }
+        // 根据nodePosition和name找到所在的方法体
+        ASTNode[] enclosingBody = new ASTNode[1];
+        NegativeExpressionVisitor visitor = new NegativeExpressionVisitor(cu);
+        cu.accept(new ASTVisitor() {
+            @Override
+            public boolean preVisit2(ASTNode node) {
+                ASTNode parent = node.getParent();
+                // 首先找到声明的位置
+                if (enclosingBody[0] == null && node instanceof SimpleName
+                        && parent instanceof VariableDeclarationFragment vdf &&
+                        node.equals(vdf.getName()) && name.equals(node.toString())) {
+                    int offset = node.getStartPosition();
+                    int length = node.getLength();
+                    NodePosition pos = new NodePosition(cu.getLineNumber(offset), cu.getColumnNumber(offset)
+                            , cu.getLineNumber(offset + length), cu.getColumnNumber(offset + length), length);
+                    if (pos.getStartLineNumber() >= nodePosition.getStartLineNumber()
+                            && pos.getEndLineNumber() <= nodePosition.getEndLineNumber()) {
+                        // 对覆盖范围做初始化
+                        while (parent != null) {
+                            if (parent instanceof MethodDeclaration || parent instanceof Initializer || parent instanceof LambdaExpression) {
+                                break;
+                            }
+                            parent = parent.getParent();
+                        }
+                        enclosingBody[0] = parent;
+                    }
+                }
+                return super.preVisit2(node);
+            }
+        });
+        if(enclosingBody[0]==null){
+            return ;
+        }
+        enclosingBody[0].accept(visitor);
 
-        int id = 1;
-        HashSet<String> targetJavaFiles = fProjectsParser.getTargetJavaFiles();
-        int size = targetJavaFiles.size();
-
-        log.info("start analyzing {} ... total {} files, will sample {} refactorings", fProjectName, size, fTotalRecords);
-        int currentProcessed = -1;
-        while (fRandomSelection.getCurrentRecords() < fTotalRecords) {
-            String path = fRandomSelection.generateRandomObjectFromSet(targetJavaFiles);
-            if (path == null) {
-                log.error("no more files to process in project {}, current size: {}", fProjectName,targetJavaFiles.size());
-                break;
-            }
-            CompilationUnit cu = null;
-            try{
-               cu = fProjectsParser.parse(path);
-            }catch (Exception e){
-                targetJavaFiles.remove(path);
-                continue;
-            }
-            if (cu == null) {
-                targetJavaFiles.remove(path);
-                continue;
-            }
-            NegativeExpressionVisitor visitor = new NegativeExpressionVisitor(cu);
-            cu.accept(visitor);
-            String str = path.replace(Constants.PREFIX_PATH + fProjectName, "").replace("\\", "/");
-            Set<Map.Entry<String, ArrayList<MetaData>>> entrySet = visitor.recordMap.entrySet();
-            Map.Entry<String, ArrayList<MetaData>> entry = fRandomSelection.generateRandomObjectFromSet(entrySet);
-            if (entry == null || entry.getValue().isEmpty()) {
-                targetJavaFiles.remove(path);
-                continue;
-            }
+        String str = path.replace(Constants.PREFIX_PATH + fProjectName, "").replace("\\", "/");
+        Set<Map.Entry<String, ArrayList<MetaData>>> entrySet = visitor.recordMap.entrySet();
+        int size = entrySet.size();
+        log.info("start analyzing {} ... total {} samples", fProjectName+"-"+labelData.getId(), size);
+        for (Map.Entry<String, ArrayList<MetaData>> entry : entrySet) {
+            String key = entry.getKey();
             ArrayList<MetaData> metaDataList = entry.getValue();
             for (MetaData m : metaDataList) {
                 visitor.loadMetaData(m);
@@ -129,7 +138,7 @@ public class NegativeMinerThread extends AbstractMinerThread {
             }
             EVRecord r = new EVRecord();
             r.setProjectName(fProjectName);
-            r.setId(id++);
+            r.setId(fIndex++);
             r.setExpression(metaDataList.get(0).getNodeContext());
             r.setCommitID(fCommitID);
             r.setFilePath(str);
@@ -137,19 +146,17 @@ public class NegativeMinerThread extends AbstractMinerThread {
             r.setExpressionList(metaDataList);
             r.generatePositionList(metaDataList);
             r.setLayoutRelationDataList();
+            r.setIsGetTypeMethod(visitor.getTypeMethodState());
+            r.setIsArithmeticExpression(visitor.getArithmeticExpressionState());
             fJsonFileSplitter.writeJsonArrayInSampled(r, false);
-
             fRandomSelection.incCurrentRecords();
-            // 期望每个文件随机采一个，不足的话可以多采
-            if(targetJavaFiles.size()> fTotalRecords- fRandomSelection.getCurrentRecords()){
-                targetJavaFiles.remove(path);
-            }
-            int currentRecords = fRandomSelection.getCurrentRecords();
-            int process = (100 * (currentRecords)) / fTotalRecords;
-            if (process % 5 == 0 && currentProcessed != (100 * (currentRecords)) / fTotalRecords) {
-                currentProcessed = (100 * (currentRecords)) / this.fTotalRecords;
-                log.info("analyzing {} ... {}%, total {} refactorings", fProjectName, currentProcessed, fTotalRecords);
-            }
+//            visitor.recordMap.put(key, value);
+//            int currentRecords = fRandomSelection.getCurrentRecords();
+//            int process = (100 * (currentRecords)) / size;
+//            if (process % 5 == 0 && currentProcessed != (100 * (currentRecords)) / size) {
+//                currentProcessed = (100 * (currentRecords)) /size;
+//                log.info("analyzing {} ... {}%, total {} refactorings", fProjectName, currentProcessed, size);
+//            }
         }
 
     }

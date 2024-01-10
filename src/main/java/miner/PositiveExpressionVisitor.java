@@ -55,7 +55,7 @@ public class PositiveExpressionVisitor extends AbstractExpressionVisitor {
         ParentData parentData = parentDataList.get(currentLineContextIndex);
         CurrentLineData currentLineData =  new CurrentLineData(parentData.getNodeContext(),parentData.getNodeType(),
                 parentData.getLocationInParent(),parentData.getNodePosition());
-//        currentLineData.setTokenLength();
+        currentLineData.setTokenLength();
         currentLineData.countASTNodeComplexity(parentNodes.get(currentLineContextIndex));
         metaData.setCurrentLineData(currentLineData);
     }

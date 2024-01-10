@@ -1,51 +1,36 @@
 package json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeId;
+import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
 
+@Data
 public class CaseStudy {
-    @JsonProperty("before commit")
-    private String beforeCommit;
+    private int no;
 
-    @JsonProperty("after commit")
-    private String afterCommit;
+    @JsonProperty("originalName")
+    private String originalName;
 
-    @JsonProperty("file path")
-    private String filePath;
+    @JsonProperty("originalExpressionList")
+    private OriginalExpression[] originalExpressionList;
 
-    @JsonProperty("old name")
-    private String oldName;
+    @JsonProperty("originalCommitId")
+    private String originalCommitId;
 
-    @JsonProperty("new name")
-    private String newName;
+    private String path;
 
-    private String type;
+    @JsonProperty("refactoredName")
+    private String refactoredName;
 
-    @JsonProperty("variable place")
-    private VariablePlace variablePlace;
+    @JsonProperty("refactoredCommitId")
+    private String refactoredCommitId;
 
-    @JsonProperty("before location list")
-    private Location[] beforeLocationList;
+    @JsonProperty("projectName")
+    private String projectName;
 
-    @JsonProperty("after location list")
-    private Location[] afterLocationList;
-
-    // Getters and setters
+    private int fixed;
 }
 
-class VariablePlace {
-    private int startLine;
-    private int startColumn;
-    private int endLine;
-    private int endColumn;
 
-    // Getters and setters
-}
-
-class Location {
-    private int startLine;
-    private int startColumn;
-    private int endLine;
-    private int endColumn;
-
-    // Getters and setters
-}

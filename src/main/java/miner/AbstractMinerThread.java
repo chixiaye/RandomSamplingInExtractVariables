@@ -19,7 +19,7 @@ public abstract class AbstractMinerThread extends Thread{
     RandomSelection fRandomSelection;
 
 
-    public abstract void analyzeProject() throws IOException;
+    public abstract void analyzeProject() throws IOException, Exception;
 
     public AbstractMinerThread(String projectName,int totalRecords) {
         fTotalRecords = totalRecords;

@@ -2,11 +2,10 @@ package sample;
 
 
 import io.json.JSONReader;
+import json.CaseStudy;
 import json.LabelData;
 import lombok.extern.slf4j.Slf4j;
-import miner.NegativeMinerThread;
-import miner.PositiveMinerThread;
-import miner.RatioMinerThread;
+import miner.*;
 import refactoringminer.handler.RefactoringMinerThread;
 import utils.Utils;
 
@@ -21,7 +20,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertTrue;
 
 @Slf4j
 public class Main {
@@ -36,11 +34,12 @@ public class Main {
                 new ThreadPoolExecutor.CallerRunsPolicy());
         log.info("core pool size: {}, max pool size: {}", CORE_POOL_SIZE, MAX_POOL_SIZE);
 //        getRatio(executor);
-//        minePositive(executor);
-        mineNegative(executor, Constants.RATIO);
+        minePositive(executor);
+//        mineNegative(executor, Constants.RATIO);
 //        doRefactoringMiner(executor);
+//        minePositiveCaseStudyFeatures(executor);
+//        mineNegativeCaseStudyFeatures(executor);
     }
-
 
     // 根据正样本的表达式信息定位到方法， 查找方法内有多少个表达式可以被提取
     public static void getRatio(ThreadPoolExecutor executor) throws IOException {
@@ -81,11 +80,11 @@ public class Main {
         for (int i = list.size() - 1; i >= 0; --i) {
             File file = list.get(i);
             String fileName = file.getName();
-            if (!file.getName().contains("bumptech@glide_37")) {
-                continue;
-            } else {
-                System.out.println(file.getName());
-            }
+//            if (!file.getName().contains("bumptech@glide_37")) {
+//                continue;
+//            } else {
+//                System.out.println(file.getName());
+//            }
             String localName = fileName.substring(0, fileName.lastIndexOf("_"));
             int sampleNumber = Integer.parseInt(fileName.substring(fileName.lastIndexOf("_") + 1, fileName.lastIndexOf(".")));
             LabelData labelData = JSONReader.deserializeAsLabelData(file.getAbsolutePath());
@@ -105,40 +104,23 @@ public class Main {
      * @throws IOException
      */
     public static void mineNegative(ThreadPoolExecutor executor, int ratio) throws IOException {
-        HashMap<String, Integer> map = new HashMap<>();
         ArrayList<File> list = new ArrayList<>();
         Utils.getFileList(list, Constants.LABELED_DATA_PATH, "json");
+        Map<String,Integer> projectCntMap = new HashMap<>();
         for (int i = list.size() - 1; i >= 0; --i) {
             File file = list.get(i);
             String fileName = file.getName();
             String localName = fileName.substring(0, fileName.lastIndexOf("_"));
-            map.put(localName, 1 + map.getOrDefault(localName, 0));
-        }
-        List<File> minedNegList = new ArrayList<>();
-        Map<String, Integer> minedNegProjMap = new HashMap<>();
-        Utils.getFileList(minedNegList, Constants.NEGATIVE_OUTPUT_PATH, "json");
-        minedNegList.forEach(file -> {
-            String fileName = file.getName();
-            String localName = fileName.substring(0, fileName.lastIndexOf("_"));
-            minedNegProjMap.put(localName, 1 + minedNegProjMap.getOrDefault(localName, 0));
-        });
-        minedNegProjMap.forEach((key, value) -> {
-//            System.out.println(key+", " + value+" "+map.get(key)*ratio );
-            try {
-                assertTrue(key + ", " + value + " " + map.get(key) * ratio, value == map.get(key) * ratio);
-            } catch (AssertionError e) {
-                e.printStackTrace();
-            }
-        });
-        System.out.println(minedNegProjMap.keySet().size());
-        for (String key : map.keySet()) {
-//            System.out.println(key+", " + map.get(key)  );
-            Integer sampleNumber = map.get(key);
-            if (minedNegProjMap.containsKey(key)) {
-                continue;
-            }
+//            if(!localName.equals("Yalantis@uCrop")){
+//                continue;
+//            }
+            LabelData labelData = JSONReader.deserializeAsLabelData(file.getAbsolutePath());
+//            System.out.println("mining for"+labelData.getProjectName()+"-"+ labelData.getId());
+            // 单线程
+            NegativeMinerThread t = new NegativeMinerThread(localName,labelData,projectCntMap.getOrDefault(localName,1));
+            t.run();
+            projectCntMap.put(localName,t.getFIndex());
 
-//            break;
         }
         executor.shutdown();
     }
@@ -158,6 +140,55 @@ public class Main {
         }
         executor.shutdown();
         System.out.println(i);
+    }
+
+    /**
+     * case study 数据 挖掘特征
+     * @param executor
+     * @throws IOException
+     */
+    public static void minePositiveCaseStudyFeatures(ThreadPoolExecutor executor) throws IOException {
+        ArrayList<File> list = new ArrayList<>();
+        Utils.getFileList(list, Constants.CASE_STUDY_DATA_PATH, "json"); Map<String,Integer> projectCntMap = new HashMap<>();
+        for (int i = list.size() - 1; i >= 0; --i) {
+            File file = list.get(i);
+            String fileName = file.getName();
+            System.out.println(file.getName());
+
+            List<CaseStudy> caseStudyList = JSONReader.deserializeAsCaseStudy(file.getAbsolutePath());
+            System.out.println(caseStudyList.size());
+            //单线程
+            new PositiveCaseStudyMinerThread(fileName.substring(0,fileName.indexOf(".")),caseStudyList ).run();
+//            break;
+        }
+        executor.shutdown();
+    }
+
+
+    /**
+     * case study 数据 挖掘特征
+     * @param executor
+     * @throws IOException
+     */
+    public static void mineNegativeCaseStudyFeatures(ThreadPoolExecutor executor) throws IOException {
+        ArrayList<File> list = new ArrayList<>();
+        Utils.getFileList(list, Constants.CASE_STUDY_DATA_PATH, "json");
+        Map<String,Integer> projectCntMap = new HashMap<>();
+        for (int i = list.size() - 1; i >= 0; --i) {
+            File file = list.get(i);
+            String fileName = file.getName();
+            String localName = fileName.substring(0, fileName.indexOf("."));
+            List<CaseStudy> caseStudyList = JSONReader.deserializeAsCaseStudy(file.getAbsolutePath());
+            System.out.println( localName +","+ caseStudyList.size());
+            //单线程
+            for (int j = 0; j < caseStudyList.size(); j++) {
+                CaseStudy caseStudy = caseStudyList.get(j);
+                NegativeCaseStudyMinerThread t = new NegativeCaseStudyMinerThread(localName,caseStudy,projectCntMap.getOrDefault(localName,1));
+                t.run();
+                projectCntMap.put(localName,t.getFIndex());
+            }
+        }
+        executor.shutdown();
     }
 }
 

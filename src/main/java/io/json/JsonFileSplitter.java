@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
+import static sample.Constants.FILE_SEPARATOR_PROPERTY;
+
 public class JsonFileSplitter {
     public static final int OBJECTS_PER_FILE = 100;
     private final ObjectMapper mapper = new ObjectMapper();
@@ -20,6 +22,19 @@ public class JsonFileSplitter {
     public JsonFileSplitter() {
         mapper.enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
+    }
+
+    public void writeJsonArrayInCaseStudy(EVRecord r, boolean flag) throws IOException {
+        String preFix = flag ? Constants.CASE_STUDY_POSITIVE_OUTPUT_PATH : Constants.CASE_STUDY_NEGATIVE_OUTPUT_PATH;
+        String fileName = preFix   + r.getProjectName() + "_" + r.getId() + ".json";
+        File file = new File(fileName);
+        if (!file.getParentFile().exists()) {
+            file.getParentFile().mkdirs();
+        }
+        try (FileWriter fileWriter = new FileWriter(fileName, false);
+             JsonGenerator generator = mapper.getFactory().createGenerator(fileWriter).useDefaultPrettyPrinter()) {
+            generator.writePOJO(r);
+        }
     }
 
     public void writeJsonArrayInSampled(EVRecord r, boolean flag) throws IOException {
