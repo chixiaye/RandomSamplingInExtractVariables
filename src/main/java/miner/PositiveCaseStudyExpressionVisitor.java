@@ -51,13 +51,13 @@ public class PositiveCaseStudyExpressionVisitor extends AbstractExpressionVisito
             parentDataList.add(data);
         }
         metaData.setParentDataList(parentDataList);
-        int currentLineContextIndex = Math.min(findCurrentLineContextIndex(node), parentDataList.size()-1);
-        ParentData parentData = parentDataList.get(currentLineContextIndex);
-        CurrentLineData currentLineData =  new CurrentLineData(parentData.getNodeContext(),parentData.getNodeType(),
-                parentData.getLocationInParent(),parentData.getNodePosition());
-        currentLineData.setTokenLength();
-        currentLineData.countASTNodeComplexity(parentNodes.get(currentLineContextIndex));
-        metaData.setCurrentLineData(currentLineData);
+//        int currentLineContextIndex = Math.min(findCurrentLineContextIndex(node), parentDataList.size()-1);
+//        ParentData parentData = parentDataList.get(currentLineContextIndex);
+//        CurrentLineData currentLineData =  new CurrentLineData(parentData.getNodeContext(),parentData.getNodeType(),
+//                parentData.getLocationInParent(),parentData.getNodePosition());
+//        currentLineData.setTokenLength();
+//        currentLineData.countASTNodeComplexity(parentNodes.get(currentLineContextIndex));
+//        metaData.setCurrentLineData(currentLineData);
     }
 
 

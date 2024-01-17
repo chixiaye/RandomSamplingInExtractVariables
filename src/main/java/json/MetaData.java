@@ -14,9 +14,6 @@ public class MetaData extends AbstractNodeData implements TokenComputable {
     @Setter
     ArrayList<ParentData> parentDataList;
 
-    @Getter
-    @Setter
-    CurrentLineData currentLineData;
 
     @Getter
     @Setter

@@ -3,10 +3,7 @@ package miner;
 import ast.ProjectsParser;
 import git.GitUtils;
 import io.json.JsonFileSplitter;
-import json.EVRecord;
-import json.LabelData;
-import json.MetaData;
-import json.ParentData;
+import json.*;
 import json.utils.NodePosition;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -52,6 +49,8 @@ public class PositiveMinerThread extends AbstractMinerThread {
 
         PositiveExpressionVisitor visitor = new PositiveExpressionVisitor(cu, name, nodePosition);
         cu.accept(visitor);
+
+        // 修正数据，换成inline后的特征数据
         ArrayList<MetaData> metaDataList = new ArrayList<>();
         MetaData base = visitor.getMetaDataList().get(0);
         for (int i = 1; i < visitor.getMetaDataList().size(); i++) {
@@ -63,22 +62,23 @@ public class PositiveMinerThread extends AbstractMinerThread {
             position.setEndColumnNumber(position.getStartColumnNumber() + position.getCharLength());
             metaData.setNodePosition(position);
             metaData.setTokenLength();
+            metaData.setNodeType(base.getNodeType());
+            metaData.setAstHeight(base.getAstHeight());
+            metaData.setAstNodeNumber(base.getAstNodeNumber());
 
             for (int j = 0; j < metaData.getParentDataList().size(); j++) {
                 ParentData parentData = metaData.getParentDataList().get(j);
                 parentData.setNodeContext(parentData.getNodeContext().replace(variableName, base.getNodeContext()));
                 NodePosition pos = parentData.getNodePosition();
-                if(pos.getStartLineNumber()==pos.getEndColumnNumber()){
+                pos.setCharLength(parentData.getNodeContext().length());
+                if(pos.getStartLineNumber()==pos.getEndLineNumber()){
                     pos.setEndColumnNumber(pos.getStartColumnNumber() + pos.getCharLength());
                 }
-                pos.setCharLength(parentData.getNodeContext().length());
                 parentData.setAstNodeNumber(base.getAstNodeNumber()+ parentData.getAstNodeNumber() -1);
-                parentData.setAstHeight(Math.max(base.getAstHeight()+j ,parentData.getAstHeight()));
+                parentData.setAstHeight(Math.max(base.getAstHeight()+1+j ,parentData.getAstHeight()));
             }
-
+            metaDataList.add(metaData);
         }
-
-
 
         EVRecord r = new EVRecord();
         r.setProjectName(fProjectName);
@@ -89,13 +89,10 @@ public class PositiveMinerThread extends AbstractMinerThread {
         r.setOccurrences(metaDataList.size() );
         r.setExpressionList(metaDataList);
         r.generatePositionList(metaDataList);
-        r.setIsGetTypeMethod(visitor.getTypeMethodState());
-        r.setIsArithmeticExpression(visitor.getArithmeticExpressionState());
-
-//        r.se
 
         r.initLayoutRelationDataListInit();
-        if (visitor.getFCoveredNodePosition() != null && r.getOccurrences() > 1){
+//        System.out.println(r);
+        if (visitor.getFCoveredNodePosition() != null && r.getOccurrences() >= 1){
             fJsonFileSplitter.writeJsonArrayInSampled(r, true);
         }
 

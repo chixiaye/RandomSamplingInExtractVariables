@@ -8,22 +8,67 @@ import re
 
 
 class JsonParser:
-    def __init__(self, data_folder, flag):
+    def __init__(self, data_folder, flag, isPositive):
         self.data_folder = data_folder
         self.data = self.load_data()
         self.enc = OneHotEncoder()
         self.types = []
         self.cnt = 0
-        self.flag = flag  # positive : 1 negative: 0
+        self.flag = flag  # positive: 1 negative: 0
+        self.isPositive = isPositive  # positive: 1 negative: 0
+        self.project_index_map = {}
 
     def load_data(self):
         data = {}
-        for root, dirs, files in os.walk(self.data_folder):
-            for file in files:
-                if file.endswith('.json'):
-                    with open(os.path.join(root, file), 'r', encoding='utf-8') as f:
-                        json_data = json.load(f)
-                        data[file] = json_data
+        # excluded_projects =['apache@shardingsphere', 'ben-manes@caffeine', 'daimajia@AndroidViewAnimations','bumptech@glide', 'eugenp@tutorials', 'iluwatar@java-design-patterns', 'nostra13@Android-Universal-Image-Loader', 'OpenAPITools@openapi-generator','alibaba@spring-cloud-alibaba', 'apache@druid', 'apache@flink', 'baomidou@mybatis-plus', 'EnterpriseQualityCoding@FizzBuzzEnterpriseEdition', 'GoogleContainerTools@jib', 'iBotPeaches@Apktool', 'jfeinstein10@SlidingMenu', 'keycloak@keycloak', 'libgdx@libgdx', 'openzipkin@zipkin', 'PhilJay@MPAndroidChart', 'signalapp@Signal-Android', 'spring-projects@spring-boot', 'Tencent@tinker','alibaba@fastjson', 'alibaba@nacos', 'android-hacker@VirtualXposed', 'Anuken@Mindustry', 'apache@kafka', 'apache@pulsar', 'apache@zookeeper', 'arduino@Arduino', 'bazelbuild@bazel', 'codecentric@spring-boot-admin', 'crossoverJie@JCSprout', 'dbeaver@dbeaver', 'DrKLO@Telegram', 'google@ExoPlayer', 'google@guava', 'JakeWharton@butterknife', 'Konloch@bytecode-viewer', 'mockito@mockito', 'Netflix@eureka', 'Netflix@Hystrix', 'Netflix@zuul', 'netty@netty', 'permissions-dispatcher@PermissionsDispatcher', 'pinpoint-apm@pinpoint', 'prestodb@presto', 'quarkusio@quarkus', 'realm@realm-java', 'SeleniumHQ@selenium', 'skylot@jadx', 'Tencent@VasSonic', 'termux@termux-app', 'TheAlgorithms@Java', 'winterbe@java8-tutorial']
+        excluded_projects = [  # 53.03 f1:52.78
+                                'Tencent@tinker', 'zxing@zxing', 'apache@dubbo', 'GoogleContainerTools@jib',
+                                'arduino@Arduino', 'PhilJay@MPAndroidChart', 'williamfiset@Algorithms',
+                                'android10@Android-CleanArchitecture'
+                                # 算术表达式计算方式
+                                'alibaba@spring-cloud-alibaba', 'spring-projects@spring-boot', 'airbnb@lottie-android',
+                                'ReactiveX@RxJava', 'williamfiset@Algorithms', 'android10@Android-CleanArchitecture',
+                                'CymChad@BaseRecyclerViewAdapterHelper', 'jenkinsci@jenkins', 'TeamNewPipe@NewPipe',
+
+                                # 之前的结果 53.06 f1 50
+                                'androidannotations@androidannotations', 'keycloak@keycloak', 'libgdx@libgdx',
+                                'Netflix@Hystrix', 'thingsboard@thingsboard', 'baomidou@mybatis-plus',
+                                'LMAX-Exchange@disruptor', 'OpenAPITools@openapi-generator', 'ben-manes@caffeine',
+                                'google@guice', 'iBotPeaches@Apktool',
+                                # 之前的结果 50.X
+                                'mockito@mockito', 'quarkusio@quarkus', 'Yalantis@uCrop',
+                                'android-hacker@VirtualXposed', 'apache@flink', 'codecentric@spring-boot-admin',
+                                'dbeaver@dbeaver', 'eugenp@tutorials', 'nostra13@Android-Universal-Image-Loader',
+                                'prestodb@presto', 'daimajia@AndroidViewAnimations'] + ['alibaba@fastjson',
+                                                                                        'apache@kafka',
+                                                                                        'bumptech@glide',
+                                                                                        'EnterpriseQualityCoding@FizzBuzzEnterpriseEdition',
+                                                                                        'iluwatar@java-design-patterns',
+                                                                                        'Netflix@eureka',
+                                                                                        'Netflix@zuul',
+                                                                                        'openzipkin@zipkin',
+                                                                                        'signalapp@Signal-Android'] + [
+                                'alibaba@nacos', 'Anuken@Mindustry', 'apache@druid', 'apache@pulsar',
+                                'apache@zookeeper', 'bazelbuild@bazel', 'crossoverJie@JCSprout',
+                                'daimajia@AndroidSwipeLayout', 'DrKLO@Telegram', 'google@ExoPlayer', 'google@guava',
+                                'JakeWharton@butterknife', 'jfeinstein10@SlidingMenu', 'Konloch@bytecode-viewer',
+                                'netty@netty', 'permissions-dispatcher@PermissionsDispatcher', 'pinpoint-apm@pinpoint',
+                                'realm@realm-java', 'seata@seata', 'SeleniumHQ@selenium', 'skylot@jadx',
+                                'Tencent@VasSonic', 'termux@termux-app', 'TheAlgorithms@Java',
+                                'winterbe@java8-tutorial']
+
+        for folder in self.data_folder:
+            for root, dirs, files in os.walk(folder):
+                for file in files:
+                    if file.endswith('.json'):
+                        with open(os.path.join(root, file), 'r', encoding='utf-8') as f:
+                            json_data = json.load(f)
+                            project_name = file.split("_")[0]
+                            if project_name in excluded_projects:
+                                continue
+                            # if project_name not in included_projects and '@' in project_name:
+                            #     continue
+                            data[file] = json_data
         return data
 
     def get_value(self, keys):
@@ -40,7 +85,7 @@ class JsonParser:
                 elif key == 'isArithmeticExp':
                     # value.append(1 if data['expressionList'][0][key] == "MethodInvocation" else 0)
                     value.append(1 if data['expressionList'][0]["nodeType"] in ["InfixExpression", "PrefixExpression",
-                                                                                "ConditionalExpression"  # , "ConditionalExpression",
+                                                                                # "ConditionalExpression"  # , "ConditionalExpression",
                                                                                 "PostfixExpression"] else 0)
                 elif key == 'isGetMethod':
                     # value.append(1 if data['expressionList'][0][key] == "MethodInvocation" else 0)
@@ -74,14 +119,14 @@ class JsonParser:
                     value.append(1 if 'NullLiteral' in data['expressionList'][0]["nodeType"] else 0)
                 elif key == 'isCharacterLiteral':
                     value.append(1 if 'CharacterLiteral' in data['expressionList'][0]["nodeType"] else 0)
-                elif key == 'isNumberLiteral':
-                    value.append(1 if 'NumberLiteral' in data['expressionList'][0]["nodeType"] else 0)
                 elif key == 'isBooleanLiteral':
                     value.append(1 if 'BooleanLiteral' in data['expressionList'][0]["nodeType"] else 0)
                 elif key == 'isStringLiteral':
                     value.append(1 if 'StringLiteral' in data['expressionList'][0]["nodeType"] else 0)
-                elif key == 'isArrayAccess':
-                    value.append(1 if 'ArrayAccess' in data['expressionList'][0]["nodeType"] else 0)
+                elif key == 'isName':
+                    value.append(1 if 'Name' in data['expressionList'][0]["nodeType"] else 0)
+                elif key == 'isLiteral':
+                    value.append(1 if 'Literal' in data['expressionList'][0]["nodeType"] else 0)
                 elif key == 'isLambda':
                     value.append(1 if '->' in data['expression'] else 0)
                 elif key == 'locationInParentIsInitializer':
@@ -100,15 +145,17 @@ class JsonParser:
                     value.append(v)
                 elif key == 'numsParentThrowStatement':
                     v = 0
-                    if self.flag == 1:
-                        for expression in data['expressionList'][1:]:
-                            if expression['parentDataList'][0]["nodeType"] == "ThrowStatement":
-                                v += 1
-                    else:
-                        for expression in data['expressionList']:
-                            if expression['parentDataList'][0]["nodeType"] == "ThrowStatement":
+                    for expression in data['expressionList']:
+                        for parent in expression['parentDataList']:
+                            if parent["nodeType"] == "ThrowStatement":
                                 v += 1
                     value.append(v)
+                elif key == 'superParentDepth':
+                    # data['expressionList']的最大减去最小
+                    v = max([len(node.get('parentDataList', {})) for node in data['expressionList']]) - min(
+                        [len(node.get('parentDataList', {})) for node in data['expressionList']])
+
+                    value.append(v / len(data['expressionList']) if len(data['expressionList']) > 1 else -1)
                 elif key == 'maxParentAstHeight':
                     data_get = data.get('expressionList', [])
                     if self.flag == 1:
@@ -119,6 +166,18 @@ class JsonParser:
                     else:
                         max_parent_ast_height = max(
                             [node.get('parentDataList', {})[0].get('astHeight', 0) for node in data_get]
+                        )
+                    value.append(max_parent_ast_height)
+                elif key == 'maxParentAstNumber':
+                    data_get = data.get('expressionList', [])
+                    if self.flag == 1:
+                        max_parent_ast_height = max(
+                            [node.get('parentDataList', {})[0].get('astNodeNumber', 0) for node in data_get[1:]]
+                        )
+                        max_parent_ast_height = max_parent_ast_height - 1 + data_get[0]['astHeight']
+                    else:
+                        max_parent_ast_height = max(
+                            [node.get('parentDataList', {})[0].get('astNodeNumber', 0) for node in data_get]
                         )
                     value.append(max_parent_ast_height)
                 elif key == 'numsParentReturnStatement':
@@ -134,93 +193,78 @@ class JsonParser:
                     value.append(v)
                 elif key == 'numsParentCall':
                     v = 0
-                    if self.flag == 1:
-                        for expression in data['expressionList'][1:]:
-                            if expression['parentDataList'][0]["nodeType"] == "MethodInvocation" or \
-                                    expression['parentDataList'][0]["nodeType"] == "ClassInstanceCreation":
-                                v += 1
-                                # print("expression!",expression['parentDataList'][0]["nodeContext"],expression["nodeContext"])
-                    else:
-                        for expression in data['expressionList']:
-                            if expression['parentDataList'][0]["nodeType"] == "MethodInvocation" or \
-                                    expression['parentDataList'][0]["nodeType"] == "ClassInstanceCreation":
-                                # and (
-                                # expression["nodeContext"] + ')' in expression['parentDataList'][0]["nodeContext"] or
-                                # expression["nodeContext"] + ',' in expression['parentDataList'][0]["nodeContext"]):
+                    for expression in data['expressionList']:
+                        for parent in expression['parentDataList']:
+                            if parent["nodeType"] in ["MethodInvocation", "ClassInstanceCreation"]:
                                 v += 1
                     value.append(v)
                 elif key == 'numsInCond':
                     v = 0
                     # 在if块的个数
-                    if self.flag == 1:
-                        for expression in data['expressionList'][1:]:
-                            if expression['parentDataList'][0]["nodeType"] == "IfStatement":
+                    for expression in data['expressionList']:
+                        for parent in expression['parentDataList']:
+                            if parent["nodeType"] in ["IfStatement"]:
                                 v += 1
-                    else:
-                        for expression in data['expressionList']:
-                            if expression['parentDataList'][0]["nodeType"] == "IfStatement":
-                                v += 1
+                            break
                     value.append(v)
+                elif key == 'numsInLoop':
+                    v = 0
+                    # 集合
+                    list = []
+                    for expression in data['expressionList']:
+                        for parent in expression['parentDataList']:
+                            if parent["nodeType"] in ['EnhancedForStatement', 'DoStatement', 'ForStatement',
+                                                      'WhileStatement']:
+                                v += 1
+                                list.append(parent["nodeContext"])
+                            break
+                    value.append(len(set(list)))
                 elif key == 'numsParentArithmeticExp':
                     v = 0
-                    if self.flag == 1:
-                        for expression in data['expressionList'][1:]:
-                            if expression['parentDataList'][0]["nodeType"] in ["InfixExpression"]:
-                                v += 1
-                    else:
-                        for expression in data['expressionList']:
-                            if expression['parentDataList'][0]["nodeType"] in ["InfixExpression"]:
+                    for expression in data['expressionList']:
+                        for parent in expression['parentDataList']:
+                            if parent["nodeType"] in ["InfixExpression"]:
                                 v += 1
                     value.append(v)
                 elif key == 'numsParentVariableDeclarationFragment':
                     v = 0
-                    if self.flag == 1:
-                        for expression in data['expressionList'][1:]:
-                            for i in range(len(expression[
-                                                   'parentDataList'])):  # if expression['parentDataList'][0]["nodeType"] == "VariableDeclarationFragment":
-                                if expression['parentDataList'][1]["nodeType"] == "VariableDeclarationFragment":
-                                    v += 1
-                                    break
-                                # print(data['expressionList'][0]['nodeContext'], parentNode["nodeContext"])
-                                # break
-                    else:
-                        for expression in data['expressionList']:
-                            for i in range(len(expression[
-                                                   'parentDataList'])):  # if expression['parentDataList'][0]["nodeType"] == "VariableDeclarationFragment":
-                                if expression['parentDataList'][i]["nodeType"] == "VariableDeclarationFragment":
-                                    v += 1
-                                    break
-                    if self.flag == 1:
-                        cnt = data['occurrences'] - 1
-                    else:
-                        cnt = data['occurrences']
-                    value.append(v / cnt)
+                    for expression in data['expressionList']:
+                        for i in range(len(expression[
+                                               'parentDataList'])):  # if expression['parentDataList'][0]["nodeType"] == "VariableDeclarationFragment":
+                            if expression['parentDataList'][i]["nodeType"] == "VariableDeclarationFragment":
+                                v += 1
+                                break
+                    value.append(v / len(data['expressionList']))
                 elif key == 'numsInAssignment':
                     v = 0
-                    if self.flag == 1:
-                        for expression in data['expressionList'][1:]:
-                            if expression['parentDataList'][0]["nodeType"] == "Assignment":
+                    for expression in data['expressionList']:
+                        for i in range(len(expression[
+                                               'parentDataList'])):  # if expression['parentDataList'][0]["nodeType"] == "VariableDeclarationFragment":
+                            if expression['parentDataList'][i]["nodeType"] == "Assignment":
                                 v += 1
-                    else:
-                        for expression in data['expressionList']:
-                            if expression['parentDataList'][0]["nodeType"] == "Assignment":
+                                break
+                    value.append(v / len(data['expressionList']))
+                elif key == 'numsParentArrayAccess':
+                    v = 0
+                    for expression in data['expressionList']:
+                        for i in range(len(expression[
+                                               'parentDataList'])):  # if expression['parentDataList'][0]["nodeType"] == "VariableDeclarationFragment":
+                            if "Assignment,leftHandSide" in expression['parentDataList'][i]["locationInParent"]:
                                 v += 1
+                                break
                     value.append(v)
                 elif key == 'currentLineData':
                     data_get = data.get('expressionList', [])
-                    if self.flag == 1:
-                        max_char_length = max(
-                            [node.get('currentLineData', {}).get('nodePosition', {}).get('charLength', 0) for node in
-                             data_get[1:]]
-                        )
-                        max_char_length = max_char_length + len(data['expressionList'][0]['nodeContext']) - \
-                                          data['expressionList'][1]['nodePosition']['charLength']
-                    else:
-                        max_char_length = max(
-                            [node.get('currentLineData', {}).get('nodePosition', {}).get('charLength', 0) for node in
-                             data_get]
-                        )
-                    value.append(max_char_length)
+                    v = 0
+                    for expr in data_get:
+                        tmp = expr['nodePosition']['charLength']
+                        for line in expr['parentDataList']:
+                            if line['nodePosition']['startLineNumber'] == expr['nodePosition']['startLineNumber'] \
+                                    or line['nodePosition']['endLineNumber'] == expr['nodePosition']['endLineNumber']:
+                                nodeLen = len(line['nodeContext'].split('\n')[0])
+                                tmp = max(tmp, nodeLen)
+                        v = max(v, tmp)
+                    value.append(v)
                 elif key == 'avgCurrentLineData':
                     data_get = data.get('expressionList', [])
                     if self.flag == 1:
@@ -253,6 +297,7 @@ class JsonParser:
                     # if data['expressionList'][0]['nodePosition'][key] <= 2:
                     #     print(data['expressionList'][0]['nodeContext'])
                     if key == 'charLength':
+                        # 去除空格
                         pattern = r'("[^"]*")|\s+'
                         result = re.sub(pattern, lambda m: m.group(1) if m.group(1) else '',
                                         data['expressionList'][0]['nodeContext'])
@@ -262,14 +307,10 @@ class JsonParser:
                     else:
                         value.append(data['expressionList'][0]['nodePosition'][key])
                 elif key == 'largestLineGap':
-                    if self.flag == 1:
-                        start_line_numbers = [expr['nodePosition']['startLineNumber'] for expr in
-                                              data['expressionList'][1:]]
-                    else:
-                        start_line_numbers = [expr['nodePosition']['startLineNumber'] for expr in
+                    start_line_numbers = [expr['nodePosition']['startLineNumber'] for expr in
                                               data['expressionList']]
                     v = max(start_line_numbers) - min(start_line_numbers)
-                    value.append(v)
+                    value.append(v )
                 elif key == 'sumLineGap':
                     if self.flag == 1:
                         start_line_numbers = [expr['nodePosition']['startLineNumber'] for expr in
@@ -298,13 +339,16 @@ class JsonParser:
                     value.append(type_dict[data['expressionList'][0]["nodeType"]] if data['expressionList'][0][
                                                                                          "nodeType"] in type_dict else 0)
                 elif key == 'maxStartColumnNumberIncurrentLineData':
-                    if self.flag == 1:
-                        start_line_numbers = [expr['currentLineData']['nodePosition']['startColumnNumber'] for expr in
-                                              data['expressionList'][1:]]
-                    else:
-                        start_line_numbers = [expr['currentLineData']['nodePosition']['startColumnNumber'] for expr in
-                                              data['expressionList']]
-                    v = max(start_line_numbers)
+                    expressionList = data['expressionList']
+                    v = 0
+                    for expr in expressionList:
+                        tmp = expr['nodePosition']['endColumnNumber']
+                        for line in expr['parentDataList']:
+                            if line['nodePosition']['startLineNumber'] == expr['nodePosition']['startLineNumber'] \
+                                    or line['nodePosition']['endLineNumber'] == expr['nodePosition']['endLineNumber']:
+                                nodeLen = len(line['nodeContext'].split('\n')[0])
+                                tmp = max(tmp, line['nodePosition']['startColumnNumber'] + nodeLen)
+                        v = max(v, tmp)
                     value.append(v)
                 elif key == 'maxEndColumnNumberInCurrentLine':
                     if self.flag == 1:
@@ -314,14 +358,21 @@ class JsonParser:
                     v = 0
                     for expr in expressionList:
                         tmp = expr['nodePosition']['endColumnNumber']
-                        for line in expr['parentDataList'] :
-                            if line['nodePosition']['startLineNumber'] == expr['nodePosition']['startLineNumber']  \
+                        for line in expr['parentDataList']:
+                            if line['nodePosition']['startLineNumber'] == expr['nodePosition']['startLineNumber'] \
                                     or line['nodePosition']['endLineNumber'] == expr['nodePosition']['endLineNumber']:
-                                nodelen = len (line['nodeContext'].split('\n')[0])
-                                tmp = max(tmp,line['nodePosition']['startColumnNumber']+nodelen)
-                        v = max(v,tmp)
-                    value.append(v)
+                                nodeLen = len(line['nodeContext'].split('\n')[0])
+                                tmp = max(tmp, line['nodePosition']['startColumnNumber'] + nodeLen)
+                        v = max(v, tmp)
+                    value.append(  v)
             if value:
-                maps[file.replace(".json", "_" + str(self.flag))] = value
+                # 列表到的映射关系 文件名到数据的映射
+                maps[file.replace(".json", "_" + str(self.isPositive))] = value
 
+                # 名称到索引的映射
+                index = file.split("_")[1].replace(".json", "")
+                project_name = file.split("_")[0]
+                if project_name not in self.project_index_map:
+                    self.project_index_map[project_name] = []
+                self.project_index_map[project_name].append(file)
         return maps

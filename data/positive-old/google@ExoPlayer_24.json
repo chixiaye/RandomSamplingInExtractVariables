@@ -1,0 +1,200 @@
+{
+  "id" : 24,
+  "expression" : "!useVideoVariantsOnly && numberOfAudioCodecs > 0 ? C.TRACK_TYPE_AUDIO : C.TRACK_TYPE_DEFAULT",
+  "projectName" : "google@ExoPlayer",
+  "commitID" : "4b1609d569d2a5976b5856432e9b5a37dc483a87",
+  "filePath" : "library/hls/src/main/java/com/google/android/exoplayer2/source/hls/HlsMediaPeriod.java",
+  "occurrences" : 2,
+  "isArithmeticExpression" : 1,
+  "isGetTypeMethod" : 0,
+  "expressionList" : [ {
+    "nodeContext" : "!useVideoVariantsOnly && numberOfAudioCodecs > 0 ? C.TRACK_TYPE_AUDIO : C.TRACK_TYPE_DEFAULT",
+    "nodeType" : "ConditionalExpression",
+    "nodePosition" : {
+      "charLength" : 9,
+      "startLineNumber" : 631,
+      "startColumnNumber" : 8,
+      "endLineNumber" : 631,
+      "endColumnNumber" : 17
+    },
+    "astNodeNumber" : 13,
+    "astHeight" : 4,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 136,
+        "startLineNumber" : 631,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 634,
+        "endColumnNumber" : 34
+      },
+      "nodeContext" : "trackType=!useVideoVariantsOnly && numberOfAudioCodecs > 0 ? C.TRACK_TYPE_AUDIO : C.TRACK_TYPE_DEFAULT",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 141,
+        "startLineNumber" : 631,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 634,
+        "endColumnNumber" : 35
+      },
+      "nodeContext" : "int trackType=!useVideoVariantsOnly && numberOfAudioCodecs > 0 ? C.TRACK_TYPE_AUDIO : C.TRACK_TYPE_DEFAULT;\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 17,
+      "astHeight" : 6
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5378,
+        "startLineNumber" : 579,
+        "startColumnNumber" : 54,
+        "endLineNumber" : 696,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  int[] variantTypes=new int[masterPlaylist.variants.size()];\n  int videoVariantCount=0;\n  int audioVariantCount=0;\n  for (int i=0; i < masterPlaylist.variants.size(); i++) {\n    Variant variant=masterPlaylist.variants.get(i);\n    Format format=variant.format;\n    if (format.height > 0 || Util.getCodecsOfType(format.codecs,C.TRACK_TYPE_VIDEO) != null) {\n      variantTypes[i]=C.TRACK_TYPE_VIDEO;\n      videoVariantCount++;\n    }\n else     if (Util.getCodecsOfType(format.codecs,C.TRACK_TYPE_AUDIO) != null) {\n      variantTypes[i]=C.TRACK_TYPE_AUDIO;\n      audioVariantCount++;\n    }\n else {\n      variantTypes[i]=C.TRACK_TYPE_UNKNOWN;\n    }\n  }\n  boolean useVideoVariantsOnly=false;\n  boolean useNonAudioVariantsOnly=false;\n  int selectedVariantsCount=variantTypes.length;\n  if (videoVariantCount > 0) {\n    useVideoVariantsOnly=true;\n    selectedVariantsCount=videoVariantCount;\n  }\n else   if (audioVariantCount < variantTypes.length) {\n    useNonAudioVariantsOnly=true;\n    selectedVariantsCount=variantTypes.length - audioVariantCount;\n  }\n  Uri[] selectedPlaylistUrls=new Uri[selectedVariantsCount];\n  Format[] selectedPlaylistFormats=new Format[selectedVariantsCount];\n  int[] selectedVariantIndices=new int[selectedVariantsCount];\n  int outIndex=0;\n  for (int i=0; i < masterPlaylist.variants.size(); i++) {\n    if ((!useVideoVariantsOnly || variantTypes[i] == C.TRACK_TYPE_VIDEO) && (!useNonAudioVariantsOnly || variantTypes[i] != C.TRACK_TYPE_AUDIO)) {\n      Variant variant=masterPlaylist.variants.get(i);\n      selectedPlaylistUrls[outIndex]=variant.url;\n      selectedPlaylistFormats[outIndex]=variant.format;\n      selectedVariantIndices[outIndex++]=i;\n    }\n  }\n  String codecs=selectedPlaylistFormats[0].codecs;\n  int numberOfVideoCodecs=Util.getCodecCountOfType(codecs,C.TRACK_TYPE_VIDEO);\n  int numberOfAudioCodecs=Util.getCodecCountOfType(codecs,C.TRACK_TYPE_AUDIO);\n  boolean codecsStringAllowsChunklessPreparation=numberOfAudioCodecs <= 1 && numberOfVideoCodecs <= 1 && numberOfAudioCodecs + numberOfVideoCodecs > 0;\n  int trackType=!useVideoVariantsOnly && numberOfAudioCodecs > 0 ? C.TRACK_TYPE_AUDIO : C.TRACK_TYPE_DEFAULT;\n  HlsSampleStreamWrapper sampleStreamWrapper=buildSampleStreamWrapper(trackType,selectedPlaylistUrls,selectedPlaylistFormats,masterPlaylist.muxedAudioFormat,masterPlaylist.muxedCaptionFormats,overridingDrmInitData,positionUs);\n  sampleStreamWrappers.add(sampleStreamWrapper);\n  manifestUrlIndicesPerWrapper.add(selectedVariantIndices);\n  if (allowChunklessPreparation && codecsStringAllowsChunklessPreparation) {\n    List<TrackGroup> muxedTrackGroups=new ArrayList<>();\n    if (numberOfVideoCodecs > 0) {\n      Format[] videoFormats=new Format[selectedVariantsCount];\n      for (int i=0; i < videoFormats.length; i++) {\n        videoFormats[i]=deriveVideoFormat(selectedPlaylistFormats[i]);\n      }\n      muxedTrackGroups.add(new TrackGroup(videoFormats));\n      if (numberOfAudioCodecs > 0 && (masterPlaylist.muxedAudioFormat != null || masterPlaylist.audios.isEmpty())) {\n        muxedTrackGroups.add(new TrackGroup(deriveAudioFormat(selectedPlaylistFormats[0],masterPlaylist.muxedAudioFormat,false)));\n      }\n      List<Format> ccFormats=masterPlaylist.muxedCaptionFormats;\n      if (ccFormats != null) {\n        for (int i=0; i < ccFormats.size(); i++) {\n          muxedTrackGroups.add(new TrackGroup(ccFormats.get(i)));\n        }\n      }\n    }\n else {\n      Format[] audioFormats=new Format[selectedVariantsCount];\n      for (int i=0; i < audioFormats.length; i++) {\n        audioFormats[i]=deriveAudioFormat(selectedPlaylistFormats[i],masterPlaylist.muxedAudioFormat,true);\n      }\n      muxedTrackGroups.add(new TrackGroup(audioFormats));\n    }\n    TrackGroup id3TrackGroup=new TrackGroup(new Format.Builder().setId(\"ID3\").setSampleMimeType(MimeTypes.APPLICATION_ID3).build());\n    muxedTrackGroups.add(id3TrackGroup);\n    sampleStreamWrapper.prepareWithMasterPlaylistInfo(muxedTrackGroups.toArray(new TrackGroup[0]),0,muxedTrackGroups.indexOf(id3TrackGroup));\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 622,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 7335,
+        "startLineNumber" : 546,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 696,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "/** \n * This method creates and starts preparation of the main  {@link HlsSampleStreamWrapper}. <p>The main sample stream wrapper is the first element of  {@link #sampleStreamWrappers}. It provides  {@link SampleStream}s for the variant urls in the master playlist. It may be adaptive and may contain multiple muxed tracks. <p>If chunkless preparation is allowed, the media period will try preparation without segment downloads. This is only possible if variants contain the CODECS attribute. If not, traditional preparation with segment downloads will take place. The following points apply to chunkless preparation: <ul> <li>A muxed audio track will be exposed if the codecs list contain an audio entry and the master playlist either contains an EXT-X-MEDIA tag without the URI attribute or does not contain any EXT-X-MEDIA tag. <li>Closed captions will only be exposed if they are declared by the master playlist. <li>An ID3 track is exposed preemptively, in case the segments contain an ID3 track. </ul>\n * @param masterPlaylist The HLS master playlist.\n * @param positionUs If preparation requires any chunk downloads, the position in microseconds atwhich downloading should start. Ignored otherwise.\n * @param sampleStreamWrappers List to which the built main sample stream wrapper should be added.\n * @param manifestUrlIndicesPerWrapper List to which the selected variant indices should be added.\n * @param overridingDrmInitData Overriding {@link DrmInitData}, keyed by protection scheme type (i.e.  {@link DrmInitData#schemeType}).\n */\nprivate void buildAndPrepareMainSampleStreamWrapper(HlsMasterPlaylist masterPlaylist,long positionUs,List<HlsSampleStreamWrapper> sampleStreamWrappers,List<int[]> manifestUrlIndicesPerWrapper,Map<String,DrmInitData> overridingDrmInitData){\n  int[] variantTypes=new int[masterPlaylist.variants.size()];\n  int videoVariantCount=0;\n  int audioVariantCount=0;\n  for (int i=0; i < masterPlaylist.variants.size(); i++) {\n    Variant variant=masterPlaylist.variants.get(i);\n    Format format=variant.format;\n    if (format.height > 0 || Util.getCodecsOfType(format.codecs,C.TRACK_TYPE_VIDEO) != null) {\n      variantTypes[i]=C.TRACK_TYPE_VIDEO;\n      videoVariantCount++;\n    }\n else     if (Util.getCodecsOfType(format.codecs,C.TRACK_TYPE_AUDIO) != null) {\n      variantTypes[i]=C.TRACK_TYPE_AUDIO;\n      audioVariantCount++;\n    }\n else {\n      variantTypes[i]=C.TRACK_TYPE_UNKNOWN;\n    }\n  }\n  boolean useVideoVariantsOnly=false;\n  boolean useNonAudioVariantsOnly=false;\n  int selectedVariantsCount=variantTypes.length;\n  if (videoVariantCount > 0) {\n    useVideoVariantsOnly=true;\n    selectedVariantsCount=videoVariantCount;\n  }\n else   if (audioVariantCount < variantTypes.length) {\n    useNonAudioVariantsOnly=true;\n    selectedVariantsCount=variantTypes.length - audioVariantCount;\n  }\n  Uri[] selectedPlaylistUrls=new Uri[selectedVariantsCount];\n  Format[] selectedPlaylistFormats=new Format[selectedVariantsCount];\n  int[] selectedVariantIndices=new int[selectedVariantsCount];\n  int outIndex=0;\n  for (int i=0; i < masterPlaylist.variants.size(); i++) {\n    if ((!useVideoVariantsOnly || variantTypes[i] == C.TRACK_TYPE_VIDEO) && (!useNonAudioVariantsOnly || variantTypes[i] != C.TRACK_TYPE_AUDIO)) {\n      Variant variant=masterPlaylist.variants.get(i);\n      selectedPlaylistUrls[outIndex]=variant.url;\n      selectedPlaylistFormats[outIndex]=variant.format;\n      selectedVariantIndices[outIndex++]=i;\n    }\n  }\n  String codecs=selectedPlaylistFormats[0].codecs;\n  int numberOfVideoCodecs=Util.getCodecCountOfType(codecs,C.TRACK_TYPE_VIDEO);\n  int numberOfAudioCodecs=Util.getCodecCountOfType(codecs,C.TRACK_TYPE_AUDIO);\n  boolean codecsStringAllowsChunklessPreparation=numberOfAudioCodecs <= 1 && numberOfVideoCodecs <= 1 && numberOfAudioCodecs + numberOfVideoCodecs > 0;\n  int trackType=!useVideoVariantsOnly && numberOfAudioCodecs > 0 ? C.TRACK_TYPE_AUDIO : C.TRACK_TYPE_DEFAULT;\n  HlsSampleStreamWrapper sampleStreamWrapper=buildSampleStreamWrapper(trackType,selectedPlaylistUrls,selectedPlaylistFormats,masterPlaylist.muxedAudioFormat,masterPlaylist.muxedCaptionFormats,overridingDrmInitData,positionUs);\n  sampleStreamWrappers.add(sampleStreamWrapper);\n  manifestUrlIndicesPerWrapper.add(selectedVariantIndices);\n  if (allowChunklessPreparation && codecsStringAllowsChunklessPreparation) {\n    List<TrackGroup> muxedTrackGroups=new ArrayList<>();\n    if (numberOfVideoCodecs > 0) {\n      Format[] videoFormats=new Format[selectedVariantsCount];\n      for (int i=0; i < videoFormats.length; i++) {\n        videoFormats[i]=deriveVideoFormat(selectedPlaylistFormats[i]);\n      }\n      muxedTrackGroups.add(new TrackGroup(videoFormats));\n      if (numberOfAudioCodecs > 0 && (masterPlaylist.muxedAudioFormat != null || masterPlaylist.audios.isEmpty())) {\n        muxedTrackGroups.add(new TrackGroup(deriveAudioFormat(selectedPlaylistFormats[0],masterPlaylist.muxedAudioFormat,false)));\n      }\n      List<Format> ccFormats=masterPlaylist.muxedCaptionFormats;\n      if (ccFormats != null) {\n        for (int i=0; i < ccFormats.size(); i++) {\n          muxedTrackGroups.add(new TrackGroup(ccFormats.get(i)));\n        }\n      }\n    }\n else {\n      Format[] audioFormats=new Format[selectedVariantsCount];\n      for (int i=0; i < audioFormats.length; i++) {\n        audioFormats[i]=deriveAudioFormat(selectedPlaylistFormats[i],masterPlaylist.muxedAudioFormat,true);\n      }\n      muxedTrackGroups.add(new TrackGroup(audioFormats));\n    }\n    TrackGroup id3TrackGroup=new TrackGroup(new Format.Builder().setId(\"ID3\").setSampleMimeType(MimeTypes.APPLICATION_ID3).build());\n    muxedTrackGroups.add(id3TrackGroup);\n    sampleStreamWrapper.prepareWithMasterPlaylistInfo(muxedTrackGroups.toArray(new TrackGroup[0]),0,muxedTrackGroups.indexOf(id3TrackGroup));\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 658,
+      "astHeight" : 15
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 136,
+        "startLineNumber" : 631,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 634,
+        "endColumnNumber" : 34
+      },
+      "nodeContext" : "trackType=!useVideoVariantsOnly && numberOfAudioCodecs > 0 ? C.TRACK_TYPE_AUDIO : C.TRACK_TYPE_DEFAULT",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 15,
+      "astHeight" : 5
+    },
+    "tokenLength" : 13,
+    "type" : "int"
+  }, {
+    "nodeContext" : "trackType",
+    "nodeType" : "SimpleName",
+    "nodePosition" : {
+      "charLength" : 9,
+      "startLineNumber" : 637,
+      "startColumnNumber" : 12,
+      "endLineNumber" : 637,
+      "endColumnNumber" : 21
+    },
+    "astNodeNumber" : 1,
+    "astHeight" : 1,
+    "parentDataList" : [ {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 271,
+        "startLineNumber" : 636,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 643,
+        "endColumnNumber" : 23
+      },
+      "nodeContext" : "buildSampleStreamWrapper(trackType,selectedPlaylistUrls,selectedPlaylistFormats,masterPlaylist.muxedAudioFormat,masterPlaylist.muxedCaptionFormats,overridingDrmInitData,positionUs)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 13,
+      "astHeight" : 3
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
+      "nodePosition" : {
+        "charLength" : 301,
+        "startLineNumber" : 635,
+        "startColumnNumber" : 27,
+        "endLineNumber" : 643,
+        "endColumnNumber" : 23
+      },
+      "nodeContext" : "sampleStreamWrapper=buildSampleStreamWrapper(trackType,selectedPlaylistUrls,selectedPlaylistFormats,masterPlaylist.muxedAudioFormat,masterPlaylist.muxedCaptionFormats,overridingDrmInitData,positionUs)",
+      "nodeType" : "VariableDeclarationFragment",
+      "astNodeNumber" : 15,
+      "astHeight" : 4
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
+      "nodePosition" : {
+        "charLength" : 325,
+        "startLineNumber" : 635,
+        "startColumnNumber" : 4,
+        "endLineNumber" : 643,
+        "endColumnNumber" : 24
+      },
+      "nodeContext" : "HlsSampleStreamWrapper sampleStreamWrapper=buildSampleStreamWrapper(trackType,selectedPlaylistUrls,selectedPlaylistFormats,masterPlaylist.muxedAudioFormat,masterPlaylist.muxedCaptionFormats,overridingDrmInitData,positionUs);\n",
+      "nodeType" : "VariableDeclarationStatement",
+      "astNodeNumber" : 18,
+      "astHeight" : 5
+    }, {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
+      "nodePosition" : {
+        "charLength" : 5378,
+        "startLineNumber" : 579,
+        "startColumnNumber" : 54,
+        "endLineNumber" : 696,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "{\n  int[] variantTypes=new int[masterPlaylist.variants.size()];\n  int videoVariantCount=0;\n  int audioVariantCount=0;\n  for (int i=0; i < masterPlaylist.variants.size(); i++) {\n    Variant variant=masterPlaylist.variants.get(i);\n    Format format=variant.format;\n    if (format.height > 0 || Util.getCodecsOfType(format.codecs,C.TRACK_TYPE_VIDEO) != null) {\n      variantTypes[i]=C.TRACK_TYPE_VIDEO;\n      videoVariantCount++;\n    }\n else     if (Util.getCodecsOfType(format.codecs,C.TRACK_TYPE_AUDIO) != null) {\n      variantTypes[i]=C.TRACK_TYPE_AUDIO;\n      audioVariantCount++;\n    }\n else {\n      variantTypes[i]=C.TRACK_TYPE_UNKNOWN;\n    }\n  }\n  boolean useVideoVariantsOnly=false;\n  boolean useNonAudioVariantsOnly=false;\n  int selectedVariantsCount=variantTypes.length;\n  if (videoVariantCount > 0) {\n    useVideoVariantsOnly=true;\n    selectedVariantsCount=videoVariantCount;\n  }\n else   if (audioVariantCount < variantTypes.length) {\n    useNonAudioVariantsOnly=true;\n    selectedVariantsCount=variantTypes.length - audioVariantCount;\n  }\n  Uri[] selectedPlaylistUrls=new Uri[selectedVariantsCount];\n  Format[] selectedPlaylistFormats=new Format[selectedVariantsCount];\n  int[] selectedVariantIndices=new int[selectedVariantsCount];\n  int outIndex=0;\n  for (int i=0; i < masterPlaylist.variants.size(); i++) {\n    if ((!useVideoVariantsOnly || variantTypes[i] == C.TRACK_TYPE_VIDEO) && (!useNonAudioVariantsOnly || variantTypes[i] != C.TRACK_TYPE_AUDIO)) {\n      Variant variant=masterPlaylist.variants.get(i);\n      selectedPlaylistUrls[outIndex]=variant.url;\n      selectedPlaylistFormats[outIndex]=variant.format;\n      selectedVariantIndices[outIndex++]=i;\n    }\n  }\n  String codecs=selectedPlaylistFormats[0].codecs;\n  int numberOfVideoCodecs=Util.getCodecCountOfType(codecs,C.TRACK_TYPE_VIDEO);\n  int numberOfAudioCodecs=Util.getCodecCountOfType(codecs,C.TRACK_TYPE_AUDIO);\n  boolean codecsStringAllowsChunklessPreparation=numberOfAudioCodecs <= 1 && numberOfVideoCodecs <= 1 && numberOfAudioCodecs + numberOfVideoCodecs > 0;\n  int trackType=!useVideoVariantsOnly && numberOfAudioCodecs > 0 ? C.TRACK_TYPE_AUDIO : C.TRACK_TYPE_DEFAULT;\n  HlsSampleStreamWrapper sampleStreamWrapper=buildSampleStreamWrapper(trackType,selectedPlaylistUrls,selectedPlaylistFormats,masterPlaylist.muxedAudioFormat,masterPlaylist.muxedCaptionFormats,overridingDrmInitData,positionUs);\n  sampleStreamWrappers.add(sampleStreamWrapper);\n  manifestUrlIndicesPerWrapper.add(selectedVariantIndices);\n  if (allowChunklessPreparation && codecsStringAllowsChunklessPreparation) {\n    List<TrackGroup> muxedTrackGroups=new ArrayList<>();\n    if (numberOfVideoCodecs > 0) {\n      Format[] videoFormats=new Format[selectedVariantsCount];\n      for (int i=0; i < videoFormats.length; i++) {\n        videoFormats[i]=deriveVideoFormat(selectedPlaylistFormats[i]);\n      }\n      muxedTrackGroups.add(new TrackGroup(videoFormats));\n      if (numberOfAudioCodecs > 0 && (masterPlaylist.muxedAudioFormat != null || masterPlaylist.audios.isEmpty())) {\n        muxedTrackGroups.add(new TrackGroup(deriveAudioFormat(selectedPlaylistFormats[0],masterPlaylist.muxedAudioFormat,false)));\n      }\n      List<Format> ccFormats=masterPlaylist.muxedCaptionFormats;\n      if (ccFormats != null) {\n        for (int i=0; i < ccFormats.size(); i++) {\n          muxedTrackGroups.add(new TrackGroup(ccFormats.get(i)));\n        }\n      }\n    }\n else {\n      Format[] audioFormats=new Format[selectedVariantsCount];\n      for (int i=0; i < audioFormats.length; i++) {\n        audioFormats[i]=deriveAudioFormat(selectedPlaylistFormats[i],masterPlaylist.muxedAudioFormat,true);\n      }\n      muxedTrackGroups.add(new TrackGroup(audioFormats));\n    }\n    TrackGroup id3TrackGroup=new TrackGroup(new Format.Builder().setId(\"ID3\").setSampleMimeType(MimeTypes.APPLICATION_ID3).build());\n    muxedTrackGroups.add(id3TrackGroup);\n    sampleStreamWrapper.prepareWithMasterPlaylistInfo(muxedTrackGroups.toArray(new TrackGroup[0]),0,muxedTrackGroups.indexOf(id3TrackGroup));\n  }\n}\n",
+      "nodeType" : "Block",
+      "astNodeNumber" : 622,
+      "astHeight" : 14
+    }, {
+      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
+      "nodePosition" : {
+        "charLength" : 7335,
+        "startLineNumber" : 546,
+        "startColumnNumber" : 2,
+        "endLineNumber" : 696,
+        "endColumnNumber" : 3
+      },
+      "nodeContext" : "/** \n * This method creates and starts preparation of the main  {@link HlsSampleStreamWrapper}. <p>The main sample stream wrapper is the first element of  {@link #sampleStreamWrappers}. It provides  {@link SampleStream}s for the variant urls in the master playlist. It may be adaptive and may contain multiple muxed tracks. <p>If chunkless preparation is allowed, the media period will try preparation without segment downloads. This is only possible if variants contain the CODECS attribute. If not, traditional preparation with segment downloads will take place. The following points apply to chunkless preparation: <ul> <li>A muxed audio track will be exposed if the codecs list contain an audio entry and the master playlist either contains an EXT-X-MEDIA tag without the URI attribute or does not contain any EXT-X-MEDIA tag. <li>Closed captions will only be exposed if they are declared by the master playlist. <li>An ID3 track is exposed preemptively, in case the segments contain an ID3 track. </ul>\n * @param masterPlaylist The HLS master playlist.\n * @param positionUs If preparation requires any chunk downloads, the position in microseconds atwhich downloading should start. Ignored otherwise.\n * @param sampleStreamWrappers List to which the built main sample stream wrapper should be added.\n * @param manifestUrlIndicesPerWrapper List to which the selected variant indices should be added.\n * @param overridingDrmInitData Overriding {@link DrmInitData}, keyed by protection scheme type (i.e.  {@link DrmInitData#schemeType}).\n */\nprivate void buildAndPrepareMainSampleStreamWrapper(HlsMasterPlaylist masterPlaylist,long positionUs,List<HlsSampleStreamWrapper> sampleStreamWrappers,List<int[]> manifestUrlIndicesPerWrapper,Map<String,DrmInitData> overridingDrmInitData){\n  int[] variantTypes=new int[masterPlaylist.variants.size()];\n  int videoVariantCount=0;\n  int audioVariantCount=0;\n  for (int i=0; i < masterPlaylist.variants.size(); i++) {\n    Variant variant=masterPlaylist.variants.get(i);\n    Format format=variant.format;\n    if (format.height > 0 || Util.getCodecsOfType(format.codecs,C.TRACK_TYPE_VIDEO) != null) {\n      variantTypes[i]=C.TRACK_TYPE_VIDEO;\n      videoVariantCount++;\n    }\n else     if (Util.getCodecsOfType(format.codecs,C.TRACK_TYPE_AUDIO) != null) {\n      variantTypes[i]=C.TRACK_TYPE_AUDIO;\n      audioVariantCount++;\n    }\n else {\n      variantTypes[i]=C.TRACK_TYPE_UNKNOWN;\n    }\n  }\n  boolean useVideoVariantsOnly=false;\n  boolean useNonAudioVariantsOnly=false;\n  int selectedVariantsCount=variantTypes.length;\n  if (videoVariantCount > 0) {\n    useVideoVariantsOnly=true;\n    selectedVariantsCount=videoVariantCount;\n  }\n else   if (audioVariantCount < variantTypes.length) {\n    useNonAudioVariantsOnly=true;\n    selectedVariantsCount=variantTypes.length - audioVariantCount;\n  }\n  Uri[] selectedPlaylistUrls=new Uri[selectedVariantsCount];\n  Format[] selectedPlaylistFormats=new Format[selectedVariantsCount];\n  int[] selectedVariantIndices=new int[selectedVariantsCount];\n  int outIndex=0;\n  for (int i=0; i < masterPlaylist.variants.size(); i++) {\n    if ((!useVideoVariantsOnly || variantTypes[i] == C.TRACK_TYPE_VIDEO) && (!useNonAudioVariantsOnly || variantTypes[i] != C.TRACK_TYPE_AUDIO)) {\n      Variant variant=masterPlaylist.variants.get(i);\n      selectedPlaylistUrls[outIndex]=variant.url;\n      selectedPlaylistFormats[outIndex]=variant.format;\n      selectedVariantIndices[outIndex++]=i;\n    }\n  }\n  String codecs=selectedPlaylistFormats[0].codecs;\n  int numberOfVideoCodecs=Util.getCodecCountOfType(codecs,C.TRACK_TYPE_VIDEO);\n  int numberOfAudioCodecs=Util.getCodecCountOfType(codecs,C.TRACK_TYPE_AUDIO);\n  boolean codecsStringAllowsChunklessPreparation=numberOfAudioCodecs <= 1 && numberOfVideoCodecs <= 1 && numberOfAudioCodecs + numberOfVideoCodecs > 0;\n  int trackType=!useVideoVariantsOnly && numberOfAudioCodecs > 0 ? C.TRACK_TYPE_AUDIO : C.TRACK_TYPE_DEFAULT;\n  HlsSampleStreamWrapper sampleStreamWrapper=buildSampleStreamWrapper(trackType,selectedPlaylistUrls,selectedPlaylistFormats,masterPlaylist.muxedAudioFormat,masterPlaylist.muxedCaptionFormats,overridingDrmInitData,positionUs);\n  sampleStreamWrappers.add(sampleStreamWrapper);\n  manifestUrlIndicesPerWrapper.add(selectedVariantIndices);\n  if (allowChunklessPreparation && codecsStringAllowsChunklessPreparation) {\n    List<TrackGroup> muxedTrackGroups=new ArrayList<>();\n    if (numberOfVideoCodecs > 0) {\n      Format[] videoFormats=new Format[selectedVariantsCount];\n      for (int i=0; i < videoFormats.length; i++) {\n        videoFormats[i]=deriveVideoFormat(selectedPlaylistFormats[i]);\n      }\n      muxedTrackGroups.add(new TrackGroup(videoFormats));\n      if (numberOfAudioCodecs > 0 && (masterPlaylist.muxedAudioFormat != null || masterPlaylist.audios.isEmpty())) {\n        muxedTrackGroups.add(new TrackGroup(deriveAudioFormat(selectedPlaylistFormats[0],masterPlaylist.muxedAudioFormat,false)));\n      }\n      List<Format> ccFormats=masterPlaylist.muxedCaptionFormats;\n      if (ccFormats != null) {\n        for (int i=0; i < ccFormats.size(); i++) {\n          muxedTrackGroups.add(new TrackGroup(ccFormats.get(i)));\n        }\n      }\n    }\n else {\n      Format[] audioFormats=new Format[selectedVariantsCount];\n      for (int i=0; i < audioFormats.length; i++) {\n        audioFormats[i]=deriveAudioFormat(selectedPlaylistFormats[i],masterPlaylist.muxedAudioFormat,true);\n      }\n      muxedTrackGroups.add(new TrackGroup(audioFormats));\n    }\n    TrackGroup id3TrackGroup=new TrackGroup(new Format.Builder().setId(\"ID3\").setSampleMimeType(MimeTypes.APPLICATION_ID3).build());\n    muxedTrackGroups.add(id3TrackGroup);\n    sampleStreamWrapper.prepareWithMasterPlaylistInfo(muxedTrackGroups.toArray(new TrackGroup[0]),0,muxedTrackGroups.indexOf(id3TrackGroup));\n  }\n}\n",
+      "nodeType" : "MethodDeclaration",
+      "astNodeNumber" : 658,
+      "astHeight" : 15
+    } ],
+    "currentLineData" : {
+      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
+      "nodePosition" : {
+        "charLength" : 271,
+        "startLineNumber" : 636,
+        "startColumnNumber" : 8,
+        "endLineNumber" : 643,
+        "endColumnNumber" : 23
+      },
+      "nodeContext" : "buildSampleStreamWrapper(trackType,selectedPlaylistUrls,selectedPlaylistFormats,masterPlaylist.muxedAudioFormat,masterPlaylist.muxedCaptionFormats,overridingDrmInitData,positionUs)",
+      "nodeType" : "MethodInvocation",
+      "astNodeNumber" : 13,
+      "astHeight" : 3
+    },
+    "tokenLength" : 1,
+    "type" : "int"
+  } ],
+  "positionList" : [ {
+    "charLength" : 9,
+    "startLineNumber" : 631,
+    "startColumnNumber" : 8,
+    "endLineNumber" : 631,
+    "endColumnNumber" : 17
+  }, {
+    "charLength" : 9,
+    "startLineNumber" : 637,
+    "startColumnNumber" : 12,
+    "endLineNumber" : 637,
+    "endColumnNumber" : 21
+  } ],
+  "layoutRelationDataList" : [ ]
+}

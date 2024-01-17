@@ -131,8 +131,6 @@ public class NegativeCaseStudyMinerThread extends AbstractMinerThread {
             r.setExpressionList(metaDataList);
             r.generatePositionList(metaDataList);
             r.setLayoutRelationDataList();
-            r.setIsGetTypeMethod(visitor.getTypeMethodState());
-            r.setIsArithmeticExpression(visitor.getArithmeticExpressionState());
             fJsonFileSplitter.writeJsonArrayInCaseStudy(r, false);
             fRandomSelection.incCurrentRecords();
         }

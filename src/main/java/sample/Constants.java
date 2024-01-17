@@ -3,7 +3,7 @@ package sample;
 public class Constants {
 
     public static final String FILE_SEPARATOR_PROPERTY = System.getProperty("file.separator");
-    public static String NEGATIVE_OUTPUT_PATH = "C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\negative\\";
+    public static String NEGATIVE_OUTPUT_PATH = "C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\negative-v2\\";
     public static String POSITIVE_OUTPUT_PATH = "C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\positive-v2\\";
 
     public static String CASE_STUDY_POSITIVE_OUTPUT_PATH = "C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\casestudy\\positive\\";

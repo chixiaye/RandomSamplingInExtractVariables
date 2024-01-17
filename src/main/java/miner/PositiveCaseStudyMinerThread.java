@@ -75,8 +75,6 @@ public class PositiveCaseStudyMinerThread extends AbstractMinerThread {
             r.setOccurrences(metaDataList.size());
             r.setExpressionList(metaDataList);
             r.generatePositionList(metaDataList);
-            r.setIsGetTypeMethod(visitor.getTypeMethodState());
-            r.setIsArithmeticExpression(visitor.getArithmeticExpressionState());
 
             r.initLayoutRelationDataListInit();
             fJsonFileSplitter.writeJsonArrayInCaseStudy(r, true);

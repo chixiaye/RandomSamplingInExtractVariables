@@ -4,286 +4,189 @@
   "projectName" : "apache@shardingsphere",
   "commitID" : "d91ffcb5a9489e0e02d9a2230f9cdd2cf9e69381",
   "filePath" : "shardingsphere-kernel/shardingsphere-data-pipeline/shardingsphere-data-pipeline-core/src/main/java/org/apache/shardingsphere/data/pipeline/core/check/consistency/DataConsistencyCheckerImpl.java",
-  "occurrences" : 4,
-  "isArithmeticExpression" : 0,
-  "isGetTypeMethod" : 1,
+  "occurrences" : 3,
   "expressionList" : [ {
     "nodeContext" : "sourceConfig.getDatabaseType().getName()",
     "nodeType" : "MethodInvocation",
     "nodePosition" : {
-      "charLength" : 18,
-      "startLineNumber" : 136,
-      "startColumnNumber" : 15,
-      "endLineNumber" : 136,
-      "endColumnNumber" : 33
+      "charLength" : 40,
+      "startLineNumber" : 138,
+      "startColumnNumber" : 97,
+      "endLineNumber" : 138,
+      "endColumnNumber" : 137
     },
     "astNodeNumber" : 5,
     "astHeight" : 3,
     "parentDataList" : [ {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
-      "nodePosition" : {
-        "charLength" : 61,
-        "startLineNumber" : 136,
-        "startColumnNumber" : 15,
-        "endLineNumber" : 136,
-        "endColumnNumber" : 76
-      },
-      "nodeContext" : "sourceDatabaseType=sourceConfig.getDatabaseType().getName()",
-      "nodeType" : "VariableDeclarationFragment",
-      "astNodeNumber" : 7,
-      "astHeight" : 4
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 69,
-        "startLineNumber" : 136,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 136,
-        "endColumnNumber" : 77
-      },
-      "nodeContext" : "String sourceDatabaseType=sourceConfig.getDatabaseType().getName();\n",
-      "nodeType" : "VariableDeclarationStatement",
-      "astNodeNumber" : 10,
-      "astHeight" : 5
-    }, {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
-      "nodePosition" : {
-        "charLength" : 4731,
-        "startLineNumber" : 120,
-        "startColumnNumber" : 104,
-        "endLineNumber" : 178,
-        "endColumnNumber" : 5
-      },
-      "nodeContext" : "{\n  Collection<String> supportedDatabaseTypes=checkAlgorithm.getSupportedDatabaseTypes();\n  JDBCDataSourceConfiguration sourceConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getSource().getType(),jobContext.getJobConfig().getRuleConfig().getSource().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,sourceConfig.getDatabaseType().getName());\n  JDBCDataSourceConfiguration targetConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getTarget().getType(),jobContext.getJobConfig().getRuleConfig().getTarget().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,targetConfig.getDatabaseType().getName());\n  Collection<String> logicTableNames=jobContext.getTaskConfigs().stream().flatMap(each -> each.getDumperConfig().getTableNameMap().values().stream()).distinct().collect(Collectors.toList());\n  Map<String,TableMetaData> tableMetaDataMap=getTablesColumnsMap(sourceConfig,logicTableNames);\n  logicTableNames.forEach(each -> {\n    if (!tableMetaDataMap.containsKey(each)) {\n      throw new DataCheckFailException(String.format(\"could not get table columns for '%s'\",each));\n    }\n  }\n);\n  String sourceDatabaseType=sourceConfig.getDatabaseType().getName();\n  String targetDatabaseType=targetConfig.getDatabaseType().getName();\n  SingleTableDataCalculator sourceCalculator=checkAlgorithm.getSingleTableDataCalculator(sourceDatabaseType);\n  SingleTableDataCalculator targetCalculator=checkAlgorithm.getSingleTableDataCalculator(targetDatabaseType);\n  Map<String,Boolean> result=new HashMap<>();\n  ThreadFactory threadFactory=ExecutorThreadFactoryBuilder.build(\"job\" + jobContext.getJobId() % 10_000 + \"-dataCheck-%d\");\n  ThreadPoolExecutor executor=new ThreadPoolExecutor(2,2,60,TimeUnit.SECONDS,new ArrayBlockingQueue<>(2),threadFactory);\n  JobRateLimitAlgorithm rateLimitAlgorithm=jobContext.getRuleAlteredContext().getRateLimitAlgorithm();\n  try (DataSourceWrapper sourceDataSource=dataSourceFactory.newInstance(sourceConfig);DataSourceWrapper targetDataSource=dataSourceFactory.newInstance(targetConfig)){\n    for (    String each : logicTableNames) {\n      Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n      String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n      DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n      Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n      boolean calculateResultsEquals=true;\n      while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n        if (null != rateLimitAlgorithm) {\n          rateLimitAlgorithm.onQuery();\n        }\n        Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n        Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n        Object sourceCalculatedResult=sourceFuture.get();\n        Object targetCalculatedResult=targetFuture.get();\n        calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n        if (!calculateResultsEquals) {\n          break;\n        }\n      }\n      result.put(each,calculateResultsEquals);\n    }\n  }\n catch (  final ExecutionException|InterruptedException|SQLException ex) {\n    throw new DataCheckFailException(\"data check failed\");\n  }\n finally {\n    executor.shutdown();\n    executor.shutdownNow();\n  }\n  return result;\n}\n",
-      "nodeType" : "Block",
-      "astNodeNumber" : 508,
-      "astHeight" : 16
-    }, {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
-      "nodePosition" : {
-        "charLength" : 4845,
-        "startLineNumber" : 119,
-        "startColumnNumber" : 4,
-        "endLineNumber" : 178,
-        "endColumnNumber" : 5
-      },
-      "nodeContext" : "@Override public Map<String,Boolean> checkRecordsContent(final DataConsistencyCheckAlgorithm checkAlgorithm){\n  Collection<String> supportedDatabaseTypes=checkAlgorithm.getSupportedDatabaseTypes();\n  JDBCDataSourceConfiguration sourceConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getSource().getType(),jobContext.getJobConfig().getRuleConfig().getSource().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,sourceConfig.getDatabaseType().getName());\n  JDBCDataSourceConfiguration targetConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getTarget().getType(),jobContext.getJobConfig().getRuleConfig().getTarget().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,targetConfig.getDatabaseType().getName());\n  Collection<String> logicTableNames=jobContext.getTaskConfigs().stream().flatMap(each -> each.getDumperConfig().getTableNameMap().values().stream()).distinct().collect(Collectors.toList());\n  Map<String,TableMetaData> tableMetaDataMap=getTablesColumnsMap(sourceConfig,logicTableNames);\n  logicTableNames.forEach(each -> {\n    if (!tableMetaDataMap.containsKey(each)) {\n      throw new DataCheckFailException(String.format(\"could not get table columns for '%s'\",each));\n    }\n  }\n);\n  String sourceDatabaseType=sourceConfig.getDatabaseType().getName();\n  String targetDatabaseType=targetConfig.getDatabaseType().getName();\n  SingleTableDataCalculator sourceCalculator=checkAlgorithm.getSingleTableDataCalculator(sourceDatabaseType);\n  SingleTableDataCalculator targetCalculator=checkAlgorithm.getSingleTableDataCalculator(targetDatabaseType);\n  Map<String,Boolean> result=new HashMap<>();\n  ThreadFactory threadFactory=ExecutorThreadFactoryBuilder.build(\"job\" + jobContext.getJobId() % 10_000 + \"-dataCheck-%d\");\n  ThreadPoolExecutor executor=new ThreadPoolExecutor(2,2,60,TimeUnit.SECONDS,new ArrayBlockingQueue<>(2),threadFactory);\n  JobRateLimitAlgorithm rateLimitAlgorithm=jobContext.getRuleAlteredContext().getRateLimitAlgorithm();\n  try (DataSourceWrapper sourceDataSource=dataSourceFactory.newInstance(sourceConfig);DataSourceWrapper targetDataSource=dataSourceFactory.newInstance(targetConfig)){\n    for (    String each : logicTableNames) {\n      Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n      String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n      DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n      Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n      boolean calculateResultsEquals=true;\n      while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n        if (null != rateLimitAlgorithm) {\n          rateLimitAlgorithm.onQuery();\n        }\n        Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n        Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n        Object sourceCalculatedResult=sourceFuture.get();\n        Object targetCalculatedResult=targetFuture.get();\n        calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n        if (!calculateResultsEquals) {\n          break;\n        }\n      }\n      result.put(each,calculateResultsEquals);\n    }\n  }\n catch (  final ExecutionException|InterruptedException|SQLException ex) {\n    throw new DataCheckFailException(\"data check failed\");\n  }\n finally {\n    executor.shutdown();\n    executor.shutdownNow();\n  }\n  return result;\n}\n",
-      "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 525,
-      "astHeight" : 17
-    } ],
-    "currentLineData" : {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 69,
-        "startLineNumber" : 136,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 136,
-        "endColumnNumber" : 77
-      },
-      "nodeContext" : "String sourceDatabaseType=sourceConfig.getDatabaseType().getName();\n",
-      "nodeType" : "VariableDeclarationStatement",
-      "astNodeNumber" : 10,
-      "astHeight" : 5
-    },
-    "tokenLength" : 3,
-    "type" : "java.lang.String"
-  }, {
-    "nodeContext" : "sourceDatabaseType",
-    "nodeType" : "SimpleName",
-    "nodePosition" : {
-      "charLength" : 18,
-      "startLineNumber" : 138,
-      "startColumnNumber" : 97,
-      "endLineNumber" : 138,
-      "endColumnNumber" : 115
-    },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
-    "parentDataList" : [ {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
       "nodePosition" : {
-        "charLength" : 63,
+        "charLength" : 85,
         "startLineNumber" : 138,
         "startColumnNumber" : 53,
         "endLineNumber" : 138,
-        "endColumnNumber" : 116
+        "endColumnNumber" : 138
       },
-      "nodeContext" : "checkAlgorithm.getSingleTableDataCalculator(sourceDatabaseType)",
+      "nodeContext" : "checkAlgorithm.getSingleTableDataCalculator(sourceConfig.getDatabaseType().getName())",
       "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 4,
-      "astHeight" : 2
+      "astNodeNumber" : 8,
+      "astHeight" : 4
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
       "nodePosition" : {
-        "charLength" : 82,
+        "charLength" : 102,
         "startLineNumber" : 138,
         "startColumnNumber" : 34,
         "endLineNumber" : 138,
-        "endColumnNumber" : 116
+        "endColumnNumber" : 136
       },
-      "nodeContext" : "sourceCalculator=checkAlgorithm.getSingleTableDataCalculator(sourceDatabaseType)",
+      "nodeContext" : "sourceCalculator=checkAlgorithm.getSingleTableDataCalculator(sourceConfig.getDatabaseType().getName())",
       "nodeType" : "VariableDeclarationFragment",
-      "astNodeNumber" : 6,
-      "astHeight" : 3
+      "astNodeNumber" : 10,
+      "astHeight" : 5
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 109,
+        "charLength" : 130,
         "startLineNumber" : 138,
         "startColumnNumber" : 8,
         "endLineNumber" : 138,
-        "endColumnNumber" : 117
+        "endColumnNumber" : 138
       },
-      "nodeContext" : "SingleTableDataCalculator sourceCalculator=checkAlgorithm.getSingleTableDataCalculator(sourceDatabaseType);\n",
+      "nodeContext" : "SingleTableDataCalculator sourceCalculator=checkAlgorithm.getSingleTableDataCalculator(sourceConfig.getDatabaseType().getName());\n",
       "nodeType" : "VariableDeclarationStatement",
-      "astNodeNumber" : 9,
-      "astHeight" : 4
+      "astNodeNumber" : 13,
+      "astHeight" : 6
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 4731,
+        "charLength" : 4192,
         "startLineNumber" : 120,
         "startColumnNumber" : 104,
         "endLineNumber" : 178,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  Collection<String> supportedDatabaseTypes=checkAlgorithm.getSupportedDatabaseTypes();\n  JDBCDataSourceConfiguration sourceConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getSource().getType(),jobContext.getJobConfig().getRuleConfig().getSource().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,sourceConfig.getDatabaseType().getName());\n  JDBCDataSourceConfiguration targetConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getTarget().getType(),jobContext.getJobConfig().getRuleConfig().getTarget().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,targetConfig.getDatabaseType().getName());\n  Collection<String> logicTableNames=jobContext.getTaskConfigs().stream().flatMap(each -> each.getDumperConfig().getTableNameMap().values().stream()).distinct().collect(Collectors.toList());\n  Map<String,TableMetaData> tableMetaDataMap=getTablesColumnsMap(sourceConfig,logicTableNames);\n  logicTableNames.forEach(each -> {\n    if (!tableMetaDataMap.containsKey(each)) {\n      throw new DataCheckFailException(String.format(\"could not get table columns for '%s'\",each));\n    }\n  }\n);\n  String sourceDatabaseType=sourceConfig.getDatabaseType().getName();\n  String targetDatabaseType=targetConfig.getDatabaseType().getName();\n  SingleTableDataCalculator sourceCalculator=checkAlgorithm.getSingleTableDataCalculator(sourceDatabaseType);\n  SingleTableDataCalculator targetCalculator=checkAlgorithm.getSingleTableDataCalculator(targetDatabaseType);\n  Map<String,Boolean> result=new HashMap<>();\n  ThreadFactory threadFactory=ExecutorThreadFactoryBuilder.build(\"job\" + jobContext.getJobId() % 10_000 + \"-dataCheck-%d\");\n  ThreadPoolExecutor executor=new ThreadPoolExecutor(2,2,60,TimeUnit.SECONDS,new ArrayBlockingQueue<>(2),threadFactory);\n  JobRateLimitAlgorithm rateLimitAlgorithm=jobContext.getRuleAlteredContext().getRateLimitAlgorithm();\n  try (DataSourceWrapper sourceDataSource=dataSourceFactory.newInstance(sourceConfig);DataSourceWrapper targetDataSource=dataSourceFactory.newInstance(targetConfig)){\n    for (    String each : logicTableNames) {\n      Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n      String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n      DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n      Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n      boolean calculateResultsEquals=true;\n      while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n        if (null != rateLimitAlgorithm) {\n          rateLimitAlgorithm.onQuery();\n        }\n        Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n        Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n        Object sourceCalculatedResult=sourceFuture.get();\n        Object targetCalculatedResult=targetFuture.get();\n        calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n        if (!calculateResultsEquals) {\n          break;\n        }\n      }\n      result.put(each,calculateResultsEquals);\n    }\n  }\n catch (  final ExecutionException|InterruptedException|SQLException ex) {\n    throw new DataCheckFailException(\"data check failed\");\n  }\n finally {\n    executor.shutdown();\n    executor.shutdownNow();\n  }\n  return result;\n}\n",
+      "nodeContext" : "{\n  Collection<String> supportedDatabaseTypes=checkAlgorithm.getSupportedDatabaseTypes();\n  JDBCDataSourceConfiguration sourceConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getSource().getType(),jobContext.getJobConfig().getRuleConfig().getSource().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,sourceConfig.getDatabaseType().getName());\n  JDBCDataSourceConfiguration targetConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getTarget().getType(),jobContext.getJobConfig().getRuleConfig().getTarget().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,targetConfig.getDatabaseType().getName());\n  Collection<String> logicTableNames=jobContext.getTaskConfigs().stream().flatMap(each -> each.getDumperConfig().getTableNameMap().values().stream()).distinct().collect(Collectors.toList());\n  Map<String,TableMetaData> tableMetaDataMap=getTablesColumnsMap(sourceConfig,logicTableNames);\n  logicTableNames.forEach(each -> {\n    if (!tableMetaDataMap.containsKey(each)) {\n      throw new DataCheckFailException(String.format(\"could not get table columns for '%s'\",each));\n    }\n  }\n);\n  String sourceConfig.getDatabaseType().getName()=sourceConfig.getDatabaseType().getName();\n  String targetDatabaseType=targetConfig.getDatabaseType().getName();\n  SingleTableDataCalculator sourceCalculator=checkAlgorithm.getSingleTableDataCalculator(sourceConfig.getDatabaseType().getName());\n  SingleTableDataCalculator targetCalculator=checkAlgorithm.getSingleTableDataCalculator(targetDatabaseType);\n  Map<String,Boolean> result=new HashMap<>();\n  ThreadFactory threadFactory=ExecutorThreadFactoryBuilder.build(\"job\" + jobContext.getJobId() % 10_000 + \"-dataCheck-%d\");\n  ThreadPoolExecutor executor=new ThreadPoolExecutor(2,2,60,TimeUnit.SECONDS,new ArrayBlockingQueue<>(2),threadFactory);\n  JobRateLimitAlgorithm rateLimitAlgorithm=jobContext.getRuleAlteredContext().getRateLimitAlgorithm();\n  try (DataSourceWrapper sourceDataSource=dataSourceFactory.newInstance(sourceConfig);DataSourceWrapper targetDataSource=dataSourceFactory.newInstance(targetConfig)){\n    for (    String each : logicTableNames) {\n      Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n      String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n      DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceConfig.getDatabaseType().getName()).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceConfig.getDatabaseType().getName()).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n      Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n      boolean calculateResultsEquals=true;\n      while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n        if (null != rateLimitAlgorithm) {\n          rateLimitAlgorithm.onQuery();\n        }\n        Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n        Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n        Object sourceCalculatedResult=sourceFuture.get();\n        Object targetCalculatedResult=targetFuture.get();\n        calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n        if (!calculateResultsEquals) {\n          break;\n        }\n      }\n      result.put(each,calculateResultsEquals);\n    }\n  }\n catch (  final ExecutionException|InterruptedException|SQLException ex) {\n    throw new DataCheckFailException(\"data check failed\");\n  }\n finally {\n    executor.shutdown();\n    executor.shutdownNow();\n  }\n  return result;\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 508,
+      "astNodeNumber" : 512,
       "astHeight" : 16
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 4845,
+        "charLength" : 4300,
         "startLineNumber" : 119,
         "startColumnNumber" : 4,
         "endLineNumber" : 178,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "@Override public Map<String,Boolean> checkRecordsContent(final DataConsistencyCheckAlgorithm checkAlgorithm){\n  Collection<String> supportedDatabaseTypes=checkAlgorithm.getSupportedDatabaseTypes();\n  JDBCDataSourceConfiguration sourceConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getSource().getType(),jobContext.getJobConfig().getRuleConfig().getSource().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,sourceConfig.getDatabaseType().getName());\n  JDBCDataSourceConfiguration targetConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getTarget().getType(),jobContext.getJobConfig().getRuleConfig().getTarget().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,targetConfig.getDatabaseType().getName());\n  Collection<String> logicTableNames=jobContext.getTaskConfigs().stream().flatMap(each -> each.getDumperConfig().getTableNameMap().values().stream()).distinct().collect(Collectors.toList());\n  Map<String,TableMetaData> tableMetaDataMap=getTablesColumnsMap(sourceConfig,logicTableNames);\n  logicTableNames.forEach(each -> {\n    if (!tableMetaDataMap.containsKey(each)) {\n      throw new DataCheckFailException(String.format(\"could not get table columns for '%s'\",each));\n    }\n  }\n);\n  String sourceDatabaseType=sourceConfig.getDatabaseType().getName();\n  String targetDatabaseType=targetConfig.getDatabaseType().getName();\n  SingleTableDataCalculator sourceCalculator=checkAlgorithm.getSingleTableDataCalculator(sourceDatabaseType);\n  SingleTableDataCalculator targetCalculator=checkAlgorithm.getSingleTableDataCalculator(targetDatabaseType);\n  Map<String,Boolean> result=new HashMap<>();\n  ThreadFactory threadFactory=ExecutorThreadFactoryBuilder.build(\"job\" + jobContext.getJobId() % 10_000 + \"-dataCheck-%d\");\n  ThreadPoolExecutor executor=new ThreadPoolExecutor(2,2,60,TimeUnit.SECONDS,new ArrayBlockingQueue<>(2),threadFactory);\n  JobRateLimitAlgorithm rateLimitAlgorithm=jobContext.getRuleAlteredContext().getRateLimitAlgorithm();\n  try (DataSourceWrapper sourceDataSource=dataSourceFactory.newInstance(sourceConfig);DataSourceWrapper targetDataSource=dataSourceFactory.newInstance(targetConfig)){\n    for (    String each : logicTableNames) {\n      Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n      String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n      DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n      Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n      boolean calculateResultsEquals=true;\n      while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n        if (null != rateLimitAlgorithm) {\n          rateLimitAlgorithm.onQuery();\n        }\n        Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n        Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n        Object sourceCalculatedResult=sourceFuture.get();\n        Object targetCalculatedResult=targetFuture.get();\n        calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n        if (!calculateResultsEquals) {\n          break;\n        }\n      }\n      result.put(each,calculateResultsEquals);\n    }\n  }\n catch (  final ExecutionException|InterruptedException|SQLException ex) {\n    throw new DataCheckFailException(\"data check failed\");\n  }\n finally {\n    executor.shutdown();\n    executor.shutdownNow();\n  }\n  return result;\n}\n",
+      "nodeContext" : "@Override public Map<String,Boolean> checkRecordsContent(final DataConsistencyCheckAlgorithm checkAlgorithm){\n  Collection<String> supportedDatabaseTypes=checkAlgorithm.getSupportedDatabaseTypes();\n  JDBCDataSourceConfiguration sourceConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getSource().getType(),jobContext.getJobConfig().getRuleConfig().getSource().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,sourceConfig.getDatabaseType().getName());\n  JDBCDataSourceConfiguration targetConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getTarget().getType(),jobContext.getJobConfig().getRuleConfig().getTarget().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,targetConfig.getDatabaseType().getName());\n  Collection<String> logicTableNames=jobContext.getTaskConfigs().stream().flatMap(each -> each.getDumperConfig().getTableNameMap().values().stream()).distinct().collect(Collectors.toList());\n  Map<String,TableMetaData> tableMetaDataMap=getTablesColumnsMap(sourceConfig,logicTableNames);\n  logicTableNames.forEach(each -> {\n    if (!tableMetaDataMap.containsKey(each)) {\n      throw new DataCheckFailException(String.format(\"could not get table columns for '%s'\",each));\n    }\n  }\n);\n  String sourceConfig.getDatabaseType().getName()=sourceConfig.getDatabaseType().getName();\n  String targetDatabaseType=targetConfig.getDatabaseType().getName();\n  SingleTableDataCalculator sourceCalculator=checkAlgorithm.getSingleTableDataCalculator(sourceConfig.getDatabaseType().getName());\n  SingleTableDataCalculator targetCalculator=checkAlgorithm.getSingleTableDataCalculator(targetDatabaseType);\n  Map<String,Boolean> result=new HashMap<>();\n  ThreadFactory threadFactory=ExecutorThreadFactoryBuilder.build(\"job\" + jobContext.getJobId() % 10_000 + \"-dataCheck-%d\");\n  ThreadPoolExecutor executor=new ThreadPoolExecutor(2,2,60,TimeUnit.SECONDS,new ArrayBlockingQueue<>(2),threadFactory);\n  JobRateLimitAlgorithm rateLimitAlgorithm=jobContext.getRuleAlteredContext().getRateLimitAlgorithm();\n  try (DataSourceWrapper sourceDataSource=dataSourceFactory.newInstance(sourceConfig);DataSourceWrapper targetDataSource=dataSourceFactory.newInstance(targetConfig)){\n    for (    String each : logicTableNames) {\n      Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n      String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n      DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceConfig.getDatabaseType().getName()).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceConfig.getDatabaseType().getName()).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n      Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n      boolean calculateResultsEquals=true;\n      while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n        if (null != rateLimitAlgorithm) {\n          rateLimitAlgorithm.onQuery();\n        }\n        Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n        Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n        Object sourceCalculatedResult=sourceFuture.get();\n        Object targetCalculatedResult=targetFuture.get();\n        calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n        if (!calculateResultsEquals) {\n          break;\n        }\n      }\n      result.put(each,calculateResultsEquals);\n    }\n  }\n catch (  final ExecutionException|InterruptedException|SQLException ex) {\n    throw new DataCheckFailException(\"data check failed\");\n  }\n finally {\n    executor.shutdown();\n    executor.shutdownNow();\n  }\n  return result;\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 525,
+      "astNodeNumber" : 529,
       "astHeight" : 17
     } ],
-    "currentLineData" : {
-      "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
-      "nodePosition" : {
-        "charLength" : 109,
-        "startLineNumber" : 138,
-        "startColumnNumber" : 8,
-        "endLineNumber" : 138,
-        "endColumnNumber" : 117
-      },
-      "nodeContext" : "SingleTableDataCalculator sourceCalculator=checkAlgorithm.getSingleTableDataCalculator(sourceDatabaseType);\n",
-      "nodeType" : "VariableDeclarationStatement",
-      "astNodeNumber" : 9,
-      "astHeight" : 4
-    },
-    "tokenLength" : 1,
+    "tokenLength" : 3,
     "type" : "java.lang.String"
   }, {
-    "nodeContext" : "sourceDatabaseType",
-    "nodeType" : "SimpleName",
+    "nodeContext" : "sourceConfig.getDatabaseType().getName()",
+    "nodeType" : "MethodInvocation",
     "nodePosition" : {
-      "charLength" : 18,
+      "charLength" : 40,
       "startLineNumber" : 149,
       "startColumnNumber" : 141,
       "endLineNumber" : 149,
-      "endColumnNumber" : 159
+      "endColumnNumber" : 181
     },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
+    "astNodeNumber" : 5,
+    "astHeight" : 3,
     "parentDataList" : [ {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
       "nodePosition" : {
-        "charLength" : 94,
+        "charLength" : 116,
         "startLineNumber" : 149,
         "startColumnNumber" : 66,
         "endLineNumber" : 149,
-        "endColumnNumber" : 160
+        "endColumnNumber" : 182
       },
-      "nodeContext" : "DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType)",
+      "nodeContext" : "DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceConfig.getDatabaseType().getName())",
       "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 9,
+      "astNodeNumber" : 13,
       "astHeight" : 4
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
       "nodePosition" : {
-        "charLength" : 131,
+        "charLength" : 153,
         "startLineNumber" : 149,
         "startColumnNumber" : 66,
         "endLineNumber" : 149,
-        "endColumnNumber" : 197
+        "endColumnNumber" : 219
       },
-      "nodeContext" : "DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType).peerDatabaseType(targetDatabaseType)",
+      "nodeContext" : "DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceConfig.getDatabaseType().getName()).peerDatabaseType(targetDatabaseType)",
       "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 12,
+      "astNodeNumber" : 16,
       "astHeight" : 5
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
       "nodePosition" : {
-        "charLength" : 173,
+        "charLength" : 174,
         "startLineNumber" : 149,
         "startColumnNumber" : 66,
         "endLineNumber" : 150,
         "endColumnNumber" : 41
       },
-      "nodeContext" : "DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType).peerDatabaseType(targetDatabaseType).logicTableName(each)",
+      "nodeContext" : "DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceConfig.getDatabaseType().getName()).peerDatabaseType(targetDatabaseType).logicTableName(each)",
       "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 15,
+      "astNodeNumber" : 19,
       "astHeight" : 6
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
       "nodePosition" : {
-        "charLength" : 198,
+        "charLength" : 199,
         "startLineNumber" : 149,
         "startColumnNumber" : 66,
         "endLineNumber" : 150,
         "endColumnNumber" : 66
       },
-      "nodeContext" : "DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames)",
+      "nodeContext" : "DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceConfig.getDatabaseType().getName()).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames)",
       "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 18,
+      "astNodeNumber" : 22,
       "astHeight" : 7
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
       "nodePosition" : {
-        "charLength" : 219,
+        "charLength" : 220,
         "startLineNumber" : 149,
         "startColumnNumber" : 66,
         "endLineNumber" : 150,
         "endColumnNumber" : 87
       },
-      "nodeContext" : "DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey)",
+      "nodeContext" : "DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceConfig.getDatabaseType().getName()).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey)",
       "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 21,
+      "astNodeNumber" : 25,
       "astHeight" : 8
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
       "nodePosition" : {
-        "charLength" : 227,
+        "charLength" : 228,
         "startLineNumber" : 149,
         "startColumnNumber" : 66,
         "endLineNumber" : 150,
         "endColumnNumber" : 95
       },
-      "nodeContext" : "DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build()",
+      "nodeContext" : "DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceConfig.getDatabaseType().getName()).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build()",
       "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 23,
+      "astNodeNumber" : 27,
       "astHeight" : 9
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
       "nodePosition" : {
-        "charLength" : 254,
+        "charLength" : 253,
         "startLineNumber" : 149,
         "startColumnNumber" : 39,
         "endLineNumber" : 150,
         "endColumnNumber" : 95
       },
-      "nodeContext" : "sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build()",
+      "nodeContext" : "sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceConfig.getDatabaseType().getName()).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build()",
       "nodeType" : "VariableDeclarationFragment",
-      "astNodeNumber" : 25,
+      "astNodeNumber" : 29,
       "astHeight" : 10
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
@@ -294,194 +197,180 @@
         "endLineNumber" : 150,
         "endColumnNumber" : 96
       },
-      "nodeContext" : "DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n",
+      "nodeContext" : "DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceConfig.getDatabaseType().getName()).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n",
       "nodeType" : "VariableDeclarationStatement",
-      "astNodeNumber" : 28,
+      "astNodeNumber" : 32,
       "astHeight" : 11
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.EnhancedForStatement,body]",
       "nodePosition" : {
-        "charLength" : 1998,
+        "charLength" : 1643,
         "startLineNumber" : 146,
         "startColumnNumber" : 48,
         "endLineNumber" : 170,
         "endColumnNumber" : 13
       },
-      "nodeContext" : "{\n  Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n  String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n  DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n  DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n  Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n  Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n  boolean calculateResultsEquals=true;\n  while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n    if (null != rateLimitAlgorithm) {\n      rateLimitAlgorithm.onQuery();\n    }\n    Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n    Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n    Object sourceCalculatedResult=sourceFuture.get();\n    Object targetCalculatedResult=targetFuture.get();\n    calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n    if (!calculateResultsEquals) {\n      break;\n    }\n  }\n  result.put(each,calculateResultsEquals);\n}\n",
+      "nodeContext" : "{\n  Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n  String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n  DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceConfig.getDatabaseType().getName()).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n  DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceConfig.getDatabaseType().getName()).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n  Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n  Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n  boolean calculateResultsEquals=true;\n  while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n    if (null != rateLimitAlgorithm) {\n      rateLimitAlgorithm.onQuery();\n    }\n    Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n    Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n    Object sourceCalculatedResult=sourceFuture.get();\n    Object targetCalculatedResult=targetFuture.get();\n    calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n    if (!calculateResultsEquals) {\n      break;\n    }\n  }\n  result.put(each,calculateResultsEquals);\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 201,
+      "astNodeNumber" : 205,
       "astHeight" : 12
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 2034,
+        "charLength" : 1679,
         "startLineNumber" : 146,
         "startColumnNumber" : 12,
         "endLineNumber" : 170,
         "endColumnNumber" : 13
       },
-      "nodeContext" : "for (String each : logicTableNames) {\n  Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n  String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n  DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n  DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n  Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n  Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n  boolean calculateResultsEquals=true;\n  while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n    if (null != rateLimitAlgorithm) {\n      rateLimitAlgorithm.onQuery();\n    }\n    Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n    Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n    Object sourceCalculatedResult=sourceFuture.get();\n    Object targetCalculatedResult=targetFuture.get();\n    calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n    if (!calculateResultsEquals) {\n      break;\n    }\n  }\n  result.put(each,calculateResultsEquals);\n}\n",
+      "nodeContext" : "for (String each : logicTableNames) {\n  Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n  String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n  DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceConfig.getDatabaseType().getName()).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n  DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceConfig.getDatabaseType().getName()).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n  Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n  Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n  boolean calculateResultsEquals=true;\n  while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n    if (null != rateLimitAlgorithm) {\n      rateLimitAlgorithm.onQuery();\n    }\n    Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n    Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n    Object sourceCalculatedResult=sourceFuture.get();\n    Object targetCalculatedResult=targetFuture.get();\n    calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n    if (!calculateResultsEquals) {\n      break;\n    }\n  }\n  result.put(each,calculateResultsEquals);\n}\n",
       "nodeType" : "EnhancedForStatement",
-      "astNodeNumber" : 207,
+      "astNodeNumber" : 211,
       "astHeight" : 13
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
       "nodePosition" : {
-        "charLength" : 2058,
+        "charLength" : 1731,
         "startLineNumber" : 145,
         "startColumnNumber" : 95,
         "endLineNumber" : 171,
         "endColumnNumber" : 9
       },
-      "nodeContext" : "{\n  for (  String each : logicTableNames) {\n    Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n    String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n    DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n    DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n    Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n    Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n    boolean calculateResultsEquals=true;\n    while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n      if (null != rateLimitAlgorithm) {\n        rateLimitAlgorithm.onQuery();\n      }\n      Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n      Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n      Object sourceCalculatedResult=sourceFuture.get();\n      Object targetCalculatedResult=targetFuture.get();\n      calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n      if (!calculateResultsEquals) {\n        break;\n      }\n    }\n    result.put(each,calculateResultsEquals);\n  }\n}\n",
+      "nodeContext" : "{\n  for (  String each : logicTableNames) {\n    Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n    String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n    DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceConfig.getDatabaseType().getName()).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n    DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceConfig.getDatabaseType().getName()).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n    Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n    Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n    boolean calculateResultsEquals=true;\n    while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n      if (null != rateLimitAlgorithm) {\n        rateLimitAlgorithm.onQuery();\n      }\n      Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n      Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n      Object sourceCalculatedResult=sourceFuture.get();\n      Object targetCalculatedResult=targetFuture.get();\n      calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n      if (!calculateResultsEquals) {\n        break;\n      }\n    }\n    result.put(each,calculateResultsEquals);\n  }\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 208,
+      "astNodeNumber" : 212,
       "astHeight" : 14
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 2482,
+        "charLength" : 2088,
         "startLineNumber" : 144,
         "startColumnNumber" : 8,
         "endLineNumber" : 176,
         "endColumnNumber" : 9
       },
-      "nodeContext" : "try (DataSourceWrapper sourceDataSource=dataSourceFactory.newInstance(sourceConfig);DataSourceWrapper targetDataSource=dataSourceFactory.newInstance(targetConfig)){\n  for (  String each : logicTableNames) {\n    Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n    String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n    DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n    DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n    Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n    Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n    boolean calculateResultsEquals=true;\n    while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n      if (null != rateLimitAlgorithm) {\n        rateLimitAlgorithm.onQuery();\n      }\n      Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n      Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n      Object sourceCalculatedResult=sourceFuture.get();\n      Object targetCalculatedResult=targetFuture.get();\n      calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n      if (!calculateResultsEquals) {\n        break;\n      }\n    }\n    result.put(each,calculateResultsEquals);\n  }\n}\n catch (final ExecutionException|InterruptedException|SQLException ex) {\n  throw new DataCheckFailException(\"data check failed\");\n}\n finally {\n  executor.shutdown();\n  executor.shutdownNow();\n}\n",
+      "nodeContext" : "try (DataSourceWrapper sourceDataSource=dataSourceFactory.newInstance(sourceConfig);DataSourceWrapper targetDataSource=dataSourceFactory.newInstance(targetConfig)){\n  for (  String each : logicTableNames) {\n    Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n    String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n    DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceConfig.getDatabaseType().getName()).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n    DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceConfig.getDatabaseType().getName()).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n    Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n    Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n    boolean calculateResultsEquals=true;\n    while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n      if (null != rateLimitAlgorithm) {\n        rateLimitAlgorithm.onQuery();\n      }\n      Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n      Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n      Object sourceCalculatedResult=sourceFuture.get();\n      Object targetCalculatedResult=targetFuture.get();\n      calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n      if (!calculateResultsEquals) {\n        break;\n      }\n    }\n    result.put(each,calculateResultsEquals);\n  }\n}\n catch (final ExecutionException|InterruptedException|SQLException ex) {\n  throw new DataCheckFailException(\"data check failed\");\n}\n finally {\n  executor.shutdown();\n  executor.shutdownNow();\n}\n",
       "nodeType" : "TryStatement",
-      "astNodeNumber" : 253,
+      "astNodeNumber" : 257,
       "astHeight" : 15
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 4731,
+        "charLength" : 4192,
         "startLineNumber" : 120,
         "startColumnNumber" : 104,
         "endLineNumber" : 178,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  Collection<String> supportedDatabaseTypes=checkAlgorithm.getSupportedDatabaseTypes();\n  JDBCDataSourceConfiguration sourceConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getSource().getType(),jobContext.getJobConfig().getRuleConfig().getSource().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,sourceConfig.getDatabaseType().getName());\n  JDBCDataSourceConfiguration targetConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getTarget().getType(),jobContext.getJobConfig().getRuleConfig().getTarget().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,targetConfig.getDatabaseType().getName());\n  Collection<String> logicTableNames=jobContext.getTaskConfigs().stream().flatMap(each -> each.getDumperConfig().getTableNameMap().values().stream()).distinct().collect(Collectors.toList());\n  Map<String,TableMetaData> tableMetaDataMap=getTablesColumnsMap(sourceConfig,logicTableNames);\n  logicTableNames.forEach(each -> {\n    if (!tableMetaDataMap.containsKey(each)) {\n      throw new DataCheckFailException(String.format(\"could not get table columns for '%s'\",each));\n    }\n  }\n);\n  String sourceDatabaseType=sourceConfig.getDatabaseType().getName();\n  String targetDatabaseType=targetConfig.getDatabaseType().getName();\n  SingleTableDataCalculator sourceCalculator=checkAlgorithm.getSingleTableDataCalculator(sourceDatabaseType);\n  SingleTableDataCalculator targetCalculator=checkAlgorithm.getSingleTableDataCalculator(targetDatabaseType);\n  Map<String,Boolean> result=new HashMap<>();\n  ThreadFactory threadFactory=ExecutorThreadFactoryBuilder.build(\"job\" + jobContext.getJobId() % 10_000 + \"-dataCheck-%d\");\n  ThreadPoolExecutor executor=new ThreadPoolExecutor(2,2,60,TimeUnit.SECONDS,new ArrayBlockingQueue<>(2),threadFactory);\n  JobRateLimitAlgorithm rateLimitAlgorithm=jobContext.getRuleAlteredContext().getRateLimitAlgorithm();\n  try (DataSourceWrapper sourceDataSource=dataSourceFactory.newInstance(sourceConfig);DataSourceWrapper targetDataSource=dataSourceFactory.newInstance(targetConfig)){\n    for (    String each : logicTableNames) {\n      Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n      String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n      DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n      Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n      boolean calculateResultsEquals=true;\n      while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n        if (null != rateLimitAlgorithm) {\n          rateLimitAlgorithm.onQuery();\n        }\n        Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n        Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n        Object sourceCalculatedResult=sourceFuture.get();\n        Object targetCalculatedResult=targetFuture.get();\n        calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n        if (!calculateResultsEquals) {\n          break;\n        }\n      }\n      result.put(each,calculateResultsEquals);\n    }\n  }\n catch (  final ExecutionException|InterruptedException|SQLException ex) {\n    throw new DataCheckFailException(\"data check failed\");\n  }\n finally {\n    executor.shutdown();\n    executor.shutdownNow();\n  }\n  return result;\n}\n",
+      "nodeContext" : "{\n  Collection<String> supportedDatabaseTypes=checkAlgorithm.getSupportedDatabaseTypes();\n  JDBCDataSourceConfiguration sourceConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getSource().getType(),jobContext.getJobConfig().getRuleConfig().getSource().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,sourceConfig.getDatabaseType().getName());\n  JDBCDataSourceConfiguration targetConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getTarget().getType(),jobContext.getJobConfig().getRuleConfig().getTarget().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,targetConfig.getDatabaseType().getName());\n  Collection<String> logicTableNames=jobContext.getTaskConfigs().stream().flatMap(each -> each.getDumperConfig().getTableNameMap().values().stream()).distinct().collect(Collectors.toList());\n  Map<String,TableMetaData> tableMetaDataMap=getTablesColumnsMap(sourceConfig,logicTableNames);\n  logicTableNames.forEach(each -> {\n    if (!tableMetaDataMap.containsKey(each)) {\n      throw new DataCheckFailException(String.format(\"could not get table columns for '%s'\",each));\n    }\n  }\n);\n  String sourceConfig.getDatabaseType().getName()=sourceConfig.getDatabaseType().getName();\n  String targetDatabaseType=targetConfig.getDatabaseType().getName();\n  SingleTableDataCalculator sourceCalculator=checkAlgorithm.getSingleTableDataCalculator(sourceConfig.getDatabaseType().getName());\n  SingleTableDataCalculator targetCalculator=checkAlgorithm.getSingleTableDataCalculator(targetDatabaseType);\n  Map<String,Boolean> result=new HashMap<>();\n  ThreadFactory threadFactory=ExecutorThreadFactoryBuilder.build(\"job\" + jobContext.getJobId() % 10_000 + \"-dataCheck-%d\");\n  ThreadPoolExecutor executor=new ThreadPoolExecutor(2,2,60,TimeUnit.SECONDS,new ArrayBlockingQueue<>(2),threadFactory);\n  JobRateLimitAlgorithm rateLimitAlgorithm=jobContext.getRuleAlteredContext().getRateLimitAlgorithm();\n  try (DataSourceWrapper sourceDataSource=dataSourceFactory.newInstance(sourceConfig);DataSourceWrapper targetDataSource=dataSourceFactory.newInstance(targetConfig)){\n    for (    String each : logicTableNames) {\n      Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n      String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n      DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceConfig.getDatabaseType().getName()).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceConfig.getDatabaseType().getName()).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n      Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n      boolean calculateResultsEquals=true;\n      while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n        if (null != rateLimitAlgorithm) {\n          rateLimitAlgorithm.onQuery();\n        }\n        Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n        Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n        Object sourceCalculatedResult=sourceFuture.get();\n        Object targetCalculatedResult=targetFuture.get();\n        calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n        if (!calculateResultsEquals) {\n          break;\n        }\n      }\n      result.put(each,calculateResultsEquals);\n    }\n  }\n catch (  final ExecutionException|InterruptedException|SQLException ex) {\n    throw new DataCheckFailException(\"data check failed\");\n  }\n finally {\n    executor.shutdown();\n    executor.shutdownNow();\n  }\n  return result;\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 508,
+      "astNodeNumber" : 512,
       "astHeight" : 16
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 4845,
+        "charLength" : 4300,
         "startLineNumber" : 119,
         "startColumnNumber" : 4,
         "endLineNumber" : 178,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "@Override public Map<String,Boolean> checkRecordsContent(final DataConsistencyCheckAlgorithm checkAlgorithm){\n  Collection<String> supportedDatabaseTypes=checkAlgorithm.getSupportedDatabaseTypes();\n  JDBCDataSourceConfiguration sourceConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getSource().getType(),jobContext.getJobConfig().getRuleConfig().getSource().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,sourceConfig.getDatabaseType().getName());\n  JDBCDataSourceConfiguration targetConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getTarget().getType(),jobContext.getJobConfig().getRuleConfig().getTarget().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,targetConfig.getDatabaseType().getName());\n  Collection<String> logicTableNames=jobContext.getTaskConfigs().stream().flatMap(each -> each.getDumperConfig().getTableNameMap().values().stream()).distinct().collect(Collectors.toList());\n  Map<String,TableMetaData> tableMetaDataMap=getTablesColumnsMap(sourceConfig,logicTableNames);\n  logicTableNames.forEach(each -> {\n    if (!tableMetaDataMap.containsKey(each)) {\n      throw new DataCheckFailException(String.format(\"could not get table columns for '%s'\",each));\n    }\n  }\n);\n  String sourceDatabaseType=sourceConfig.getDatabaseType().getName();\n  String targetDatabaseType=targetConfig.getDatabaseType().getName();\n  SingleTableDataCalculator sourceCalculator=checkAlgorithm.getSingleTableDataCalculator(sourceDatabaseType);\n  SingleTableDataCalculator targetCalculator=checkAlgorithm.getSingleTableDataCalculator(targetDatabaseType);\n  Map<String,Boolean> result=new HashMap<>();\n  ThreadFactory threadFactory=ExecutorThreadFactoryBuilder.build(\"job\" + jobContext.getJobId() % 10_000 + \"-dataCheck-%d\");\n  ThreadPoolExecutor executor=new ThreadPoolExecutor(2,2,60,TimeUnit.SECONDS,new ArrayBlockingQueue<>(2),threadFactory);\n  JobRateLimitAlgorithm rateLimitAlgorithm=jobContext.getRuleAlteredContext().getRateLimitAlgorithm();\n  try (DataSourceWrapper sourceDataSource=dataSourceFactory.newInstance(sourceConfig);DataSourceWrapper targetDataSource=dataSourceFactory.newInstance(targetConfig)){\n    for (    String each : logicTableNames) {\n      Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n      String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n      DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n      Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n      boolean calculateResultsEquals=true;\n      while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n        if (null != rateLimitAlgorithm) {\n          rateLimitAlgorithm.onQuery();\n        }\n        Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n        Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n        Object sourceCalculatedResult=sourceFuture.get();\n        Object targetCalculatedResult=targetFuture.get();\n        calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n        if (!calculateResultsEquals) {\n          break;\n        }\n      }\n      result.put(each,calculateResultsEquals);\n    }\n  }\n catch (  final ExecutionException|InterruptedException|SQLException ex) {\n    throw new DataCheckFailException(\"data check failed\");\n  }\n finally {\n    executor.shutdown();\n    executor.shutdownNow();\n  }\n  return result;\n}\n",
+      "nodeContext" : "@Override public Map<String,Boolean> checkRecordsContent(final DataConsistencyCheckAlgorithm checkAlgorithm){\n  Collection<String> supportedDatabaseTypes=checkAlgorithm.getSupportedDatabaseTypes();\n  JDBCDataSourceConfiguration sourceConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getSource().getType(),jobContext.getJobConfig().getRuleConfig().getSource().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,sourceConfig.getDatabaseType().getName());\n  JDBCDataSourceConfiguration targetConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getTarget().getType(),jobContext.getJobConfig().getRuleConfig().getTarget().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,targetConfig.getDatabaseType().getName());\n  Collection<String> logicTableNames=jobContext.getTaskConfigs().stream().flatMap(each -> each.getDumperConfig().getTableNameMap().values().stream()).distinct().collect(Collectors.toList());\n  Map<String,TableMetaData> tableMetaDataMap=getTablesColumnsMap(sourceConfig,logicTableNames);\n  logicTableNames.forEach(each -> {\n    if (!tableMetaDataMap.containsKey(each)) {\n      throw new DataCheckFailException(String.format(\"could not get table columns for '%s'\",each));\n    }\n  }\n);\n  String sourceConfig.getDatabaseType().getName()=sourceConfig.getDatabaseType().getName();\n  String targetDatabaseType=targetConfig.getDatabaseType().getName();\n  SingleTableDataCalculator sourceCalculator=checkAlgorithm.getSingleTableDataCalculator(sourceConfig.getDatabaseType().getName());\n  SingleTableDataCalculator targetCalculator=checkAlgorithm.getSingleTableDataCalculator(targetDatabaseType);\n  Map<String,Boolean> result=new HashMap<>();\n  ThreadFactory threadFactory=ExecutorThreadFactoryBuilder.build(\"job\" + jobContext.getJobId() % 10_000 + \"-dataCheck-%d\");\n  ThreadPoolExecutor executor=new ThreadPoolExecutor(2,2,60,TimeUnit.SECONDS,new ArrayBlockingQueue<>(2),threadFactory);\n  JobRateLimitAlgorithm rateLimitAlgorithm=jobContext.getRuleAlteredContext().getRateLimitAlgorithm();\n  try (DataSourceWrapper sourceDataSource=dataSourceFactory.newInstance(sourceConfig);DataSourceWrapper targetDataSource=dataSourceFactory.newInstance(targetConfig)){\n    for (    String each : logicTableNames) {\n      Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n      String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n      DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceConfig.getDatabaseType().getName()).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceConfig.getDatabaseType().getName()).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n      Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n      boolean calculateResultsEquals=true;\n      while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n        if (null != rateLimitAlgorithm) {\n          rateLimitAlgorithm.onQuery();\n        }\n        Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n        Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n        Object sourceCalculatedResult=sourceFuture.get();\n        Object targetCalculatedResult=targetFuture.get();\n        calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n        if (!calculateResultsEquals) {\n          break;\n        }\n      }\n      result.put(each,calculateResultsEquals);\n    }\n  }\n catch (  final ExecutionException|InterruptedException|SQLException ex) {\n    throw new DataCheckFailException(\"data check failed\");\n  }\n finally {\n    executor.shutdown();\n    executor.shutdownNow();\n  }\n  return result;\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 525,
+      "astNodeNumber" : 529,
       "astHeight" : 17
     } ],
-    "currentLineData" : {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
-      "nodePosition" : {
-        "charLength" : 131,
-        "startLineNumber" : 149,
-        "startColumnNumber" : 66,
-        "endLineNumber" : 149,
-        "endColumnNumber" : 197
-      },
-      "nodeContext" : "DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType).peerDatabaseType(targetDatabaseType)",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 12,
-      "astHeight" : 5
-    },
-    "tokenLength" : 1,
+    "tokenLength" : 3,
     "type" : "java.lang.String"
   }, {
-    "nodeContext" : "sourceDatabaseType",
-    "nodeType" : "SimpleName",
+    "nodeContext" : "sourceConfig.getDatabaseType().getName()",
+    "nodeType" : "MethodInvocation",
     "nodePosition" : {
-      "charLength" : 18,
+      "charLength" : 40,
       "startLineNumber" : 151,
       "startColumnNumber" : 178,
       "endLineNumber" : 151,
-      "endColumnNumber" : 196
+      "endColumnNumber" : 218
     },
-    "astNodeNumber" : 1,
-    "astHeight" : 1,
+    "astNodeNumber" : 5,
+    "astHeight" : 3,
     "parentDataList" : [ {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
       "nodePosition" : {
-        "charLength" : 131,
+        "charLength" : 153,
         "startLineNumber" : 151,
         "startColumnNumber" : 66,
         "endLineNumber" : 151,
-        "endColumnNumber" : 197
+        "endColumnNumber" : 219
       },
-      "nodeContext" : "DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceDatabaseType)",
+      "nodeContext" : "DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceConfig.getDatabaseType().getName())",
       "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 12,
+      "astNodeNumber" : 16,
       "astHeight" : 5
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
       "nodePosition" : {
-        "charLength" : 173,
+        "charLength" : 174,
         "startLineNumber" : 151,
         "startColumnNumber" : 66,
         "endLineNumber" : 152,
         "endColumnNumber" : 41
       },
-      "nodeContext" : "DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceDatabaseType).logicTableName(each)",
+      "nodeContext" : "DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceConfig.getDatabaseType().getName()).logicTableName(each)",
       "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 15,
+      "astNodeNumber" : 19,
       "astHeight" : 6
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
       "nodePosition" : {
-        "charLength" : 198,
+        "charLength" : 199,
         "startLineNumber" : 151,
         "startColumnNumber" : 66,
         "endLineNumber" : 152,
         "endColumnNumber" : 66
       },
-      "nodeContext" : "DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceDatabaseType).logicTableName(each).columnNames(columnNames)",
+      "nodeContext" : "DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceConfig.getDatabaseType().getName()).logicTableName(each).columnNames(columnNames)",
       "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 18,
+      "astNodeNumber" : 22,
       "astHeight" : 7
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
       "nodePosition" : {
-        "charLength" : 219,
+        "charLength" : 220,
         "startLineNumber" : 151,
         "startColumnNumber" : 66,
         "endLineNumber" : 152,
         "endColumnNumber" : 87
       },
-      "nodeContext" : "DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey)",
+      "nodeContext" : "DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceConfig.getDatabaseType().getName()).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey)",
       "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 21,
+      "astNodeNumber" : 25,
       "astHeight" : 8
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.VariableDeclarationFragment,initializer]",
       "nodePosition" : {
-        "charLength" : 227,
+        "charLength" : 228,
         "startLineNumber" : 151,
         "startColumnNumber" : 66,
         "endLineNumber" : 152,
         "endColumnNumber" : 95
       },
-      "nodeContext" : "DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build()",
+      "nodeContext" : "DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceConfig.getDatabaseType().getName()).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build()",
       "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 23,
+      "astNodeNumber" : 27,
       "astHeight" : 9
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.VariableDeclarationStatement,fragments]",
       "nodePosition" : {
-        "charLength" : 254,
+        "charLength" : 253,
         "startLineNumber" : 151,
         "startColumnNumber" : 39,
         "endLineNumber" : 152,
         "endColumnNumber" : 95
       },
-      "nodeContext" : "targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build()",
+      "nodeContext" : "targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceConfig.getDatabaseType().getName()).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build()",
       "nodeType" : "VariableDeclarationFragment",
-      "astNodeNumber" : 25,
+      "astNodeNumber" : 29,
       "astHeight" : 10
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
@@ -492,130 +381,110 @@
         "endLineNumber" : 152,
         "endColumnNumber" : 96
       },
-      "nodeContext" : "DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n",
+      "nodeContext" : "DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceConfig.getDatabaseType().getName()).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n",
       "nodeType" : "VariableDeclarationStatement",
-      "astNodeNumber" : 28,
+      "astNodeNumber" : 32,
       "astHeight" : 11
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.EnhancedForStatement,body]",
       "nodePosition" : {
-        "charLength" : 1998,
+        "charLength" : 1643,
         "startLineNumber" : 146,
         "startColumnNumber" : 48,
         "endLineNumber" : 170,
         "endColumnNumber" : 13
       },
-      "nodeContext" : "{\n  Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n  String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n  DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n  DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n  Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n  Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n  boolean calculateResultsEquals=true;\n  while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n    if (null != rateLimitAlgorithm) {\n      rateLimitAlgorithm.onQuery();\n    }\n    Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n    Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n    Object sourceCalculatedResult=sourceFuture.get();\n    Object targetCalculatedResult=targetFuture.get();\n    calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n    if (!calculateResultsEquals) {\n      break;\n    }\n  }\n  result.put(each,calculateResultsEquals);\n}\n",
+      "nodeContext" : "{\n  Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n  String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n  DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceConfig.getDatabaseType().getName()).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n  DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceConfig.getDatabaseType().getName()).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n  Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n  Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n  boolean calculateResultsEquals=true;\n  while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n    if (null != rateLimitAlgorithm) {\n      rateLimitAlgorithm.onQuery();\n    }\n    Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n    Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n    Object sourceCalculatedResult=sourceFuture.get();\n    Object targetCalculatedResult=targetFuture.get();\n    calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n    if (!calculateResultsEquals) {\n      break;\n    }\n  }\n  result.put(each,calculateResultsEquals);\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 201,
+      "astNodeNumber" : 205,
       "astHeight" : 12
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 2034,
+        "charLength" : 1679,
         "startLineNumber" : 146,
         "startColumnNumber" : 12,
         "endLineNumber" : 170,
         "endColumnNumber" : 13
       },
-      "nodeContext" : "for (String each : logicTableNames) {\n  Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n  String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n  DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n  DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n  Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n  Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n  boolean calculateResultsEquals=true;\n  while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n    if (null != rateLimitAlgorithm) {\n      rateLimitAlgorithm.onQuery();\n    }\n    Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n    Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n    Object sourceCalculatedResult=sourceFuture.get();\n    Object targetCalculatedResult=targetFuture.get();\n    calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n    if (!calculateResultsEquals) {\n      break;\n    }\n  }\n  result.put(each,calculateResultsEquals);\n}\n",
+      "nodeContext" : "for (String each : logicTableNames) {\n  Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n  String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n  DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceConfig.getDatabaseType().getName()).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n  DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceConfig.getDatabaseType().getName()).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n  Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n  Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n  boolean calculateResultsEquals=true;\n  while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n    if (null != rateLimitAlgorithm) {\n      rateLimitAlgorithm.onQuery();\n    }\n    Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n    Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n    Object sourceCalculatedResult=sourceFuture.get();\n    Object targetCalculatedResult=targetFuture.get();\n    calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n    if (!calculateResultsEquals) {\n      break;\n    }\n  }\n  result.put(each,calculateResultsEquals);\n}\n",
       "nodeType" : "EnhancedForStatement",
-      "astNodeNumber" : 207,
+      "astNodeNumber" : 211,
       "astHeight" : 13
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.TryStatement,body]",
       "nodePosition" : {
-        "charLength" : 2058,
+        "charLength" : 1731,
         "startLineNumber" : 145,
         "startColumnNumber" : 95,
         "endLineNumber" : 171,
         "endColumnNumber" : 9
       },
-      "nodeContext" : "{\n  for (  String each : logicTableNames) {\n    Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n    String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n    DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n    DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n    Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n    Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n    boolean calculateResultsEquals=true;\n    while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n      if (null != rateLimitAlgorithm) {\n        rateLimitAlgorithm.onQuery();\n      }\n      Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n      Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n      Object sourceCalculatedResult=sourceFuture.get();\n      Object targetCalculatedResult=targetFuture.get();\n      calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n      if (!calculateResultsEquals) {\n        break;\n      }\n    }\n    result.put(each,calculateResultsEquals);\n  }\n}\n",
+      "nodeContext" : "{\n  for (  String each : logicTableNames) {\n    Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n    String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n    DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceConfig.getDatabaseType().getName()).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n    DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceConfig.getDatabaseType().getName()).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n    Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n    Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n    boolean calculateResultsEquals=true;\n    while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n      if (null != rateLimitAlgorithm) {\n        rateLimitAlgorithm.onQuery();\n      }\n      Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n      Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n      Object sourceCalculatedResult=sourceFuture.get();\n      Object targetCalculatedResult=targetFuture.get();\n      calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n      if (!calculateResultsEquals) {\n        break;\n      }\n    }\n    result.put(each,calculateResultsEquals);\n  }\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 208,
+      "astNodeNumber" : 212,
       "astHeight" : 14
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.Block,statements]",
       "nodePosition" : {
-        "charLength" : 2482,
+        "charLength" : 2088,
         "startLineNumber" : 144,
         "startColumnNumber" : 8,
         "endLineNumber" : 176,
         "endColumnNumber" : 9
       },
-      "nodeContext" : "try (DataSourceWrapper sourceDataSource=dataSourceFactory.newInstance(sourceConfig);DataSourceWrapper targetDataSource=dataSourceFactory.newInstance(targetConfig)){\n  for (  String each : logicTableNames) {\n    Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n    String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n    DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n    DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n    Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n    Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n    boolean calculateResultsEquals=true;\n    while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n      if (null != rateLimitAlgorithm) {\n        rateLimitAlgorithm.onQuery();\n      }\n      Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n      Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n      Object sourceCalculatedResult=sourceFuture.get();\n      Object targetCalculatedResult=targetFuture.get();\n      calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n      if (!calculateResultsEquals) {\n        break;\n      }\n    }\n    result.put(each,calculateResultsEquals);\n  }\n}\n catch (final ExecutionException|InterruptedException|SQLException ex) {\n  throw new DataCheckFailException(\"data check failed\");\n}\n finally {\n  executor.shutdown();\n  executor.shutdownNow();\n}\n",
+      "nodeContext" : "try (DataSourceWrapper sourceDataSource=dataSourceFactory.newInstance(sourceConfig);DataSourceWrapper targetDataSource=dataSourceFactory.newInstance(targetConfig)){\n  for (  String each : logicTableNames) {\n    Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n    String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n    DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceConfig.getDatabaseType().getName()).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n    DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceConfig.getDatabaseType().getName()).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n    Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n    Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n    boolean calculateResultsEquals=true;\n    while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n      if (null != rateLimitAlgorithm) {\n        rateLimitAlgorithm.onQuery();\n      }\n      Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n      Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n      Object sourceCalculatedResult=sourceFuture.get();\n      Object targetCalculatedResult=targetFuture.get();\n      calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n      if (!calculateResultsEquals) {\n        break;\n      }\n    }\n    result.put(each,calculateResultsEquals);\n  }\n}\n catch (final ExecutionException|InterruptedException|SQLException ex) {\n  throw new DataCheckFailException(\"data check failed\");\n}\n finally {\n  executor.shutdown();\n  executor.shutdownNow();\n}\n",
       "nodeType" : "TryStatement",
-      "astNodeNumber" : 253,
+      "astNodeNumber" : 257,
       "astHeight" : 15
     }, {
       "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodDeclaration,body]",
       "nodePosition" : {
-        "charLength" : 4731,
+        "charLength" : 4192,
         "startLineNumber" : 120,
         "startColumnNumber" : 104,
         "endLineNumber" : 178,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "{\n  Collection<String> supportedDatabaseTypes=checkAlgorithm.getSupportedDatabaseTypes();\n  JDBCDataSourceConfiguration sourceConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getSource().getType(),jobContext.getJobConfig().getRuleConfig().getSource().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,sourceConfig.getDatabaseType().getName());\n  JDBCDataSourceConfiguration targetConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getTarget().getType(),jobContext.getJobConfig().getRuleConfig().getTarget().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,targetConfig.getDatabaseType().getName());\n  Collection<String> logicTableNames=jobContext.getTaskConfigs().stream().flatMap(each -> each.getDumperConfig().getTableNameMap().values().stream()).distinct().collect(Collectors.toList());\n  Map<String,TableMetaData> tableMetaDataMap=getTablesColumnsMap(sourceConfig,logicTableNames);\n  logicTableNames.forEach(each -> {\n    if (!tableMetaDataMap.containsKey(each)) {\n      throw new DataCheckFailException(String.format(\"could not get table columns for '%s'\",each));\n    }\n  }\n);\n  String sourceDatabaseType=sourceConfig.getDatabaseType().getName();\n  String targetDatabaseType=targetConfig.getDatabaseType().getName();\n  SingleTableDataCalculator sourceCalculator=checkAlgorithm.getSingleTableDataCalculator(sourceDatabaseType);\n  SingleTableDataCalculator targetCalculator=checkAlgorithm.getSingleTableDataCalculator(targetDatabaseType);\n  Map<String,Boolean> result=new HashMap<>();\n  ThreadFactory threadFactory=ExecutorThreadFactoryBuilder.build(\"job\" + jobContext.getJobId() % 10_000 + \"-dataCheck-%d\");\n  ThreadPoolExecutor executor=new ThreadPoolExecutor(2,2,60,TimeUnit.SECONDS,new ArrayBlockingQueue<>(2),threadFactory);\n  JobRateLimitAlgorithm rateLimitAlgorithm=jobContext.getRuleAlteredContext().getRateLimitAlgorithm();\n  try (DataSourceWrapper sourceDataSource=dataSourceFactory.newInstance(sourceConfig);DataSourceWrapper targetDataSource=dataSourceFactory.newInstance(targetConfig)){\n    for (    String each : logicTableNames) {\n      Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n      String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n      DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n      Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n      boolean calculateResultsEquals=true;\n      while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n        if (null != rateLimitAlgorithm) {\n          rateLimitAlgorithm.onQuery();\n        }\n        Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n        Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n        Object sourceCalculatedResult=sourceFuture.get();\n        Object targetCalculatedResult=targetFuture.get();\n        calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n        if (!calculateResultsEquals) {\n          break;\n        }\n      }\n      result.put(each,calculateResultsEquals);\n    }\n  }\n catch (  final ExecutionException|InterruptedException|SQLException ex) {\n    throw new DataCheckFailException(\"data check failed\");\n  }\n finally {\n    executor.shutdown();\n    executor.shutdownNow();\n  }\n  return result;\n}\n",
+      "nodeContext" : "{\n  Collection<String> supportedDatabaseTypes=checkAlgorithm.getSupportedDatabaseTypes();\n  JDBCDataSourceConfiguration sourceConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getSource().getType(),jobContext.getJobConfig().getRuleConfig().getSource().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,sourceConfig.getDatabaseType().getName());\n  JDBCDataSourceConfiguration targetConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getTarget().getType(),jobContext.getJobConfig().getRuleConfig().getTarget().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,targetConfig.getDatabaseType().getName());\n  Collection<String> logicTableNames=jobContext.getTaskConfigs().stream().flatMap(each -> each.getDumperConfig().getTableNameMap().values().stream()).distinct().collect(Collectors.toList());\n  Map<String,TableMetaData> tableMetaDataMap=getTablesColumnsMap(sourceConfig,logicTableNames);\n  logicTableNames.forEach(each -> {\n    if (!tableMetaDataMap.containsKey(each)) {\n      throw new DataCheckFailException(String.format(\"could not get table columns for '%s'\",each));\n    }\n  }\n);\n  String sourceConfig.getDatabaseType().getName()=sourceConfig.getDatabaseType().getName();\n  String targetDatabaseType=targetConfig.getDatabaseType().getName();\n  SingleTableDataCalculator sourceCalculator=checkAlgorithm.getSingleTableDataCalculator(sourceConfig.getDatabaseType().getName());\n  SingleTableDataCalculator targetCalculator=checkAlgorithm.getSingleTableDataCalculator(targetDatabaseType);\n  Map<String,Boolean> result=new HashMap<>();\n  ThreadFactory threadFactory=ExecutorThreadFactoryBuilder.build(\"job\" + jobContext.getJobId() % 10_000 + \"-dataCheck-%d\");\n  ThreadPoolExecutor executor=new ThreadPoolExecutor(2,2,60,TimeUnit.SECONDS,new ArrayBlockingQueue<>(2),threadFactory);\n  JobRateLimitAlgorithm rateLimitAlgorithm=jobContext.getRuleAlteredContext().getRateLimitAlgorithm();\n  try (DataSourceWrapper sourceDataSource=dataSourceFactory.newInstance(sourceConfig);DataSourceWrapper targetDataSource=dataSourceFactory.newInstance(targetConfig)){\n    for (    String each : logicTableNames) {\n      Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n      String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n      DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceConfig.getDatabaseType().getName()).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceConfig.getDatabaseType().getName()).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n      Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n      boolean calculateResultsEquals=true;\n      while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n        if (null != rateLimitAlgorithm) {\n          rateLimitAlgorithm.onQuery();\n        }\n        Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n        Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n        Object sourceCalculatedResult=sourceFuture.get();\n        Object targetCalculatedResult=targetFuture.get();\n        calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n        if (!calculateResultsEquals) {\n          break;\n        }\n      }\n      result.put(each,calculateResultsEquals);\n    }\n  }\n catch (  final ExecutionException|InterruptedException|SQLException ex) {\n    throw new DataCheckFailException(\"data check failed\");\n  }\n finally {\n    executor.shutdown();\n    executor.shutdownNow();\n  }\n  return result;\n}\n",
       "nodeType" : "Block",
-      "astNodeNumber" : 508,
+      "astNodeNumber" : 512,
       "astHeight" : 16
     }, {
       "locationInParent" : "ChildListProperty[org.eclipse.jdt.core.dom.TypeDeclaration,bodyDeclarations]",
       "nodePosition" : {
-        "charLength" : 4845,
+        "charLength" : 4300,
         "startLineNumber" : 119,
         "startColumnNumber" : 4,
         "endLineNumber" : 178,
         "endColumnNumber" : 5
       },
-      "nodeContext" : "@Override public Map<String,Boolean> checkRecordsContent(final DataConsistencyCheckAlgorithm checkAlgorithm){\n  Collection<String> supportedDatabaseTypes=checkAlgorithm.getSupportedDatabaseTypes();\n  JDBCDataSourceConfiguration sourceConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getSource().getType(),jobContext.getJobConfig().getRuleConfig().getSource().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,sourceConfig.getDatabaseType().getName());\n  JDBCDataSourceConfiguration targetConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getTarget().getType(),jobContext.getJobConfig().getRuleConfig().getTarget().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,targetConfig.getDatabaseType().getName());\n  Collection<String> logicTableNames=jobContext.getTaskConfigs().stream().flatMap(each -> each.getDumperConfig().getTableNameMap().values().stream()).distinct().collect(Collectors.toList());\n  Map<String,TableMetaData> tableMetaDataMap=getTablesColumnsMap(sourceConfig,logicTableNames);\n  logicTableNames.forEach(each -> {\n    if (!tableMetaDataMap.containsKey(each)) {\n      throw new DataCheckFailException(String.format(\"could not get table columns for '%s'\",each));\n    }\n  }\n);\n  String sourceDatabaseType=sourceConfig.getDatabaseType().getName();\n  String targetDatabaseType=targetConfig.getDatabaseType().getName();\n  SingleTableDataCalculator sourceCalculator=checkAlgorithm.getSingleTableDataCalculator(sourceDatabaseType);\n  SingleTableDataCalculator targetCalculator=checkAlgorithm.getSingleTableDataCalculator(targetDatabaseType);\n  Map<String,Boolean> result=new HashMap<>();\n  ThreadFactory threadFactory=ExecutorThreadFactoryBuilder.build(\"job\" + jobContext.getJobId() % 10_000 + \"-dataCheck-%d\");\n  ThreadPoolExecutor executor=new ThreadPoolExecutor(2,2,60,TimeUnit.SECONDS,new ArrayBlockingQueue<>(2),threadFactory);\n  JobRateLimitAlgorithm rateLimitAlgorithm=jobContext.getRuleAlteredContext().getRateLimitAlgorithm();\n  try (DataSourceWrapper sourceDataSource=dataSourceFactory.newInstance(sourceConfig);DataSourceWrapper targetDataSource=dataSourceFactory.newInstance(targetConfig)){\n    for (    String each : logicTableNames) {\n      Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n      String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n      DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceDatabaseType).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n      Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n      boolean calculateResultsEquals=true;\n      while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n        if (null != rateLimitAlgorithm) {\n          rateLimitAlgorithm.onQuery();\n        }\n        Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n        Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n        Object sourceCalculatedResult=sourceFuture.get();\n        Object targetCalculatedResult=targetFuture.get();\n        calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n        if (!calculateResultsEquals) {\n          break;\n        }\n      }\n      result.put(each,calculateResultsEquals);\n    }\n  }\n catch (  final ExecutionException|InterruptedException|SQLException ex) {\n    throw new DataCheckFailException(\"data check failed\");\n  }\n finally {\n    executor.shutdown();\n    executor.shutdownNow();\n  }\n  return result;\n}\n",
+      "nodeContext" : "@Override public Map<String,Boolean> checkRecordsContent(final DataConsistencyCheckAlgorithm checkAlgorithm){\n  Collection<String> supportedDatabaseTypes=checkAlgorithm.getSupportedDatabaseTypes();\n  JDBCDataSourceConfiguration sourceConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getSource().getType(),jobContext.getJobConfig().getRuleConfig().getSource().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,sourceConfig.getDatabaseType().getName());\n  JDBCDataSourceConfiguration targetConfig=JDBCDataSourceConfigurationFactory.newInstance(jobContext.getJobConfig().getRuleConfig().getTarget().getType(),jobContext.getJobConfig().getRuleConfig().getTarget().getParameter());\n  checkDatabaseTypeSupportedOrNot(supportedDatabaseTypes,targetConfig.getDatabaseType().getName());\n  Collection<String> logicTableNames=jobContext.getTaskConfigs().stream().flatMap(each -> each.getDumperConfig().getTableNameMap().values().stream()).distinct().collect(Collectors.toList());\n  Map<String,TableMetaData> tableMetaDataMap=getTablesColumnsMap(sourceConfig,logicTableNames);\n  logicTableNames.forEach(each -> {\n    if (!tableMetaDataMap.containsKey(each)) {\n      throw new DataCheckFailException(String.format(\"could not get table columns for '%s'\",each));\n    }\n  }\n);\n  String sourceConfig.getDatabaseType().getName()=sourceConfig.getDatabaseType().getName();\n  String targetDatabaseType=targetConfig.getDatabaseType().getName();\n  SingleTableDataCalculator sourceCalculator=checkAlgorithm.getSingleTableDataCalculator(sourceConfig.getDatabaseType().getName());\n  SingleTableDataCalculator targetCalculator=checkAlgorithm.getSingleTableDataCalculator(targetDatabaseType);\n  Map<String,Boolean> result=new HashMap<>();\n  ThreadFactory threadFactory=ExecutorThreadFactoryBuilder.build(\"job\" + jobContext.getJobId() % 10_000 + \"-dataCheck-%d\");\n  ThreadPoolExecutor executor=new ThreadPoolExecutor(2,2,60,TimeUnit.SECONDS,new ArrayBlockingQueue<>(2),threadFactory);\n  JobRateLimitAlgorithm rateLimitAlgorithm=jobContext.getRuleAlteredContext().getRateLimitAlgorithm();\n  try (DataSourceWrapper sourceDataSource=dataSourceFactory.newInstance(sourceConfig);DataSourceWrapper targetDataSource=dataSourceFactory.newInstance(targetConfig)){\n    for (    String each : logicTableNames) {\n      Collection<String> columnNames=tableMetaDataMap.get(each).getColumns().keySet();\n      String uniqueKey=tableMetaDataMap.get(each).getPrimaryKeyColumns().get(0);\n      DataCalculateParameter sourceCalculateParameter=DataCalculateParameter.builder().dataSource(sourceDataSource).databaseType(sourceConfig.getDatabaseType().getName()).peerDatabaseType(targetDatabaseType).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      DataCalculateParameter targetCalculateParameter=DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceConfig.getDatabaseType().getName()).logicTableName(each).columnNames(columnNames).uniqueKey(uniqueKey).build();\n      Iterator<Object> sourceCalculatedResultIterator=sourceCalculator.calculate(sourceCalculateParameter).iterator();\n      Iterator<Object> targetCalculatedResultIterator=targetCalculator.calculate(targetCalculateParameter).iterator();\n      boolean calculateResultsEquals=true;\n      while (sourceCalculatedResultIterator.hasNext() && targetCalculatedResultIterator.hasNext()) {\n        if (null != rateLimitAlgorithm) {\n          rateLimitAlgorithm.onQuery();\n        }\n        Future<Object> sourceFuture=executor.submit(sourceCalculatedResultIterator::next);\n        Future<Object> targetFuture=executor.submit(targetCalculatedResultIterator::next);\n        Object sourceCalculatedResult=sourceFuture.get();\n        Object targetCalculatedResult=targetFuture.get();\n        calculateResultsEquals=Objects.equals(sourceCalculatedResult,targetCalculatedResult);\n        if (!calculateResultsEquals) {\n          break;\n        }\n      }\n      result.put(each,calculateResultsEquals);\n    }\n  }\n catch (  final ExecutionException|InterruptedException|SQLException ex) {\n    throw new DataCheckFailException(\"data check failed\");\n  }\n finally {\n    executor.shutdown();\n    executor.shutdownNow();\n  }\n  return result;\n}\n",
       "nodeType" : "MethodDeclaration",
-      "astNodeNumber" : 525,
+      "astNodeNumber" : 529,
       "astHeight" : 17
     } ],
-    "currentLineData" : {
-      "locationInParent" : "ChildProperty[org.eclipse.jdt.core.dom.MethodInvocation,expression]",
-      "nodePosition" : {
-        "charLength" : 131,
-        "startLineNumber" : 151,
-        "startColumnNumber" : 66,
-        "endLineNumber" : 151,
-        "endColumnNumber" : 197
-      },
-      "nodeContext" : "DataCalculateParameter.builder().dataSource(targetDataSource).databaseType(targetDatabaseType).peerDatabaseType(sourceDatabaseType)",
-      "nodeType" : "MethodInvocation",
-      "astNodeNumber" : 12,
-      "astHeight" : 5
-    },
-    "tokenLength" : 1,
+    "tokenLength" : 3,
     "type" : "java.lang.String"
   } ],
   "positionList" : [ {
-    "charLength" : 18,
-    "startLineNumber" : 136,
-    "startColumnNumber" : 15,
-    "endLineNumber" : 136,
-    "endColumnNumber" : 33
-  }, {
-    "charLength" : 18,
+    "charLength" : 40,
     "startLineNumber" : 138,
     "startColumnNumber" : 97,
     "endLineNumber" : 138,
-    "endColumnNumber" : 115
+    "endColumnNumber" : 137
   }, {
-    "charLength" : 18,
+    "charLength" : 40,
     "startLineNumber" : 149,
     "startColumnNumber" : 141,
     "endLineNumber" : 149,
-    "endColumnNumber" : 159
+    "endColumnNumber" : 181
   }, {
-    "charLength" : 18,
+    "charLength" : 40,
     "startLineNumber" : 151,
     "startColumnNumber" : 178,
     "endLineNumber" : 151,
-    "endColumnNumber" : 196
+    "endColumnNumber" : 218
   } ],
   "layoutRelationDataList" : [ ]
 }

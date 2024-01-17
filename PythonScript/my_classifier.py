@@ -5,8 +5,9 @@ from itertools import combinations, chain
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from imblearn.over_sampling import SMOTE
+from imblearn.over_sampling import SMOTE, ADASYN
 from imblearn.under_sampling import TomekLinks, ClusterCentroids, RandomUnderSampler
+from scipy.stats import spearmanr, ttest_ind
 from sklearn import tree
 from sklearn.cluster import KMeans
 from sklearn.ensemble import RandomForestClassifier
@@ -19,6 +20,7 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier, export_text
+from sklearn.utils import resample
 
 from CSVReader import CSVReader
 from JsonParser import JsonParser
@@ -32,8 +34,14 @@ logger = logging.getLogger()
 logger.filter(lambda record: record.levelno == logging.INFO)
 logger.addHandler(file_handler)
 
-neg_parser = JsonParser("C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\negative\\", 0)
-pos_parser = JsonParser("C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\positive\\", 1)
+neg_parser = JsonParser(["C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\negative\\",
+                         "C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\casestudy\\negative\\"],
+                        0,
+                        0)  # ,"C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\casestudy\\negative\\"
+pos_parser = JsonParser(["C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\positive\\",
+                         "C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\casestudy\\positive\\"],
+                        0,
+                        1)  # ,"C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\casestudy\\positive\\"
 
 positive_csv_reader = CSVReader('C:\\Users\\30219\\Desktop\\result\\result_4.csv', 1)
 negative_csv_reader = CSVReader('C:\\Users\\30219\\Desktop\\result\\result_negative_6.csv', 0)
@@ -104,6 +112,16 @@ def get_decision_rules(tree, feature_names, class_names, indent=0):
     return rules
 
 
+def cohen_d(group1, group2):
+    mean_diff = sum(group1) / len(group1) - sum(group2) / len(group2)
+    pooled_stdev = ((sum((x - mean_diff) ** 2 for x in group1) + sum((x - mean_diff) ** 2 for x in group2)) / (
+            len(group1) + len(group2) - 2)) ** 0.5 if len(group1) + len(group2) - 2 != 0 else 0
+    if pooled_stdev == 0:
+        return 0
+
+    return mean_diff / pooled_stdev
+
+
 if __name__ == '__main__':
     # 1. DT  2. SVM  3. NaiveBayes  4. KNN  5. RandomForest  6. LR  7. K-Means  8. MLP  9. CNN  10.RNN
     # 'charLength', 'astHeight', 'astNodeNumber', 'layoutRelationDataList', 'isSimpleName'  'isClassInstanceCreation',
@@ -112,26 +130,18 @@ if __name__ == '__main__':
     # 假设排除 'charLength',"isGetMethod",'numsParentReturnStatement','numsInCond', 'isQualifiedName', 'isArithmeticExp','tokenLength', 'isStreamMethod',
     # case study 派出的特征  'numsParentArithmeticExp','tokenLength','isStreamMethod','numsParentCall', 'astHeight',
     # 全部特征
-    # features = ['occurrences',   'numsParentVariableDeclarationFragment',
-    #             'currentLineData', 'charLength',"isGetMethod",'numsParentReturnStatement','numsInCond', 'isQualifiedName', 'isArithmeticExp','tokenLength',
-    #                'numsParentThrowStatement',
-    #             'isClassInstanceCreation', 'isMethodInvocation', 'isSimpleName','isNumberLiteral',
-    #             'isCharacterLiteral', 'isStringLiteral',
-    #               'numsInAssignment', 'largestLineGap','isStreamMethod',
-    #             'maxParentAstHeight', 'numsParentArithmeticExp' ,'numsParentCall', 'astHeight',
-    #             'maxEndColumnNumberInCurrentLine']  #
-    features = ['occurrences','charLength', 'numsParentVariableDeclarationFragment', #'isMethodInvocation', 'numsInCond','isArithmeticExp','isStreamMethod',
-                'currentLineData',  "isGetMethod", 'numsParentReturnStatement',
-                'isQualifiedName',  'tokenLength',
-                'numsParentThrowStatement',
-                'isClassInstanceCreation',   'isSimpleName', 'isNumberLiteral',
-                'isCharacterLiteral', 'isStringLiteral',
-                'numsInAssignment', 'largestLineGap',
-                'maxParentAstHeight', 'numsParentArithmeticExp', 'numsParentCall', 'astHeight',
-                'maxEndColumnNumberInCurrentLine']  #
-
-    # 消融实验开关
-    feature_elimination_experiment_enable = False
+    # features = ['occurrences', 'maxEndColumnNumberInCurrentLine', 'currentLineData', 'charLength', 'tokenLength',
+    #                 'numsParentVariableDeclarationFragment',
+    #                 'isSimpleName', 'isQualifiedName', 'isNumberLiteral', 'isCharacterLiteral', 'isStringLiteral',
+    #                 "isGetMethod", 'isArithmeticExp', 'isClassInstanceCreation', 'isMethodInvocation', 'isStreamMethod',
+    #                 'numsParentThrowStatement', 'numsParentReturnStatement', 'numsInCond', 'numsInAssignment',
+    #                 'largestLineGap',
+    #                 'maxParentAstHeight', 'numsParentArithmeticExp', 'numsParentCall',]  # 'currentLineData',
+    features = ['occurrences',  'maxEndColumnNumberInCurrentLine', 'charLength', 'tokenLength',
+                'numsParentVariableDeclarationFragment',  'isName', 'isLiteral', 'isGetMethod', 'isArithmeticExp',
+                'isClassInstanceCreation', 'isMethodInvocation', 'numsInCond', 'largestLineGap', 'maxParentAstHeight',
+                'numsParentArithmeticExp', 'numsParentCall']  # 'currentLineData',
+    feature_elimination_experiment_enable = True
 
     # 读取特征数据
     neg_maps = neg_parser.get_value(features)
@@ -201,9 +211,8 @@ if __name__ == '__main__':
     # clf = SVC(kernel='linear')
     model_name = "DecisionTree"
     if model_name == 'DecisionTree':
-
         clf = DecisionTreeClassifier(min_samples_leaf=5, min_samples_split=10,
-                                     random_state=42)  #  class_weight={0:1,1:32} min_samples_leaf=5, min_samples_split=10, max_depth=21,
+                                     random_state=42)  # class_weight={0:1,1:32} min_samples_leaf=5, min_samples_split=10, max_depth=21,
         # clf = DecisionTreeClassifier(max_depth=4, min_samples_leaf=5, min_samples_split=10)  #
         # clf = DecisionTreeClassifier(   )  #
     elif model_name == 'SVM':
@@ -245,7 +254,7 @@ if __name__ == '__main__':
         # count = sum(1 for idx in indicesT if y[idx] == 1)
         # print("exp长度超过14个character, 推荐总数 {}，对的个数 {}，百分比 {}".format(len(indicesT), count,
         #                                                                            count / len(indicesT)))
-        #
+
         # indicesT = [idx for idx, val in enumerate(X) if val[4] >= 21]
         # indicesF = [idx for idx, val in enumerate(X) if val[4] < 21]
         # count = sum(1 for idx in indicesT if y[idx] == 1)
@@ -268,29 +277,109 @@ if __name__ == '__main__':
         #     "and起来后，对的数据  推荐总数 {}，对的个数 {}，百分比 {}".format(len(indicesT), count, count / len(indicesT)))
 
         # logging.info("Model name error!")
+        if 1 == 1:
+            # 按照项目名聚合feature
+            case_study_data_pos = []
+            case_study_data_neg = []
+            for project_name in pos_parser.project_index_map.keys():
+                neg_feature_values = []
+                for v in neg_parser.project_index_map[project_name]:
+                    neg_feature_values.append(neg_maps[v.replace('.json', '') + '_' + str(0)])
+                pos_feature_values = []
+                for v in pos_parser.project_index_map[project_name]:
+                    pos_feature_values.append(pos_maps[v.replace('.json', '') + '_' + str(1)])
+                significant_features_count = 0
+                # 以 X1 为基准，逐个特征进行 t 检验
+                for i in range(len(features)):
+                    X1_feature = [sample[i] for sample in neg_feature_values]
+                    X2_feature = [sample[i] for sample in pos_feature_values]
+                    X1_feature = resample(X1_feature, replace=True, n_samples=len(X2_feature),
+                                          random_state=42)
+
+                    # 进行 t 检验
+                    t_statistic, p_value = ttest_ind(X1_feature, X2_feature)
+                    # 计算 Cohen's d
+                    effect_size = cohen_d(X1_feature, X2_feature)
+
+                    # 设置显著性水平（通常为 0.05）
+                    alpha = 0.05
+
+                    # 判断是否显著
+                    if effect_size > 0.5:
+                        significant_features_count += 1
+                if significant_features_count > 10 and '@' in project_name:
+                    # 打印显著的特征个数
+                    print(project_name, end=',')
+
+                if '@' not in project_name:
+                    for value in pos_feature_values:
+                        case_study_data_pos.append(value)
+                    for value in neg_feature_values:
+                        case_study_data_neg.append(value)
+            print()
+            neg_std = np.mean(case_study_data_neg, axis=0)
+            pos_std = np.mean(case_study_data_pos, axis=0)
+            case_study_difference = np.abs(neg_std - pos_std)
+            # 绘制条形图
+            # plt.bar(features, case_study_difference, color='skyblue')
+            # plt.xlabel('Features')
+            # plt.ylabel('Absolute Difference in Standard Deviation')
+            # plt.title('Difference in Standard Deviation between arr1 and arr2')
+            # plt.show()
+
+            # 假设你有一个有序特征 X 和目标变量 y
+            # 以 X 的每个分量逐个进行 t 检验
+            for i in range(len(features)):
+                X_feature_pos = [sample[i] for sample in case_study_data_pos]
+                X_feature_neg = [sample[i] for sample in case_study_data_neg]
+
+                # rearrange data structure
+                X_feature_pos = resample(X_feature_pos, replace=True, n_samples=len(X_feature_neg),
+                                         random_state=42)
+                # 计算 Cohen's d
+                effect_size = cohen_d(X_feature_pos, X_feature_neg)
+                # 进行 t 检验
+                t_statistic, p_value = ttest_ind(X_feature_pos, X_feature_neg)
+
+                # 设置显著性水平（通常为 0.05）
+                alpha = 0.05
+
+                # 判断是否显著
+                if effect_size > 0.15:
+                    print(
+                        f"Feature: {features[i]}, t-statistic: {t_statistic}, p-value: {p_value}, effect size: {effect_size}")
+
+            exit(0)
 
         # 构建所有可能的特征子集
-        all_feature_subsets = list(chain.from_iterable(combinations(features, r) for r in range(1, len(features) + 1)))
+        all_feature_subsets = list(chain.from_iterable(combinations(features, r) for r in range(len(features), 0, -1)))
         # 初始化字典用于存储性能指标
         performance_metrics = {}
         # 创建决策树模型
         clf = DecisionTreeClassifier(random_state=42)
-        logging.info(f"all_feature_subsets: {len(all_feature_subsets) }")
+        logging.info(f"all_feature_subsets: {len(all_feature_subsets)}")
         # 定义交叉验证折叠
         cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
-        for subset in all_feature_subsets:
+        i = 1  # 全部特征，所有数据 11326 1551
+        for subset in all_feature_subsets[i - 1:-1]:
+            print("index:", i, "subset:", subset, "subset size:", len(subset))
+            i += 1
             X_subset = X[:, [features.index(feature) for feature in subset]]
 
-            # 初始化 SMOTE
-            smote = SMOTE(random_state=42)
+            # 初始化 SMOTE == 对特征的顺序有影响的
+            # sampler = SMOTE(random_state=42)
 
+            # ADASYN（Adaptive Synthetic Sampling） 对顺序不敏感
+            sampler = ADASYN(sampling_strategy='auto', random_state=42)
+            precisions = []
+            recalls = []
             # 交叉验证中的训练过程
             for train_index, test_index in cv.split(X_subset, y):
                 X_train, X_test = X_subset[train_index], X_subset[test_index]
                 y_train, y_test = y[train_index], y[test_index]
 
-                # 在训练集上应用 SMOTE
-                X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
+                # 在训练集上应用 ADASYN
+                X_train_resampled, y_train_resampled = sampler.fit_resample(X_train, y_train)
 
                 # 训练模型
                 clf.fit(X_train_resampled, y_train_resampled)
@@ -298,17 +387,28 @@ if __name__ == '__main__':
                 # 在测试集上评估性能，不应用 SMOTE
                 y_pred = clf.predict(X_test)
                 # 统计 1的个数
-                print(Counter(y_test))
+                # print(Counter(y_test))
 
                 # 计算 precision 和 recall
-                precision = precision_score(y_test, y_pred, average='weighted')
-                recall = recall_score(y_test, y_pred, average='weighted')
+                precision = precision_score(y_test, y_pred)
+                recall = recall_score(y_test, y_pred)
+                f1 = 2 * precision * recall / (precision + recall)
+                precisions.append(precision)
+                recalls.append(recall)
+                if f1 < 0.30:
+                    break
 
-                # 存储性能指标
-                performance_metrics[str(subset)] = {'precision': precision, 'recall': recall}
-
-                print(f"Subset: {subset}, Precision: {precision}, Recall: {recall}")
-            break
+            # 计算平均 precision 和 recall
+            precision = round(np.mean(precisions) * 100, 2)
+            recall = round(np.mean(recalls) * 100, 2)
+            f1 = round(2 * precision * recall / (precision + recall), 2)
+            if f1 < 51.9:
+                print(f"Precision: {round(precision, 2)}, Recall: {recall}, f1:{f1}")
+                continue
+            # 存储性能指标
+            performance_metrics[str(subset)] = {'precision': precision, 'recall': recall}
+            logging.info(
+                f"Precision: {precision}, Recall: {recall}, f1: {f1}, Subset: {subset}, Subset size: {len(subset)}")
         # 打印所有性能指标
         logging.info(f"All Performance Metrics:{performance_metrics}")
 
@@ -316,7 +416,8 @@ if __name__ == '__main__':
 
     # 定义十折交叉验证
     kf = KFold(n_splits=10, shuffle=True, random_state=42)
-
+    projects_map = {}
+    projects_metrics = {}
     for feature_index in range(X.shape[1]):
         accuracies = []
         precisions = []
@@ -341,10 +442,10 @@ if __name__ == '__main__':
             X_train, X_test = X_scaled_data[train_index].copy(), X_scaled_data[test_index].copy()
             y_train, y_test = y[train_index].copy(), y[test_index].copy()
 
-            # 实例化SMOTE对象
-            smote = SMOTE(random_state=42)
+            # ADASYN（Adaptive Synthetic Sampling） 对顺序不敏感
+            sampler = ADASYN(sampling_strategy='auto', random_state=42)
             # 进行过采样
-            X_train, y_train = smote.fit_resample(X_train, y_train)
+            X_train, y_train = sampler.fit_resample(X_train, y_train)
 
             # 通过对多数类样本进行有放回或无放回地随机采样来选择部分多数类样本。
             # cc = RandomUnderSampler(random_state=42)
@@ -397,26 +498,39 @@ if __name__ == '__main__':
             # logging.info(f"SVM Accuracy: {score}")
             tp, fp, tn, fn = 0, 0, 0, 0
             for i in range(len(y_predict)):
+                project_name = index_to_data_map[test_index[i]].split('_')[0]
+
                 if y_test[i] == y_predict[i] and y_predict[i] == 1:
                     tp += 1
+                    status = 'tp'
                 elif y_test[i] == y_predict[i] and y_predict[i] == 0:
                     tn += 1
+                    status = 'tn'
                 elif y_test[i] != y_predict[i] and y_predict[i] == 1:
                     fp += 1
-                    print("fp: " + index_to_data_map[test_index[i]], "features:" +
-                          str(X_test_norm[i]))
+                    status = 'fp'
+                    if '@' not in index_to_data_map[test_index[i]] :
+                        # print("fp: " + index_to_data_map[test_index[i]], "features:" +
+                        #       str(X_test_norm[i]))
+                        pass
                 elif y_test[i] != y_predict[i] and y_predict[i] == 0:
                     fn += 1
+                    status = 'fn'
                     # print("fn: " + index_to_data_map[test_index[i]] + "," + "occurences" + ":" + str(
                     #     X_test_copy[i][0]) + "," + "features:" +
                     #       str(X_test_norm[i]))
+                if project_name in projects_map:
+                    projects_map[project_name][status] = projects_map[project_name][status] + 1
+                else:
+                    projects_map[project_name] = {'tp': 0, 'fp': 0, 'tn': 0, 'fn': 0}
+
             accuracy = 0 if tp + tn + fp + fn == 0 else (tp + tn) * 1.0 / (tp + tn + fp + fn)
             precision = 0 if tp + fp == 0 else tp * 1.0 / (tp + fp)
             recall = 0 if tp + fn == 0 else tp * 1.0 / (tp + fn)
 
-            # accuracy = accuracy_score(y_test, y_predict, average='weighted')
-            # precision = precision_score(y_test, y_predict, average='weighted')
-            # recall = recall_score(y_test, y_predict, average='weighted')
+            # accuracy = accuracy_score(y_test, y_predic )
+            # precision = precision_score(y_test, y_predict )
+            # recall = recall_score(y_test, y_predict )
 
             # print(f"this fold Precision: {precision}, Recall: {recall}")
             # accuracy_positive  就是总样本的recall
@@ -438,6 +552,7 @@ if __name__ == '__main__':
             print(f'f1: {round(2 * precision * recall / (precision + recall) * 100, 2)}')
             # print(f"pos acc {round(tp/(tp+ fn)* 100, 2)}:")
             # print(f'{tp + fp} {tp}')
+
             print('')
         if feature_elimination_experiment_enable:
             logging.info(
@@ -453,27 +568,42 @@ if __name__ == '__main__':
         logging.info(f'recall:{r}')
         logging.info(f'accuracy:{a}')
         logging.info(f'f1:{f1}')
-        logging.info(f'推荐总数{sum(tp_and_fp)}, 对的个数{sum(tps)} ')
+        logging.info(f'推荐总数{sum(tp_and_fp)}, 对的个数{sum(tps)}')
         if feature_elimination_experiment_enable == False:
+            excluded_project = []
+
+            # 每条数据是对的还是错的，目的是看哪些项目效果好
+            for project in projects_map.items():
+                # 按照项目计算precision recall
+                # tp, fp, tn, fn = project['tp'], project['fp'], project['tn'], project['fn']
+                tp, fp, tn, fn = project[1]['tp'], project[1]['fp'], project[1]['tn'], project[1]['fn']
+                precision = 0 if tp + fp == 0 else tp * 1.0 / (tp + fp)
+                recall = 0 if tp + fn == 0 else tp * 1.0 / (tp + fn)
+                if '@' in project[0]:
+                    print(f"project {project} Precision: {precision}, Recall: {recall}")
+                else:
+                    logging.info(f"project {project} Precision: {precision}, Recall: {recall}")
+                if (precision < 0.5) and '@' in project[0]:
+                    excluded_project.append(project[0])
+            print(excluded_project)
             break
 
-    if model_name == 'DecisionTree':
+    if model_name == 'DecisionTree123':
         # 实例化SMOTE对象
         smote = SMOTE(random_state=42)
         # 进行过采样
-        X_smote, y_smote  = smote.fit_resample(X , y )
+        X_smote, y_smote = smote.fit_resample(X, y)
         clf.fit(X_smote, y_smote)
         y_pred = clf.predict(X)
         y_test = y
         tree_rules = export_text(clf, feature_names=features)
         # 指定图幅大小
-        # plt.figure(figsize=(30, 35), dpi=200)
-        # _ = tree.plot_tree(clf, fontsize=10, feature_names=features, filled=True, rounded=True, class_names=['0', '1'])
-        # # plt.figure(figsize=(15, 10), dpi=600)
-        # print("plotting decision tree...")
-        # # plt.show()
-        # plt.savefig('./resource/decision_tree.png', format='png')
-        #
+        plt.figure(figsize=(30, 35), dpi=200)
+        _ = tree.plot_tree(clf, fontsize=10, feature_names=features, filled=True, rounded=True, class_names=['0', '1'])
+        print("plotting decision tree...")
+        plt.show()
+        plt.savefig('./resource/decision_tree.png', format='png')
+
         # # 获取叶子节点的索引
         # leaf_indices = clf.apply(X)
         #
@@ -518,7 +648,7 @@ if __name__ == '__main__':
         #     print(f"Leaf {leaf_index}: Precision = {precision}")
         # # print(X_test)
         # # print(clf.predict([[1, 15, 0, 0]]))
-
+        exit(0)
         neg_case_study_parser = JsonParser(
             "C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\casestudy\\negative\\", 0)
         pos_case_study_parser = JsonParser(
@@ -550,7 +680,7 @@ if __name__ == '__main__':
         case_study_y_pred = clf.predict(case_study_X)
 
         tp, fp, tn, fn = 0, 0, 0, 0
-        for i in range(len( case_study_y_pred)):
+        for i in range(len(case_study_y_pred)):
             if case_study_y[i] == case_study_y_pred[i] and case_study_y_pred[i] == 1:
                 tp += 1
             elif case_study_y[i] == case_study_y_pred[i] and case_study_y_pred[i] == 0:

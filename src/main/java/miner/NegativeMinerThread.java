@@ -146,8 +146,6 @@ public class NegativeMinerThread extends AbstractMinerThread {
             r.setExpressionList(metaDataList);
             r.generatePositionList(metaDataList);
             r.setLayoutRelationDataList();
-            r.setIsGetTypeMethod(visitor.getTypeMethodState());
-            r.setIsArithmeticExpression(visitor.getArithmeticExpressionState());
             fJsonFileSplitter.writeJsonArrayInSampled(r, false);
             fRandomSelection.incCurrentRecords();
 //            visitor.recordMap.put(key, value);

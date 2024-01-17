@@ -49,14 +49,6 @@ public class EVRecord  {
     @Setter
     ArrayList<NodePosition> positionList;
 
-    @Getter
-    @Setter
-    int isArithmeticExpression;
-
-    @Getter
-    @Setter
-    int isGetTypeMethod;
-
     @JsonIgnore
     @Getter
     @Setter
