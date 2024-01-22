@@ -16,10 +16,19 @@ class CSVReader:
             for row in reader:
                 try:
                     # Assuming the CSV format is consistent
-                    project_info, version, _, before, after, status, timestamp = row
-                    results[f'{project_info}_{version}_{str(self.flag)}'] = [status,before,after]
+                    # ID,Project Name,SHA,New Name,Label,Approach,Position
+                    id, project_info, version, _, _, approach, position = row
+                    if approach != 'ours' :# or "*"  in position
+                        continue
+                    x_ = [int(x) for x in position.split('*') if x != '']
+                    # 如果X内的是不连续的 打印警告
+                    if len(x_) > 0 :
+                        for i in range(len(x_) - 1):
+                            if x_[i + 1] - x_[i] != 1:
+                                x_ = x_[0:i+1] # 有点问题 应该调整一下
+                    results[f'{project_info}_{id}'] = x_
+                    # print(row)
                 except ValueError as e:
                     print(row, e)
-
 
         return results

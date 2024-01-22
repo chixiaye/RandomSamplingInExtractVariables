@@ -34,17 +34,15 @@ logger = logging.getLogger()
 logger.filter(lambda record: record.levelno == logging.INFO)
 logger.addHandler(file_handler)
 
-neg_parser = JsonParser(["C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\negative\\",
-                         "C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\casestudy\\negative\\"],
+neg_parser = JsonParser(["C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\final-data\\negative"],
                         0,
                         0)  # ,"C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\casestudy\\negative\\"
-pos_parser = JsonParser(["C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\positive\\",
-                         "C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\casestudy\\positive\\"],
+pos_parser = JsonParser(["C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\final-data\\positive"],
                         0,
                         1)  # ,"C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\casestudy\\positive\\"
 
-positive_csv_reader = CSVReader('C:\\Users\\30219\\Desktop\\result\\result_4.csv', 1)
-negative_csv_reader = CSVReader('C:\\Users\\30219\\Desktop\\result\\result_negative_6.csv', 0)
+positive_csv_reader = CSVReader('C:\\Users\\30219\\Desktop\\result\\result-v1.csv', 1)
+negative_csv_reader = CSVReader('C:\\Users\\30219\\Desktop\\result\\result-neg-v1.csv', 0)
 
 logging.info('')
 
@@ -137,11 +135,11 @@ if __name__ == '__main__':
     #                 'numsParentThrowStatement', 'numsParentReturnStatement', 'numsInCond', 'numsInAssignment',
     #                 'largestLineGap',
     #                 'maxParentAstHeight', 'numsParentArithmeticExp', 'numsParentCall',]  # 'currentLineData',
-    features = ['occurrences',  'maxEndColumnNumberInCurrentLine', 'charLength', 'tokenLength',
-                'numsParentVariableDeclarationFragment',  'isName', 'isLiteral', 'isGetMethod', 'isArithmeticExp',
-                'isClassInstanceCreation', 'isMethodInvocation', 'numsInCond', 'largestLineGap', 'maxParentAstHeight',
-                'numsParentArithmeticExp', 'numsParentCall']  # 'currentLineData',
-    feature_elimination_experiment_enable = True
+    features = ['occurrences', 'maxEndColumnNumberInCurrentLine', 'charLength', 'tokenLength',
+                'numsParentVariableDeclarationFragment', 'isName', 'isLiteral', 'isGetMethod',
+                'isArithmeticExp', 'isClassInstanceCreation', 'numsInCond', 'largestLineGap',
+                'maxParentAstHeight', 'numsParentArithmeticExp','isMethodInvocation', 'numsParentCall']
+    feature_elimination_experiment_enable = False
 
     # 读取特征数据
     neg_maps = neg_parser.get_value(features)
@@ -156,27 +154,11 @@ if __name__ == '__main__':
         if key in negative_valExtractor_map:
             value = negative_valExtractor_map[key]
             val_extractor_data[key] = value
-            # if value == 'success':
-            #     pass
-            # elif value == 'error':
-            #     pass
-            # elif 'fail' in value and value != 'fail':
-            #     arr = value[6:-1]
-            #     val_extractor_data[key] = value # arr.split('/')[0]
-            #     print(arr.split('/'))
     for key in pos_maps.keys():
         val_extractor_data[key] = pos_maps[key][0]
         if key in positive_valExtractor_map:
             value = positive_valExtractor_map[key]
             val_extractor_data[key] = value
-            # if value == 'success':
-            #     pass
-            # elif value == 'error':
-            #     pass
-            # elif 'fail' in value and value != 'fail':
-            #     arr = value[6:-1]
-            #     val_extractor_data[key] = value  # arr.split('/')[0]
-            #     print(arr.split('/'))
 
     # map总的数据到每条数据id的映射关系
     index_to_data_map = {}
@@ -193,14 +175,8 @@ if __name__ == '__main__':
     pos_values = np.array(pos_value_list)[:len(pos_value_list)]
 
     X = np.concatenate((neg_values, pos_values))
-    # 长度和出现次数的乘积
-    if 'occMulLen' in features:
-        new_column = X[:, 0] * X[:, 1]
-        X = np.hstack((X, new_column.reshape(-1, 1)))
 
     # get_method_distribution()
-
-    # print(pos_parser.cnt)
 
     logging.info(f"Sample number: {len(X)}")
     y = np.concatenate(
@@ -360,7 +336,7 @@ if __name__ == '__main__':
         logging.info(f"all_feature_subsets: {len(all_feature_subsets)}")
         # 定义交叉验证折叠
         cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
-        i = 1  # 全部特征，所有数据 11326 1551
+        i = 1  #
         for subset in all_feature_subsets[i - 1:-1]:
             print("index:", i, "subset:", subset, "subset size:", len(subset))
             i += 1
@@ -442,6 +418,39 @@ if __name__ == '__main__':
             X_train, X_test = X_scaled_data[train_index].copy(), X_scaled_data[test_index].copy()
             y_train, y_test = y[train_index].copy(), y[test_index].copy()
 
+            # 训练时用ValExtractor的数据
+            for index in range(0, len(X_train)):
+                name = index_to_data_map[train_index[index]]
+                refactored_name = name.split('_')[0] + "_" + name.split('_')[1]
+                if name.endswith('_1'):
+                    new_data = pos_parser.data[refactored_name + ".json"].copy()
+                    if refactored_name in positive_valExtractor_map:
+                        index_list = positive_valExtractor_map[refactored_name]
+                    else:
+                        index_list = [i for i in range(0, len(new_data['expressionList']))]
+                    # 　去除可以提取的数据
+                    if max(index_list) < len(new_data['expressionList']):
+                        new_data['occurrences'] = len(index_list)
+                        new_data['expressionList'] = [new_data['expressionList'][index] for index in index_list]
+                    # pos_maps
+                    new_features = pos_parser.compute_features(new_data, features_without_feature)
+                else:
+                    new_data = neg_parser.data[refactored_name + ".json"].copy()
+                    if refactored_name in negative_valExtractor_map:
+                        index_list = negative_valExtractor_map[refactored_name]
+                    else:
+                        index_list = [i for i in range(len(new_data['expressionList']))]
+                    # 　去除可以提取的数据
+                    if index_list == []:
+                        new_data['occurrences'] = 0
+                    elif max(index_list) < len(new_data['expressionList']):  # index_list!=[]  拒绝提取
+                        new_data['occurrences'] = len(index_list)
+                        new_data['expressionList'] = [new_data['expressionList'][index] for index in index_list]
+                    new_features = neg_parser.compute_features(new_data, features_without_feature)
+                # if np.any(new_features != X_train[index]):
+                #     pass
+                X_train[index] = new_features
+
             # ADASYN（Adaptive Synthetic Sampling） 对顺序不敏感
             sampler = ADASYN(sampling_strategy='auto', random_state=42)
             # 进行过采样
@@ -479,27 +488,55 @@ if __name__ == '__main__':
 
             # X_test_norm_copy = scaler.transform(X_test_copy)  # 转换测试集
             y_predict = clf.predict(X_test_norm)
+            # # 如果预测为正 送入ValExtractor检验
             for index in range(0, len(X_test)):
-                # 如果预测为正 送入ValExtractor检验
                 if y_predict[index] == 1:
+                    name = index_to_data_map[test_index[index]]
+                    refactored_name = name.split('_')[0] + "_" + name.split('_')[1]
+                    if name.endswith('_1'):
+                        new_data = pos_parser.data[refactored_name + ".json"].copy()
+                        if refactored_name in positive_valExtractor_map:
+                            index_list = positive_valExtractor_map[refactored_name]
+                        else:
+                            index_list = [i for i in range(len(new_data['expressionList']))]
+                        # 　去除可以提取的数据
+                        if max(index_list) < len(new_data['expressionList']):
+                            new_data['occurrences'] = len(index_list)
+                            new_data['expressionList'] = [new_data['expressionList'][index] for index in index_list]
+                        # pos_maps
+                        new_features = pos_parser.compute_features(new_data, features_without_feature)
+                    else:
+                        new_data = neg_parser.data[refactored_name + ".json"].copy()
+                        if refactored_name in negative_valExtractor_map:
+                            index_list = negative_valExtractor_map[refactored_name]
+                        else:
+                            index_list = [i for i in range(len(new_data['expressionList']))]
+                        # 　去除可以提取的数据
+                        if index_list == []:
+                            new_data['occurrences'] = 0
+                        elif max(index_list) < len(new_data['expressionList']):
+                            new_data['occurrences'] = len(index_list)
+                            new_data['expressionList'] = [new_data['expressionList'][index] for index in index_list]
+                        new_features = neg_parser.compute_features(new_data, features_without_feature)
+                    # print(data)
                     # tmp = X_test_copy[index].copy()  # 判断对象是否为数组
                     # if isinstance(val_extractor_data[index_to_data_map[test_index[index]]], list):
                     #     tmp[0] = val_extractor_data[index_to_data_map[test_index[index]]][2]
                     # tmp_norm = scaler.transform([tmp])  # 重新转换测试集
-                    # y_predict[index] = clf.predict(tmp_norm)[0]
-                    # if y_predict[index] == 0:
-                    #     print(
-                    #         index_to_data_map[test_index[index]] + "," + "valextractor" + ":" + str(
-                    #             tmp[0]) + "," + "original:" +
-                    #         str(X_test_copy[index][0]))
+                    y_predict[index] = clf.predict([new_features])[0]
+                    if y_predict[index] == 0 and y_test[index] == 0:
+                        print(name)
+                        # print(
+                        #     index_to_data_map[test_index[index]] + "," + "valextractor" + ":" + str(
+                        #         tmp[0]) + "," + "original:" +
+                        #     str(X_test_copy[index][0]))
                     pass
-            # 计算 precision 和 recall
 
+            # 计算 precision 和 recall
             # logging.info(f"SVM Accuracy: {score}")
             tp, fp, tn, fn = 0, 0, 0, 0
             for i in range(len(y_predict)):
                 project_name = index_to_data_map[test_index[i]].split('_')[0]
-
                 if y_test[i] == y_predict[i] and y_predict[i] == 1:
                     tp += 1
                     status = 'tp'
@@ -509,7 +546,7 @@ if __name__ == '__main__':
                 elif y_test[i] != y_predict[i] and y_predict[i] == 1:
                     fp += 1
                     status = 'fp'
-                    if '@' not in index_to_data_map[test_index[i]] :
+                    if '@' not in index_to_data_map[test_index[i]]:
                         # print("fp: " + index_to_data_map[test_index[i]], "features:" +
                         #       str(X_test_norm[i]))
                         pass
