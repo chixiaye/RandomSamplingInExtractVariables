@@ -25,6 +25,8 @@ from sklearn.utils import resample
 from CSVReader import CSVReader
 from JsonParser import JsonParser
 
+RANDOM_STATE = 42
+
 # 设置日志级别为INFO，只记录INFO级别以上的信息
 logging.basicConfig(level=logging.INFO)
 # 创建FileHandler并配置日志文件名
@@ -137,8 +139,8 @@ if __name__ == '__main__':
     #                 'maxParentAstHeight', 'numsParentArithmeticExp', 'numsParentCall',]  # 'currentLineData',
     features = ['occurrences', 'maxEndColumnNumberInCurrentLine', 'charLength', 'tokenLength',
                 'numsParentVariableDeclarationFragment', 'isName', 'isLiteral', 'isGetMethod',
-                'isArithmeticExp', 'isClassInstanceCreation', 'numsInCond', 'largestLineGap',
-                'maxParentAstHeight', 'numsParentArithmeticExp','isMethodInvocation', 'numsParentCall']
+                'isArithmeticExp',  'largestLineGap',
+                'numsParentArithmeticExp','isMethodInvocation'] # , 'numsParentCall'   'maxParentAstHeight',   'isClassInstanceCreation',  'numsInCond',
     feature_elimination_experiment_enable = False
 
     # 读取特征数据
@@ -185,25 +187,25 @@ if __name__ == '__main__':
     # 创建支持向量机分类器
     # 定义模型
     # clf = SVC(kernel='linear')
-    model_name = "DecisionTree"
+    model_name = "NaiveBayes" #"DecisionTree"
     if model_name == 'DecisionTree':
         clf = DecisionTreeClassifier(min_samples_leaf=5, min_samples_split=10,
-                                     random_state=42)  # class_weight={0:1,1:32} min_samples_leaf=5, min_samples_split=10, max_depth=21,
+                                     random_state=RANDOM_STATE)  # class_weight={0:1,1:32} min_samples_leaf=5, min_samples_split=10, max_depth=21,
         # clf = DecisionTreeClassifier(max_depth=4, min_samples_leaf=5, min_samples_split=10)  #
         # clf = DecisionTreeClassifier(   )  #
     elif model_name == 'SVM':
         # 标准化数据 使得每个特征的方差为1，均值为0
         # X_std = (X - X.min(axis=0)) / (X.max(axis=0) - X.min(axis=0))
         # X_scaled_data = X_std
-        clf = SVC()  # kernel='linear'
+        clf =  SVC(random_state=RANDOM_STATE)  # 标准化转换
     elif model_name == 'NaiveBayes':
-        clf = BernoulliNB()  # 标准化转换
+        clf = BernoulliNB( )  # 标准化转换
     elif model_name == 'KNN':
-        clf = KNeighborsClassifier()  # 标准化转换
+        clf = KNeighborsClassifier( )  # 标准化转换
     elif model_name == 'K-Means':
-        clf = KMeans(2, random_state=42)  # 标准化转换
+        clf = KMeans(2, random_state=RANDOM_STATE)  # 标准化转换
     elif model_name == 'MLP':
-        clf = MLPClassifier()  # 标准化转换
+        clf = MLPClassifier(random_state=RANDOM_STATE)  # 标准化转换
     elif model_name == 'LR':
         clf = LogisticRegression()  # 标准化转换
     elif model_name == 'RandomForest':
@@ -211,7 +213,7 @@ if __name__ == '__main__':
         # scaler = StandardScaler()  # 标准化转换
         # scaler.fit(X)  # 训练标准化对象
         # X_scaled_data = scaler.transform(X_scaled_data)  # 转换数据集
-        clf = RandomForestClassifier()  # 标准化转换 max_depth=3, n_estimators=1000
+        clf = RandomForestClassifier(random_state=RANDOM_STATE)  # 标准化转换 max_depth=3, n_estimators=1000
 
     else:
         # 推荐总数，对的个数，百分比
@@ -270,7 +272,7 @@ if __name__ == '__main__':
                     X1_feature = [sample[i] for sample in neg_feature_values]
                     X2_feature = [sample[i] for sample in pos_feature_values]
                     X1_feature = resample(X1_feature, replace=True, n_samples=len(X2_feature),
-                                          random_state=42)
+                                          random_state=RANDOM_STATE)
 
                     # 进行 t 检验
                     t_statistic, p_value = ttest_ind(X1_feature, X2_feature)
@@ -311,7 +313,7 @@ if __name__ == '__main__':
 
                 # rearrange data structure
                 X_feature_pos = resample(X_feature_pos, replace=True, n_samples=len(X_feature_neg),
-                                         random_state=42)
+                                         random_state=RANDOM_STATE)
                 # 计算 Cohen's d
                 effect_size = cohen_d(X_feature_pos, X_feature_neg)
                 # 进行 t 检验
@@ -332,10 +334,10 @@ if __name__ == '__main__':
         # 初始化字典用于存储性能指标
         performance_metrics = {}
         # 创建决策树模型
-        clf = DecisionTreeClassifier(random_state=42)
+        clf = DecisionTreeClassifier(random_state=RANDOM_STATE)
         logging.info(f"all_feature_subsets: {len(all_feature_subsets)}")
         # 定义交叉验证折叠
-        cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
+        cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=RANDOM_STATE)
         i = 1  #
         for subset in all_feature_subsets[i - 1:-1]:
             print("index:", i, "subset:", subset, "subset size:", len(subset))
@@ -346,7 +348,7 @@ if __name__ == '__main__':
             # sampler = SMOTE(random_state=42)
 
             # ADASYN（Adaptive Synthetic Sampling） 对顺序不敏感
-            sampler = ADASYN(sampling_strategy='auto', random_state=42)
+            sampler = ADASYN(sampling_strategy='auto', random_state=RANDOM_STATE)
             precisions = []
             recalls = []
             # 交叉验证中的训练过程
@@ -391,7 +393,7 @@ if __name__ == '__main__':
         exit(0)
 
     # 定义十折交叉验证
-    kf = KFold(n_splits=10, shuffle=True, random_state=42)
+    kf = KFold(n_splits=10, shuffle=True, random_state=RANDOM_STATE)
     projects_map = {}
     projects_metrics = {}
     for feature_index in range(X.shape[1]):
@@ -417,7 +419,6 @@ if __name__ == '__main__':
             # 划分训练集和测试集 copy 不改写原有数据
             X_train, X_test = X_scaled_data[train_index].copy(), X_scaled_data[test_index].copy()
             y_train, y_test = y[train_index].copy(), y[test_index].copy()
-
             # 训练时用ValExtractor的数据
             for index in range(0, len(X_train)):
                 name = index_to_data_map[train_index[index]]
@@ -451,10 +452,19 @@ if __name__ == '__main__':
                 #     pass
                 X_train[index] = new_features
 
+            if model_name != 'RandomForest' and model_name != 'DecisionTree' and model_name != 'NaiveBayes':
+                # 对训练集进行标准化
+                scaler = StandardScaler()
+                scaler.fit(X_train)  # 标准化训练集 对象
+                X_train = scaler.transform(X_train)  # 转换训练集
+                X_test = scaler.transform(X_test)  # 转换测试集
+
             # ADASYN（Adaptive Synthetic Sampling） 对顺序不敏感
-            sampler = ADASYN(sampling_strategy='auto', random_state=42)
+            sampler = ADASYN(sampling_strategy='auto', random_state=RANDOM_STATE)
+
             # 进行过采样
             X_train, y_train = sampler.fit_resample(X_train, y_train)
+
 
             # 通过对多数类样本进行有放回或无放回地随机采样来选择部分多数类样本。
             # cc = RandomUnderSampler(random_state=42)
@@ -488,52 +498,50 @@ if __name__ == '__main__':
 
             # X_test_norm_copy = scaler.transform(X_test_copy)  # 转换测试集
             y_predict = clf.predict(X_test_norm)
-            # # 如果预测为正 送入ValExtractor检验
+
             for index in range(0, len(X_test)):
-                if y_predict[index] == 1:
-                    name = index_to_data_map[test_index[index]]
-                    refactored_name = name.split('_')[0] + "_" + name.split('_')[1]
-                    if name.endswith('_1'):
-                        new_data = pos_parser.data[refactored_name + ".json"].copy()
-                        if refactored_name in positive_valExtractor_map:
-                            index_list = positive_valExtractor_map[refactored_name]
-                        else:
-                            index_list = [i for i in range(len(new_data['expressionList']))]
-                        # 　去除可以提取的数据
-                        if max(index_list) < len(new_data['expressionList']):
-                            new_data['occurrences'] = len(index_list)
-                            new_data['expressionList'] = [new_data['expressionList'][index] for index in index_list]
-                        # pos_maps
-                        new_features = pos_parser.compute_features(new_data, features_without_feature)
+                # if y_predict[index] == 1:
+                name = index_to_data_map[test_index[index]]
+                refactored_name = name.split('_')[0] + "_" + name.split('_')[1]
+                if name.endswith('_1'):
+                    new_data = pos_parser.data[refactored_name + ".json"].copy()
+                    if refactored_name in positive_valExtractor_map:
+                        index_list = positive_valExtractor_map[refactored_name]
                     else:
-                        new_data = neg_parser.data[refactored_name + ".json"].copy()
-                        if refactored_name in negative_valExtractor_map:
-                            index_list = negative_valExtractor_map[refactored_name]
-                        else:
-                            index_list = [i for i in range(len(new_data['expressionList']))]
-                        # 　去除可以提取的数据
-                        if index_list == []:
-                            new_data['occurrences'] = 0
-                        elif max(index_list) < len(new_data['expressionList']):
-                            new_data['occurrences'] = len(index_list)
-                            new_data['expressionList'] = [new_data['expressionList'][index] for index in index_list]
-                        new_features = neg_parser.compute_features(new_data, features_without_feature)
-                    # print(data)
-                    # tmp = X_test_copy[index].copy()  # 判断对象是否为数组
-                    # if isinstance(val_extractor_data[index_to_data_map[test_index[index]]], list):
-                    #     tmp[0] = val_extractor_data[index_to_data_map[test_index[index]]][2]
-                    # tmp_norm = scaler.transform([tmp])  # 重新转换测试集
-                    y_predict[index] = clf.predict([new_features])[0]
-                    if y_predict[index] == 0 and y_test[index] == 0:
-                        print(name)
-                        # print(
-                        #     index_to_data_map[test_index[index]] + "," + "valextractor" + ":" + str(
-                        #         tmp[0]) + "," + "original:" +
-                        #     str(X_test_copy[index][0]))
-                    pass
+                        index_list = [i for i in range(len(new_data['expressionList']))]
+                    # 　去除可以提取的数据
+                    if max(index_list) < len(new_data['expressionList']):
+                        new_data['occurrences'] = len(index_list)
+                        new_data['expressionList'] = [new_data['expressionList'][index] for index in index_list]
+                    # pos_maps
+                    new_features = pos_parser.compute_features(new_data, features_without_feature)
+                else:
+                    new_data = neg_parser.data[refactored_name + ".json"].copy()
+                    if refactored_name in negative_valExtractor_map:
+                        index_list = negative_valExtractor_map[refactored_name]
+                    else:
+                        index_list = [i for i in range(len(new_data['expressionList']))]
+                    # 　去除可以提取的数据
+                    if index_list == []:
+                        new_data['occurrences'] = 0
+                    elif max(index_list) < len(new_data['expressionList']):
+                        new_data['occurrences'] = len(index_list)
+                        new_data['expressionList'] = [new_data['expressionList'][index] for index in index_list]
+                    new_features = neg_parser.compute_features(new_data, features_without_feature)
+                # print(data)
+                # tmp = X_test_copy[index].copy()  # 判断对象是否为数组
+                # if isinstance(val_extractor_data[index_to_data_map[test_index[index]]], list):
+                #     tmp[0] = val_extractor_data[index_to_data_map[test_index[index]]][2]
+                # tmp_norm = scaler.transform([tmp])  # 重新转换测试集
+                y_predict[index] = clf.predict([new_features])[0]
+                # if y_predict[index] == 0 and y_test[index] == 0:
+                #     print(name)
+                    # print(
+                    #     index_to_data_map[test_index[index]] + "," + "valextractor" + ":" + str(
+                    #         tmp[0]) + "," + "original:" +  str(X_test_copy[index][0]))
+                pass
 
             # 计算 precision 和 recall
-            # logging.info(f"SVM Accuracy: {score}")
             tp, fp, tn, fn = 0, 0, 0, 0
             for i in range(len(y_predict)):
                 project_name = index_to_data_map[test_index[i]].split('_')[0]
@@ -586,7 +594,7 @@ if __name__ == '__main__':
             print(f'precision: {round(precision * 100, 2)}')
             print(f'recall: {round(recall * 100, 2)}')
             print(f'accuracy: {round(accuracy * 100, 2)}')
-            print(f'f1: {round(2 * precision * recall / (precision + recall) * 100, 2)}')
+            print(f'f1: {round(2 * precision * recall / (precision + recall) * 100, 2) if precision + recall != 0 else 0}　')
             # print(f"pos acc {round(tp/(tp+ fn)* 100, 2)}:")
             # print(f'{tp + fp} {tp}')
 
@@ -627,7 +635,7 @@ if __name__ == '__main__':
 
     if model_name == 'DecisionTree123':
         # 实例化SMOTE对象
-        smote = SMOTE(random_state=42)
+        smote = SMOTE(random_state=RANDOM_STATE)
         # 进行过采样
         X_smote, y_smote = smote.fit_resample(X, y)
         clf.fit(X_smote, y_smote)

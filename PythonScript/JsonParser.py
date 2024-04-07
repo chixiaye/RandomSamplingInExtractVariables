@@ -78,7 +78,6 @@ class JsonParser:
             if value:
                 # 列表到的映射关系 文件名到数据的映射
                 maps[file.replace(".json", "_" + str(self.isPositive))] = value
-
                 # 名称到索引的映射
                 index = file.split("_")[1].replace(".json", "")
                 project_name = file.split("_")[0]

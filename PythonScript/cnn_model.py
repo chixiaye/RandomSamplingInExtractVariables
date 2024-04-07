@@ -12,9 +12,12 @@ from sklearn.model_selection import KFold
 from sklearn.preprocessing import StandardScaler
 from tensorflow import random
 from tensorflow.python.keras.saving.save import load_model
-from imblearn.over_sampling import SMOTE
+from imblearn.over_sampling import SMOTE, ADASYN
 from CSVReader import CSVReader
 from JsonParser import JsonParser
+
+
+RANDOM_STATE = 42
 
 # 设置日志级别为INFO，只记录INFO级别以上的信息
 logging.basicConfig(level=logging.INFO)
@@ -25,14 +28,22 @@ logger = logging.getLogger()
 logger.filter(lambda record: record.levelno == logging.INFO)
 logger.addHandler(file_handler)
 
-neg_parser = JsonParser("C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\negative\\", 0)
-pos_parser = JsonParser("C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\positive\\", 1)
+neg_parser = JsonParser(["C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\final-data\\negative"],
+                        0,
+                        0)  # ,"C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\casestudy\\negative\\"
+pos_parser = JsonParser(["C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\final-data\\positive"],
+                        0,
+                        1)  # ,"C:\\Users\\30219\\IdeaProjects\\RandomSamplingInExtractVariables\\data\\casestudy\\positive\\"
 
-positive_csv_reader = CSVReader('C:\\Users\\30219\\Desktop\\result\\result_4.csv', 1)
-negative_csv_reader = CSVReader('C:\\Users\\30219\\Desktop\\result\\result_negative_6.csv', 0)
+positive_csv_reader = CSVReader('C:\\Users\\30219\\Desktop\\result\\result-v1.csv', 1)
+negative_csv_reader = CSVReader('C:\\Users\\30219\\Desktop\\result\\result-neg-v1.csv', 0)
 
-features = ['occurrences', 'charLength', "isGetMethod", 'isArithmeticExp', 'isSimpleName', 'isQualifiedName',
-                'isClassInstanceCreation', 'isVariableDeclarationFragment', 'isLiteral' ]  # ,'currentLineData'
+logging.info('')
+
+features = ['occurrences', 'maxEndColumnNumberInCurrentLine', 'charLength', 'tokenLength',
+            'numsParentVariableDeclarationFragment', 'isName', 'isLiteral', 'isGetMethod',
+            'isArithmeticExp', 'largestLineGap',
+            'numsParentArithmeticExp', 'isMethodInvocation']
 
 # 读取特征数据
 neg_maps = neg_parser.get_value(features)
@@ -46,26 +57,12 @@ for key in neg_maps.keys():
     val_extractor_data[key] = neg_maps[key][0]
     if key in negative_valExtractor_map:
         value = negative_valExtractor_map[key]
-        if value == 'success':
-            pass
-        elif value == 'error':
-            pass
-        elif 'fail' in value and value != 'fail':
-            arr = value[6:-1]
-            val_extractor_data[key] = arr.split('/')[0]
-            # print(arr.split('/'))
+        val_extractor_data[key] = value
 for key in pos_maps.keys():
     val_extractor_data[key] = pos_maps[key][0]
     if key in positive_valExtractor_map:
         value = positive_valExtractor_map[key]
-        if value == 'success':
-            pass
-        elif value == 'error':
-            pass
-        elif 'fail' in value and value != 'fail':
-            arr = value[6:-1]
-            val_extractor_data[key] = arr.split('/')[0]
-            # print(arr.split('/'))
+        val_extractor_data[key] = value
 
 # map总的数据到每条数据id的映射关系
 index_to_data_map = {}
@@ -80,7 +77,12 @@ for key in pos_maps.keys():
 # sample_num = min(len(neg_value_list), len(pos_value_list))
 neg_values = np.array(neg_value_list)[:len(neg_value_list)]
 pos_values = np.array(pos_value_list)[:len(pos_value_list)]
-X_scaled_data = np.concatenate((neg_values, pos_values))
+
+X = np.concatenate((neg_values, pos_values))
+
+# get_method_distribution()
+
+logging.info(f"Sample number: {len(X)}")
 y = np.concatenate(
     (np.zeros(len(neg_values)), np.ones(len(pos_values))))
 
@@ -92,6 +94,7 @@ precisions = []
 recalls = []
 tp_and_fp = []
 tps = []
+X_scaled_data = X
 
 np.random.seed(42)  # 固定随机种子，使每次运行结果固定
 random.set_seed(42)
@@ -103,10 +106,10 @@ for fold, (train_index, test_index) in enumerate(kf.split(X_scaled_data)):
     X_train, X_test = X_scaled_data[train_index].copy(), X_scaled_data[test_index].copy()
     y_train, y_test = y[train_index].copy(), y[test_index].copy()
 
-    # 实例化SMOTE对象
-    smote = SMOTE(random_state=42)
+    # ADASYN（Adaptive Synthetic Sampling） 对顺序不敏感
+    sampler = ADASYN(sampling_strategy='auto', random_state=RANDOM_STATE)
     # 进行过采样
-    X_train, y_train = smote.fit_resample(X_train, y_train)
+    X_train, y_train = sampler.fit_resample(X_train, y_train)
 
     # 对训练集进行标准化
     scaler = StandardScaler()  # 标准化转换
