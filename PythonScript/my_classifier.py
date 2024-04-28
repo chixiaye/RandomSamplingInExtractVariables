@@ -22,10 +22,13 @@ from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier, export_text
 from sklearn.utils import resample
 
+# import pybaobabdt
+# import pygraphviz as pgv
+
 from CSVReader import CSVReader
 from JsonParser import JsonParser
 
-RANDOM_STATE = 42
+RANDOM_STATE = 43
 
 # 设置日志级别为INFO，只记录INFO级别以上的信息
 logging.basicConfig(level=logging.INFO)
@@ -141,7 +144,7 @@ if __name__ == '__main__':
                 'numsParentVariableDeclarationFragment', 'isName', 'isLiteral', 'isGetMethod',
                 'isArithmeticExp',  'largestLineGap',
                 'numsParentArithmeticExp','isMethodInvocation'] # , 'numsParentCall'   'maxParentAstHeight',   'isClassInstanceCreation',  'numsInCond',
-    feature_elimination_experiment_enable = False
+    feature_elimination_experiment_enable = True
 
     # 读取特征数据
     neg_maps = neg_parser.get_value(features)
@@ -187,10 +190,13 @@ if __name__ == '__main__':
     # 创建支持向量机分类器
     # 定义模型
     # clf = SVC(kernel='linear')
-    model_name = "NaiveBayes" #"DecisionTree"
+    model_name = "DecisionTree" #"DecisionTree"
     if model_name == 'DecisionTree':
+        # path = model_gini.cost_complexity_pruning_path(X_train, y_train)
+        # ccp_alphas, impurities = path.ccp_alphas, path.impurities
+
         clf = DecisionTreeClassifier(min_samples_leaf=5, min_samples_split=10,
-                                     random_state=RANDOM_STATE)  # class_weight={0:1,1:32} min_samples_leaf=5, min_samples_split=10, max_depth=21,
+                                     random_state=RANDOM_STATE)  # class_weight={0:1,1:32} min_samples_leaf=5, min_samples_split=10,
         # clf = DecisionTreeClassifier(max_depth=4, min_samples_leaf=5, min_samples_split=10)  #
         # clf = DecisionTreeClassifier(   )  #
     elif model_name == 'SVM':
@@ -633,7 +639,7 @@ if __name__ == '__main__':
             print(excluded_project)
             break
 
-    if model_name == 'DecisionTree123':
+    if model_name == 'DecisionTree':
         # 实例化SMOTE对象
         smote = SMOTE(random_state=RANDOM_STATE)
         # 进行过采样
@@ -643,11 +649,12 @@ if __name__ == '__main__':
         y_test = y
         tree_rules = export_text(clf, feature_names=features)
         # 指定图幅大小
-        plt.figure(figsize=(30, 35), dpi=200)
-        _ = tree.plot_tree(clf, fontsize=10, feature_names=features, filled=True, rounded=True, class_names=['0', '1'])
+        # plt.figure(figsize=(30, 35), dpi=200)
+        # _ = tree.plot_tree(clf, fontsize=10, feature_names=features, filled=True, rounded=True, class_names=['0', '1'])
         print("plotting decision tree...")
-        plt.show()
-        plt.savefig('./resource/decision_tree.png', format='png')
+        # ax = pybaobabdt.drawTree(clf, size=10, dpi=300, features=features)  # 可视化主函数pybaobabdt.drawTree
+        # plt.show()
+        # plt.savefig('./resource/decision_tree.png', format='png')
 
         # # 获取叶子节点的索引
         # leaf_indices = clf.apply(X)

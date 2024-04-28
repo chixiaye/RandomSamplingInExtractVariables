@@ -1,6 +1,7 @@
 import json
 import os
 import re
+from collections import Counter
 
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
@@ -65,9 +66,15 @@ class JsonParser:
                             # if project_name not in included_projects and '@' in project_name:
                             #     continue
                             if '@' in project_name:
+                                # @ 以后的文本
+                                included_projects.append(project_name.split("@")[1])
+                            else:
                                 included_projects.append(project_name)
                             data[file] = json_data
-        print(json.dumps(list(set(included_projects))))
+
+        project_counts = Counter(included_projects)
+        print("result:")
+        print(json.dumps(dict(project_counts)))
         return data
 
     def get_value(self, keys):

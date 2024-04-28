@@ -11,10 +11,7 @@ import utils.Utils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -26,6 +23,8 @@ public class Main {
 
     static final int CORE_POOL_SIZE = Runtime.getRuntime().availableProcessors() / 5;
     static final int MAX_POOL_SIZE = CORE_POOL_SIZE + 1;
+    private static Set<String>  projects = new HashSet<>(List.of(new String[]{"google@gson", "eclipse-vertx@vert.x", "dromara@hutool", "mybatis@mybatis-3", "apache@rocketmq", "Blankj@AndroidUtilCode", "square@retrofit", "apache@skywalking", "apolloconfig@apollo", "antlr@antlr4", "spring-projects@spring-framework", "apache@shardingsphere", "projectlombok@lombok", "java-decompiler@jd-gui", "material-components@material-components-android", "NationalSecurityAgency@ghidra", "facebook@stetho", "facebook@fresco", "ReactiveX@RxAndroid", "redisson@redisson", "alibaba@spring-cloud-alibaba", "redis@jedis", "Baseflow@PhotoView", "greenrobot@greenDAO"}));
+    ;
 
     public static void main(String[] args) throws Exception {
         ThreadPoolExecutor executor = new ThreadPoolExecutor(CORE_POOL_SIZE, MAX_POOL_SIZE,
@@ -34,8 +33,8 @@ public class Main {
                 new ThreadPoolExecutor.CallerRunsPolicy());
         log.info("core pool size: {}, max pool size: {}", CORE_POOL_SIZE, MAX_POOL_SIZE);
 //        getRatio(executor);
-        minePositive(executor);
-//        mineNegative(executor, Constants.RATIO);
+//        minePositive(executor);
+        mineNegative(executor, Constants.RATIO);
 //        doRefactoringMiner(executor);
 //        minePositiveCaseStudyFeatures(executor);
 //        mineNegativeCaseStudyFeatures(executor);
@@ -80,12 +79,15 @@ public class Main {
         for (int i = list.size() - 1; i >= 0; --i) {
             File file = list.get(i);
             String fileName = file.getName();
+            String localName = fileName.substring(0, fileName.lastIndexOf("_"));
+            if (!projects.contains(localName)) {
+                continue;
+            }
 //            if (!file.getName().contains("bumptech@glide_37")) {
 //                continue;
 //            } else {
 //                System.out.println(file.getName());
 //            }
-            String localName = fileName.substring(0, fileName.lastIndexOf("_"));
             int sampleNumber = Integer.parseInt(fileName.substring(fileName.lastIndexOf("_") + 1, fileName.lastIndexOf(".")));
             LabelData labelData = JSONReader.deserializeAsLabelData(file.getAbsolutePath());
 //            executor.execute( );
@@ -111,6 +113,9 @@ public class Main {
             File file = list.get(i);
             String fileName = file.getName();
             String localName = fileName.substring(0, fileName.lastIndexOf("_"));
+            if (!projects.contains(localName)) {
+                continue;
+            }
 //            if(!localName.equals("Yalantis@uCrop")){
 //                continue;
 //            }

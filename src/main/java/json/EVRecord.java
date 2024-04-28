@@ -49,15 +49,14 @@ public class EVRecord  {
     @Setter
     ArrayList<NodePosition> positionList;
 
-    @JsonIgnore
     @Getter
     @Setter
     String name;
 
-    @JsonIgnore
     @Getter
     @Setter
     NodePosition nodePosition;
+
 
     @Override
     public String toString() {

@@ -50,6 +50,8 @@ public class PositiveMinerThread extends AbstractMinerThread {
         PositiveExpressionVisitor visitor = new PositiveExpressionVisitor(cu, name, nodePosition);
         cu.accept(visitor);
 
+        // 声明的位置
+        NodePosition declNodePosition = visitor.getMetaDataList().get(0).getNodePosition();
         // 修正数据，换成inline后的特征数据
         ArrayList<MetaData> metaDataList = new ArrayList<>();
         MetaData base = visitor.getMetaDataList().get(0);
@@ -89,6 +91,8 @@ public class PositiveMinerThread extends AbstractMinerThread {
         r.setOccurrences(metaDataList.size() );
         r.setExpressionList(metaDataList);
         r.generatePositionList(metaDataList);
+        r.setName(fLabelData.getRefactoredName());
+        r.setNodePosition(declNodePosition);
 
         r.initLayoutRelationDataListInit();
 //        System.out.println(r);
