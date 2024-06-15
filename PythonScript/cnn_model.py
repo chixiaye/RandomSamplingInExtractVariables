@@ -87,7 +87,7 @@ y = np.concatenate(
     (np.zeros(len(neg_values)), np.ones(len(pos_values))))
 
 # 定义十折交叉验证
-kf = KFold(n_splits=10, shuffle=True, random_state=42)
+kf = KFold(n_splits=10, shuffle=True, random_state=43)
 
 accuracies = []
 precisions = []

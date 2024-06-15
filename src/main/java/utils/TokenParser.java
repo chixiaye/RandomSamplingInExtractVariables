@@ -32,7 +32,7 @@ public class TokenParser {
             boolean isKeyword = false;
             for (String keyword : keywords) {
                 if (token.equals(keyword)) {
-                    isKeyword = true;
+                    isKeyword = true; 
                     break;
                 }
             }

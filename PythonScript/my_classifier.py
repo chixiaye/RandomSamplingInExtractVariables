@@ -22,6 +22,10 @@ from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier, export_text
 from sklearn.utils import resample
 
+import seaborn as sns
+
+import pickle
+
 # import pybaobabdt
 # import pygraphviz as pgv
 
@@ -125,6 +129,34 @@ def cohen_d(group1, group2):
     return mean_diff / pooled_stdev
 
 
+# 计算每个数据集中正负样本的特征分布指标，并将结果保存到CSV文件中。
+def eval_metrics(X_scaled_data, y, features):
+    # 创建一个空的 DataFrame 用于存储结果
+    result_df = pd.DataFrame(columns=['Dataset', 'Feature', 'Mean_Positive', 'Median_Positive', 'Variance_Positive',
+                                      'Mean_Negative', 'Median_Negative', 'Variance_Negative'])
+    for fold, (train_index, test_index) in enumerate(kf.split(X_scaled_data)):
+        X_test = X_scaled_data[test_index].copy()
+        y_test = y[test_index].copy()
+        dataset_name = f'Dataset_{fold + 1}'  # 数据集名称
+        for i, feature in enumerate(features):
+            mean_positive = np.mean(X_test[np.where(y_test == 1)][:, i])  # 计算正样本均值
+            median_positive = np.median(X_test[np.where(y_test == 1)][:, i])  # 计算正样本中位数
+            var_positive = np.var(X_test[np.where(y_test == 1)][:, i])  # 计算正样本方差
+
+            mean_negative = np.mean(X_test[np.where(y_test == 0)][:, i])  # 计算负样本均值
+            median_negative = np.median(X_test[np.where(y_test == 0)][:, i])  # 计算负样本中位数
+            var_negative = np.var(X_test[np.where(y_test == 0)][:, i])  # 计算负样本方差
+
+            result_df.loc[len(result_df)] = {'Dataset': dataset_name, 'Feature': feature,
+                                             'Mean_Positive': mean_positive, 'Median_Positive': median_positive,
+                                             'Variance_Positive': var_positive,
+                                             'Mean_Negative': mean_negative, 'Median_Negative': median_negative,
+                                             'Variance_Negative': var_negative}
+
+    # 保存结果到文件
+    result_df.to_csv('dataset_metrics.csv', index=False)
+
+
 if __name__ == '__main__':
     # 1. DT  2. SVM  3. NaiveBayes  4. KNN  5. RandomForest  6. LR  7. K-Means  8. MLP  9. CNN  10.RNN
     # 'charLength', 'astHeight', 'astNodeNumber', 'layoutRelationDataList', 'isSimpleName'  'isClassInstanceCreation',
@@ -142,9 +174,10 @@ if __name__ == '__main__':
     #                 'maxParentAstHeight', 'numsParentArithmeticExp', 'numsParentCall',]  # 'currentLineData',
     features = ['occurrences', 'maxEndColumnNumberInCurrentLine', 'charLength', 'tokenLength',
                 'numsParentVariableDeclarationFragment', 'isName', 'isLiteral', 'isGetMethod',
-                'isArithmeticExp',  'largestLineGap',
-                'numsParentArithmeticExp','isMethodInvocation'] # , 'numsParentCall'   'maxParentAstHeight',   'isClassInstanceCreation',  'numsInCond',
-    feature_elimination_experiment_enable = True
+                'isArithmeticExp', 'largestLineGap',
+                'numsParentArithmeticExp',
+                'isMethodInvocation']  # , 'numsParentCall'   'maxParentAstHeight',   'isClassInstanceCreation',  'numsInCond',
+    feature_elimination_experiment_enable = False
 
     # 读取特征数据
     neg_maps = neg_parser.get_value(features)
@@ -176,7 +209,9 @@ if __name__ == '__main__':
         index_to_data_map[len(index_to_data_map)] = key
         pos_value_list.append(pos_maps[key])
     # sample_num = min(len(neg_value_list), len(pos_value_list))
+
     neg_values = np.array(neg_value_list)[:len(neg_value_list)]
+
     pos_values = np.array(pos_value_list)[:len(pos_value_list)]
 
     X = np.concatenate((neg_values, pos_values))
@@ -190,12 +225,12 @@ if __name__ == '__main__':
     # 创建支持向量机分类器
     # 定义模型
     # clf = SVC(kernel='linear')
-    model_name = "DecisionTree" #"DecisionTree"
+    model_name = "DecisionTree"  # "DecisionTree"
     if model_name == 'DecisionTree':
         # path = model_gini.cost_complexity_pruning_path(X_train, y_train)
         # ccp_alphas, impurities = path.ccp_alphas, path.impurities
 
-        clf = DecisionTreeClassifier(min_samples_leaf=5, min_samples_split=10,
+        clf = DecisionTreeClassifier(min_samples_leaf=5, min_samples_split=10, max_depth=20,
                                      random_state=RANDOM_STATE)  # class_weight={0:1,1:32} min_samples_leaf=5, min_samples_split=10,
         # clf = DecisionTreeClassifier(max_depth=4, min_samples_leaf=5, min_samples_split=10)  #
         # clf = DecisionTreeClassifier(   )  #
@@ -203,11 +238,11 @@ if __name__ == '__main__':
         # 标准化数据 使得每个特征的方差为1，均值为0
         # X_std = (X - X.min(axis=0)) / (X.max(axis=0) - X.min(axis=0))
         # X_scaled_data = X_std
-        clf =  SVC(random_state=RANDOM_STATE)  # 标准化转换
+        clf = SVC(random_state=RANDOM_STATE)  # 标准化转换
     elif model_name == 'NaiveBayes':
-        clf = BernoulliNB( )  # 标准化转换
+        clf = BernoulliNB()  # 标准化转换
     elif model_name == 'KNN':
-        clf = KNeighborsClassifier( )  # 标准化转换
+        clf = KNeighborsClassifier()  # 标准化转换
     elif model_name == 'K-Means':
         clf = KMeans(2, random_state=RANDOM_STATE)  # 标准化转换
     elif model_name == 'MLP':
@@ -254,13 +289,6 @@ if __name__ == '__main__':
         # count = sum(1 for idx in indicesT if y[idx] == 1)
         # print(" 推荐总数 {}，对的个数 {}，百分比 {}".format(len(indicesT), count, count / len(indicesT)))
 
-        # indicesT = [idx for idx, val in enumerate(X) if val[0] > 2 and val[2] == 1 and val[1] > 25]
-        # indicesF = [idx for idx, val in enumerate(X) if val[0] == 1 and val[2] != 1 or val[1] <= 25]
-        # count = sum(1 for idx in indicesT if y[idx] == 1)
-        # print(
-        #     "and起来后，对的数据  推荐总数 {}，对的个数 {}，百分比 {}".format(len(indicesT), count, count / len(indicesT)))
-
-        # logging.info("Model name error!")
         if 1 == 1:
             # 按照项目名聚合feature
             case_study_data_pos = []
@@ -370,8 +398,6 @@ if __name__ == '__main__':
 
                 # 在测试集上评估性能，不应用 SMOTE
                 y_pred = clf.predict(X_test)
-                # 统计 1的个数
-                # print(Counter(y_test))
 
                 # 计算 precision 和 recall
                 precision = precision_score(y_test, y_pred)
@@ -402,6 +428,8 @@ if __name__ == '__main__':
     kf = KFold(n_splits=10, shuffle=True, random_state=RANDOM_STATE)
     projects_map = {}
     projects_metrics = {}
+    tmp_pos_metric = []
+    tmp_neg_metric = []
     for feature_index in range(X.shape[1]):
         accuracies = []
         precisions = []
@@ -419,12 +447,15 @@ if __name__ == '__main__':
         if feature_elimination_experiment_enable == False:
             X_scaled_data = X
             features_without_feature = features
+
+        # eval_metrics(X_scaled_data, y, features_without_feature)
+
         # 进行交叉验证
         for fold, (train_index, test_index) in enumerate(kf.split(X_scaled_data)):
-
             # 划分训练集和测试集 copy 不改写原有数据
             X_train, X_test = X_scaled_data[train_index].copy(), X_scaled_data[test_index].copy()
             y_train, y_test = y[train_index].copy(), y[test_index].copy()
+
             # 训练时用ValExtractor的数据
             for index in range(0, len(X_train)):
                 name = index_to_data_map[train_index[index]]
@@ -471,7 +502,6 @@ if __name__ == '__main__':
             # 进行过采样
             X_train, y_train = sampler.fit_resample(X_train, y_train)
 
-
             # 通过对多数类样本进行有放回或无放回地随机采样来选择部分多数类样本。
             # cc = RandomUnderSampler(random_state=42)
             # X_train, y_train = cc.fit_resample(X_train, y_train)
@@ -494,7 +524,7 @@ if __name__ == '__main__':
             # score = clf.score(X_test, y_test)
 
             # for index in range(0, len(X_test)):
-            #     if 'occurrences' in features:
+            #     if 'occurrences'f in features:
             #         # 判断对象是否为数组
             #         if isinstance(val_extractor_data[index_to_data_map[test_index[index]]], list):
             #             # print(val_extractor_data[index_to_data_map[test_index[index]]])
@@ -503,6 +533,7 @@ if __name__ == '__main__':
             #             X_test_copy[index][0] = val_extractor_data[index_to_data_map[test_index[index]]]
 
             # X_test_norm_copy = scaler.transform(X_test_copy)  # 转换测试集
+
             y_predict = clf.predict(X_test_norm)
 
             for index in range(0, len(X_test)):
@@ -542,9 +573,9 @@ if __name__ == '__main__':
                 y_predict[index] = clf.predict([new_features])[0]
                 # if y_predict[index] == 0 and y_test[index] == 0:
                 #     print(name)
-                    # print(
-                    #     index_to_data_map[test_index[index]] + "," + "valextractor" + ":" + str(
-                    #         tmp[0]) + "," + "original:" +  str(X_test_copy[index][0]))
+                # print(
+                #     index_to_data_map[test_index[index]] + "," + "valextractor" + ":" + str(
+                #         tmp[0]) + "," + "original:" +  str(X_test_copy[index][0]))
                 pass
 
             # 计算 precision 和 recall
@@ -554,12 +585,20 @@ if __name__ == '__main__':
                 if y_test[i] == y_predict[i] and y_predict[i] == 1:
                     tp += 1
                     status = 'tp'
+                    tmp_pos_metric.append(X_test_copy[i][-3])
+                    # print( index_to_data_map[test_index[i]])
+                    # if X_test_copy[i][0] >  2 and X_test_copy[i][-3] > 2  and X_test_copy[i][0]!=  X_test_copy[i][-3]:
+                    #     print("tp: " + index_to_data_map[test_index[i]], "features:" +
+                    #         str((1.0*X_test_copy[i][-3]/X_test_copy[i][0]))+", "+ str(X_test_copy[i][2]))
                 elif y_test[i] == y_predict[i] and y_predict[i] == 0:
                     tn += 1
                     status = 'tn'
+                    tmp_neg_metric.append(X_test_copy[i][-3])
                 elif y_test[i] != y_predict[i] and y_predict[i] == 1:
                     fp += 1
                     status = 'fp'
+                    # print("fp: " + index_to_data_map[test_index[i]], "features:" +
+                    #       str(X_test_norm[i]))
                     if '@' not in index_to_data_map[test_index[i]]:
                         # print("fp: " + index_to_data_map[test_index[i]], "features:" +
                         #       str(X_test_norm[i]))
@@ -567,6 +606,10 @@ if __name__ == '__main__':
                 elif y_test[i] != y_predict[i] and y_predict[i] == 0:
                     fn += 1
                     status = 'fn'
+                    #
+                    # print("fn: " + index_to_data_map[test_index[i]], "features:" +
+                    #       str(X_test_norm[i]))
+
                     # print("fn: " + index_to_data_map[test_index[i]] + "," + "occurences" + ":" + str(
                     #     X_test_copy[i][0]) + "," + "features:" +
                     #       str(X_test_norm[i]))
@@ -600,7 +643,10 @@ if __name__ == '__main__':
             print(f'precision: {round(precision * 100, 2)}')
             print(f'recall: {round(recall * 100, 2)}')
             print(f'accuracy: {round(accuracy * 100, 2)}')
-            print(f'f1: {round(2 * precision * recall / (precision + recall) * 100, 2) if precision + recall != 0 else 0}　')
+            print(
+                f'f1: {round(2 * precision * recall / (precision + recall) * 100, 2) if precision + recall != 0 else 0}　')
+            print(
+                f'tp: {tp}, fp: {fp}, tn: {tn}, fn: {fn}')
             # print(f"pos acc {round(tp/(tp+ fn)* 100, 2)}:")
             # print(f'{tp + fp} {tp}')
 
@@ -609,6 +655,8 @@ if __name__ == '__main__':
             logging.info(
                 f' model is {model_name}, exclude {features[feature_index]}, here are final results: ')  # {clf.get_depth()}
         else:
+            if model_name == 'DecisionTree':
+                pickle.dump(clf, open("./decision_tree_model/model_" + str(fold) + ".pkl", "wb"))  # 操作方式是写入二进制数据
             logging.info(
                 f' model is {model_name}, considering {features_without_feature}, here are final results: ')  # {clf.get_depth()}
         a = round(np.mean(accuracies) * 1, 2)
@@ -641,19 +689,48 @@ if __name__ == '__main__':
 
     if model_name == 'DecisionTree':
         # 实例化SMOTE对象
-        smote = SMOTE(random_state=RANDOM_STATE)
+        # smote = SMOTE(random_state=RANDOM_STATE)
         # 进行过采样
-        X_smote, y_smote = smote.fit_resample(X, y)
-        clf.fit(X_smote, y_smote)
-        y_pred = clf.predict(X)
-        y_test = y
+        # X_smote, y_smote = smote.fit_resample(X, y)
+        # clf.fit(X_smote, y_smote)
+        sampler = ADASYN(sampling_strategy='auto', random_state=RANDOM_STATE)
+        X_sampler, y_sampler = sampler.fit_resample(X, y)
+        clf.fit(X_sampler, y_sampler)
+        y_pred = clf.predict(X_sampler)
+        y_test = y_sampler
         tree_rules = export_text(clf, feature_names=features)
+
+        # 计算相关系数
+        positive_samples = X[y == 1]
+        negative_samples = X[y == 0]
+        correlation_coefficient = np.corrcoef(X[:, 0] , X[:, -2] )[0, 1]
+        print("Correlation coefficient between feature 1 and feature 2:", correlation_coefficient)
+        pos_corr = np.corrcoef(positive_samples[:, 0], positive_samples[:, -3])[0, 1]
+        neg_corr = np.corrcoef(negative_samples[:, 0], negative_samples[:, -3])[0, 1]
+        print("Correlation coefficient between feature 1 and feature 2 in positive samples:", pos_corr)
+        print("Correlation coefficient between feature 1 and feature 2 in negative samples:", neg_corr)
+        # 散点图，红色表示错误分类 绿色表示正确分类， x轴表示第一个特征，y轴表示第二个特征
+        # plt.figure(figsize=(20, 25), dpi=200)
+        # x_polt = []
+        # y_polt = []
+        # for v in range( len(X_sampler)):
+        #     if X_sampler[v][0] > 1 and X_sampler[v][-3] > 0:
+        #         x_polt.append(X_sampler[v])
+        #         y_polt.append(y_sampler[v])
+        # x_polt = np.array(x_polt)
+        # y_polt = np.array(y_polt)
+        # plt.scatter(x_polt[:, 0], x_polt[:, -3], c=y_polt, cmap='coolwarm', s=20, edgecolors='k')
+        # plt.xlabel(features[0])
+        # plt.ylabel(features[-3])
+        # plt.show()
+
         # 指定图幅大小
         # plt.figure(figsize=(30, 35), dpi=200)
-        # _ = tree.plot_tree(clf, fontsize=10, feature_names=features, filled=True, rounded=True, class_names=['0', '1'])
-        print("plotting decision tree...")
-        # ax = pybaobabdt.drawTree(clf, size=10, dpi=300, features=features)  # 可视化主函数pybaobabdt.drawTree
+        # _ = tree.plot_tree(clf, max_depth=6,fontsize=5, feature_names=features, filled=True, rounded=True, class_names=['0', '1'])
+        # print("plotting decision tree...")
         # plt.show()
+        tree.export_graphviz(clf, out_file="tree.dot", feature_names=features, class_names=['0', '1'],
+                             filled=True)  # dot -Tpng tree.dot -o tree.png
         # plt.savefig('./resource/decision_tree.png', format='png')
 
         # # 获取叶子节点的索引
